@@ -44,4 +44,4 @@ The user approved the board proposal; the first art/layout pass is implemented. 
 
 Regional visual effects now include actual full-board backgrounds behind public/private cards, alongside the event emblem scene. Motion is bounded and suspended when hidden or outside the board. Further tuning should follow real Discord play rather than adding more layers blindly.
 
-The board backgrounds now use a generated 24-texture painted effects pack rather than only geometric particles. Shared lazy loading preserves stable asset names for future battle weather and skill effects. Those future systems remain deferred; see docs/art/ENVIRONMENT_VFX_ASSETS.md.
+The board backgrounds now use PixiJS Particle Emitter with the generated painted effects pack: layered windblown leaves, sparks that fade/burn out, expanding smoke/mist, ash and magical motes. Shared lazy loading preserves stable asset names. Rain/snow presets are implemented and available in the local effects preview; actual battle weather and skill integrations remain deferred. See docs/art/ENVIRONMENT_VFX_ASSETS.md.

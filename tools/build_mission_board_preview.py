@@ -13,6 +13,12 @@ import {boardIcon,rankSeal,missionCard,eventHeader,filterChips,stableBoardHTML} 
 import {matchesMission} from '/frontend/src/mission-planner.js';
 import {createBoardVFX} from '/frontend/src/board-vfx.js';
 const previewBackdrop=createBoardVFX();
+window.previewBackdrop=previewBackdrop;
+window.previewWeather=theme=>previewBackdrop.setEvent({id:'weather-preview',theme});
+const fxControl=document.createElement('div');fxControl.style.cssText='padding:12px 18px;position:relative;z-index:2;background:#161b18;color:#ded6bf;display:flex;gap:12px;align-items:center;flex-wrap:wrap';
+fxControl.innerHTML='<label for="preview-fx">Local effects preview</label><select id="preview-fx"><option value="general">Ordinary board</option><option value="great_beast_tide">Leaves</option><option value="goblin_warhost">Camp sparks + smoke</option><option value="ashen_procession">Ash + mist</option><option value="arcane_convergence">Arcane</option><option value="starfall_omen">Alien</option><option value="rain">Rain (future preset)</option><option value="snow">Snow (future preset)</option></select><small>Safe fixture content; no player data.</small>';
+document.body.insertBefore(fxControl,document.querySelector('#game'));
+fxControl.querySelector('select').onchange=e=>['rain','snow'].includes(e.target.value)?previewWeather(e.target.value):previewEvent(e.target.value);
 const $=s=>document.querySelector(s),$$=s=>[...document.querySelectorAll(s)];
 const esc=(v='')=>String(v).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const title=s=>String(s||'').replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());

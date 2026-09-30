@@ -12,7 +12,7 @@ Runtime PNGs and crop manifest are in `frontend/public/assets/mission-board-v1`.
 
 ## Browser preview and verification
 
-`tools/build_mission_board_preview.py` builds representative safe fixture content using the actual board renderers and styles, with normal/event boards, roles, private leads, active missions, stacks, and locked ranks. The preview is `staging-ui/mission-board-v1/board-preview.html`. Serve it locally with `tools/serve_board_preview.py` (port 8766; loopback only). This preview does not run the game backend or access player data.
+`tools/build_mission_board_preview.py` builds representative safe fixture content using the actual board renderers and styles, with normal/event boards, roles, private leads, active missions, stacks, and locked ranks. The preview is `staging-ui/mission-board-v1/board-preview.html`. Serve it locally with `node tools/serve_board_preview.mjs` (port 8766; loopback only); `tools/serve_board_preview.py` delegates to the same Vite server. Vite resolves the new Pixi imports. The top selector previews events and future rain/snow presets. This preview does not run the game backend or access player data.
 
 `tools/board_browser_qa.mjs` is a maintainer check requiring a separate Chrome debugging session on port 9229 and the local preview server. It checks locked information, stable DOM/focus and collapse state during refreshes, filtering, private/public inspection, reduced motion, and narrow layout. It writes screenshots beside the preview. This is not an everyday game launcher.
 

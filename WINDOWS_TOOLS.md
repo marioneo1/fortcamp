@@ -29,6 +29,7 @@ The music-only batch shortcut was removed as redundant. Use **Sound settings -> 
 - `tools/generate_event_ambience.py --process-only`: verify/install preserved regional ambience without API calls. Omitting the option can purchase missing clips; uncertain receipts block retries.
 - `tools/import_music_uploads.py`: import the named Mureka uploads, preserve originals, match loudness, and make previews without API requests. This pass maps the eight boss/defense/investigation/undead filenames; `--pack regions` handles the ten named regional uploads; other packs require updating the map.
 - `tools/build_music_library.py`: rebuild the local and hosted listening page without generation.
+- `.venv\Scripts\python.exe tools\build_mission_board_preview.py`, then `node tools/serve_board_preview.mjs`: build and serve the local fixture board on port 8766, with an effects selector including rain/snow. Requires frontend npm dependencies. Ctrl+C stops it; no game backend, public tunnel or paid generation is started. The existing Python preview server command delegates to this same Vite server.
 - Omitting `--process-only` from a generation command may purchase missing tracks. Existing originals are reused; uncertain requests block automatic paid retries.
 
 Use the project venv Python for these commands. Tool code is tracked in Git; generated assets, player data and secrets remain separate. Update this inventory when adding, retiring or changing a launcher. Do not claim operational verification based only on a file existing.

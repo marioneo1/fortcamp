@@ -37,12 +37,17 @@ await evaluate(`document.querySelector('[data-rank-board="E"]').open=true;docume
 const cards=await call('Page.captureScreenshot',{format:'png'});writeFileSync('staging-ui/mission-board-v1/board-contracts.png',Buffer.from(cards.data,'base64'));
 
 await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
-await evaluate(`window.vfxHash=()=>{const c=document.querySelector('.board-regional-backdrop'),p=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let hash=0;for(let i=0;i<p.length;i+=32)hash=(hash*31+p[i]+p[i+3])|0;return hash}`);
+await evaluate(`window.vfxHash=()=>window.previewBackdrop.pixelSignature();window.waitForParticles=async()=>{for(let i=0;i<100;i++){const c=document.querySelector('.board-regional-backdrop');if(!c.hidden&&c.dataset.renderer==='pixi')return true;await new Promise(r=>setTimeout(r,50))}return false}`);
 for(const id of ['goblin_warhost','ashen_procession','arcane_convergence','great_beast_tide','starfall_omen']){
-  await evaluate(`window.previewEvent('${id}')`);const before=await evaluate('vfxHash()');await new Promise(r=>setTimeout(r,220));await check(`vfxHash()!==${before}`,'background visibly animates for '+id);
+  await evaluate(`window.previewEvent('${id}')`);await check(`waitForParticles()`,'Pixi renderer ready for '+id);const before=await evaluate('vfxHash()');await new Promise(r=>setTimeout(r,220));await check(`vfxHash()!==${before}`,'background visibly animates for '+id);
+  await check(`previewBackdrop.diagnostics().particles>0&&previewBackdrop.diagnostics().particles<=80`,'bounded live emitter particles for '+id);
 }
-await check(`performance.getEntriesByType('resource').filter(e=>e.name.includes('/vfx/environment-v1/')).length>=19`,'regional painted textures are requested lazily across event previews');
-await check(`(async()=>{const {vfxTextures,BOARD_TEXTURES}=await import('/frontend/src/vfx-textures.js');return Object.values(BOARD_TEXTURES).flat().every(name=>vfxTextures.get(name)?.naturalWidth>0)})()`,'every board texture loads successfully');
+await check(`performance.getEntriesByType('resource').filter(e=>e.name.includes('/vfx/environment-v1/')).length>=18`,'regional painted textures are requested lazily across event previews');
+await check(`(async()=>{const {vfxTextures}=await import('/frontend/src/vfx-textures.js');const {createParticlePreset,PARTICLE_PRESETS}=await import('/frontend/src/particle-presets.js');return PARTICLE_PRESETS.filter(n=>!['rain','snow'].includes(n)).flatMap(n=>createParticlePreset(n,1440,1100)).flatMap(p=>p.config.behaviors.find(b=>b.type==='textureRandom').config.textures).every(name=>vfxTextures.get(name)?.naturalWidth>0)})()`,'every emitter texture loads successfully');
+for(const weather of ['rain','snow']){
+  await evaluate(`previewWeather('${weather}')`);await check(`waitForParticles()`,'weather preset ready: '+weather);const before=await evaluate('vfxHash()');await new Promise(r=>setTimeout(r,220));await check(`vfxHash()!==${before}`,'weather preset animates: '+weather);
+  await check(`previewBackdrop.diagnostics().particles>0&&previewBackdrop.diagnostics().particles<=80`,'bounded weather particles: '+weather);
+}
 await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
 const still=await evaluate('vfxHash()');await new Promise(r=>setTimeout(r,220));await check(`vfxHash()===${still}`,'reduced motion freezes full-board backdrop');
 await evaluate(`window.previewEvent('general')`);await check(`document.querySelector('.board-regional-backdrop').hidden`,'ordinary board has no event backdrop');
