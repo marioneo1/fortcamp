@@ -1,0 +1,9 @@
+{
+  "name": "fortcamp-activity",
+  "private": true,
+  "version": "0.3.1",
+  "type": "module",
+  "scripts": {"dev":"vite --host 127.0.0.1","build":"vite build","preview":"vite preview"},
+  "dependencies": {"@discord/embedded-app-sdk":"^2.5.0"},
+  "devDependencies": {"vite":"^6.1.0"}
+}

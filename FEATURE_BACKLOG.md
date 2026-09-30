@@ -1,0 +1,35 @@
+# Fortcamp feature backlog
+
+Use this file for pending work and GAMEPLAY_VISION.md for standing design rules. Update statuses when implementing a feature; record validation in MISSION_REFINEMENT_PHASE.md. Requests here do not authorize paid generation or publication beyond the user's current instructions.
+
+## Current pass — September 30, 2026
+
+- Implemented: accepting a choice-driven contract includes its first decision in the acceptance response. Open immediately, scroll to the top, allow closing, and resume saved choices. Background completions must not replace an open mission screen.
+- Implemented: aftermath places readable story beside recovered rewards; expedition checks and loot rolls are expandable.
+- Implemented: device-local Master, Music, Interface & Mission Sounds, and Battle Effects volume settings, mute, reset, and sound previews. Existing effects retain their individual mix levels inside those channels. Music generation/playback remains pending.
+- Music design proposed in MUSIC_GENERATION_GUIDE.md. Await discussion before any paid music generation; ELEVENLABS_MUSIC_IMAGE_KEY remains server/tool-only.
+
+## Next priorities
+
+1. **Music pilot:** warm, comfortable guild-board loop first; listening review before purchasing a full pack. Then base, general combat, goblin combat. Keep one musical identity across arrangements. Verify actual loop boundaries and perceived loudness, not just file peaks.
+2. **Selection responsiveness:** profile the actual Discord activity and browser, including party selection, defense deployment, redraws, polling, image decoding, and request latency. Measure before choosing a fix. Avoid rebuilding unchanged panels and losing input state. User reports perceived frame drops even outside combat.
+3. **Equipment and inventory UX — catalogued, deferred:** support large inventories, search/filter/sort, clear equipped state and compatible slots, readable comparisons and granted effects, quick equip/unequip, consistent scrolling and focus. Do not redesign as part of the current audio pass.
+4. **Mission-board visual direction — catalogued, deferred:** consider consistent generated icons, restrained backgrounds and event VFX. Preserve readability, navigation, rank grouping, private leads, and reduced-motion behavior; decorative work must not worsen performance.
+5. **Aftermath follow-up:** review the new format with real long stories, prisoners, discoveries, and large reward lists. Prefer story and consequence over a wall of mechanical recap; expose checks on demand.
+
+## Gameplay and content pipeline
+
+- Faction diplomacy and trust that open relevant Private Contracts.
+- Decision scenes continuing after combat, with route-specific endings.
+- Broader authored decision coverage: optional setbacks, mission loss, ordinary fights, exceptional bosses; pure-roll missions remain plentiful.
+- Defense preparation and readable objective placement; traps/Engineer constructions develop in stages.
+- Adventure floors, transitions, rescue/escort objectives, and scenario-specific maps. Reuse BATTLE_MAP_AUTHORING.md and MAP_ASSET_LAYERING.md; add props only for meaningful interactions.
+- Full stealth/detection and night/sleep approaches; larger squads only after scaling and deployment UI support them.
+- Individually authored Champion acquisition chains and signature perk mechanics; maintain uniqueness and lore-relevant discovery.
+- Continue perk/race balancing and show only implemented effects. Do not claim the entire perk catalogue is finished.
+- Prison recruitment, sale/exchange, warden mechanics, and individual stockade expiry: deferred until resumed explicitly.
+- Remaining male portrait pass: deferred. Preserve current female/male generation guides and legacy prompts.
+
+## Development workflow
+
+Use local Git for code, tests, documentation, and build configuration. Keep secrets, player databases, generated art/audio, and build outputs outside the baseline. Asset source folders need their own backups; Git exclusions do not delete files. No remote publishing is configured by this pass.
