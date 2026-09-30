@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {createMusicPlayer,musicContext} from './music-player.js';
+import {createMusicPlayer,musicContext,musicTransitionPolicy} from './music-player.js';
 import {createAudioMixer} from './audio-settings.js';
 class FakeAudio extends EventTarget{
   static instances=[];
@@ -45,4 +45,30 @@ test('blocked autoplay can retry on the next user gesture',async()=>{
   const player=createMusicPlayer(createAudioMixer(),{AudioClass:BlockedAudio,schedule:()=>1,cancel:()=>{}});
   player.setContext('board');player.unlock();await new Promise(resolve=>setImmediate(resolve));assert.equal(player.currentTrack,null);
   player.unlock();await new Promise(resolve=>setImmediate(resolve));assert.ok(player.currentTrack);assert.equal(FakeAudio.instances.at(-1).paused,false);player.dispose();
+});
+test('brief investigation popups cancel the delayed change without restarting the guild track',async()=>{
+  const s=setup();s.player.setContext('board');s.player.unlock();await s.settle();s.advance(3000);
+  const original=FakeAudio.instances[0];original.currentTime=42;
+  const policy=musicTransitionPolicy('private',null,{mission_form:'investigation'},'board');
+  assert.equal(policy.delayMs,8000);s.player.setContext(policy.context,{delayMs:policy.delayMs});s.advance(4000);
+  assert.equal(s.player.currentTrack,'01_lanternlight');s.player.setContext('board');s.advance(5000);await s.settle();
+  assert.equal(FakeAudio.instances.length,1);assert.equal(original.currentTime,42);s.player.dispose();
+});
+test('long investigation scenes switch once and return to the same guild position',async()=>{
+  const s=setup();s.player.setContext('board');s.player.unlock();await s.settle();s.advance(3000);FakeAudio.instances[0].currentTime=42;
+  s.player.setContext('investigation',{delayMs:8000});s.advance(8000);await s.settle();s.advance(3000);
+  assert.equal(s.player.currentTrack,'investigation_1');s.player.setContext('board');await s.settle();s.advance(3000);
+  assert.equal(s.player.currentTrack,'01_lanternlight');assert.equal(FakeAudio.instances.at(-1).currentTime,42);s.player.dispose();
+});
+test('returning before a fade ends reverses it instead of restarting or layering copies',async()=>{
+  const s=setup();s.player.setContext('board');s.player.unlock();await s.settle();s.advance(3000);const first=FakeAudio.instances[0];first.currentTime=27;
+  s.player.setContext('base');await s.settle();s.advance(500);s.player.setContext('board');await s.settle();s.advance(3000);
+  assert.equal(FakeAudio.instances.length,2);assert.equal(s.player.currentTrack,'01_lanternlight');assert.equal(first.currentTime,27);assert.equal(FakeAudio.instances.filter(a=>!a.paused).length,1);s.player.dispose();
+});
+test('major boss and defense override faction music while ordinary undead use their own tracks',()=>{
+  assert.equal(musicContext('missions',{encounter_id:'contract:undead_death_knight'}),'boss');
+  assert.equal(musicContext('missions',{encounter_id:'frontier_watch_defense',units:{enemy:{team:'enemy',race:'Goblin'}}}),'defense');
+  assert.equal(musicContext('missions',{encounter_id:'contract:bone_patrol'}),'undead');
+  assert.equal(musicContext('missions',{encounter_id:'goblin_warcamp',complication_boss:'chief'}),'boss');
+  assert.equal(musicTransitionPolicy('private',null,null,'boss').delayMs,5000);
 });

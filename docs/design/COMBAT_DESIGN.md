@@ -1,5 +1,7 @@
 # Fortcamp Tactical Battle Design
 
+> This document combines implemented combat foundations with future design proposals. The live game now uses painted terrain and props, reusable scenario maps, defense preparation, and authored decision encounters. Later release proposals below are historical planning, not a statement that only one mission exists.
+
 ## Implemented vertical slice
 
 Goblin Warcamp now implements the 8×8 persistent battle, portrait tokens, provisional movement, weighted elevation, manual commands and hotkeys, server-authored contextual actions, ranged and magic weapon skills, terrain blocking and line of sight, shallow water, flight-only pits, destructible palisades and rubble, visible status definitions, lethal and nonlethal defeat, unconscious units and corpses, carrying and dropping bodies, Strength-and-weight-based throwing of bodies and portable objects, free body handoff at exits, individual extraction, Retreat All pathing, boss-triggered panic and pursuit choices, automatic secured-field recovery, corpse-scaled equipment and coin, captives, alarm reinforcements, three auto-battle tactics, instant resolution, battle reports, and normal mission reward integration described below. The remaining sections guide expansion to later encounters.

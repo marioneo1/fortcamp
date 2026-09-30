@@ -1,4 +1,4 @@
-import {createMusicPlayer,musicContext} from './music-player.js';
+import {createMusicPlayer,musicTransitionPolicy} from './music-player.js';
 import {mountDecisionScene} from './mission-scene-ui.js';
 import {createAudioMixer,mountAudioSettings,audioCategory} from './audio-settings.js';
 import {raceEffects,perkModifiers} from './character-effects.js';
@@ -28,11 +28,11 @@ const rosterFilters={query:'',status:'',race:'',kind:'',sort:'name',page:0};
 let rosterDetailTab='overview',rosterNeedsRefresh=false;
 let missionPlanner=null,analysisSequence=0;
 const missionFilters={query:'',rank:'',form:'',available:true,sort:'shortest'};
-let missionClaimPending=false;
+let missionClaimPending=false,activeDecisionMission=null;
 let audioStorage;try{audioStorage=window.localStorage}catch{}
 const audioMixer=createAudioMixer(audioStorage);
 const musicPlayer=createMusicPlayer(audioMixer);
-function syncMusic(){musicPlayer.setContext(musicContext($('.tabs button.active')?.dataset.tab,activeBattleView))}
+function syncMusic(){const request=musicTransitionPolicy($('.tabs button.active')?.dataset.tab,activeBattleView,activeDecisionMission,musicPlayer.currentContext);musicPlayer.setContext(request.context,{delayMs:request.delayMs})}
 window.addEventListener('pointerdown',()=>musicPlayer.unlock());
 window.addEventListener('keydown',()=>musicPlayer.unlock());
 document.addEventListener('visibilitychange',()=>musicPlayer.suspend(document.hidden));
@@ -384,9 +384,10 @@ async function updateAnalysis(){
 async function claimMission(selection){if(missionClaimPending)return;missionClaimPending=true;const button=$('#claim-mission');if(button)button.disabled=true;try{const data=await rawApi(`/api/missions/${selectedMission.id}/claim`,{method:'POST',body:JSON.stringify(selection)});playSfx('ui_confirm',.25);toast(data.mission.status==='decision'?'Contract started · choose your approach':data.mission.status==='battle'?'Battle started':'Mission claimed');if(data.mission.status==='decision'){await openDecision(data.mission.id,data.mission,data.decision)}else if(data.mission.status==='battle'){await openBattle(data.mission.id)}else{$('#mission-modal').classList.add('hidden')}await refreshDynamic()}catch(e){toast(e.message);await refreshDynamic()}finally{missionClaimPending=false;if($('.mission-planner'))await updateAnalysis()}}
 
 async function openDecision(missionId,mission,initialDecision){
-  missionPlanner=null;analysisSequence++;activeBattleView=null;syncMusic();
+  missionPlanner=null;analysisSequence++;activeBattleView=null;activeDecisionMission=null;syncMusic();
   const data=initialDecision?{decision:initialDecision}:await rawApi(`/api/missions/${missionId}/decision`);
   const current=mission||activeMissions.find(m=>m.id===missionId)||selectedMission;
+  activeDecisionMission=current;syncMusic();
   $('#mission-modal').classList.remove('hidden');
   const draw=scene=>{mountDecisionScene($('#mission-detail'),current,scene,{esc,title,onChoose:async payload=>{
     const response=await rawApi(`/api/missions/${missionId}/decision`,{method:'POST',body:JSON.stringify(payload)});
@@ -558,7 +559,7 @@ function animateBattleMovement(previous,battle,durationFloor=260){
 }
 function renderBattlePreparation(b){
   const previousBattle=activeBattleView;
-  activeBattleView=b;syncMusic();
+  activeDecisionMission=null;activeBattleView=b;syncMusic();
   const prep=b.preparation||{},prepZone=new Set((prep.zone||[]).map(p=>`${p.x},${p.y}`)),deploymentZone=new Set((prep.deployment_zone||[]).map(p=>`${p.x},${p.y}`));
   const ground=new Map((b.ground_tiles||[]).map(tile=>[`${tile.x},${tile.y}`,tile.material])),groundMaterials=b.ground_materials||{};
   let cells='';
@@ -590,7 +591,7 @@ function renderBattle(b){
   const previousBattle=activeBattleView;
   const previousViewport=$('#battle-viewport');
   if(previousViewport)battlePan={left:previousViewport.scrollLeft,top:previousViewport.scrollTop};
-  activeBattleView=b;syncMusic();
+  activeDecisionMission=null;activeBattleView=b;syncMusic();
   const current=b.units[b.current_unit_id];
   if(['interact','carry'].includes(selectedCombatAction))selectedCombatAction='move';
   if(current&&!current.special&&selectedCombatAction==='skill')selectedCombatAction='move';
@@ -679,7 +680,7 @@ async function sendCombat(command,nextMode=null){
   }finally{combatRequestPending=false}
 }
 async function sendCombatAuto(resolveAll){if(combatRequestPending)return;combatRequestPending=true;try{const tactic=$('#battle-tactic')?.value||'balanced',data=await rawApi(`/api/missions/${activeBattleMissionId}/battle/auto`,{method:'POST',body:JSON.stringify({tactic,resolve_all:resolveAll})});tileActionMenu=null;if(data.result){const local=activeMissions.find(m=>m.id===activeBattleMissionId);if(local){local.status='completed';local.result=data.result}const soundDuration=resolveAll?0:playBattleSounds(data.battle);activeBattleView=null;retreatAllArmed=false;playOutcomeSound(data.result.outcome,soundDuration);showResult(data.result);await refreshDynamic()}else renderBattle(data.battle)}catch(e){toast(e.message)}finally{combatRequestPending=false}}
-$('#mission-close').onclick=()=>{retreatAllArmed=false;tileActionMenu=null;activeBattleView=null;$('#mission-modal').classList.add('hidden');syncMusic()};
+$('#mission-close').onclick=()=>{retreatAllArmed=false;tileActionMenu=null;activeBattleView=null;activeDecisionMission=null;$('#mission-modal').classList.add('hidden');syncMusic()};
 $('#sound-settings-open').onclick=()=>{closeAudioSettings?.();closeAudioSettings=mountAudioSettings($('#sound-settings-content'),audioMixer,name=>playSfx(name,name.startsWith('mission_')?.5:name.startsWith('ui_')?.16:.5));$('#sound-settings-modal').showModal()};
 $('#sound-settings-close').onclick=()=>$('#sound-settings-modal').close();
 $('#sound-settings-modal').addEventListener('close',()=>{closeAudioSettings?.();closeAudioSettings=null});
@@ -689,7 +690,7 @@ document.addEventListener('click',event=>{const portrait=event.target.closest?.(
 $('#portrait-lightbox-close').onclick=closePortraitViewer;$('#portrait-lightbox').onclick=event=>{if(event.target===$('#portrait-lightbox'))closePortraitViewer()};document.addEventListener('keydown',event=>{if(event.key==='Escape')closePortraitViewer()});
 function showResult(r){
   if(!r)return;
-  missionPlanner=null;analysisSequence++;activeBattleView=null;syncMusic();
+  missionPlanner=null;analysisSequence++;activeBattleView=null;activeDecisionMission=null;syncMusic();
   const rw=r.rewards||{},bits=[];
   if(rw.gold)bits.push(`+${rw.gold} Gold`);
   Object.entries(rw.materials||{}).forEach(([k,v])=>bits.push(`+${v} ${title(k)}`));

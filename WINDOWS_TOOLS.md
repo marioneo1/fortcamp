@@ -26,6 +26,7 @@ The music-only batch shortcut was removed as redundant. Use **Sound settings -> 
 
 - `tools/generate_music_candidates.py --process-only`: reprocess the saved guild originals, without paid requests.
 - `tools/generate_music_candidates.py --pack locations --process-only`: reprocess saved base/combat originals, without paid requests.
+- `tools/import_music_uploads.py`: import the named Mureka uploads, preserve originals, match loudness, and make previews without API requests. This pass maps the eight boss/defense/investigation/undead filenames; new packs require updating the map.
 - `tools/build_music_library.py`: rebuild the local and hosted listening page without generation.
 - Omitting `--process-only` from a generation command may purchase missing tracks. Existing originals are reused; uncertain requests block automatic paid retries.
 

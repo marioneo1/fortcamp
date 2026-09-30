@@ -107,3 +107,14 @@ LISTEN.html and listen_music_candidates_windows.bat open the four-track comparis
 Approved all four guild tracks, applied gentle three-second endings to playback copies, and preserved source downloads. Generated three additional 120-second location themes: Hearth & Camp, Roads Under Pressure, and Goblin Warcamp. A seven-track listening library replaces the standalone music batch shortcut. Runtime music rotates board tracks and selects base/general/goblinoid battle themes, crossfades over three seconds, unlocks after a user gesture, follows the Master/Music mix, and pauses when hidden. Normal redraws do not restart the music.
 
 WINDOWS_TOOLS.md distinguishes source/dependency checks from actual launcher operation. Start/setup working directory handling was corrected; the development backend uses the project's venv explicitly. Install, stop, crop mutation, GUI launch and public-tunnel actions were not exercised against the live game. Remaining investigation, undead, siege, boss and Starfall prompts are in MUREKA_MUSIC_PROMPTS.md for the user's website subscription; no additional ElevenLabs generations were made after that request.
+
+
+## September 30: Mureka imports, popup-safe transitions, documentation and GitHub
+
+Installed eight distinct corrected Mureka uploads: Boss 1/2, Defense 1/2, Investigate 1/2, and Undead 1/2. Originals are archived without overwriting; the importer records source hashes, matches loudness and applies gentle fades without network/API requests. The local and hosted listening library now contains 15 tracks, with context filters and loop trials.
+
+Runtime playlists distinguish major bosses, defense, undead, goblins, ordinary combat, and sustained interactive investigations. Short popups leave background music alone. Investigations wait eight seconds, ordinary tab switches 700 ms, and return from encounters five seconds. Three-second crossfades and remembered playback positions prevent abrupt restarts. Tests cover delayed switching, cancellation, return position, fade reversal, and encounter precedence.
+
+Organized design, art, audio, reference, and historical documents under docs. Root DOCUMENTATION.md provides the index; existing portrait and SFX tool-dependent guide locations remain unchanged. Legacy portrait prompts and the original README are preserved. Corrected prison backlog status to reflect implemented selling, swaps, and individual stockade clocks. Regional prompts cover all five actual events, including hostile Starfall impacts.
+
+Validation: all 20 frontend tests and the production build passed; import and library scripts compile. Markdown links and Git history were checked before public publication. The user authorized uploading code to marioneo1/fortcamp; secrets, player data, generated media, and build outputs remain excluded. No new paid generation requests were made.

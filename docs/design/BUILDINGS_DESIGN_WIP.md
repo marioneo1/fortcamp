@@ -1,5 +1,7 @@
 # Fortcamp Building Design (Tentative - not set in stone yet)
 
+> Design draft: proposals in this document are not all implemented. Consult the root feature backlog for current status.
+
 1. Max Population - Population count should be capped based on how many 'beds' there are. Tents provides two beds. We start with one tent. We'll be able to upgrade tent once to a big tent. Allowing four players. Player needs to discover blue print for a basic cabin and a sleeping bag. Blue print allows upgrade of big tent to basic cabin. Basic cabin can have furnitures and starts off with four sleeping bags. (Can be upgraded to a sleeping bed. Idk what bonus to do yet for the upgrade from sleeping bag to bed.) 
 2. Prison Cell - Allows user to take in prisoners which they can later recruit. Needs a warden to be assigned to 'break' in the prisoners resistance for negotiation.
 3. Personal Bounty Board - Missions distributed by user level, missions are not the same as the 'pool' missions. Rewards in this for early levels need to be worth a lot less compared to the POOL missions.

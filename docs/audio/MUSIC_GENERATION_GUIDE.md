@@ -60,3 +60,12 @@ All four guild tracks are retained. Their listening/runtime copies have a short 
 Generated three more 120-second instrumentals: `05_hearth_and_camp`, `06_roads_under_pressure`, and `07_goblin_warcamp`. They are stored in staging-music/location-themes-v1 and included in the seven-track library. Base/general/goblin music is ready for user listening; subjective style still depends on review.
 
 The user will generate later themes through Mureka's website. Paste-ready prompts for investigation/ruins, undead, siege defense, major bosses and Starfall are in MUREKA_MUSIC_PROMPTS.md. No further ElevenLabs music generation is authorized by that prompt request. WINDOWS_TOOLS.md records the launcher audit and its operational limits.
+
+
+## Imported Mureka pack and transition behavior ? September 30
+
+The 15-track library now includes eight distinct Mureka uploads: two each for bosses, defense, investigations, and undead encounters. Immutable originals live in `staging-music/mureka-import-v1/originals`; processed copies, loop previews, and manifests use `mureka-import-v1`. `tools/import_music_uploads.py` imports these known filenames without generation or API calls and refuses to overwrite existing originals.
+
+Actual boss encounters override defense/faction music; defense and undead contexts have dedicated playlists. Ordinary goblin battles retain their goblin track. An interactive investigation must remain open for eight seconds before its music starts; a brief inspection or aftermath popup does not change music. Board/base tab changes settle for 700 ms, and leaving an encounter waits five seconds before returning to background music. Context changes crossfade over three seconds and resume prior background playback when possible. Stable redraws do not restart tracks. Fade processing smooths transitions but does not prove a musically seamless loop.
+
+Regional music remains pending user generation. See [Mureka prompts](MUREKA_MUSIC_PROMPTS.md). Starfall is a hostile alien-impact crisis, not a peaceful falling-star scene.

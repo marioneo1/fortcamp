@@ -2,12 +2,12 @@
 
 ## Implemented foundation
 
-- `Smoke over the Hedgerows` is the first complete roll-to-combat investigation.
-- It accepts one optional bodyguard. The bodyguard is validated and deployed but is excluded from the lead, support bonus, requirements, secret criteria, and probability calculation.
-- Its hidden encounter check is seeded by the mission instance. Reloading or restarting cannot reroll whether the ambush occurred.
-- A triggered ambush uses the `hedgerow_signal_site` scenario generator. The generator selects authored road, clearing, cover, elevation, deployment, and exit zones; it does not scatter independent random tiles.
-- The same mission seed always compiles the same map. This makes saved battles stable and lets future Defense, Rescue, Recovery, Hunt, and Infiltration encounters reuse the compiler with their own scenario profiles.
-- Debug mode exposes **Test Investigation Ambush** so this path can be opened directly.
+- Sixteen contracts have decision entry points: four authored decision stories and twelve combat approaches. Accepting a decision contract opens its first choice immediately; choices can be closed and resumed.
+- Three authored critical-failure routes can open timed recovery battles. More coverage and post-combat story continuation remain planned.
+- Earned follow-up leads are owner-only Private Contracts, with immediate availability and a 24-hour expiry. Faction trust and the wider private quest pipeline remain planned.
+- Optional bodyguards deploy into eligible encounters but do not improve ordinary mission rolls.
+- Seeded scenario compilation uses authored roads, clearings, cover, elevation, deployment, and exit zones. Saved mission instances retain stable maps.
+- Debug investigation encounter entry remains available for direct testing.
 
 Fortcamp missions use separate fields for **purpose**, **current resolution**,
 **intended encounter**, and **combat disclosure**. A mission's purpose does not
