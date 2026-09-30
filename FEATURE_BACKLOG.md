@@ -7,11 +7,11 @@ Use this file for pending work and GAMEPLAY_VISION.md for standing design rules.
 - Implemented: accepting a choice-driven contract includes its first decision in the acceptance response. Open immediately, scroll to the top, allow closing, and resume saved choices. Background completions must not replace an open mission screen.
 - Implemented: aftermath places readable story beside recovered rewards; expedition checks and loot rolls are expandable.
 - Implemented: device-local Master, Music, Interface & Mission Sounds, and Battle Effects volume settings, mute, reset, and sound previews. Existing effects retain their individual mix levels inside those channels. Music generation/playback remains pending.
-- Music design proposed in MUSIC_GENERATION_GUIDE.md. Await discussion before any paid music generation; ELEVENLABS_MUSIC_IMAGE_KEY remains server/tool-only.
+- Four guild-board music candidates generated at the user's request; audition and selection pending. MUSIC_GENERATION_GUIDE.md records the shared palette and four arrangements. ELEVENLABS_MUSIC_IMAGE_KEY remains server/tool-only.
 
 ## Next priorities
 
-1. **Music pilot:** warm, comfortable guild-board loop first; listening review before purchasing a full pack. Then base, general combat, goblin combat. Keep one musical identity across arrangements. Verify actual loop boundaries and perceived loudness, not just file peaks.
+1. **Music pilot:** four warm guild-board candidates are ready; listening review and selection before purchasing location/combat packs. Then base, general combat, goblin combat. Keep one musical identity across arrangements. Verify actual loop boundaries and perceived loudness, not just file peaks.
 2. **Selection responsiveness:** profile the actual Discord activity and browser, including party selection, defense deployment, redraws, polling, image decoding, and request latency. Measure before choosing a fix. Avoid rebuilding unchanged panels and losing input state. User reports perceived frame drops even outside combat.
 3. **Equipment and inventory UX — catalogued, deferred:** support large inventories, search/filter/sort, clear equipped state and compatible slots, readable comparisons and granted effects, quick equip/unequip, consistent scrolling and focus. Do not redesign as part of the current audio pass.
 4. **Mission-board visual direction — catalogued, deferred:** consider consistent generated icons, restrained backgrounds and event VFX. Preserve readability, navigation, rank grouping, private leads, and reduced-motion behavior; decorative work must not worsen performance.

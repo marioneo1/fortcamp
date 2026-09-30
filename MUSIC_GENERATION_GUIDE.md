@@ -23,7 +23,7 @@ Original instrumental background music for a modern fantasy guild management RPG
 
 ## Generation and installation workflow
 
-Use the official ElevenLabs Music API, with `force_instrumental: true` in prompt mode and an explicit `music_length_ms`. Current compose documentation: https://elevenlabs.io/docs/api-reference/music/compose/. Read ELEVENLABS_MUSIC_IMAGE_KEY only from local environment/.env in the generation tool, never frontend code or a committed file. The key has not been used for paid music generation in this pass.
+Use the official ElevenLabs Music API, with `force_instrumental: true` in prompt mode and an explicit `music_length_ms`. Current compose documentation: https://elevenlabs.io/docs/api-reference/music/compose/. Read ELEVENLABS_MUSIC_IMAGE_KEY only from local environment/.env in the generation tool, never frontend code or a committed file. Do not include the key in prompts, metadata reports, or generated listening pages.
 
 Save immutable source, exact prompt, model, duration, and non-secret request metadata under staging-music/<pack>. Avoid automatically retrying an uncertain paid request. Keep approved runtime assets under frontend/public/assets/music, with a manifest linking context, source, loop boundaries, and gain. Never silently replace an approved version.
 
@@ -37,3 +37,18 @@ A loop request is not proof of a seamless loop. Find musically matching boundari
 - Music follows Master × Music. Clicks and success/failure stingers share Master × Interface & Mission Sounds. Combat effects follow Master × Battle Effects. A stinger can briefly duck music without changing the saved volume.
 - Keep music softer than important action feedback, while allowing the user to reverse that balance. Controls persist on the device and include mute.
 - Future packs: undead dread, ruins/mystery, defense siege, major boss, and rare-event variants. Generate only when enough playable content justifies a separate theme.
+
+## Authorized guild-board candidate batch ? September 30
+
+The user requested four alternatives for the guild-board pilot and may retain all four. These are variations of the same UI context, rather than one track per gameplay location.
+
+| Candidate | Arrangement |
+| --- | --- |
+| 01 ? Lanternlight | Felt-piano hook with gentle straight rhythm and plucked accompaniment |
+| 02 ? Guildhall Shuffle | Light swing, plucked-string hook, and warm acoustic bass |
+| 03 ? Roads Waiting | Lyrical mellow clarinet over piano and low strings |
+| 04 ? Mapmaker's Clock | Repeating plucked pattern, piano hook, and a hint of modal mystery |
+
+Tool: `tools/generate_music_candidates.py`. Each request targets 120 seconds, `music_v2_5`, and instrumental-only output. Sources and exact non-secret request metadata are saved under `staging-music/guild-board-candidates-v1`. Original downloads are never overwritten by the preview processing. Each candidate has an integrated-loudness-matched listening copy and a separate cyclic-crossfade loop trial; a crossfade smooths the technical boundary but does not certify the musical phrase.
+
+Double-click `listen_music_candidates_windows.bat`, or open `staging-music/guild-board-candidates-v1/LISTEN.html`. A hosted copy is at `/assets/music/guild-board-candidates-v1/preview.html`, linked from Sound settings. No candidate becomes the default gameplay track before selection. Listen for treble comfort, hook, fatigue, and loop transition; all four remain available.

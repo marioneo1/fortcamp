@@ -95,3 +95,9 @@ Aftermath shows the outcome first, gives the story and recovered rewards separat
 FEATURE_BACKLOG.md now collects pending UI, performance, and gameplay work. MUSIC_GENERATION_GUIDE.md proposes a warm, restrained fantasy palette without piercing high leads. No paid music generation has occurred. Music playback awaits approved tracks. Equipment/inventory redesign, board art/VFX, and measured responsiveness work remain deferred.
 
 Verification: 139 Python tests and eleven JavaScript tests passed, including acceptance-response and immediate-opening regressions; production frontend build passed. Browser previews verified four audio channels and the aftermath layout. A local Git baseline covers source, tests, docs, and configuration; secrets, player data, generated assets, and builds are excluded. No remote is configured.
+
+## September 30: four guild-board music auditions
+
+At the user's request, generated Lanternlight, Guildhall Shuffle, Roads Waiting, and Mapmaker's Clock as four distinct 120-second instrumental guild-board candidates. Exact requests and immutable originals are retained under staging-music/guild-board-candidates-v1. Listening copies use two-pass integrated-loudness matching around -20 LUFS; true peaks are below -5 dBFS. Each has a separate end-to-start cyclic-crossfade trial. Musical continuity, melody, fatigue, and subjective treble comfort await user listening.
+
+LISTEN.html and listen_music_candidates_windows.bat open the four-track comparison. Only one audition player runs at once; the page provides a common volume control, original repetition, loop trials, and downloads. A hosted copy is linked from Sound settings. No track is selected as gameplay background music yet, and all candidates remain available. The generation utility reuses saved originals and blocks automatic retries of uncertain paid requests.
