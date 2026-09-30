@@ -16,7 +16,7 @@ staging-*/
 .portrait_staging/
 portraits/
 champions/
-reference/
+/reference/
 question/
 questions/
 tmp/
