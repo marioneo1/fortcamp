@@ -306,3 +306,11 @@ body[class*="theme-"]::before{display:none}body[class*="theme-"]::after{opacity:
 
 /* Full-board atmosphere lives behind the UI, never above mission cards. */
 .board-regional-backdrop{position:fixed;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;contain:strict}.board-regional-backdrop[hidden]{display:none}.shell{position:relative;z-index:1}body.board-vfx-active::after{display:none}
+
+/* Let the viewport atmosphere show through panel surfaces without crossing text. */
+body.board-vfx-active .rank-board{background:color-mix(in srgb,var(--panel) 38%,transparent)}
+body.board-vfx-active .guild-contract{background:radial-gradient(ellipse at 100% 0,color-mix(in srgb,var(--accent) 6%,transparent),transparent 60%),linear-gradient(150deg,color-mix(in srgb,var(--panel2) 88%,transparent),color-mix(in srgb,var(--panel) 82%,transparent))}
+body.board-vfx-active .guild-board-event{background:radial-gradient(ellipse at 85% 0,color-mix(in srgb,var(--accent) 8%,transparent),transparent 55%),linear-gradient(115deg,color-mix(in srgb,var(--panel2) 80%,transparent),color-mix(in srgb,var(--panel) 72%,transparent))}
+/* The full-board renderer replaces the old small CSS scene and its dragging trail. */
+body.board-vfx-active .guild-event-scene,body.board-vfx-active .guild-event-particles{display:none}
+body.board-vfx-active .event-arcane .guild-event-art:after{display:none}

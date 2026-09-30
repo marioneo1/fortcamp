@@ -1,10 +1,10 @@
 // Authoring values are pixels / seconds in logical viewport coordinates.
 // V3 emitter configurations: no dependency on the legacy visual editor format.
 const fade=peak=>({type:'alpha',config:{alpha:{list:[{time:0,value:0},{time:.14,value:peak},{time:.7,value:peak*.75},{time:1,value:0}]}}});
-function layer(name,textures,rect,{count=20,life=[9,15],size=[10,20],velocity=[4,14,8,20],sway=12,spin=20,alpha=.4,grow=1,frequency}={}){
+function layer(name,textures,rect,{count=20,life=[9,15],size=[10,20],velocity=[4,14,8,20],sway=12,spin=20,alpha=.4,grow=1,frequency,tint='ffffff',blend='normal'}={}){
   return {name,config:{lifetime:{min:life[0],max:life[1]},frequency:frequency||life[1]/count*.72,maxParticles:count,emitterLifetime:-1,pos:{x:0,y:0},emit:true,autoUpdate:false,behaviors:[
     {type:'spawnShape',config:{type:'rect',data:{x:rect.x,y:rect.y,w:rect.width,h:rect.height}}},
-    {type:'textureRandom',config:{textures}},fade(alpha),
+    {type:'textureRandom',config:{textures}},fade(alpha),{type:'colorStatic',config:{color:tint}},{type:'blendMode',config:{blendMode:blend}},
     {type:'fortcampWind',config:{size,velocity,sway,spin,grow}},
   ]}};
 }
@@ -12,24 +12,29 @@ export const PARTICLE_PRESETS=['beast','goblin','undead','arcane','starfall','ra
 export function createParticlePreset(theme,width,height){
   const field={x:-40,y:-60,width:width+80,height:height+100};
   const leaves=['leaf_oak_gold','leaf_maple_rust','leaf_birch_green','leaf_curled_brown'];
+  const smoke=['fx:smoke0','fx:smoke1','fx:smoke2','fx:smoke3'];
   if(theme==='beast')return [
-    layer('distant leaves',leaves,field,{count:22,life:[16,24],size:[10,17],velocity:[5,14,12,22],sway:14,spin:18,alpha:.28}),
-    layer('near leaves',leaves,field,{count:16,life:[12,20],size:[21,32],velocity:[10,24,24,42],sway:32,spin:48,alpha:.52}),
-    layer('windborne seeds',['grass_seeds','petal_ochre'],field,{count:6,life:[12,18],size:[9,17],velocity:[14,27,6,14],sway:14,spin:15,alpha:.24}),
+    layer('distant leaves',leaves,field,{count:26,life:[16,24],size:[13,20],velocity:[5,14,12,22],sway:14,spin:18,alpha:.4}),
+    layer('near leaves',leaves,field,{count:22,life:[12,20],size:[22,36],velocity:[10,24,24,42],sway:32,spin:48,alpha:.72}),
+    layer('windborne seeds',['grass_seeds','petal_ochre'],field,{count:10,life:[12,18],size:[10,19],velocity:[14,27,6,14],sway:14,spin:15,alpha:.36}),
   ];
   if(theme==='goblin')return [
-    layer('green embers',['ember_green'],field,{count:24,life:[5,10],size:[7,15],velocity:[-9,9,-38,-18],sway:8,spin:8,alpha:.5,grow:.3}),
-    layer('warm sparks',['ember_orange'],field,{count:8,life:[4,8],size:[5,10],velocity:[-14,14,-48,-24],sway:5,spin:10,alpha:.48,grow:.2}),
-    layer('camp smoke',['mist_gray'],{x:-100,y:height*.65,width:width+200,height:height*.4},{count:6,life:[16,24],size:[150,230],velocity:[4,16,-18,-7],sway:14,spin:4,alpha:.08,grow:1.6}),
+    layer('green embers',['ember_green'],field,{count:36,life:[5,10],size:[10,20],velocity:[-9,9,-38,-18],sway:8,spin:8,alpha:.7,grow:.3}),
+    layer('warm sparks',['ember_orange'],field,{count:14,life:[4,8],size:[7,15],velocity:[-14,14,-48,-24],sway:5,spin:10,alpha:.65,grow:.2}),
+    layer('camp smoke',smoke,field,{count:12,life:[16,24],size:[230,390],velocity:[8,20,-16,-5],sway:18,spin:5,alpha:.3,grow:1.7,tint:'b5c394'}),
   ];
   if(theme==='undead')return [
-    layer('ash',['ash_flake','ash_cluster'],field,{count:24,life:[12,20],size:[5,12],velocity:[4,15,9,21],sway:12,spin:30,alpha:.34}),
-    layer('low mist',['mist_gray','mist_violet'],field,{count:9,life:[18,28],size:[210,350],velocity:[5,12,-3,3],sway:10,spin:3,alpha:.13,grow:1.5}),
+    layer('ash',['ash_flake','ash_cluster'],field,{count:32,life:[12,20],size:[7,15],velocity:[4,15,9,21],sway:12,spin:30,alpha:.48}),
+    layer('low mist',smoke,field,{count:14,life:[18,28],size:[300,480],velocity:[8,18,-3,3],sway:18,spin:4,alpha:.4,grow:1.6,tint:'c1b6d6'}),
   ];
-  if(theme==='arcane')return [layer('arcane sparks',['alien_mote'],field,{count:18,life:[7,13],size:[5,11],velocity:[-4,4,-14,-5],sway:10,spin:5,alpha:.26,grow:.5})];
+  if(theme==='arcane')return [
+    layer('blue fireflies',['fx:mote'],field,{count:32,life:[7,13],size:[8,17],velocity:[12,28,-12,8],sway:38,spin:0,alpha:.75,grow:.45,tint:'82ceff',blend:'add'}),
+    layer('violet glimmers',['fx:beam'],field,{count:16,life:[4,9],size:[22,48],velocity:[-24,-10,-9,9],sway:22,spin:18,alpha:.65,grow:.5,tint:'b89cff',blend:'add'}),
+    layer('arcane vapor',smoke,field,{count:10,life:[14,23],size:[250,430],velocity:[8,16,-3,5],sway:20,spin:5,alpha:.3,grow:1.5,tint:'8c9fe0'}),
+  ];
   if(theme==='starfall')return [
-    layer('alien sparks',['alien_mote'],field,{count:18,life:[9,16],size:[8,18],velocity:[-8,8,-13,-4],sway:16,spin:8,alpha:.37,grow:.6}),
-    layer('alien haze',['alien_ribbon'],field,{count:5,life:[20,30],size:[160,280],velocity:[-5,5,-3,3],sway:8,spin:3,alpha:.11,grow:1.3}),
+    layer('alien sparks',['alien_mote'],field,{count:30,life:[9,16],size:[12,25],velocity:[-8,8,-13,-4],sway:24,spin:8,alpha:.62,grow:.6}),
+    layer('alien haze',smoke,field,{count:10,life:[20,30],size:[280,470],velocity:[-9,9,-3,3],sway:18,spin:4,alpha:.35,grow:1.5,tint:'b48ddc'}),
   ];
   if(theme==='rain')return [layer('rain',['rain_streaks'],field,{count:80,life:[1.2,2.2],size:[5,9],velocity:[-100,-75,380,500],sway:0,spin:0,alpha:.32})];
   if(theme==='snow')return [

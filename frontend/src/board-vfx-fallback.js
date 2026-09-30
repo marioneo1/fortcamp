@@ -22,19 +22,18 @@ export function createBoardVFX({document=globalThis.document,window=globalThis.w
     if(theme==='beast')sprite('wind_curl',width*.88,height*.5+Math.sin(t*.08)*45,320,.09);
     if(theme==='goblin')sprite('dust_gold',width*.1,height*.7,310,.1);
     if(theme==='arcane'){
-      sprite('glyph_cyan',width*.1,height*.32,215,.3+Math.sin(t*.4)*.06,t*.035);
-      sprite('glyph_violet',width*.9,height*.72,190,.24+Math.sin(t*.4+2)*.06,-t*.025);
-      sprite('arcane_ribbon',width*.92,height*.25,310,.14,Math.sin(t*.06)*.1);
+      for(let k=0;k<3;k++){
+        ctx.beginPath();for(let i=0;i<=40;i++){const u=i/40,x=u*width,y=height*(.18+k*.34)+Math.sin(u*6+t*.32+k*2.3)*height*.065;i?ctx.lineTo(x,y):ctx.moveTo(x,y)}
+        ctx.strokeStyle=`rgba(${color},.08)`;ctx.lineWidth=18;ctx.stroke();ctx.strokeStyle=`rgba(${color},.18)`;ctx.lineWidth=3;ctx.stroke();
+      }
     }
     if(theme==='starfall'){
       sprite('alien_ribbon',width*.1,height*.65,330,.23,Math.sin(t*.08)*.12);
       sprite('alien_ribbon',width*.9,height*.25,260,.16,-t*.015);
-      const phase=(t%19)/19;
-      if(phase>.3&&phase<.5){const a=(phase-.3)/.2;sprite('alien_comet',width*(.95-a*.78),height*(.04+a*.6),125,Math.sin(a*Math.PI)*.6)}
     }
     if(theme==='undead'){for(let i=0;i<3;i++)glow(width*(.1+i*.38)+Math.sin(t*.08+i)*70,height*(.25+i*.26),Math.min(width*.3,330),color,.12+Math.sin(t*.2+i)*.025)}
-    if(theme==='arcane'){for(let i=0;i<2;i++){const x=width*(i?.87:.12),y=height*(.3+i*.4);glow(x,y,220,color,.12+Math.sin(t*.5+i)*.05);ctx.save();ctx.translate(x,y);ctx.rotate(t*.025*(i?1:-1));ctx.strokeStyle=`rgba(${color},.16)`;ctx.lineWidth=1;ctx.beginPath();ctx.arc(0,0,70+Math.sin(t*.4)*7,0,Math.PI*2);ctx.stroke();for(let k=0;k<6;k++){ctx.rotate(Math.PI/3);ctx.strokeRect(76,-3,7,7)}ctx.restore()}}
-    if(theme==='starfall'){glow(width*.18,height*.65,310,color,.14+Math.sin(t*.3)*.04);glow(width*.86,height*.2,260,'83,189,201',.075+Math.sin(t*.24)*.025);const phase=(t%17)/17;if(phase>.3&&phase<.46){const a=(phase-.3)/.16,x=width*(.9-a*.65),y=height*(.03+a*.45);ctx.save();ctx.globalAlpha=Math.sin(a*Math.PI)*.4;const trail=ctx.createLinearGradient(x-85,y-40,x,y);trail.addColorStop(0,`rgba(${color},0)`);trail.addColorStop(1,`rgba(${color},.9)`);ctx.strokeStyle=trail;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x-85,y-40);ctx.lineTo(x,y);ctx.stroke();ctx.restore()}}
+    if(theme==='arcane'){for(let i=0;i<2;i++)glow(width*(i?.87:.12),height*(.3+i*.4),220,color,.12+Math.sin(t*.5+i)*.05)}
+    if(theme==='starfall'){glow(width*.18,height*.65,310,color,.14+Math.sin(t*.3)*.04);glow(width*.86,height*.2,260,'83,189,201',.075+Math.sin(t*.24)*.025);const phase=(t%14)/14;if(phase>.3&&phase<.38){const a=(phase-.3)/.08,x=width*(1.05-a*1.15),y=height*(.08+a*.6);ctx.save();const trail=ctx.createLinearGradient(x+125,y-60,x,y);trail.addColorStop(0,`rgba(${color},0)`);trail.addColorStop(1,`rgba(${color},.6)`);ctx.strokeStyle=trail;ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(x+125,y-60);ctx.lineTo(x,y);ctx.stroke();glow(x,y,6,'232,241,255',.8);ctx.restore()}}
     for(const p of particles){
       const falling=theme==='beast'||theme==='undead',travel=t*p.speed*(theme==='beast'?16:theme==='undead'?9:5),y=((p.y*height+(falling?travel:-travel))%height+height)%height,x=((p.x*width+Math.sin(t*.3+p.phase)*(theme==='beast'?34:12)+(theme==='beast'?t*p.speed*8:0))%width+width)%width;
       ctx.save();ctx.translate(x,y);ctx.globalAlpha=theme==='beast'?.4:theme==='undead'?.45:.28+.13*Math.sin(t*.5+p.phase);ctx.fillStyle=`rgb(${color})`;

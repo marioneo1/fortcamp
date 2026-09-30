@@ -4,7 +4,9 @@ let sequence=0;const pending=new Map(),errors=[];ws.onmessage=e=>{const m=JSON.p
 const call=(method,params={})=>new Promise((resolve,reject)=>{const id=++sequence;pending.set(id,{resolve,reject});ws.send(JSON.stringify({id,method,params}))});
 const evaluate=async expression=>{const r=await call('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value};
 await call('Runtime.enable');await call('Page.enable');await call('Emulation.setDeviceMetricsOverride',{width:1440,height:1100,deviceScaleFactor:1,mobile:false});await call('Page.navigate',{url:'http://127.0.0.1:8766/staging-ui/mission-board-v1/board-preview.html'});
-await new Promise(r=>setTimeout(r,1800));
+for(let i=0;i<120;i++){if(await evaluate('window.previewReady===true'))break;await new Promise(r=>setTimeout(r,100))}
+if(!await evaluate('window.previewReady===true'))throw Error('Fixture board did not finish module initialization');
+if(!await evaluate(`(async()=>{const icons=[...document.images].filter(i=>i.src.includes('/assets/mission-board-v1/'));await Promise.all(icons.map(i=>i.decode().catch(()=>{})));return icons.length>0&&icons.every(i=>i.naturalWidth>0)})()`))throw Error('Board artwork did not load');
 console.log('Ready',await evaluate('window.previewReady'), 'errors',errors);
 console.log('Layout',await evaluate(`({cards:document.querySelectorAll('.guild-contract').length,icons:[...document.images].filter(i=>i.src.includes('mission-board-v1')).every(i=>i.complete&&i.naturalWidth>0),overflow:document.documentElement.scrollWidth>innerWidth})`));
 const normal=await call('Page.captureScreenshot',{format:'png'});writeFileSync('staging-ui/mission-board-v1/board-desktop.png',Buffer.from(normal.data,'base64'));
@@ -41,9 +43,18 @@ await evaluate(`window.vfxHash=()=>window.previewBackdrop.pixelSignature();windo
 for(const id of ['goblin_warhost','ashen_procession','arcane_convergence','great_beast_tide','starfall_omen']){
   await evaluate(`window.previewEvent('${id}')`);await check(`waitForParticles()`,'Pixi renderer ready for '+id);const before=await evaluate('vfxHash()');await new Promise(r=>setTimeout(r,220));await check(`vfxHash()!==${before}`,'background visibly animates for '+id);
   await check(`previewBackdrop.diagnostics().particles>0&&previewBackdrop.diagnostics().particles<=80`,'bounded live emitter particles for '+id);
+  if(id==='arcane_convergence'){
+    await check(`previewBackdrop.diagnostics().ribbons===3&&previewBackdrop.diagnostics().ornaments===0`,'arcane uses deforming currents without glyph stamps');
+    await check(`getComputedStyle(document.querySelector('.guild-event-scene')).display==='none'`,'old emblem scene is replaced by viewport atmosphere');
+    await evaluate('window.scrollTo(0,0)');const shot=await call('Page.captureScreenshot',{format:'png'});writeFileSync('staging-ui/mission-board-v1/board-arcane-background.png',Buffer.from(shot.data,'base64'));
+  }
+  if(id==='starfall_omen'){
+    await check(`(async()=>{for(let i=0;i<120;i++){if(previewBackdrop.diagnostics().comet?.flights>0)return true;await new Promise(r=>setTimeout(r,50))}return false})()`,'fast shooting star actually launches');
+    await new Promise(r=>setTimeout(r,150));const shot=await call('Page.captureScreenshot',{format:'png'});writeFileSync('staging-ui/mission-board-v1/board-starfall-background.png',Buffer.from(shot.data,'base64'));
+  }
 }
-await check(`performance.getEntriesByType('resource').filter(e=>e.name.includes('/vfx/environment-v1/')).length>=18`,'regional painted textures are requested lazily across event previews');
-await check(`(async()=>{const {vfxTextures}=await import('/frontend/src/vfx-textures.js');const {createParticlePreset,PARTICLE_PRESETS}=await import('/frontend/src/particle-presets.js');return PARTICLE_PRESETS.filter(n=>!['rain','snow'].includes(n)).flatMap(n=>createParticlePreset(n,1440,1100)).flatMap(p=>p.config.behaviors.find(b=>b.type==='textureRandom').config.textures).every(name=>vfxTextures.get(name)?.naturalWidth>0)})()`,'every emitter texture loads successfully');
+await check(`performance.getEntriesByType('resource').filter(e=>e.name.includes('/vfx/environment-v1/')).length>=11`,'regional painted textures are requested lazily across event previews');
+await check(`(async()=>{const {vfxTextures}=await import('/frontend/src/vfx-textures.js');const {createParticlePreset,PARTICLE_PRESETS}=await import('/frontend/src/particle-presets.js');return PARTICLE_PRESETS.filter(n=>!['rain','snow'].includes(n)).flatMap(n=>createParticlePreset(n,1440,1100)).flatMap(p=>p.config.behaviors.find(b=>b.type==='textureRandom').config.textures).filter(n=>!n.startsWith('fx:')).every(name=>vfxTextures.get(name)?.naturalWidth>0)})()`,'every painted emitter texture loads successfully');
 for(const weather of ['rain','snow']){
   await evaluate(`previewWeather('${weather}')`);await check(`waitForParticles()`,'weather preset ready: '+weather);const before=await evaluate('vfxHash()');await new Promise(r=>setTimeout(r,220));await check(`vfxHash()!==${before}`,'weather preset animates: '+weather);
   await check(`previewBackdrop.diagnostics().particles>0&&previewBackdrop.diagnostics().particles<=80`,'bounded weather particles: '+weather);
