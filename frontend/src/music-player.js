@@ -8,8 +8,9 @@ export const MUSIC_PLAYLISTS={
   defense:['defense_1','defense_2'].map(id=>({id,url:`${ROOT}mureka-import-v1/${id}.mp3`})),
   undead:['undead_1','undead_2'].map(id=>({id,url:`${ROOT}mureka-import-v1/${id}.mp3`})),
   investigation:['investigation_1','investigation_2'].map(id=>({id,url:`${ROOT}mureka-import-v1/${id}.mp3`})),
+  ...Object.fromEntries(['goblin_warhost','ashen_procession','arcane_convergence','great_beast_tide','starfall_omen'].map(event=>[event,[1,2].map(n=>({id:`${event}_${n}`,url:`${ROOT}regional-events-v1/${event}_${n}.mp3`}))])),
 };
-export function musicContext(tab,battle,scene){
+export function musicContext(tab,battle,scene,event){
   if(battle){
     if(MUSIC_PLAYLISTS[battle.music_theme])return battle.music_theme;
     const encounter=battle.encounter_id||'',enemies=Object.values(battle.units||{}).filter(u=>u.team==='enemy');
@@ -19,11 +20,12 @@ export function musicContext(tab,battle,scene){
     const goblins=/goblin/i.test(encounter)||enemies.some(u=>/^(goblin|hobgoblin)$/i.test(u.race||''));return goblins?'goblin':'combat';
   }
   if(scene?.mission_form==='investigation')return 'investigation';
-  return tab==='base'?'base':'board';
+  return tab==='base'?'base':MUSIC_PLAYLISTS[event?.id]?event.id:'board';
 }
-export function musicTransitionPolicy(tab,battle,scene,currentContext){
-  const context=musicContext(tab,battle,scene);
-  const delayMs=battle||!currentContext?0:context==='investigation'?8000:!['board','base'].includes(currentContext)?5000:700;
+export function musicTransitionPolicy(tab,battle,scene,currentContext,event){
+  const context=musicContext(tab,battle,scene,event);
+  const encounterContexts=['combat','goblin','boss','defense','undead','investigation'];
+  const delayMs=battle||!currentContext?0:context==='investigation'?8000:encounterContexts.includes(currentContext)?5000:700;
   return {context,delayMs};
 }
 export function createMusicPlayer(mixer,{AudioClass=globalThis.Audio,now=()=>performance.now(),schedule=fn=>setInterval(fn,50),cancel=clearInterval,playlists=MUSIC_PLAYLISTS}={}){

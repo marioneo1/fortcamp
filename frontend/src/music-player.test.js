@@ -72,3 +72,15 @@ test('major boss and defense override faction music while ordinary undead use th
   assert.equal(musicContext('missions',{encounter_id:'goblin_warcamp',complication_boss:'chief'}),'boss');
   assert.equal(musicTransitionPolicy('private',null,null,'boss').delayMs,5000);
 });
+
+test('regional browsing follows events while base, investigation and battles keep context priority',()=>{
+  for(const id of ['goblin_warhost','ashen_procession','arcane_convergence','great_beast_tide','starfall_omen']){
+    assert.equal(musicContext('missions',null,null,{id}),id);
+    assert.equal(musicContext('base',null,null,{id}),'base');
+    assert.equal(musicContext('missions',null,{mission_form:'investigation'},{id}),'investigation');
+    assert.equal(musicContext('missions',{encounter_id:'goblin_warcamp'},null,{id}),'goblin');
+    assert.equal(musicTransitionPolicy('missions',null,null,id,{id}).delayMs,700);
+    assert.equal(musicTransitionPolicy('missions',null,null,'boss',{id}).delayMs,5000);
+  }
+  assert.equal(musicContext('missions',null,null,{id:'general'}),'board');
+});

@@ -139,3 +139,12 @@ After the first pack sounds coherent in game, generate ranged release, arrow imp
 - Normalize related sounds together rather than maximizing every file individually.
 
 ElevenLabs currently supports individual sound generation, four variations per generation in its web interface, non-looping WAV downloads, fixed or automatic durations, and prompt influence. Its documentation recommends generating separate effects and combining or timing them in the game instead of requesting complex sequences.
+
+
+## Regional ambience v1
+
+Use `tools/generate_event_ambience.py` for the seven authored environmental accents. This is a separate pack from the action/mission cues above. Exact prompts, source MP3s, API-reported cost, and technical checks are preserved under `staging-sfx/event-ambience-v1`. The original generation made seven requests (64 seconds requested total); receipt reports 640 credits. Existing source audio is reused; pending/uncertain requests block automatic paid retries. `--process-only` prevents generation. No new batch launcher is needed.
+
+The shared palette is distant fantasy environmental detail with softened treble, no music or instruments, no intelligible speech, no screams or jump scares. Goblin chatter/camp activity, dragging undead procession, arcane disturbance, beast call/passage, and damaged Starfall machinery play sparsely; runtime does not continuously loop them. Preview at `staging-sfx/event-ambience-v1/LISTEN.html` or the Sound settings ambience link. The Ambient Sounds slider is independent of the other channels.
+
+API reference: https://elevenlabs.io/docs/api-reference/text-to-sound-effects/convert

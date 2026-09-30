@@ -11,7 +11,7 @@ Use this file for pending work and GAMEPLAY_VISION.md for standing design rules.
 
 ## Next priorities
 
-1. **Music pilot:** 15 tracks are installed with context playlists, three-second crossfades, brief-popup protection, and resuming prior background tracks. Regional event themes await user generation in Mureka from saved prompts. Keep one musical identity across arrangements. Verify actual loop boundaries and perceived loudness, not just file peaks.
+1. **Music pilot:** 25 tracks are installed with context playlists, three-second crossfades, brief-popup protection, and resuming prior background tracks. All five regional events now have two Mureka tracks each. Seven occasional ambience clips are installed with a separate Ambient Sounds channel; subjective listening refinement remains open. Keep one musical identity across arrangements. Verify actual loop boundaries and perceived loudness, not just file peaks.
 2. **Selection responsiveness:** profile the actual Discord activity and browser, including party selection, defense deployment, redraws, polling, image decoding, and request latency. Measure before choosing a fix. Avoid rebuilding unchanged panels and losing input state. User reports perceived frame drops even outside combat.
 3. **Equipment and inventory UX — catalogued, deferred:** support large inventories, search/filter/sort, clear equipped state and compatible slots, readable comparisons and granted effects, quick equip/unequip, consistent scrolling and focus. Do not redesign as part of the current audio pass.
 4. **Mission-board visual direction — catalogued, deferred:** consider consistent generated icons, restrained backgrounds and event VFX. Preserve readability, navigation, rank grouping, private leads, and reduced-motion behavior; decorative work must not worsen performance.
@@ -33,3 +33,7 @@ Use this file for pending work and GAMEPLAY_VISION.md for standing design rules.
 ## Development workflow
 
 Use local Git for code, tests, documentation, and build configuration. Keep secrets, player databases, generated art/audio, and build outputs outside the baseline. Asset source folders need their own backups; Git exclusions do not delete files. The origin remote is https://github.com/marioneo1/fortcamp.git; the user authorized public code publication. Generated media and player data are excluded.
+
+## Regional audio follow-up
+
+All ten regional uploads are installed, bringing the listening library to 25 tracks. Seven sparse ambience accents are generated and installed. Review their listening comfort in real play; do not add a continuous bed or more clips until the current mix has been heard. Ambient volume is separate from music and battle feedback.

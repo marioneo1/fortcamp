@@ -25,3 +25,8 @@ test('preferences survive reload and active sounds follow volume and mute immedi
   mixer.update({muted:false});assert.equal(audio.volume,.1);
   audio.dispatchEvent(new Event('ended'));mixer.update({master:0});assert.equal(audio.volume,.1);
 });
+
+test('older saved audio settings receive a separate ambient default',()=>{
+  const mixer=createAudioMixer({getItem:()=>JSON.stringify({master:.5,music:.4,ui:.3,battle:.8}),setItem:()=>{}});
+  assert.equal(mixer.settings.ambient,AUDIO_DEFAULTS.ambient);mixer.update({ambient:0});assert.equal(mixer.volume('ambient'),0);assert.equal(mixer.volume('music'),.2);
+});

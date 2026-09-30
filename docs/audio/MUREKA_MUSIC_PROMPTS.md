@@ -2,7 +2,7 @@
 
 Paste one complete prompt per generation. Use instrumental-only and roughly two minutes if the website offers those controls. Each prompt preserves the warm, restrained fantasy palette; source tunes should remain original. Preserve downloads before trimming or fading. Fortcamp can apply a gentle three-second ending and match loudness after import.
 
-Already generated with ElevenLabs: four guild-board tracks, Hearth & Camp, Roads Under Pressure, and Goblin Warcamp. No further ElevenLabs music is being generated in this pass. Two user-generated tracks for each investigation, undead, defense, and boss arrangement below are now imported. Keep those prompts for future variations. The regional event prompts remain ungenerated.
+Already generated with ElevenLabs: four guild-board tracks, Hearth & Camp, Roads Under Pressure, and Goblin Warcamp. No further ElevenLabs music is being generated in this pass. Two user-generated tracks for each investigation, undead, defense, and boss arrangement below are now imported. Keep those prompts for future variations. Both variants for every regional event are now generated and imported.
 
 ## Investigation and ruins
 
@@ -20,9 +20,9 @@ Original instrumental fantasy RPG defense-battle music, approximately two minute
 
 Original instrumental fantasy RPG major-boss battle music, approximately two minutes at 118 BPM. A formidable opponent, tense decisions and a determined party. Insistent lower-string rhythm, a memorable mid-register melodic hook, bass clarinet, deep rounded drums, restrained piano and plucked strings. More intense than ordinary combat, but controlled and comfortable during a long tactical fight. Build tension through harmony and rhythmic variation rather than loudness or shrillness. No screamed brass, high violin squeals, vocals, choir, harsh cymbals, chiptune, EDM drops or relentless trailer crescendos. Bring the hook back clearly; end with a restrained phrase that can fade into the next track.
 
-## Regional event music ? remaining generation
+## Regional event music ? generated and imported
 
-These accompany the regional contract board and ordinary browsing, rather than replacing every battle track. General / Open Contracts uses the existing guild rotation. Generate each theme separately, instrumental only, about two to three minutes; keep the ending gentle for a three-second fade. Event rarity should come from the game, not constant musical escalation.
+Two user-generated variants of every theme below are installed in regional-events-v1. These accompany the regional contract board and ordinary browsing, rather than replacing every battle track. General / Open Contracts uses the existing guild rotation. Generate each theme separately, instrumental only, about two to three minutes; keep the ending gentle for a three-second fade. Event rarity should come from the game, not constant musical escalation.
 
 ### The Green Warhost
 

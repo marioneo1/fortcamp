@@ -21,8 +21,18 @@ UPLOADS=[
 ]
 
 
+REGIONAL_UPLOADS=[
+    (filename+suffix+'.mp3',identifier+'_'+str(index),name+' '+str(index),identifier)
+    for filename,identifier,name in [('Green Warhost','goblin_warhost','The Green Warhost'),('The Ashen Procession','ashen_procession','The Ashen Procession'),('Arcane Convergence','arcane_convergence','Arcane Convergence'),('The Great Beast Tide','great_beast_tide','The Great Beast Tide'),('Starfall Omen','starfall_omen','Starfall Omen')]
+    for index,suffix in [(1,''),(2,' (1)')]
+]
+
+
 def main():
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--reprocess',action='store_true');args=parser.parse_args()
+    global PACK,SOURCES,FINAL,UPLOADS
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--reprocess',action='store_true');parser.add_argument('--pack',choices=['encounters','regions'],default='encounters');args=parser.parse_args()
+    if args.pack=='regions':
+        PACK='regional-events-v1';SOURCES=ROOT/'staging-music'/PACK/'originals';FINAL=ROOT/'frontend/public/assets/music'/PACK;UPLOADS=REGIONAL_UPLOADS
     SOURCES.mkdir(parents=True,exist_ok=True);FINAL.mkdir(parents=True,exist_ok=True)
     processing.FINAL=FINAL
     report_path=ROOT/'staging-music'/PACK/'import_report.json'

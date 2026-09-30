@@ -118,3 +118,12 @@ Runtime playlists distinguish major bosses, defense, undead, goblins, ordinary c
 Organized design, art, audio, reference, and historical documents under docs. Root DOCUMENTATION.md provides the index; existing portrait and SFX tool-dependent guide locations remain unchanged. Legacy portrait prompts and the original README are preserved. Corrected prison backlog status to reflect implemented selling, swaps, and individual stockade clocks. Regional prompts cover all five actual events, including hostile Starfall impacts.
 
 Validation: all 20 frontend tests and the production build passed; import and library scripts compile. Markdown links and Git history were checked before public publication. The user authorized uploading code to marioneo1/fortcamp; secrets, player data, generated media, and build outputs remain excluded. No new paid generation requests were made.
+
+
+## September 30: regional playlists and sparse ambience
+
+Imported ten Mureka regional uploads, two per event, with preserved originals and source hashes. Regional browsing now chooses the actual event playlist; base, interactive investigations, and encounter-specific battle music retain precedence. The 25-track listening library includes regional filters.
+
+Generated seven environmental accents (64 requested seconds; API receipts total 640 credits): goblin chatter/camp, ash procession, arcane disturbance, beast call/passage, and damaged alien machinery. Stored originals and exact prompts separately. Runtime uses one clip at a time, delayed initial play, randomized 45?80-second gaps, variant alternation, context fades, hidden-page suspension, missing-file suppression, and a separate Ambient Sounds channel. No continuous ambience bed is used. Auditions are linked in Sound settings. Technical level checks passed; subjective listening review remains necessary.
+
+Validation: 26 frontend tests passed, including ambience gesture/sparsity/alternation, fade cancellation, mute/background behavior, missing-file suppression, regional playlist priority, and settings migration. Production build and source-script compilation passed. Music imports make no API calls; new sound-effect generation was limited to the seven requested accents.

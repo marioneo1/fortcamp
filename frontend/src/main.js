@@ -1,3 +1,4 @@
+import {createAmbientPlayer} from './ambient-player.js';
 import {createMusicPlayer,musicTransitionPolicy} from './music-player.js';
 import {mountDecisionScene} from './mission-scene-ui.js';
 import {createAudioMixer,mountAudioSettings,audioCategory} from './audio-settings.js';
@@ -32,10 +33,11 @@ let missionClaimPending=false,activeDecisionMission=null;
 let audioStorage;try{audioStorage=window.localStorage}catch{}
 const audioMixer=createAudioMixer(audioStorage);
 const musicPlayer=createMusicPlayer(audioMixer);
-function syncMusic(){const request=musicTransitionPolicy($('.tabs button.active')?.dataset.tab,activeBattleView,activeDecisionMission,musicPlayer.currentContext);musicPlayer.setContext(request.context,{delayMs:request.delayMs})}
-window.addEventListener('pointerdown',()=>musicPlayer.unlock());
-window.addEventListener('keydown',()=>musicPlayer.unlock());
-document.addEventListener('visibilitychange',()=>musicPlayer.suspend(document.hidden));
+const ambientPlayer=createAmbientPlayer(audioMixer,{context:()=>musicPlayer.currentContext});
+function syncMusic(){const request=musicTransitionPolicy($('.tabs button.active')?.dataset.tab,activeBattleView,activeDecisionMission,musicPlayer.currentContext,pool?.event);musicPlayer.setContext(request.context,{delayMs:request.delayMs})}
+window.addEventListener('pointerdown',()=>{musicPlayer.unlock();ambientPlayer.unlock()});
+window.addEventListener('keydown',()=>{musicPlayer.unlock();ambientPlayer.unlock()});
+document.addEventListener('visibilitychange',()=>{musicPlayer.suspend(document.hidden);ambientPlayer.suspend(document.hidden)});
 let closeAudioSettings=null;
 
 const esc=(v='')=>String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -225,7 +227,7 @@ function refreshDynamic(){
     const previous=new Map(activeMissions.map(m=>[m.id,m.status]));
     const [p,pc,a]=await Promise.all([rawApi('/api/missions/pool'),rawApi('/api/private-contracts'),rawApi('/api/missions/active')]);
     const s=await rawApi('/api/state');
-    pool=p;
+    pool=p;syncMusic();
     privateContracts=pc.missions||[];
     const incoming=a.missions;
     if(dynamicReady){
