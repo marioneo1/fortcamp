@@ -11,6 +11,8 @@ Use the feature backlog for current status, the gameplay vision for standing rul
 
 ## Gameplay design and reference
 
+- [Mission Board UI proposal](docs/design/MISSION_BOARD_UI_PLAN.md): proposed art, navigation, card hierarchy, and restrained effects; awaiting review.
+
 - [Mission encounter architecture](docs/design/MISSION_ENCOUNTER_ARCHITECTURE.md): mission forms, choices, battles, and Private Contracts.
 - [Combat design](docs/design/COMBAT_DESIGN.md): implemented foundation alongside future combat proposals.
 - [Building design draft](docs/design/BUILDINGS_DESIGN_WIP.md): proposals requiring further implementation.

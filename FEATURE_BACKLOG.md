@@ -37,3 +37,7 @@ Use local Git for code, tests, documentation, and build configuration. Keep secr
 ## Regional audio follow-up
 
 All ten regional uploads are installed, bringing the listening library to 25 tracks. Seven sparse ambience accents are generated and installed. Review their listening comfort in real play; do not add a continuous bed or more clips until the current mix has been heard. Ambient volume is separate from music and battle feedback.
+
+## Mission Board art proposal and guild ambience
+
+The board redesign is proposed in docs/design/MISSION_BOARD_UI_PLAN.md; the user requested a plan before rebuilding. No generated UI sheet or board layout changes have been made yet. Guild chatter is installed now as an eighth ambience clip, restricted to the ordinary Mission Board and governed by the existing Ambient Sounds slider.

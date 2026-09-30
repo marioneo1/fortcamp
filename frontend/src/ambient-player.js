@@ -1,9 +1,11 @@
 const ROOT='/assets/sfx/ambient/';
 export const AMBIENCE={
+  guild:['guild_chatter'],
   goblin_warhost:['goblin_chatter','goblin_camp'],goblin:['goblin_chatter','goblin_camp'],
   ashen_procession:['ashen_procession'],undead:['ashen_procession'],
   arcane_convergence:['arcane_disturbance'],great_beast_tide:['beast_call','beast_passage'],starfall_omen:['starfall_machine'],
 };
+export function ambientContext(musicContext,tab){return musicContext==='board'?(tab==='missions'?'guild':null):musicContext}
 export function createAmbientPlayer(mixer,{context=()=>null,AudioClass=globalThis.Audio,now=()=>performance.now(),random=Math.random,schedule=fn=>setInterval(fn,250),cancel=clearInterval}={}){
   let unlocked=false,suspended=false,disposed=false,region=null,active=null,due=Infinity;
   const failed=new Set(),last=new Map();

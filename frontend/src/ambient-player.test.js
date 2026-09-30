@@ -1,6 +1,6 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
-import {createAmbientPlayer} from './ambient-player.js';
+import {createAmbientPlayer,ambientContext} from './ambient-player.js';
 import {createAudioMixer} from './audio-settings.js';
 class Audio extends EventTarget{
   static instances=[];
@@ -30,4 +30,13 @@ test('ambient mute, channel volume and hidden pages apply without catch-up burst
 });
 test('a missing ambience clip is skipped rather than retried repeatedly',async()=>{
   const s=setup();s.player.unlock();s.advance(0);s.advance(18000);Audio.instances[0].dispatchEvent(new Event('error'));s.advance(45000);assert.match(Audio.instances[1].src,/goblin_camp/);s.player.dispose();
+});
+
+test('guild chatter belongs only to the ordinary Mission Board and yields to events and battles',()=>{
+  assert.equal(ambientContext('board','missions'),'guild');
+  for(const tab of ['roster','private','base'])assert.equal(ambientContext('board',tab),null);
+  assert.equal(ambientContext('goblin_warhost','missions'),'goblin_warhost');
+  assert.equal(ambientContext('goblin','missions'),'goblin');
+  const s=setup();s.context('guild');s.player.unlock();s.advance(0);s.advance(18000);assert.match(Audio.instances[0].src,/guild_chatter/);
+  s.context(null);s.advance(0);s.advance(700);assert.equal(Audio.instances[0].paused,true);s.player.dispose();
 });

@@ -1,4 +1,4 @@
-import {createAmbientPlayer} from './ambient-player.js';
+import {createAmbientPlayer,ambientContext} from './ambient-player.js';
 import {createMusicPlayer,musicTransitionPolicy} from './music-player.js';
 import {mountDecisionScene} from './mission-scene-ui.js';
 import {createAudioMixer,mountAudioSettings,audioCategory} from './audio-settings.js';
@@ -33,7 +33,7 @@ let missionClaimPending=false,activeDecisionMission=null;
 let audioStorage;try{audioStorage=window.localStorage}catch{}
 const audioMixer=createAudioMixer(audioStorage);
 const musicPlayer=createMusicPlayer(audioMixer);
-const ambientPlayer=createAmbientPlayer(audioMixer,{context:()=>musicPlayer.currentContext});
+const ambientPlayer=createAmbientPlayer(audioMixer,{context:()=>ambientContext(musicPlayer.currentContext,$('.tabs button.active')?.dataset.tab)});
 function syncMusic(){const request=musicTransitionPolicy($('.tabs button.active')?.dataset.tab,activeBattleView,activeDecisionMission,musicPlayer.currentContext,pool?.event);musicPlayer.setContext(request.context,{delayMs:request.delayMs})}
 window.addEventListener('pointerdown',()=>{musicPlayer.unlock();ambientPlayer.unlock()});
 window.addEventListener('keydown',()=>{musicPlayer.unlock();ambientPlayer.unlock()});
