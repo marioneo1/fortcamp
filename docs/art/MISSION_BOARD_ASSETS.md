@@ -32,3 +32,7 @@ Following clarification that effects should fill the background rather than only
 The canvas renders at most 24 times per second, caps its width resolution at 1920 pixels and particle count at 38, and keeps animation state across unchanged polls. It stops on unrelated tabs, actual battle views, general events and hidden pages. Reduced motion uses a static frame and starts no animation loop. Event banners also have a more visible right-side scene and stronger emblem accents. No further image/audio generation was needed for these procedural effects.
 
 Browser verification compares canvas pixels across time for every event, checks a static frame under reduced motion, and checks that the ordinary board hides the canvas. Unit tests verify frame scheduling, polling stability, suspension, event disablement, and motion-preference changes. All 36 frontend tests and the production build passed.
+
+## Painted texture follow-up
+
+The procedural pass above is preserved as history. The board now draws extracted painted leaves, ash, mist, embers, glyphs and alien light from the new shared effects pack. See [Painted environmental effects](ENVIRONMENT_VFX_ASSETS.md) for source, stable filenames, extraction and future reuse. All 38 frontend tests, production build and browser checks passed.

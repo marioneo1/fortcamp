@@ -43,3 +43,5 @@ All ten regional uploads are installed, bringing the listening library to 25 tra
 The user approved the board proposal; the first art/layout pass is implemented. docs/design/MISSION_BOARD_UI_PLAN.md preserves the plan and docs/art/MISSION_BOARD_ASSETS.md records extraction and browser verification. Guild chatter is installed now as an eighth ambience clip, restricted to the ordinary Mission Board and governed by the existing Ambient Sounds slider.
 
 Regional visual effects now include actual full-board backgrounds behind public/private cards, alongside the event emblem scene. Motion is bounded and suspended when hidden or outside the board. Further tuning should follow real Discord play rather than adding more layers blindly.
+
+The board backgrounds now use a generated 24-texture painted effects pack rather than only geometric particles. Shared lazy loading preserves stable asset names for future battle weather and skill effects. Those future systems remain deferred; see docs/art/ENVIRONMENT_VFX_ASSETS.md.
