@@ -16,7 +16,7 @@ ASSET_NAMES = [
 ]
 
 
-def remove_tiny_islands(image: Image.Image, threshold: int = 8) -> Image.Image:
+def remove_tiny_islands(image: Image.Image, threshold: int = 8, minimum_ratio: float = .001) -> Image.Image:
     """Discard microscopic disconnected crop flecks while keeping real accents."""
     mask = image.getchannel("A").point(lambda value: 255 if value > threshold else 0)
     pixels = mask.load()
@@ -43,7 +43,7 @@ def remove_tiny_islands(image: Image.Image, threshold: int = 8) -> Image.Image:
             components.append(component)
     if not components:
         return image
-    minimum_area = max(12, round(max(map(len, components)) * .001))
+    minimum_area = max(12, round(max(map(len, components)) * minimum_ratio))
     cleaned = image.copy()
     cleaned_pixels = cleaned.load()
     for component in components:

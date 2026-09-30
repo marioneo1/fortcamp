@@ -40,4 +40,4 @@ All ten regional uploads are installed, bringing the listening library to 25 tra
 
 ## Mission Board art proposal and guild ambience
 
-The board redesign is proposed in docs/design/MISSION_BOARD_UI_PLAN.md; the user requested a plan before rebuilding. No generated UI sheet or board layout changes have been made yet. Guild chatter is installed now as an eighth ambience clip, restricted to the ordinary Mission Board and governed by the existing Ambient Sounds slider.
+The user approved the board proposal; the first art/layout pass is implemented. docs/design/MISSION_BOARD_UI_PLAN.md preserves the plan and docs/art/MISSION_BOARD_ASSETS.md records extraction and browser verification. Guild chatter is installed now as an eighth ambience clip, restricted to the ordinary Mission Board and governed by the existing Ambient Sounds slider.

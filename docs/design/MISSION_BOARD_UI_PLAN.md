@@ -1,6 +1,6 @@
 # Mission Board visual and usability pass ? proposed
 
-This is a reviewable proposal, not an implemented board redesign. The user asked to see the plan before rebuilding. Existing mission logic, drops, disclosure rules, locked-rank concealment, assignment mechanics, and party selection remain authoritative.
+Implementation status: the user approved this proposal, and the first board pass is implemented. See ../art/MISSION_BOARD_ASSETS.md for the approved asset pack and preview tools. The proposals below preserve the original plan; broader follow-up remains in the root backlog. Existing mission logic, drops, disclosure rules, locked-rank concealment, assignment mechanics, and party selection remain authoritative.
 
 ## Direction
 
@@ -48,3 +48,10 @@ Do not animate every card or put moving effects behind body text. Keep effects n
 5. Review the actual game before expanding the art pack. New equipment/inventory art and full application-wide redesign remain separate work.
 
 Guild chatter is implemented separately now: one 16-second quiet room-murmur clip, occasional soft table/paper sounds, no intelligible dialogue. It uses the existing sparse ambience scheduler and Ambient Sounds slider, only on the ordinary Mission Board. Regional events and battle contexts take precedence.
+
+
+## First implemented pass
+
+Generated one transparent 24-icon atlas, extracted stable runtime files, and rebuilt public/private cards with clearer hierarchy and explicit Inspect actions. Added a shared contract navigation bar and an expedition shortcut. Search/filter chips, keyboard focus, collapsed ranks, hidden locked content, independent countdowns, and unchanged DOM during polling are preserved. Event headers use generated emblems, controlled animation, and regional colors. The old full-screen dotted effect is retired.
+
+Validation: 33 frontend tests, production build, and browser checks at 1440 and 390 pixels. Browser checks cover hidden rank details, card/input focus and collapse persistence, navigation, inspection, reduced motion, icon loading, and horizontal overflow. Live Discord responsiveness still needs real-session observation; the local preview does not claim server/network performance was profiled.

@@ -11,7 +11,7 @@ Use the feature backlog for current status, the gameplay vision for standing rul
 
 ## Gameplay design and reference
 
-- [Mission Board UI proposal](docs/design/MISSION_BOARD_UI_PLAN.md): proposed art, navigation, card hierarchy, and restrained effects; awaiting review.
+- [Mission Board UI design](docs/design/MISSION_BOARD_UI_PLAN.md): implemented first pass and preserved design plan.
 
 - [Mission encounter architecture](docs/design/MISSION_ENCOUNTER_ARCHITECTURE.md): mission forms, choices, battles, and Private Contracts.
 - [Combat design](docs/design/COMBAT_DESIGN.md): implemented foundation alongside future combat proposals.
@@ -25,6 +25,7 @@ Use the feature backlog for current status, the gameplay vision for standing rul
 - [Champion portrait tracker](CHAMPION_PORTRAIT_TRACKER.md): batch identities; tools require this root location.
 - [Male portrait status](docs/art/MALE_PORTRAIT_GENERATION_STATUS.md): deferred generation work.
 - [Map authoring](docs/art/BATTLE_MAP_AUTHORING.md) and [asset layering](docs/art/MAP_ASSET_LAYERING.md): scenario and terrain/prop rules.
+- [Mission Board assets](docs/art/MISSION_BOARD_ASSETS.md): approved icon pack, extraction, and browser preview.
 - [Combat UI assets](docs/art/COMBAT_UI_ASSET_GUIDE.md): icon and token assets.
 - [Music guide](docs/audio/MUSIC_GENERATION_GUIDE.md): palette, processing, and playback rules.
 - [Mureka prompts](docs/audio/MUREKA_MUSIC_PROMPTS.md): existing arrangements and remaining regional events.

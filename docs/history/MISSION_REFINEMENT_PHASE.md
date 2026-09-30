@@ -131,3 +131,12 @@ Validation: 26 frontend tests passed, including ambience gesture/sparsity/altern
 ## Guild ambience and proposed board redesign
 
 Generated one 16-second guild chatter clip (API receipt: 160 credits) and wired it exclusively to the ordinary Mission Board. Regional or combat ambience takes precedence; other general guild-music tabs do not play chatter. Preserved the source and reused it after correcting very quiet source gain before loudness normalization; no repeat generation was made. Current ambience pack has eight clips. A separate mission-board plan describes a 24-icon shared sheet, stronger card hierarchy, stable navigation/refresh state, and restrained event animation. No board rebuild or UI image generation occurred before proposal review.
+
+
+## September 30: painted contract board and stable refreshes
+
+Following user approval, generated one 6x4 transparent painted icon atlas using existing prop and combat UI artwork as style references. Extracted six rank seals, eight mission forms, five event emblems, and five utilities. Removed small disconnected row-border flecks, retained alpha, and normalized without aspect distortion. Original source, exact prompt, extraction preview, and board screenshots are preserved.
+
+Public and private work now share the Contracts destination with inner navigation and saved-expedition access. Cards separate premise, duration/party, role recommendations, possible reward previews, requirements, and explicit inspection. Rank groups retain unlock concealment and collapsed state. Filter controls remain reachable on desktop, active chips remove filters, and unchanged polling keeps the existing DOM and focus. Countdowns update independently. Event headers use generated emblems, regional colors and bounded motion; the old full-screen particle pattern is removed. Hidden-page and reduced-motion rules apply.
+
+Verification: all 33 frontend tests and the production build passed. Local browser checks verified 24 loading assets, no script errors, hidden locked names, focus and collapse retention through refresh, combined filtering, public/private navigation and Inspect buttons, reduced motion, and a one-column 390-pixel layout without overflow. The actual board renderer was used with representative safe fixtures; no live user game state was modified. Discord-specific network performance remains a later measured pass.

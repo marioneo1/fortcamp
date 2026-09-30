@@ -1,0 +1,25 @@
+# Painted Mission Board assets and preview
+
+The live board uses the 24-icon `mission-board-v1` pack. Its approved source is `staging-ui/mission-board-v1/guild_icons_6x4.png`, a 1536 x 1024 transparent atlas. References were the existing combat UI art and painted interactable props; character portraits were not used. The built-in image generator created one new atlas.
+
+Exact generation prompt: [icon atlas prompt](mission-board-icons-v1-prompt.md). Source art, extraction preview, and browser screenshots remain under `staging-ui/mission-board-v1`; they are local asset backups, not tracked public media.
+
+## Extraction and stable names
+
+Run the project Python with `tools/extract_mission_board_icons.py`. The tool measures actual canvas dimensions and divides into six columns and four rows. It preserves transparency, discards small disconnected border flecks, and normalizes each icon uniformly within a 256-square canvas. Neither axis is stretched independently. Default behavior re-extracts the same approved pack; a future replacement should use a new versioned source and runtime directory rather than overwrite this approved source.
+
+Runtime PNGs and crop manifest are in `frontend/public/assets/mission-board-v1`. The order is six rank seals, eight form icons, five event emblems, and five utility icons. Rank letters are rendered by the app over empty seal centers. Icons are decorative alongside readable labels and do not replace accessible action names.
+
+## Browser preview and verification
+
+`tools/build_mission_board_preview.py` builds representative safe fixture content using the actual board renderers and styles, with normal/event boards, roles, private leads, active missions, stacks, and locked ranks. The preview is `staging-ui/mission-board-v1/board-preview.html`. Serve it locally with `tools/serve_board_preview.py` (port 8766; loopback only). This preview does not run the game backend or access player data.
+
+`tools/board_browser_qa.mjs` is a maintainer check requiring a separate Chrome debugging session on port 9229 and the local preview server. It checks locked information, stable DOM/focus and collapse state during refreshes, filtering, private/public inspection, reduced motion, and narrow layout. It writes screenshots beside the preview. This is not an everyday game launcher.
+
+## Runtime behavior
+
+Contracts is the primary destination for Public Board and Private Contracts; the inner navigation also jumps to saved expeditions. Cards prioritize a short premise, known resolution/choice labels, duration, party size, recommendations, possible rewards, and requirements. Detailed contract inspection and party assignment use the existing planner. Locked rank details stay concealed; pure roll missions and hidden encounters are not relabeled as guaranteed combat.
+
+Search/filter controls remain reachable on desktop; active chips can remove individual filters. Unchanged renders retain their existing DOM, focus, and open rank sections rather than reconstructing them every five seconds. Real updates restore focused contract actions where possible. Countdown targets update independently.
+
+Regional palettes apply to the new cards and header. Seven small particles, a halo and optional arcane orbit provide bounded visual effects around the event emblem. The legacy full-screen dotted overlay has been retired. Reduced motion disables ornament animation, and hidden-page state pauses it. No additional audio or paid generation occurs when switching views.

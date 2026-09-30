@@ -23,17 +23,21 @@
 </section>
 <main id="game" class="hidden shell">
   <header class="topbar"><div><div class="eyebrow" id="identity-label"></div><h1>Fortcamp</h1></div><div id="resources" class="resources"></div><button id="sound-settings-open" class="sound-settings-button">Sound settings</button></header>
-  <nav class="tabs"><button data-tab="missions" class="active">Mission Board</button><button data-tab="private">Private Contracts</button><button data-tab="base">Base</button><button data-tab="roster">Roster</button></nav>
+  <nav class="tabs"><button data-tab="missions" class="active">Contracts</button><button data-tab="private">Private Contracts</button><button data-tab="base">Base</button><button data-tab="roster">Roster</button></nav>
   <section id="tab-missions" class="tab-panel">
-    <div class="section-heading"><div><div class="eyebrow">SERVER-WIDE POOL</div><h2>Mission Board <span id="mission-rank-label" class="rank-label"></span></h2><small id="pool-player-count"></small></div><div class="refresh-box">Refresh <b id="pool-countdown">--:--</b></div></div>
+    <div class="section-heading guild-board-heading"><div><div class="eyebrow">FORTCAMP GUILD</div><h2>Mission Board <span id="mission-rank-label" class="rank-label"></span></h2><small id="pool-player-count"></small></div><div class="refresh-box">Refresh <b id="pool-countdown">--:--</b></div></div>
+    <nav class="contract-navigation" aria-label="Contract navigation" data-contract-nav></nav>
     <div id="debug-pool-controls" class="debug-pool hidden"><label>DEBUG EVENT<select id="debug-pool-event"></select></label><button id="debug-force-refresh">Force New Mission Pool</button><button id="debug-goblin-battle">Test Goblin Battle</button><button id="debug-captive-cart">Test Captive Cart</button><button id="debug-smoke-signals">Test Investigation Ambush</button></div>
     <div id="mission-event-banner" class="event-banner hidden"></div>
-    <div id="active-missions" class="active-strip"></div>
+    <section id="expedition-section" class="expedition-section"><div id="active-missions" class="active-strip"></div></section>
     <div class="mission-board-tools"><label class="board-search"><span>Find a contract</span><input id="board-search" type="search" placeholder="Mission name, faction, story…" autocomplete="off"></label><label><span>Rank</span><select id="board-rank"><option value="">All ranks</option></select></label><label><span>Mission form</span><select id="board-form"><option value="">All forms</option></select></label><label><span>Sort</span><select id="board-sort"><option value="shortest">Shortest first</option><option value="name">Name A–Z</option></select></label><label class="board-available"><input id="board-available" type="checkbox" checked> Available only</label><button id="board-reset">Reset</button><small id="board-match-count"></small></div>
+    <div id="board-filter-chips" class="board-filter-chips" aria-label="Active mission filters"></div>
+    <div class="mission-guidance guild-board-guidance"><span aria-hidden="true">&#9671;</span><p>The guild marks expected combat. Other contracts can become dangerous through choices, failed rolls, or discoveries.</p></div>
     <div id="mission-grid" class="mission-grid"></div>
   </section>
   <section id="tab-private" class="tab-panel hidden">
     <div class="section-heading"><div><div class="eyebrow">PLAYER-OWNED LEADS</div><h2>Private Contracts</h2><small>Personal requests, faction invitations, and consequences only you can claim.</small></div></div>
+    <nav class="contract-navigation" aria-label="Contract navigation" data-contract-nav></nav>
     <div id="private-debug-controls" class="debug-pool hidden"><button id="debug-hedgerow-watch">Create Test Defense Contract</button></div>
     <div id="private-contract-grid" class="private-contract-grid"></div>
   </section>
@@ -45,5 +49,5 @@
 <div id="mission-modal" class="modal hidden"><div class="modal-card"><button class="modal-close" id="mission-close">×</button><div id="mission-detail"></div></div></div>
 <div id="portrait-lightbox" class="portrait-lightbox hidden" aria-modal="true" role="dialog"><button id="portrait-lightbox-close" aria-label="Close portrait">×</button><figure><img id="portrait-lightbox-image" alt=""><figcaption id="portrait-lightbox-name"></figcaption></figure></div>
 <dialog id="sound-settings-modal" aria-labelledby="audio-settings-title"><button id="sound-settings-close" class="modal-close" aria-label="Close sound settings">×</button><div id="sound-settings-content"></div></dialog>
-<script type="module" src="/src/main.js?v=20260930-music-playback-v1"></script>
+<script type="module" src="/src/main.js?v=20260930-guild-board-v1"></script>
 </body></html>
