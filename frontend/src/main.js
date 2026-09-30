@@ -1,3 +1,4 @@
+import {createBoardVFX} from './board-vfx.js';
 import {boardIcon,rankSeal,missionCard,eventHeader,filterChips,stableBoardHTML} from './mission-board-ui.js';
 import {createAmbientPlayer,ambientContext} from './ambient-player.js';
 import {createMusicPlayer,musicTransitionPolicy} from './music-player.js';
@@ -34,8 +35,9 @@ let missionClaimPending=false,activeDecisionMission=null;
 let audioStorage;try{audioStorage=window.localStorage}catch{}
 const audioMixer=createAudioMixer(audioStorage);
 const musicPlayer=createMusicPlayer(audioMixer);
+const boardVFX=createBoardVFX();
 const ambientPlayer=createAmbientPlayer(audioMixer,{context:()=>ambientContext(musicPlayer.currentContext,$('.tabs button.active')?.dataset.tab)});
-function syncMusic(){const request=musicTransitionPolicy($('.tabs button.active')?.dataset.tab,activeBattleView,activeDecisionMission,musicPlayer.currentContext,pool?.event);musicPlayer.setContext(request.context,{delayMs:request.delayMs})}
+function syncMusic(){boardVFX.setEvent(pool?.event,!activeBattleView&&!$('#game').classList.contains('hidden')&&['missions','private'].includes($('.tabs button.active')?.dataset.tab));const request=musicTransitionPolicy($('.tabs button.active')?.dataset.tab,activeBattleView,activeDecisionMission,musicPlayer.currentContext,pool?.event);musicPlayer.setContext(request.context,{delayMs:request.delayMs})}
 window.addEventListener('pointerdown',()=>{musicPlayer.unlock();ambientPlayer.unlock()});
 window.addEventListener('keydown',()=>{musicPlayer.unlock();ambientPlayer.unlock()});
 document.addEventListener('visibilitychange',()=>{musicPlayer.suspend(document.hidden);ambientPlayer.suspend(document.hidden);document.body.classList.toggle('page-hidden',document.hidden)});
@@ -220,7 +222,7 @@ function updateLiveCountdowns(){
   const due=activeMissions.some(m=>m.status==='claimed'&&Number(m.completes_at||Infinity)<=now);
   if(due&&Date.now()-lastDeadlineRefresh>600){lastDeadlineRefresh=Date.now();refreshDynamic()}
 }
-function showGame(){ syncMusic();$('#game').classList.remove('hidden'); refreshAll(); if(!pollTimer)pollTimer=setInterval(refreshDynamic,5000);if(!clockTimer)clockTimer=setInterval(updateLiveCountdowns,250); }
+function showGame(){ $('#game').classList.remove('hidden');syncMusic(); refreshAll(); if(!pollTimer)pollTimer=setInterval(refreshDynamic,5000);if(!clockTimer)clockTimer=setInterval(updateLiveCountdowns,250); }
 async function refreshAll(){renderResources();renderBase();renderRoster();await refreshDynamic()}
 function refreshDynamic(){
   if(dynamicRefreshPromise)return dynamicRefreshPromise;

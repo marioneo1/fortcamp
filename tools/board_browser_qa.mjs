@@ -35,6 +35,18 @@ const mobile=await call('Page.captureScreenshot',{format:'png'});writeFileSync('
 await call('Emulation.setDeviceMetricsOverride',{width:1440,height:1100,deviceScaleFactor:1,mobile:false});
 await evaluate(`document.querySelector('[data-rank-board="E"]').open=true;document.querySelector('[data-rank-board="E"]').scrollIntoView({block:'start'});window.previewRefresh()`);
 const cards=await call('Page.captureScreenshot',{format:'png'});writeFileSync('staging-ui/mission-board-v1/board-contracts.png',Buffer.from(cards.data,'base64'));
+
+await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+await evaluate(`window.vfxHash=()=>{const c=document.querySelector('.board-regional-backdrop'),p=c.getContext('2d').getImageData(0,0,c.width,c.height).data;let hash=0;for(let i=0;i<p.length;i+=32)hash=(hash*31+p[i]+p[i+3])|0;return hash}`);
+for(const id of ['goblin_warhost','ashen_procession','arcane_convergence','great_beast_tide','starfall_omen']){
+  await evaluate(`window.previewEvent('${id}')`);const before=await evaluate('vfxHash()');await new Promise(r=>setTimeout(r,220));await check(`vfxHash()!==${before}`,'background visibly animates for '+id);
+}
+await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+const still=await evaluate('vfxHash()');await new Promise(r=>setTimeout(r,220));await check(`vfxHash()===${still}`,'reduced motion freezes full-board backdrop');
+await evaluate(`window.previewEvent('general')`);await check(`document.querySelector('.board-regional-backdrop').hidden`,'ordinary board has no event backdrop');
+await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+await evaluate(`window.scrollTo(0,0);window.previewEvent('great_beast_tide')`);await new Promise(r=>setTimeout(r,300));
+const backdrop=await call('Page.captureScreenshot',{format:'png'});writeFileSync('staging-ui/mission-board-v1/board-beast-background.png',Buffer.from(backdrop.data,'base64'));
 if(errors.length)throw Error(JSON.stringify(errors));console.log('PASS no script errors');
 ws.close();
 

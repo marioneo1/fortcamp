@@ -23,3 +23,12 @@ Contracts is the primary destination for Public Board and Private Contracts; the
 Search/filter controls remain reachable on desktop; active chips can remove individual filters. Unchanged renders retain their existing DOM, focus, and open rank sections rather than reconstructing them every five seconds. Real updates restore focused contract actions where possible. Countdown targets update independently.
 
 Regional palettes apply to the new cards and header. Seven small particles, a halo and optional arcane orbit provide bounded visual effects around the event emblem. The legacy full-screen dotted overlay has been retired. Reduced motion disables ornament animation, and hidden-page state pauses it. No additional audio or paid generation occurs when switching views.
+
+
+## Full-board regional backgrounds
+
+Following clarification that effects should fill the background rather than only surround the emblem, `frontend/src/board-vfx.js` now renders a dedicated noninteractive canvas behind the public/private board. The backdrop uses irregularly positioned rising goblin motes, falling ash and mist, arcane rings/pulses, rotating windblown leaf silhouettes, and alien light fields/trails. Cards and controls stay in a higher layer. There is no repeating particle wallpaper.
+
+The canvas renders at most 24 times per second, caps its width resolution at 1920 pixels and particle count at 38, and keeps animation state across unchanged polls. It stops on unrelated tabs, actual battle views, general events and hidden pages. Reduced motion uses a static frame and starts no animation loop. Event banners also have a more visible right-side scene and stronger emblem accents. No further image/audio generation was needed for these procedural effects.
+
+Browser verification compares canvas pixels across time for every event, checks a static frame under reduced motion, and checks that the ordinary board hides the canvas. Unit tests verify frame scheduling, polling stability, suspension, event disablement, and motion-preference changes. All 36 frontend tests and the production build passed.
