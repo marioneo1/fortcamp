@@ -2,7 +2,7 @@
 
 Alpha 0.3.1 keeps the **server-wide competitive mission board** and adds the first polish pass around base management and mission resolution: visible building footprints, movable buildings, outcome sounds, mission aftermath stories, and context-sensitive procedural recruits.
 
-Current development tracking: [Feature backlog](FEATURE_BACKLOG.md), [gameplay vision](GAMEPLAY_VISION.md), [implementation log](MISSION_REFINEMENT_PHASE.md), and [music proposal](MUSIC_GENERATION_GUIDE.md). The local Git repository tracks code and documentation; generated assets and player databases still require separate backups. No remote is configured.
+Current development tracking: [Feature backlog](FEATURE_BACKLOG.md), [gameplay vision](GAMEPLAY_VISION.md), [implementation log](MISSION_REFINEMENT_PHASE.md), [music guide](MUSIC_GENERATION_GUIDE.md), [Mureka prompts](MUREKA_MUSIC_PROMPTS.md), and [Windows tool inventory](WINDOWS_TOOLS.md). The local Git repository tracks code and documentation; generated assets and player databases still require separate backups. No remote is configured.
 
 
 ## 0.3 additions

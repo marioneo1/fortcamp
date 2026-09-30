@@ -1,8 +1,9 @@
-"""Generate four authorized guild-board candidates, preserve originals, and build a listening page.
+"""Generate authorized guild-board or location tracks, preserve originals, and build a listening page.
 
 Run once with .venv/Scripts/python.exe tools/generate_music_candidates.py.
 Saved originals are reused. An interrupted paid request is never retried automatically.
 Use --process-only to rebuild previews without contacting ElevenLabs.
+Use --pack locations for the three base/combat themes.
 """
 import argparse
 from datetime import datetime, timezone
@@ -43,6 +44,14 @@ CANDIDATES = [
     {'id':'04_mapmakers_clock','name':"Mapmaker's Clock",'description':'A repeating plucked pattern and piano hook with a little mystery.',
      'direction':'96 BPM, gentle 4/4. Muted plucked strings repeat a satisfying rhythmic ostinato while felt piano develops a short distinct melodic hook. Mid-low clarinet gives occasional responses. Warm modal harmony adds a hint of mystery without menace. Soft wooden hand percussion and rounded bass, polished and quietly addictive, no ticking sound effects.'},
 ]
+LOCATION_CANDIDATES = [
+    {'id':'05_hearth_and_camp','name':'Hearth & Camp','description':'A settled base theme with warm piano, soft guitar and low strings.',
+     'direction':'Base-building and resting theme, 80 BPM. Warm felt piano has a gentle memorable melody, soft acoustic guitar and low strings answer. Very light hand percussion, rounded bass, spacious intimate harmony. Homecoming, safety and quiet progress, not sad or sleepy. Keep enough motion for management play.'},
+    {'id':'06_roads_under_pressure','name':'Roads Under Pressure','description':'General combat: steady strings and rounded drums with a clear tactical pulse.',
+     'direction':'General tactical combat theme, 112 BPM. Warm lower strings carry an insistent memorable rhythmic motif. Rounded frame drums and low toms give momentum, soft plucked strings and mid-register clarinet answer between phrases. Determined and tense but not panicked. Moderate energy sustained for turn-based play, no bombastic trailer sound, no screaming brass, no brittle percussion or constant crescendo.'},
+    {'id':'07_goblin_warcamp','name':'Goblin Warcamp','description':'Goblinoid combat: nimble low woodwinds, rough hand drums and plucked rhythms.',
+     'direction':'Goblin-camp tactical combat theme, 116 BPM. Nimble bass clarinet and mid-low woodwinds carry a mischievous threatening motif above dry plucked strings, rounded rough hand drums and low toms. Quick-footed cunning raiders, danger and scrappy momentum, not slapstick. Moderate sustained combat intensity. No shrill pipes, whistles, metal clangs, vocal chants, screams or harsh cymbals. Keep the same warm acoustic fantasy identity as the guild music.'},
+]
 
 
 def write_json(path, value):
@@ -77,7 +86,10 @@ def process(source, candidate):
                      f"measured_TP={measured['input_tp']}:measured_LRA={measured['input_lra']}:"
                      f"measured_thresh={measured['input_thresh']}:offset={measured['target_offset']}:linear=true")
     listen = FINAL / (candidate['id'] + '.mp3')
-    ffmpeg('-v', 'error', '-i', source, '-af', normalization, '-ar', '48000', '-ac', '2', '-b:a', '192k', listen)
+    original_seconds = duration(source)
+    fade_out = 3
+    fades = f',afade=t=in:st=0:d=0.35:curve=qsin,afade=t=out:st={original_seconds-fade_out}:d={fade_out}:curve=qsin'
+    ffmpeg('-v', 'error', '-i', source, '-af', normalization+fades, '-ar', '48000', '-ac', '2', '-b:a', '192k', listen)
     seconds = duration(listen)
     if seconds < 90:
         raise ValueError('Unexpectedly short candidate; original kept, no further purchases made.')
@@ -97,7 +109,7 @@ def process(source, candidate):
     return {'source_duration_seconds':round(duration(source),3), 'preview_duration_seconds':round(seconds,3),
             'loop_preview_duration_seconds':round(duration(loop),3), 'integrated_lufs':final_meter['input_i'],
             'true_peak_dbfs':final_meter['input_tp'], 'loudness_range_lu':final_meter['input_lra'],
-            'loop_crossfade_seconds':crossfade, 'listening_review':'Pending user listening; musical seam and treble comfort are not automatically certified.'}
+            'loop_crossfade_seconds':crossfade, 'fade_out_seconds':fade_out, 'listening_review':'Pending user listening; musical seam and treble comfort are not automatically certified.'}
 
 
 def preview(report):
@@ -121,6 +133,9 @@ tracks.forEach(a=>a.addEventListener('play',()=>tracks.forEach(other=>{if(other!
 document.querySelector('#stop').onclick=()=>tracks.forEach(a=>a.pause());
 document.querySelectorAll('[data-repeat]').forEach(box=>box.onchange=()=>box.closest('article').querySelector('audio').loop=box.checked);
 </script></html>'''
+    if SOURCE.name=='location-themes-v1':
+        page=page.replace('Four directions, one warm palette','Location themes, one warm palette').replace('Guild-board music candidates','Location music themes').replace('FORTCAMP MUSIC · GUILD BOARD','FORTCAMP MUSIC - LOCATION THEMES')
+    page=page.replace("These are auditions, not a change to the game's default music.", 'The approved guild tracks rotate in-game; location themes can be reviewed here.')
     (FINAL / 'preview.html').write_text(page, encoding='utf-8')
     # A directly openable copy beside the source material.
     local_page = page
@@ -129,14 +144,21 @@ document.querySelectorAll('[data-repeat]').forEach(box=>box.onchange=()=>box.clo
             name=c['id']+suffix
             shutil.copy2(FINAL/name,SOURCE/name)
     (SOURCE / 'LISTEN.html').write_text(local_page, encoding='utf-8')
-    write_json(FINAL / 'manifest.json', {'pack':'guild-board-candidates-v1','status':'audition, not selected',
+    write_json(FINAL / 'manifest.json', {'pack':SOURCE.name,'status':'approved guild rotation' if SOURCE.name=='guild-board-candidates-v1' else 'generated location themes',
                 'candidates':[{**c,'technical_check':report[c['id']].get('technical_check')} for c in completed]})
 
 
 def main():
+    global SOURCE, FINAL, CANDIDATES, COMMON
     parser=argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--process-only',action='store_true')
+    parser.add_argument('--pack',choices=['guild-board','locations'],default='guild-board')
     args=parser.parse_args()
+    if args.pack=='locations':
+        SOURCE=ROOT/'staging-music/location-themes-v1'
+        FINAL=ROOT/'frontend/public/assets/music/location-themes-v1'
+        CANDIDATES=LOCATION_CANDIDATES
+        COMMON=COMMON.replace('guild-management RPG','adventure and tactical RPG').replace('comfortable for long reading sessions','comfortable for sustained gameplay')
     if not shutil.which('ffmpeg') or not shutil.which('ffprobe'):
         raise SystemExit('ffmpeg and ffprobe are required before any paid request.')
     key=os.getenv('ELEVENLABS_MUSIC_IMAGE_KEY') or dotenv_values(ROOT / '.env').get('ELEVENLABS_MUSIC_IMAGE_KEY')

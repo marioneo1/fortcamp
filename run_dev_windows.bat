@@ -1,12 +1,19 @@
 @echo off
-cd /d %~dp0
+setlocal
+cd /d "%~dp0"
 if not exist .venv\Scripts\python.exe (
   echo Run setup_windows.bat first.
   pause
   exit /b 1
 )
-start "Fortcamp Backend" cmd /k "cd /d %~dp0 && call .venv\Scripts\activate && uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload"
-start "Fortcamp Activity Frontend" cmd /k "cd /d %~dp0frontend && npm run dev"
+where npm.cmd >nul 2>&1
+if errorlevel 1 (
+  echo Node.js / npm is missing. Install Node.js before starting Fortcamp.
+  pause
+  exit /b 1
+)
+start "Fortcamp Backend" cmd /k ".venv\Scripts\python.exe -m uvicorn backend.main:app --host 127.0.0.1 --port 8000 --reload"
+start "Fortcamp Activity Frontend" /D "%~dp0frontend" cmd /k "npm.cmd run dev"
 echo Backend: http://127.0.0.1:8000
 echo Frontend: http://127.0.0.1:5173
 echo For Discord, tunnel port 5173 with cloudflared.

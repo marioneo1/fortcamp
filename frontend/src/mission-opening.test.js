@@ -12,7 +12,7 @@ test('acceptance opens returned choices immediately without a second fetch or st
     selectedMission:{id:'ledger'},activeMissions:[],
     $:selector=>({'#claim-mission':button,'#mission-modal':modal,'#mission-modal .modal-card':card,'#mission-detail':detail}[selector]),
     rawApi:async path=>{requests.push(path);return {mission:{id:'ledger',name:'Ledger',status:'decision'},decision:scene}},
-    toast:()=>{},playSfx:()=>{},esc:v=>v,title:v=>v,
+    toast:()=>{},playSfx:()=>{},syncMusic:()=>{},esc:v=>v,title:v=>v,
     mountDecisionScene:(_,mission,value)=>{assert.equal(mission.id,'ledger');assert.equal(value,scene);calls.push('choices')},
     refreshDynamic:async()=>calls.push('refresh'),updateAnalysis:async()=>{},
   });

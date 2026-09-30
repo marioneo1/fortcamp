@@ -51,4 +51,12 @@ The user requested four alternatives for the guild-board pilot and may retain al
 
 Tool: `tools/generate_music_candidates.py`. Each request targets 120 seconds, `music_v2_5`, and instrumental-only output. Sources and exact non-secret request metadata are saved under `staging-music/guild-board-candidates-v1`. Original downloads are never overwritten by the preview processing. Each candidate has an integrated-loudness-matched listening copy and a separate cyclic-crossfade loop trial; a crossfade smooths the technical boundary but does not certify the musical phrase.
 
-Double-click `listen_music_candidates_windows.bat`, or open `staging-music/guild-board-candidates-v1/LISTEN.html`. A hosted copy is at `/assets/music/guild-board-candidates-v1/preview.html`, linked from Sound settings. No candidate becomes the default gameplay track before selection. Listen for treble comfort, hook, fatigue, and loop transition; all four remain available.
+All four guild candidates were approved. Open Sound settings -> Music library, or `staging-music/LISTEN.html`. The standalone music batch shortcut was removed. Guild music rotates through the four approved tracks; base and battle contexts have their own themes.
+
+## Approved rotation and new location tracks
+
+All four guild tracks are retained. Their listening/runtime copies have a short 0.35-second entrance and a smooth three-second ending; received originals remain untouched. The game crossfades over three seconds on context changes and near track endings. Board/private/roster/story choices share the guild rotation, base uses Hearth & Camp, goblinoid battles use Goblin Warcamp, and other battles use Roads Under Pressure. The currently selected context does not restart on polls, zoom or battle action changes. Music follows Master and Music settings and pauses when the document is hidden.
+
+Generated three more 120-second instrumentals: `05_hearth_and_camp`, `06_roads_under_pressure`, and `07_goblin_warcamp`. They are stored in staging-music/location-themes-v1 and included in the seven-track library. Base/general/goblin music is ready for user listening; subjective style still depends on review.
+
+The user will generate later themes through Mureka's website. Paste-ready prompts for investigation/ruins, undead, siege defense, major bosses and Starfall are in MUREKA_MUSIC_PROMPTS.md. No further ElevenLabs music generation is authorized by that prompt request. WINDOWS_TOOLS.md records the launcher audit and its operational limits.

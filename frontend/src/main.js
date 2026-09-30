@@ -1,3 +1,4 @@
+import {createMusicPlayer,musicContext} from './music-player.js';
 import {mountDecisionScene} from './mission-scene-ui.js';
 import {createAudioMixer,mountAudioSettings,audioCategory} from './audio-settings.js';
 import {raceEffects,perkModifiers} from './character-effects.js';
@@ -30,6 +31,11 @@ const missionFilters={query:'',rank:'',form:'',available:true,sort:'shortest'};
 let missionClaimPending=false;
 let audioStorage;try{audioStorage=window.localStorage}catch{}
 const audioMixer=createAudioMixer(audioStorage);
+const musicPlayer=createMusicPlayer(audioMixer);
+function syncMusic(){musicPlayer.setContext(musicContext($('.tabs button.active')?.dataset.tab,activeBattleView))}
+window.addEventListener('pointerdown',()=>musicPlayer.unlock());
+window.addEventListener('keydown',()=>musicPlayer.unlock());
+document.addEventListener('visibilitychange',()=>musicPlayer.suspend(document.hidden));
 let closeAudioSettings=null;
 
 const esc=(v='')=>String(v).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));
@@ -211,7 +217,7 @@ function updateLiveCountdowns(){
   const due=activeMissions.some(m=>m.status==='claimed'&&Number(m.completes_at||Infinity)<=now);
   if(due&&Date.now()-lastDeadlineRefresh>600){lastDeadlineRefresh=Date.now();refreshDynamic()}
 }
-function showGame(){ $('#game').classList.remove('hidden'); refreshAll(); if(!pollTimer)pollTimer=setInterval(refreshDynamic,5000);if(!clockTimer)clockTimer=setInterval(updateLiveCountdowns,250); }
+function showGame(){ syncMusic();$('#game').classList.remove('hidden'); refreshAll(); if(!pollTimer)pollTimer=setInterval(refreshDynamic,5000);if(!clockTimer)clockTimer=setInterval(updateLiveCountdowns,250); }
 async function refreshAll(){renderResources();renderBase();renderRoster();await refreshDynamic()}
 function refreshDynamic(){
   if(dynamicRefreshPromise)return dynamicRefreshPromise;
@@ -242,7 +248,7 @@ function refreshDynamic(){
   return dynamicRefreshPromise;
 }
 
-$$('.tabs button').forEach(btn=>btn.onclick=()=>{$$('.tabs button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');$$('.tab-panel').forEach(x=>x.classList.add('hidden'));$(`#tab-${btn.dataset.tab}`).classList.remove('hidden')});
+$$('.tabs button').forEach(btn=>btn.onclick=()=>{$$('.tabs button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');$$('.tab-panel').forEach(x=>x.classList.add('hidden'));$(`#tab-${btn.dataset.tab}`).classList.remove('hidden');syncMusic()});
 
 function renderResources(){if(!state)return;$('#resources').innerHTML=Object.entries(state.resources).map(([k,v])=>`<div class="resource"><b>${v}</b><span>${title(k)}</span></div>`).join('')}
 function portraitHTML(c,small=false,viewable=false){const cls=`portrait ${small?'smallp':''} ${c.status!=='idle'?'deployed':''} ${viewable?'viewable':''}`;if(c.portrait){const full=portraitSrc(c.portrait),thumb=portraitSrc(c.portrait_thumbnail||c.portrait);return `<img class="${cls}" draggable="${c.status==='idle'}" data-char="${c.id}" src="${esc(thumb)}" ${viewable?`data-portrait-view="${esc(full)}" data-portrait-name="${esc(c.name)}"`:''} title="${esc(c.name)}" onerror="this.outerHTML='<div class=&quot;${cls}&quot; title=&quot;Portrait could not be loaded&quot;>${initials(c.name)}</div>'">`}return `<div class="${cls}" draggable="${c.status==='idle'}" data-char="${c.id}">${initials(c.name)}</div>`}
@@ -378,7 +384,7 @@ async function updateAnalysis(){
 async function claimMission(selection){if(missionClaimPending)return;missionClaimPending=true;const button=$('#claim-mission');if(button)button.disabled=true;try{const data=await rawApi(`/api/missions/${selectedMission.id}/claim`,{method:'POST',body:JSON.stringify(selection)});playSfx('ui_confirm',.25);toast(data.mission.status==='decision'?'Contract started · choose your approach':data.mission.status==='battle'?'Battle started':'Mission claimed');if(data.mission.status==='decision'){await openDecision(data.mission.id,data.mission,data.decision)}else if(data.mission.status==='battle'){await openBattle(data.mission.id)}else{$('#mission-modal').classList.add('hidden')}await refreshDynamic()}catch(e){toast(e.message);await refreshDynamic()}finally{missionClaimPending=false;if($('.mission-planner'))await updateAnalysis()}}
 
 async function openDecision(missionId,mission,initialDecision){
-  missionPlanner=null;analysisSequence++;activeBattleView=null;
+  missionPlanner=null;analysisSequence++;activeBattleView=null;syncMusic();
   const data=initialDecision?{decision:initialDecision}:await rawApi(`/api/missions/${missionId}/decision`);
   const current=mission||activeMissions.find(m=>m.id===missionId)||selectedMission;
   $('#mission-modal').classList.remove('hidden');
@@ -552,7 +558,7 @@ function animateBattleMovement(previous,battle,durationFloor=260){
 }
 function renderBattlePreparation(b){
   const previousBattle=activeBattleView;
-  activeBattleView=b;
+  activeBattleView=b;syncMusic();
   const prep=b.preparation||{},prepZone=new Set((prep.zone||[]).map(p=>`${p.x},${p.y}`)),deploymentZone=new Set((prep.deployment_zone||[]).map(p=>`${p.x},${p.y}`));
   const ground=new Map((b.ground_tiles||[]).map(tile=>[`${tile.x},${tile.y}`,tile.material])),groundMaterials=b.ground_materials||{};
   let cells='';
@@ -584,7 +590,7 @@ function renderBattle(b){
   const previousBattle=activeBattleView;
   const previousViewport=$('#battle-viewport');
   if(previousViewport)battlePan={left:previousViewport.scrollLeft,top:previousViewport.scrollTop};
-  activeBattleView=b;
+  activeBattleView=b;syncMusic();
   const current=b.units[b.current_unit_id];
   if(['interact','carry'].includes(selectedCombatAction))selectedCombatAction='move';
   if(current&&!current.special&&selectedCombatAction==='skill')selectedCombatAction='move';
@@ -673,7 +679,7 @@ async function sendCombat(command,nextMode=null){
   }finally{combatRequestPending=false}
 }
 async function sendCombatAuto(resolveAll){if(combatRequestPending)return;combatRequestPending=true;try{const tactic=$('#battle-tactic')?.value||'balanced',data=await rawApi(`/api/missions/${activeBattleMissionId}/battle/auto`,{method:'POST',body:JSON.stringify({tactic,resolve_all:resolveAll})});tileActionMenu=null;if(data.result){const local=activeMissions.find(m=>m.id===activeBattleMissionId);if(local){local.status='completed';local.result=data.result}const soundDuration=resolveAll?0:playBattleSounds(data.battle);activeBattleView=null;retreatAllArmed=false;playOutcomeSound(data.result.outcome,soundDuration);showResult(data.result);await refreshDynamic()}else renderBattle(data.battle)}catch(e){toast(e.message)}finally{combatRequestPending=false}}
-$('#mission-close').onclick=()=>{retreatAllArmed=false;tileActionMenu=null;activeBattleView=null;$('#mission-modal').classList.add('hidden')};
+$('#mission-close').onclick=()=>{retreatAllArmed=false;tileActionMenu=null;activeBattleView=null;$('#mission-modal').classList.add('hidden');syncMusic()};
 $('#sound-settings-open').onclick=()=>{closeAudioSettings?.();closeAudioSettings=mountAudioSettings($('#sound-settings-content'),audioMixer,name=>playSfx(name,name.startsWith('mission_')?.5:name.startsWith('ui_')?.16:.5));$('#sound-settings-modal').showModal()};
 $('#sound-settings-close').onclick=()=>$('#sound-settings-modal').close();
 $('#sound-settings-modal').addEventListener('close',()=>{closeAudioSettings?.();closeAudioSettings=null});
@@ -683,7 +689,7 @@ document.addEventListener('click',event=>{const portrait=event.target.closest?.(
 $('#portrait-lightbox-close').onclick=closePortraitViewer;$('#portrait-lightbox').onclick=event=>{if(event.target===$('#portrait-lightbox'))closePortraitViewer()};document.addEventListener('keydown',event=>{if(event.key==='Escape')closePortraitViewer()});
 function showResult(r){
   if(!r)return;
-  missionPlanner=null;analysisSequence++;activeBattleView=null;
+  missionPlanner=null;analysisSequence++;activeBattleView=null;syncMusic();
   const rw=r.rewards||{},bits=[];
   if(rw.gold)bits.push(`+${rw.gold} Gold`);
   Object.entries(rw.materials||{}).forEach(([k,v])=>bits.push(`+${v} ${title(k)}`));
