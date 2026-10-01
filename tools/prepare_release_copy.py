@@ -40,6 +40,8 @@ def main():
     subprocess.run([str(dev_python),'-m','venv',str(target/'.venv')],check=True)
     release_python=target/'.venv'/'Scripts'/'python.exe'
     subprocess.run([str(release_python),'-m','pip','install','-r',str(target/'requirements.lock.txt')],check=True)
+    # Keep frontend tools and tests independent of the development installation too.
+    subprocess.run(['npm.cmd','--prefix','frontend','ci'],cwd=target,check=True)
     shutil.copytree(ROOT/'frontend'/'dist',target/'frontend'/'dist')
     shutil.copytree(ROOT/'frontend'/'public'/'assets',target/'frontend'/'public'/'assets')
     for name in ('portrait_pools','champion_portraits'):
