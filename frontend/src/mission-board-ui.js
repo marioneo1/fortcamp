@@ -3,7 +3,7 @@ export const escapeHTML=(value='')=>String(value??'').replace(/[&<>"']/g,c=>({'&
 const title=value=>String(value||'').replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
 const FORMS=new Set(['recovery','rescue','defense','hunt','containment','investigation','infiltration','operation']);
 const EVENTS=new Set(['goblin_warhost','ashen_procession','arcane_convergence','great_beast_tide','starfall_omen']);
-export function boardIcon(name,cls=''){return `<img class="board-icon ${escapeHTML(cls)}" src="${ROOT}${escapeHTML(name)}.png" alt="" decoding="async" draggable="false">`}
+export function boardIcon(name,cls=''){return `<img class="board-icon ${escapeHTML(cls)}" src="${ROOT}${escapeHTML(name)}.png${name.startsWith('rank_')?'?v=rank-row-20260930':''}" alt="" decoding="async" draggable="false">`}
 export function rankSeal(rank){const letter=/^[EDCBAS]$/.test(rank)?rank:'E';return `<span class="guild-rank-seal">${boardIcon('rank_'+letter.toLowerCase())}<b>${letter}</b></span>`}
 export function missionCard(m,{count=1,claimed=0,privateContract=false}={}){
   if(m.locked)return '';

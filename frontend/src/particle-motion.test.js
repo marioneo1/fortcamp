@@ -2,7 +2,7 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {Texture} from '@pixi/core';
 import {updateRibbonVertices} from './particle-ribbons.js';
-import {createShootingStar} from './particle-comets.js';
+import {createShootingStar,createMeteorShower} from './particle-comets.js';
 import {atmosphereVertices,flameStrength} from './particle-atmosphere.js';
 import {createParticlePreset} from './particle-presets.js';
 test('gravity and flame shapes move without invalid geometry on narrow and wide boards',()=>{
@@ -32,4 +32,15 @@ test('shooting stars move quickly, leave their trail behind, then clear and wait
   assert.ok(star.trail.x>star.head.x);assert.ok(star.trail.y<star.head.y);assert.ok(star.trail.width>100);
   for(let i=0;i<20;i++)star.update(.1);
   assert.equal(star.head.visible,false);assert.equal(star.trail.visible,false);assert.equal(star.diagnostics().flights,1);star.destroy();
+});
+test('meteor showers stagger several flights, stay bounded, and leave quiet gaps',()=>{
+  const shower=createMeteorShower(()=>Texture.EMPTY,1440,1100,()=>.5);
+  let overlap=false,quietAfterBurst=false,maxActive=0;
+  for(let i=0;i<500;i++){
+    shower.update(.1);const state=shower.diagnostics();maxActive=Math.max(maxActive,state.active);
+    if(state.active>1)overlap=true;
+    if(state.flights>=8&&!state.queued&&!state.active)quietAfterBurst=true;
+    assert.ok(shower.sprites.every(s=>Number.isFinite(s.x)&&Number.isFinite(s.y)));
+  }
+  assert.ok(overlap);assert.ok(quietAfterBurst);assert.ok(maxActive<=4);assert.ok(shower.diagnostics().flights>=16);shower.destroy();
 });

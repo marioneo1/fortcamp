@@ -6,7 +6,7 @@ import {createParticlePreset,WindBehavior} from './particle-presets.js';
 import {vfxTextures} from './vfx-textures.js';
 import {makeParticleTexture} from './particle-textures.js';
 import {createEnergyRibbon} from './particle-ribbons.js';
-import {createShootingStar} from './particle-comets.js';
+import {createMeteorShower} from './particle-comets.js';
 import {createAtmosphere} from './particle-atmosphere.js';
 
 Emitter.registerBehavior(WindBehavior);
@@ -34,7 +34,7 @@ export async function createParticleRenderer({canvas,width,height}){
         {y:.9,phase:4,amplitude:height*.045,thickness:50,tint:0x6bddd1,alpha:.25},
       ]){const ribbon=createEnergyRibbon(texture('fx:beam'),width,height,options);ribbons.push(ribbon);currents.addChild(ribbon.mesh)}
     }
-    if(next==='starfall'){comet=createShootingStar(texture,width,height);ornaments.addChild(comet.trail,comet.head)}
+    if(next==='starfall'){comet=createMeteorShower(texture,width,height);ornaments.addChild(...comet.sprites)}
     if(next==='starfall'||next==='goblin'){
       for(let i=0;i<(next==='starfall'?2:3);i++){
         const effect=createAtmosphere(texture(next==='starfall'?'fx:beam':'fx:flame'),width,height,next==='starfall'?'gravity':'flame',i);

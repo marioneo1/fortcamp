@@ -36,3 +36,9 @@ Browser verification compares canvas pixels across time for every event, checks 
 ## Painted texture follow-up
 
 The procedural pass above is preserved as history. The board now draws extracted painted leaves, ash, mist, embers, glyphs and alien light from the new shared effects pack. See [Painted environmental effects](ENVIRONMENT_VFX_ASSETS.md) for source, stable filenames, extraction and future reuse. All 38 frontend tests, production build and browser checks passed.
+
+## Cleaned rank-row correction (2026-09-30)
+
+The user supplied `staging-ui/mission-board-v1/guild_icons_first_row.png` (1536 x 268). All six ranks now use six equal-width columns and the full independent row height, preserving the crest tips and lower ornaments. Tiny disconnected neighboring flecks are removed; each rank is uniformly normalized on a transparent 256-square canvas. Existing rank filenames remain stable. Other form, event and utility icons are untouched.
+
+To refresh only these ranks: `.venv\Scripts\python.exe tools/extract_mission_board_icons.py --rank-row staging-ui/mission-board-v1/guild_icons_first_row.png`. This backs up the previous six files and manifest under `staging-ui/mission-board-v1/crop_backups`, records per-icon source/crop dimensions, and writes `rank_row_extracted_preview.png`. Full extraction of the original atlas also honors this cleaned row when present, so it cannot silently undo the correction. Runtime rank URLs carry a new revision query to bypass cached Discord images.

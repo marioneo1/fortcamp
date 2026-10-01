@@ -52,6 +52,7 @@ for(const id of ['goblin_warhost','ashen_procession','arcane_convergence','great
   if(id==='starfall_omen')await check(`previewBackdrop.diagnostics().atmosphere===2`,'Starfall includes two animated gravity trails');
   if(id==='starfall_omen'){
     await check(`(async()=>{for(let i=0;i<120;i++){if(previewBackdrop.diagnostics().comet?.flights>0)return true;await new Promise(r=>setTimeout(r,50))}return false})()`,'fast shooting star actually launches');
+    await check(`(async()=>{for(let i=0;i<160;i++){const shower=previewBackdrop.diagnostics().comet;if(shower?.flights>=4&&shower.active<=4)return true;await new Promise(r=>setTimeout(r,50))}return false})()`,'meteor shower launches multiple staggered flights within its cap');
     await new Promise(r=>setTimeout(r,150));const shot=await call('Page.captureScreenshot',{format:'png'});writeFileSync('staging-ui/mission-board-v1/board-starfall-background.png',Buffer.from(shot.data,'base64'));
   }
 }
