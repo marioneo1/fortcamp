@@ -1,4 +1,5 @@
 // Authoring values are pixels / seconds in logical viewport coordinates.
+import {burningSources} from './burning-scene.js';
 // V3 emitter configurations: no dependency on the legacy visual editor format.
 const fade=peak=>({type:'alpha',config:{alpha:{list:[{time:0,value:0},{time:.14,value:peak},{time:.7,value:peak*.75},{time:1,value:0}]}}});
 function layer(name,textures,rect,{count=20,life=[9,15],size=[10,20],velocity=[4,14,8,20],sway=12,spin=20,alpha=.4,grow=1,frequency,tint='ffffff',blend='normal'}={}){
@@ -20,8 +21,10 @@ export function createParticlePreset(theme,width,height){
   ];
   if(theme==='goblin')return [
     layer('green embers',['ember_green'],field,{count:8,life:[5,10],size:[5,10],velocity:[-9,9,-38,-18],sway:8,spin:8,alpha:.4,grow:.3}),
-    layer('warm sparks',['ember_orange'],{x:0,y:height*.8,width,height:height*.2},{count:18,life:[4,8],size:[5,12],velocity:[-14,14,-48,-24],sway:5,spin:10,alpha:.65,grow:.2}),
-    layer('camp smoke',smoke,field,{count:18,life:[16,24],size:[270,460],velocity:[8,20,-16,-5],sway:18,spin:5,alpha:.4,grow:1.7,tint:'b2ab92'}),
+    ...burningSources(width,height).flatMap((source,index)=>[
+      layer('fire sparks '+index,['ember_orange'],{x:source.x-45,y:height-source.y-30,width:90,height:35},{count:6,life:[3,7],size:[5,12],velocity:[-12,14,-85,-40],sway:5,spin:10,alpha:.65,grow:.2}),
+      layer('rising fire smoke '+index,smoke,{x:source.x-45,y:height-source.y-85,width:90,height:45},{count:6,life:[9,16],size:[140,220],velocity:[-8,18,-58,-30],sway:20,spin:5,alpha:.42,grow:2.1,tint:'9c9789'}),
+    ]),
   ];
   if(theme==='undead')return [
     layer('ash',['ash_flake','ash_cluster'],field,{count:32,life:[12,20],size:[7,15],velocity:[4,15,9,21],sway:12,spin:30,alpha:.48}),

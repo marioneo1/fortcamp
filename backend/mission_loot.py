@@ -34,6 +34,8 @@ def apply_loot(items,missions):
 
 def scene_reward_template(template,analysis):
     mission=deepcopy(template)
+    mission['chain_reward_eligible']=bool(analysis.get('chain_parent_id'))
+    mission['reward_rolls']=[roll for roll in mission.get('reward_rolls',[]) if not roll.get('requires_chain_parent') or analysis.get('chain_parent_id')]
     for key in analysis.get('scene',{}).get('bonus_keys',[]):
         if key in SCENE_BONUSES:mission.setdefault('reward_rolls',[]).append(deepcopy(SCENE_BONUSES[key]))
     if analysis.get('scene_boss'):
@@ -44,8 +46,9 @@ def scene_reward_template(template,analysis):
 def roll_item_pool(mission,rank,rng,items,general,event,ranks,force_faction=False):
     eligible=lambda table:[(iid,weight) for iid,minrank,weight in table if iid in items and ranks.index(minrank)<=ranks.index(rank) and 'mission_exclusive' not in items[iid].get('tags',[])]
     common=eligible(general);faction=eligible(event.get('loot',[])) if event else []
+    faction=eligible(mission.get('loot_pool',[])) or faction
     if not faction and (mission.get('event')=='goblin_warhost' or mission.get('loot_faction')=='goblin'):
-        faction=[(iid,8) for iid in ('rusty_knife','short_bow','ironcap_buckler','warhost_banner','crooked_shaman_staff') if iid in items and items[iid].get('rarity','common') in RARITY_WEIGHTS[rank]]
+        faction=[(iid,8) for iid in ('goblin_notched_axe','goblin_net_bow','rusty_knife','short_bow','ironcap_buckler','warhost_banner','smokecaller_staff','crooked_shaman_staff') if iid in items and items[iid].get('rarity','common') in RARITY_WEIGHTS[rank]]
     table=faction if faction and (force_faction or rng.randint(1,100)<=60) else common
     source='faction cache' if table is faction else 'general cache'
     groups={}

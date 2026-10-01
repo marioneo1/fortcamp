@@ -1,5 +1,13 @@
 # Mission Refinement Phase
 
+## 2026-09-30: Burning scene, tactical gear, loot and equipment browser
+
+Distributed larger Effekseer fires across the background and paired their positions with rising Pixi smoke and sparks. Added 28 items (108 total), real equipment-granted abilities, explicit scaling/elevation behavior, elemental affinity checks and deterministic Burn/Poison procs. Damage-over-time ticks once per activation, expires and respects nonlethal safety. Added low-tier event gear, nine authored mission caches and five follow-up-only chain relic checks (14% success, 22% critical). Ordinary pools cannot award those relics.
+
+Roster Equipment now provides paged/searchable inventory cards, duplicate stacks, slot/rarity filters, sorting, equipped ownership, named transfers, comparisons and quick equip/unequip. Removed the discarded legacy dropdown construction. Tiered training is labelled Proficiencies; distinctive traits remain Perks. Saved progress and instance IDs stay compatible. Generated and installed 108 item icons and 42 race emblems with stable manifest mappings and preserved original sheets; generated media remains outside public Git. Item icons also appear in aftermath. Backlog and design/pipeline documents record remaining scope.
+
+Validation: 147 backend tests and 57 frontend tests passed; production build passed. Real browser checks covered active bounded Effekseer fire, reduced motion, theme changes, stable board controls, inventory paging, icon loading, skill-search focus, injured equip/unequip, duplicate stacks and narrow-screen overflow. Screenshots are in staging-ui/equipment-icons-v1. Further visual approval and balancing require real play; this pass does not claim all 118 mission pools or every named status mechanic is finished.
+
 Latest visual follow-up (2026-09-30): [actual Effekseer fire trial](../art/EFFEKSEER_FIRE_TRIAL.md) replaces Goblin Pixi flame meshes. The authored effect uses a supplied CC-0 Pierre flame texture, warm tint/alpha blending and a pinned MIT WebGL/WASM runtime. It shares the board canvas/context/clock, supports reduced-motion stills and cleanup, and loads only for Goblin events. One Python rebuild tool was added, no BAT/global installation. Validation: 55 frontend tests, production build and browser checks passed, including real native particles, allocation caps, event switching and clock freeze. Headless CPU submission comparison averaged 0.32 ms without fire and 0.64 ms with fire; live Discord/GPU performance and visual approval remain separate.
 
 This file records the rules for expanding Fortcamp's missions without turning their results into mechanical reports.

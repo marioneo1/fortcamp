@@ -28,6 +28,8 @@ Use the feature backlog for current status, the gameplay vision for standing rul
 - [Mission Board assets](docs/art/MISSION_BOARD_ASSETS.md): approved icon pack, extraction, and browser preview.
 - [Painted environmental effects](docs/art/ENVIRONMENT_VFX_ASSETS.md): shared transparent textures, board use, and reserved weather/skill assets.
 - [Effekseer fire trial](docs/art/EFFEKSEER_FIRE_TRIAL.md): Goblin fire source, runtime, rebuild and measured browser checks.
+- [Gear and loot design](docs/gameplay/GEAR_LOOT_DESIGN.md): cache rarities, tactical equipment, chain relic chances and Proficiencies.
+- [Item/race icon pipeline](docs/art/EQUIPMENT_ICON_PIPELINE.md): stable sheet assignments, extraction and inventory preview.
 - [Combat UI assets](docs/art/COMBAT_UI_ASSET_GUIDE.md): icon and token assets.
 - [Music guide](docs/audio/MUSIC_GENERATION_GUIDE.md): palette, processing, and playback rules.
 - [Mureka prompts](docs/audio/MUREKA_MUSIC_PROMPTS.md): existing arrangements and remaining regional events.

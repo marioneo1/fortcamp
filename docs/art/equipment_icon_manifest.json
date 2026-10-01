@@ -1,0 +1,936 @@
+{
+  "columns": 6,
+  "rows": 6,
+  "items": [
+    {
+      "id": "rusty_knife",
+      "batch": 1,
+      "cell": 0,
+      "file": "rusty_knife.png"
+    },
+    {
+      "id": "worn_jacket",
+      "batch": 1,
+      "cell": 1,
+      "file": "worn_jacket.png"
+    },
+    {
+      "id": "work_boots",
+      "batch": 1,
+      "cell": 2,
+      "file": "work_boots.png"
+    },
+    {
+      "id": "scrap_hatchet",
+      "batch": 1,
+      "cell": 3,
+      "file": "scrap_hatchet.png"
+    },
+    {
+      "id": "field_pack",
+      "batch": 1,
+      "cell": 4,
+      "file": "field_pack.png"
+    },
+    {
+      "id": "medic_coat",
+      "batch": 1,
+      "cell": 5,
+      "file": "medic_coat.png"
+    },
+    {
+      "id": "hard_hat",
+      "batch": 1,
+      "cell": 6,
+      "file": "hard_hat.png"
+    },
+    {
+      "id": "work_gloves",
+      "batch": 1,
+      "cell": 7,
+      "file": "work_gloves.png"
+    },
+    {
+      "id": "cargo_pants",
+      "batch": 1,
+      "cell": 8,
+      "file": "cargo_pants.png"
+    },
+    {
+      "id": "short_bow",
+      "batch": 1,
+      "cell": 9,
+      "file": "short_bow.png"
+    },
+    {
+      "id": "breaching_charge",
+      "batch": 1,
+      "cell": 10,
+      "file": "breaching_charge.png"
+    },
+    {
+      "id": "ember_charm",
+      "batch": 1,
+      "cell": 11,
+      "file": "ember_charm.png"
+    },
+    {
+      "id": "ember_staff",
+      "batch": 1,
+      "cell": 12,
+      "file": "ember_staff.png"
+    },
+    {
+      "id": "knight_blade",
+      "batch": 1,
+      "cell": 13,
+      "file": "knight_blade.png"
+    },
+    {
+      "id": "training_manual",
+      "batch": 1,
+      "cell": 14,
+      "file": "training_manual.png"
+    },
+    {
+      "id": "specialist_tome",
+      "batch": 1,
+      "cell": 15,
+      "file": "specialist_tome.png"
+    },
+    {
+      "id": "mastery_codex",
+      "batch": 1,
+      "cell": 16,
+      "file": "mastery_codex.png"
+    },
+    {
+      "id": "supply_satchel",
+      "batch": 1,
+      "cell": 17,
+      "file": "supply_satchel.png"
+    },
+    {
+      "id": "warding_token",
+      "batch": 1,
+      "cell": 18,
+      "file": "warding_token.png"
+    },
+    {
+      "id": "guildsteel_spear",
+      "batch": 1,
+      "cell": 19,
+      "file": "guildsteel_spear.png"
+    },
+    {
+      "id": "salvager_goggles",
+      "batch": 1,
+      "cell": 20,
+      "file": "salvager_goggles.png"
+    },
+    {
+      "id": "reinforced_vest",
+      "batch": 1,
+      "cell": 21,
+      "file": "reinforced_vest.png"
+    },
+    {
+      "id": "ranger_cloak",
+      "batch": 1,
+      "cell": 22,
+      "file": "ranger_cloak.png"
+    },
+    {
+      "id": "duelist_gloves",
+      "batch": 1,
+      "cell": 23,
+      "file": "duelist_gloves.png"
+    },
+    {
+      "id": "trailblazer_boots",
+      "batch": 1,
+      "cell": 24,
+      "file": "trailblazer_boots.png"
+    },
+    {
+      "id": "apothecary_belt",
+      "batch": 1,
+      "cell": 25,
+      "file": "apothecary_belt.png"
+    },
+    {
+      "id": "engineers_bracers",
+      "batch": 1,
+      "cell": 26,
+      "file": "engineers_bracers.png"
+    },
+    {
+      "id": "tower_shield",
+      "batch": 1,
+      "cell": 27,
+      "file": "tower_shield.png"
+    },
+    {
+      "id": "warhammer",
+      "batch": 1,
+      "cell": 28,
+      "file": "warhammer.png"
+    },
+    {
+      "id": "moonwood_longbow",
+      "batch": 1,
+      "cell": 29,
+      "file": "moonwood_longbow.png"
+    },
+    {
+      "id": "archmage_grimoire",
+      "batch": 1,
+      "cell": 30,
+      "file": "archmage_grimoire.png"
+    },
+    {
+      "id": "saints_censer",
+      "batch": 1,
+      "cell": 31,
+      "file": "saints_censer.png"
+    },
+    {
+      "id": "goblin_war_token",
+      "batch": 1,
+      "cell": 32,
+      "file": "goblin_war_token.png"
+    },
+    {
+      "id": "chieftain_command_horn",
+      "batch": 1,
+      "cell": 33,
+      "file": "chieftain_command_horn.png"
+    },
+    {
+      "id": "cartmaster_route_book",
+      "batch": 1,
+      "cell": 34,
+      "file": "cartmaster_route_book.png"
+    },
+    {
+      "id": "ironcap_buckler",
+      "batch": 1,
+      "cell": 35,
+      "file": "ironcap_buckler.png"
+    },
+    {
+      "id": "crooked_shaman_staff",
+      "batch": 2,
+      "cell": 0,
+      "file": "crooked_shaman_staff.png"
+    },
+    {
+      "id": "warlords_cleaver",
+      "batch": 2,
+      "cell": 1,
+      "file": "warlords_cleaver.png"
+    },
+    {
+      "id": "warhost_banner",
+      "batch": 2,
+      "cell": 2,
+      "file": "warhost_banner.png"
+    },
+    {
+      "id": "grave_ash",
+      "batch": 2,
+      "cell": 3,
+      "file": "grave_ash.png"
+    },
+    {
+      "id": "ashen_reliquary",
+      "batch": 2,
+      "cell": 4,
+      "file": "ashen_reliquary.png"
+    },
+    {
+      "id": "death_knight_helm",
+      "batch": 2,
+      "cell": 5,
+      "file": "death_knight_helm.png"
+    },
+    {
+      "id": "mourning_blade",
+      "batch": 2,
+      "cell": 6,
+      "file": "mourning_blade.png"
+    },
+    {
+      "id": "corpse_lantern",
+      "batch": 2,
+      "cell": 7,
+      "file": "corpse_lantern.png"
+    },
+    {
+      "id": "mana_prism",
+      "batch": 2,
+      "cell": 8,
+      "file": "mana_prism.png"
+    },
+    {
+      "id": "spellglass_lens",
+      "batch": 2,
+      "cell": 9,
+      "file": "spellglass_lens.png"
+    },
+    {
+      "id": "bottled_storm",
+      "batch": 2,
+      "cell": 10,
+      "file": "bottled_storm.png"
+    },
+    {
+      "id": "gravity_boots",
+      "batch": 2,
+      "cell": 11,
+      "file": "gravity_boots.png"
+    },
+    {
+      "id": "living_grimoire",
+      "batch": 2,
+      "cell": 12,
+      "file": "living_grimoire.png"
+    },
+    {
+      "id": "beast_heart",
+      "batch": 2,
+      "cell": 13,
+      "file": "beast_heart.png"
+    },
+    {
+      "id": "alpha_fang",
+      "batch": 2,
+      "cell": 14,
+      "file": "alpha_fang.png"
+    },
+    {
+      "id": "thunderhide_coat",
+      "batch": 2,
+      "cell": 15,
+      "file": "thunderhide_coat.png"
+    },
+    {
+      "id": "titanbone_spear",
+      "batch": 2,
+      "cell": 16,
+      "file": "titanbone_spear.png"
+    },
+    {
+      "id": "razorwing_cloak",
+      "batch": 2,
+      "cell": 17,
+      "file": "razorwing_cloak.png"
+    },
+    {
+      "id": "starfall_shard",
+      "batch": 2,
+      "cell": 18,
+      "file": "starfall_shard.png"
+    },
+    {
+      "id": "star_metal_blade",
+      "batch": 2,
+      "cell": 19,
+      "file": "star_metal_blade.png"
+    },
+    {
+      "id": "voidglass_mantle",
+      "batch": 2,
+      "cell": 20,
+      "file": "voidglass_mantle.png"
+    },
+    {
+      "id": "starfall_core",
+      "batch": 2,
+      "cell": 21,
+      "file": "starfall_core.png"
+    },
+    {
+      "id": "comet_string_bow",
+      "batch": 2,
+      "cell": 22,
+      "file": "comet_string_bow.png"
+    },
+    {
+      "id": "celestial_halo",
+      "batch": 2,
+      "cell": 23,
+      "file": "celestial_halo.png"
+    },
+    {
+      "id": "black_banner_cipher",
+      "batch": 2,
+      "cell": 24,
+      "file": "black_banner_cipher.png"
+    },
+    {
+      "id": "empty_crown_standard",
+      "batch": 2,
+      "cell": 25,
+      "file": "empty_crown_standard.png"
+    },
+    {
+      "id": "mudbound_clapper",
+      "batch": 2,
+      "cell": 26,
+      "file": "mudbound_clapper.png"
+    },
+    {
+      "id": "bell_of_last_rites",
+      "batch": 2,
+      "cell": 27,
+      "file": "bell_of_last_rites.png"
+    },
+    {
+      "id": "brass_foreman_key",
+      "batch": 2,
+      "cell": 28,
+      "file": "brass_foreman_key.png"
+    },
+    {
+      "id": "meridian_heart",
+      "batch": 2,
+      "cell": 29,
+      "file": "meridian_heart.png"
+    },
+    {
+      "id": "colossus_heartblood",
+      "batch": 2,
+      "cell": 30,
+      "file": "colossus_heartblood.png"
+    },
+    {
+      "id": "titan_shepherds_horn",
+      "batch": 2,
+      "cell": 31,
+      "file": "titan_shepherds_horn.png"
+    },
+    {
+      "id": "echoing_starstone",
+      "batch": 2,
+      "cell": 32,
+      "file": "echoing_starstone.png"
+    },
+    {
+      "id": "starless_gate_sigil",
+      "batch": 2,
+      "cell": 33,
+      "file": "starless_gate_sigil.png"
+    },
+    {
+      "id": "trappers_roll",
+      "batch": 2,
+      "cell": 34,
+      "file": "trappers_roll.png"
+    },
+    {
+      "id": "hedgerow_engineers_kit",
+      "batch": 2,
+      "cell": 35,
+      "file": "hedgerow_engineers_kit.png"
+    },
+    {
+      "id": "signal_lens",
+      "batch": 3,
+      "cell": 0,
+      "file": "signal_lens.png"
+    },
+    {
+      "id": "ledger_ring",
+      "batch": 3,
+      "cell": 1,
+      "file": "ledger_ring.png"
+    },
+    {
+      "id": "chapel_thread",
+      "batch": 3,
+      "cell": 2,
+      "file": "chapel_thread.png"
+    },
+    {
+      "id": "marshal_hook",
+      "batch": 3,
+      "cell": 3,
+      "file": "marshal_hook.png"
+    },
+    {
+      "id": "oathkeeper_shard",
+      "batch": 3,
+      "cell": 4,
+      "file": "oathkeeper_shard.png"
+    },
+    {
+      "id": "retrieval_seal",
+      "batch": 3,
+      "cell": 5,
+      "file": "retrieval_seal.png"
+    },
+    {
+      "id": "warcamp_command_spur",
+      "batch": 3,
+      "cell": 6,
+      "file": "warcamp_command_spur.png"
+    },
+    {
+      "id": "highway_guard_mantle",
+      "batch": 3,
+      "cell": 7,
+      "file": "highway_guard_mantle.png"
+    },
+    {
+      "id": "watchmans_cudgel",
+      "batch": 3,
+      "cell": 8,
+      "file": "watchmans_cudgel.png"
+    },
+    {
+      "id": "apprentice_wand",
+      "batch": 3,
+      "cell": 9,
+      "file": "apprentice_wand.png"
+    },
+    {
+      "id": "hooked_spear",
+      "batch": 3,
+      "cell": 10,
+      "file": "hooked_spear.png"
+    },
+    {
+      "id": "weighted_sling",
+      "batch": 3,
+      "cell": 11,
+      "file": "weighted_sling.png"
+    },
+    {
+      "id": "coalbrand_sabre",
+      "batch": 3,
+      "cell": 12,
+      "file": "coalbrand_sabre.png"
+    },
+    {
+      "id": "venomthorn_bow",
+      "batch": 3,
+      "cell": 13,
+      "file": "venomthorn_bow.png"
+    },
+    {
+      "id": "stormglass_rod",
+      "batch": 3,
+      "cell": 14,
+      "file": "stormglass_rod.png"
+    },
+    {
+      "id": "mercykeepers_maul",
+      "batch": 3,
+      "cell": 15,
+      "file": "mercykeepers_maul.png"
+    },
+    {
+      "id": "goblin_notched_axe",
+      "batch": 3,
+      "cell": 16,
+      "file": "goblin_notched_axe.png"
+    },
+    {
+      "id": "goblin_net_bow",
+      "batch": 3,
+      "cell": 17,
+      "file": "goblin_net_bow.png"
+    },
+    {
+      "id": "smokecaller_staff",
+      "batch": 3,
+      "cell": 18,
+      "file": "smokecaller_staff.png"
+    },
+    {
+      "id": "gravekeepers_spade",
+      "batch": 3,
+      "cell": 19,
+      "file": "gravekeepers_spade.png"
+    },
+    {
+      "id": "mourning_censer",
+      "batch": 3,
+      "cell": 20,
+      "file": "mourning_censer.png"
+    },
+    {
+      "id": "pale_watch_lance",
+      "batch": 3,
+      "cell": 21,
+      "file": "pale_watch_lance.png"
+    },
+    {
+      "id": "cracked_ley_wand",
+      "batch": 3,
+      "cell": 22,
+      "file": "cracked_ley_wand.png"
+    },
+    {
+      "id": "prism_tuning_fork",
+      "batch": 3,
+      "cell": 23,
+      "file": "prism_tuning_fork.png"
+    },
+    {
+      "id": "winterglass_grimoire",
+      "batch": 3,
+      "cell": 24,
+      "file": "winterglass_grimoire.png"
+    },
+    {
+      "id": "antler_hatchet",
+      "batch": 3,
+      "cell": 25,
+      "file": "antler_hatchet.png"
+    },
+    {
+      "id": "hunters_bola",
+      "batch": 3,
+      "cell": 26,
+      "file": "hunters_bola.png"
+    },
+    {
+      "id": "razorvine_spear",
+      "batch": 3,
+      "cell": 27,
+      "file": "razorvine_spear.png"
+    },
+    {
+      "id": "meteor_iron_knife",
+      "batch": 3,
+      "cell": 28,
+      "file": "meteor_iron_knife.png"
+    },
+    {
+      "id": "skyfall_focus",
+      "batch": 3,
+      "cell": 29,
+      "file": "skyfall_focus.png"
+    },
+    {
+      "id": "voidglass_crossbow",
+      "batch": 3,
+      "cell": 30,
+      "file": "voidglass_crossbow.png"
+    },
+    {
+      "id": "empty_crowns_verdict",
+      "batch": 3,
+      "cell": 31,
+      "file": "empty_crowns_verdict.png"
+    },
+    {
+      "id": "processional_last_light",
+      "batch": 3,
+      "cell": 32,
+      "file": "processional_last_light.png"
+    },
+    {
+      "id": "meridian_arc_driver",
+      "batch": 3,
+      "cell": 33,
+      "file": "meridian_arc_driver.png"
+    },
+    {
+      "id": "shepherds_gentle_hand",
+      "batch": 3,
+      "cell": 34,
+      "file": "shepherds_gentle_hand.png"
+    },
+    {
+      "id": "starless_door_key",
+      "batch": 3,
+      "cell": 35,
+      "file": "starless_door_key.png"
+    }
+  ],
+  "races": [
+    {
+      "id": "Human",
+      "batch": 1,
+      "cell": 0,
+      "file": "human.png"
+    },
+    {
+      "id": "Goblin",
+      "batch": 1,
+      "cell": 1,
+      "file": "goblin.png"
+    },
+    {
+      "id": "Dwarf",
+      "batch": 1,
+      "cell": 2,
+      "file": "dwarf.png"
+    },
+    {
+      "id": "Wood Elf",
+      "batch": 1,
+      "cell": 3,
+      "file": "wood_elf.png"
+    },
+    {
+      "id": "Half-Orc",
+      "batch": 1,
+      "cell": 4,
+      "file": "half_orc.png"
+    },
+    {
+      "id": "Halfling",
+      "batch": 1,
+      "cell": 5,
+      "file": "halfling.png"
+    },
+    {
+      "id": "Tiefling",
+      "batch": 1,
+      "cell": 6,
+      "file": "tiefling.png"
+    },
+    {
+      "id": "Hobgoblin",
+      "batch": 1,
+      "cell": 7,
+      "file": "hobgoblin.png"
+    },
+    {
+      "id": "Bugbear",
+      "batch": 1,
+      "cell": 8,
+      "file": "bugbear.png"
+    },
+    {
+      "id": "Kobold",
+      "batch": 1,
+      "cell": 9,
+      "file": "kobold.png"
+    },
+    {
+      "id": "Orc",
+      "batch": 1,
+      "cell": 10,
+      "file": "orc.png"
+    },
+    {
+      "id": "Revenant",
+      "batch": 1,
+      "cell": 11,
+      "file": "revenant.png"
+    },
+    {
+      "id": "Undead",
+      "batch": 1,
+      "cell": 12,
+      "file": "undead.png"
+    },
+    {
+      "id": "High Elf",
+      "batch": 1,
+      "cell": 13,
+      "file": "high_elf.png"
+    },
+    {
+      "id": "Gnome",
+      "batch": 1,
+      "cell": 14,
+      "file": "gnome.png"
+    },
+    {
+      "id": "Manaforged",
+      "batch": 1,
+      "cell": 15,
+      "file": "manaforged.png"
+    },
+    {
+      "id": "Homunculus",
+      "batch": 1,
+      "cell": 16,
+      "file": "homunculus.png"
+    },
+    {
+      "id": "Dreamkin",
+      "batch": 1,
+      "cell": 17,
+      "file": "dreamkin.png"
+    },
+    {
+      "id": "Lizardfolk",
+      "batch": 1,
+      "cell": 18,
+      "file": "lizardfolk.png"
+    },
+    {
+      "id": "Harpy",
+      "batch": 1,
+      "cell": 19,
+      "file": "harpy.png"
+    },
+    {
+      "id": "Minotaur",
+      "batch": 1,
+      "cell": 20,
+      "file": "minotaur.png"
+    },
+    {
+      "id": "Centaur",
+      "batch": 1,
+      "cell": 21,
+      "file": "centaur.png"
+    },
+    {
+      "id": "Astral Elf",
+      "batch": 1,
+      "cell": 22,
+      "file": "astral_elf.png"
+    },
+    {
+      "id": "Voidsent",
+      "batch": 1,
+      "cell": 23,
+      "file": "voidsent.png"
+    },
+    {
+      "id": "Alien",
+      "batch": 1,
+      "cell": 24,
+      "file": "alien.png"
+    },
+    {
+      "id": "Dark Elf",
+      "batch": 1,
+      "cell": 25,
+      "file": "dark_elf.png"
+    },
+    {
+      "id": "Dryad",
+      "batch": 1,
+      "cell": 26,
+      "file": "dryad.png"
+    },
+    {
+      "id": "Faun",
+      "batch": 1,
+      "cell": 27,
+      "file": "faun.png"
+    },
+    {
+      "id": "Catfolk",
+      "batch": 1,
+      "cell": 28,
+      "file": "catfolk.png"
+    },
+    {
+      "id": "Foxkin",
+      "batch": 1,
+      "cell": 29,
+      "file": "foxkin.png"
+    },
+    {
+      "id": "Merfolk",
+      "batch": 1,
+      "cell": 30,
+      "file": "merfolk.png"
+    },
+    {
+      "id": "Dragonkin",
+      "batch": 1,
+      "cell": 31,
+      "file": "dragonkin.png"
+    },
+    {
+      "id": "Fairy",
+      "batch": 1,
+      "cell": 32,
+      "file": "fairy.png"
+    },
+    {
+      "id": "Slimefolk",
+      "batch": 1,
+      "cell": 33,
+      "file": "slimefolk.png"
+    },
+    {
+      "id": "Automaton",
+      "batch": 1,
+      "cell": 34,
+      "file": "automaton.png"
+    },
+    {
+      "id": "Aasimar",
+      "batch": 1,
+      "cell": 35,
+      "file": "aasimar.png"
+    },
+    {
+      "id": "Vampire",
+      "batch": 1,
+      "cell": 36,
+      "file": "vampire.png"
+    },
+    {
+      "id": "Banshee",
+      "batch": 1,
+      "cell": 37,
+      "file": "banshee.png"
+    },
+    {
+      "id": "Ogre",
+      "batch": 1,
+      "cell": 38,
+      "file": "ogre.png"
+    },
+    {
+      "id": "Troll",
+      "batch": 1,
+      "cell": 39,
+      "file": "troll.png"
+    },
+    {
+      "id": "Werewolf",
+      "batch": 1,
+      "cell": 40,
+      "file": "werewolf.png"
+    },
+    {
+      "id": "Celestial",
+      "batch": 1,
+      "cell": 41,
+      "file": "celestial.png"
+    }
+  ],
+  "layouts": {
+    "items": [
+      6,
+      6
+    ],
+    "races": [
+      7,
+      6
+    ]
+  },
+  "sources": {
+    "items_batch_001.png": {
+      "sha256": "bc38262fbaeef6053094bf19e05591ded95347c2b02ede68f7ceb6b751217ec6",
+      "source": "staging-ui/equipment-icons-v1/items_batch_001.png"
+    },
+    "items_batch_002.png": {
+      "sha256": "30b90b1ec50b1795ed66fb26ecbb787eeb86ecd6f2460e46b144577389bca552",
+      "source": "staging-ui/equipment-icons-v1/items_batch_002.png"
+    },
+    "items_batch_003.png": {
+      "sha256": "89a5735649accfd0eede205ee34f449ea7822709f322d19b7faff6fe1d21bccd",
+      "source": "staging-ui/equipment-icons-v1/items_batch_003.png"
+    },
+    "races_batch_001.png": {
+      "sha256": "02eb37a856727c5675a693cbd75cf8b4c4a2bd2422e0118b62c7b76f3c8908c0",
+      "source": "staging-ui/equipment-icons-v1/races_batch_001.png"
+    }
+  }
+}

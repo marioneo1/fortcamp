@@ -99,6 +99,7 @@ def public_content() -> dict[str, Any]:
         "items": ITEMS,
         "slots": EQUIPMENT_SLOTS,
         "perk_tracks": PERK_TRACKS,
+        "proficiency_tracks": PERK_TRACKS,
         "perk_levels": PERK_LEVELS,
         "perk_training_items": PERK_TRAINING_ITEMS,
         "standalone_perks": STANDALONE_PERKS,
@@ -1005,6 +1006,8 @@ def _award_scaled_rewards(
         )
 
     for reward_roll in mission.get("reward_rolls", []):
+        if reward_roll.get("requires_chain_parent") and not mission.get("chain_reward_eligible"):
+            continue
         chance = int(reward_roll.get("chance", 0))
         if critical:
             chance += int(reward_roll.get("critical_bonus", 0))

@@ -1271,3 +1271,7 @@ from .mission_storylines import apply_storylines
 apply_storylines(MISSION_TEMPLATES)
 from .mission_loot import apply_loot
 apply_loot(ITEMS,MISSION_TEMPLATES)
+from .gear_expansion import apply_gear_expansion
+apply_gear_expansion(ITEMS, MISSION_TEMPLATES, GENERAL_LOOT_TABLE, EVENT_REWARD_TABLES)
+for _item_id, _item in ITEMS.items():
+    _item["icon"] = f"/assets/catalogue/items/{_item_id}.png"

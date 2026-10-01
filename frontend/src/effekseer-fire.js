@@ -1,4 +1,5 @@
 // Effekseer 1.70e trial. Shares Pixi's canvas/context and the board's existing clock.
+import {burningSources} from './burning-scene.js';
 const ROOT='/vendor/effekseer-1.70e/';
 let runtimePromise;
 function loadRuntime(){
@@ -26,26 +27,26 @@ export async function createEffekseerFire(renderer,width,height,{load=loadRuntim
   }
   catch(error){runtime.releaseContext(context);renderer.reset();throw error}
   let enabled=false,time=0,starts=0,destroyed=false;
-  const sources=[{x:28,wait:0,handle:null},{x:width-28,wait:4.5,handle:null}];
+  let sources=burningSources(width,height).map(s=>({...s,wait:s.delay,handle:null}));
   // Orthographic pixel coordinates: world Y rises from the bottom of the viewport.
   function resize(w,h){
-    width=w;height=h;sources[1].x=width-28;
+    width=w;height=h;context.stopAll();sources=burningSources(width,height).map(s=>({...s,wait:s.delay,handle:null}));
     context.setProjectionMatrix([2/width,0,0,0,0,2/height,0,0,0,0,-.01,0,-1,-1,0,1]);
     context.setCameraMatrix([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]);renderer.reset();
   }
   resize(width,height);
   function start(source){
-    source.handle=context.play(effect,source.x,8,0);
-    if(source.handle){source.handle.setScale(66,66,66);source.handle.setAllColor(255,163,53,210);starts++}
-    source.wait=16+Math.random()*7;
+    source.handle=context.play(effect,source.x,source.y,0);
+    if(source.handle){source.handle.setScale(source.scale,source.scale,source.scale);source.handle.setAllColor(255,163,53,190);starts++}
+    source.wait=4;
   }
   return {
     resize,
     setEnabled(value){
       context.stopAll();enabled=value;time=0;
-      for(let i=0;i<sources.length;i++){sources[i].handle=null;sources[i].wait=i*4.5}
+      for(const source of sources){source.handle=null;source.wait=source.delay}
       // Seed a visible established fire for static/reduced-motion composition.
-      if(enabled){start(sources[0]);context.update(35)}renderer.reset();
+      if(enabled){start(sources[0]);if(sources.length>2)start(sources[2]);context.update(35)}renderer.reset();
     },
     update(dt){
       if(!enabled||destroyed)return;time+=dt;

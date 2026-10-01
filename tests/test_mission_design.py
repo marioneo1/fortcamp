@@ -233,7 +233,9 @@ class RewardAndRecoveryTests(unittest.TestCase):
             if first_cache["item"]:
                 won_item = first_cache["item"]
                 break
-        self.assertIn(won_item, {"star_metal_blade", "voidglass_mantle", "comet_string_bow"})
+        from backend.content import EVENT_REWARD_TABLES, MISSION_RANKS
+        eligible = {iid for iid, minimum_rank, _ in EVENT_REWARD_TABLES['starfall_omen']['loot'] if MISSION_RANKS.index(minimum_rank) <= MISSION_RANKS.index('A')}
+        self.assertIn(won_item, eligible)
 
     def test_only_paid_contracts_award_gold(self):
         paid_state = player_state(scavenging=10)
