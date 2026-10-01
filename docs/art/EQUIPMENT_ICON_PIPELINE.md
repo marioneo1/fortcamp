@@ -1,10 +1,12 @@
 # Item and race icons
 
-108 item icons and 42 race emblems are installed in `frontend/public/assets/catalogue/items/` and `races/`, respectively. PNGs are 192×192 with transparency. They are original generated game art, not extracted commercial game assets.
+180 item icons and 42 race emblems are installed in `frontend/public/assets/catalogue/items/` and `races/`, respectively. PNGs are 192×192 with transparency. They are original generated game art, not extracted commercial game assets.
 
-Sources are preserved in `staging-ui/equipment-icons-v1/`: `items_batch_001.png` through `003.png` (6 columns × 6 rows), and `races_batch_001.png` (7 columns × 6 rows). Prompts and a browser preview live beside them. Equal cells have no drawn separators. Extraction now isolates complete silhouettes on the transparent source, including artwork that crosses a nominal cell edge, and preserves aspect ratio inside 192px output with padding. Unexpected connected/ambiguous silhouettes stop import for manual review rather than silently clipping art.
+Sources are preserved in `staging-ui/equipment-icons-v1/`: `items_batch_001.png` through `005.png` (6 columns × 6 rows), and `races_batch_001.png` (7 columns × 6 rows). Prompts and a browser preview live beside them. Equal cells have no drawn separators. Extraction isolates complete silhouettes on the transparent source, including artwork crossing a nominal cell edge, and preserves aspect ratio inside 192px output with padding. Unexpected connected/ambiguous silhouettes stop import for manual review rather than silently clipping art. Batches 004/005 add 72 icons: 16 previously missing catalogue items and 56 new equipment pieces. Existing 108 icon files were not replaced.
 
 `docs/art/equipment_icon_manifest.json` stores permanent IDs, sheet numbers, zero-based cells and filenames. Entries append; existing items never shift when the catalogue grows. Removing an item does not recycle its old cell. Same IDs keep the same file paths. New generations should preserve internal margins, common brushwork, lighting and visual weight while varying each object's design.
+
+To rebuild the isolated QA pages, run `.venv\Scripts\python.exe tools/build_equipment_preview.py` and `.venv\Scripts\python.exe tools/build_gear_battle_preview.py`. Serve them with `node tools/serve_board_preview.mjs` (local port 8766). The equipment browser QA uses a dedicated Chrome debugging session on port 9229 and covers the actual battle renderer, technique selection/refresh/command IDs, and preparation rendering as well as inventory controls. These fixtures use synthetic state and block live player API requests.
 
 From the project root:
 

@@ -1089,6 +1089,12 @@ def _award_capture_loot(state: dict, battle: dict, result: dict) -> list[dict]:
     rewards = []
     candidates = []
     encounter_id = battle.get("encounter_id")
+    from .gear_progression import CAPTURE_DROPS
+    authored=CAPTURE_DROPS.get(encounter_id)
+    captive=battle.get('units',{}).get(authored['target'],{}) if authored else {}
+    if authored and authored['target'] in captured_ids and captive.get('condition')=='unconscious' and captive.get('alive',True) and result.get('outcome') in {'success','critical_success'}:
+        candidates.append({'item_id':authored['item'],'reason':f"Captured {battle['units'][authored['target']]['name']} alive",
+                           'chance':authored['chance']+(authored['secured_bonus'] if battle.get('battlefield_secured') else 0)})
     if encounter_id == "goblin_warcamp" and "gob_chief" in captured_ids:
         candidates.append({
             "item_id": "chieftain_command_horn",

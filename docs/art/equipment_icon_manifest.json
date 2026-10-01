@@ -649,6 +649,438 @@
       "batch": 3,
       "cell": 35,
       "file": "starless_door_key.png"
+    },
+    {
+      "id": "cellar_guard_charm",
+      "batch": 4,
+      "cell": 0,
+      "file": "cellar_guard_charm.png"
+    },
+    {
+      "id": "ford_runner_boots",
+      "batch": 4,
+      "cell": 1,
+      "file": "ford_runner_boots.png"
+    },
+    {
+      "id": "fencekeepers_buckle",
+      "batch": 4,
+      "cell": 2,
+      "file": "fencekeepers_buckle.png"
+    },
+    {
+      "id": "creekwright_gloves",
+      "batch": 4,
+      "cell": 3,
+      "file": "creekwright_gloves.png"
+    },
+    {
+      "id": "lockkeepers_lens",
+      "batch": 4,
+      "cell": 4,
+      "file": "lockkeepers_lens.png"
+    },
+    {
+      "id": "garden_healers_pin",
+      "batch": 4,
+      "cell": 5,
+      "file": "garden_healers_pin.png"
+    },
+    {
+      "id": "caravan_ledger_seal",
+      "batch": 4,
+      "cell": 6,
+      "file": "caravan_ledger_seal.png"
+    },
+    {
+      "id": "raiders_route_spur",
+      "batch": 4,
+      "cell": 7,
+      "file": "raiders_route_spur.png"
+    },
+    {
+      "id": "chapel_watch_bead",
+      "batch": 4,
+      "cell": 8,
+      "file": "chapel_watch_bead.png"
+    },
+    {
+      "id": "calibrators_focus",
+      "batch": 4,
+      "cell": 9,
+      "file": "calibrators_focus.png"
+    },
+    {
+      "id": "ford_envoys_signet",
+      "batch": 4,
+      "cell": 10,
+      "file": "ford_envoys_signet.png"
+    },
+    {
+      "id": "armory_breach_gloves",
+      "batch": 4,
+      "cell": 11,
+      "file": "armory_breach_gloves.png"
+    },
+    {
+      "id": "merchant_wayfarer_ring",
+      "batch": 4,
+      "cell": 12,
+      "file": "merchant_wayfarer_ring.png"
+    },
+    {
+      "id": "watch_ford_medallion",
+      "batch": 4,
+      "cell": 13,
+      "file": "watch_ford_medallion.png"
+    },
+    {
+      "id": "meridian_workshop_ward",
+      "batch": 4,
+      "cell": 14,
+      "file": "meridian_workshop_ward.png"
+    },
+    {
+      "id": "lantern_route_compass",
+      "batch": 4,
+      "cell": 15,
+      "file": "lantern_route_compass.png"
+    },
+    {
+      "id": "padded_travel_hood",
+      "batch": 4,
+      "cell": 16,
+      "file": "padded_travel_hood.png"
+    },
+    {
+      "id": "surveyors_visor",
+      "batch": 4,
+      "cell": 17,
+      "file": "surveyors_visor.png"
+    },
+    {
+      "id": "cinder_visor",
+      "batch": 4,
+      "cell": 18,
+      "file": "cinder_visor.png"
+    },
+    {
+      "id": "bogkeeper_mask",
+      "batch": 4,
+      "cell": 19,
+      "file": "bogkeeper_mask.png"
+    },
+    {
+      "id": "lastwatch_helm",
+      "batch": 4,
+      "cell": 20,
+      "file": "lastwatch_helm.png"
+    },
+    {
+      "id": "empty_court_diadem",
+      "batch": 4,
+      "cell": 21,
+      "file": "empty_court_diadem.png"
+    },
+    {
+      "id": "quilted_field_vest",
+      "batch": 4,
+      "cell": 22,
+      "file": "quilted_field_vest.png"
+    },
+    {
+      "id": "porters_coat",
+      "batch": 4,
+      "cell": 23,
+      "file": "porters_coat.png"
+    },
+    {
+      "id": "embersmith_apron",
+      "batch": 4,
+      "cell": 24,
+      "file": "embersmith_apron.png"
+    },
+    {
+      "id": "trollstitch_coat",
+      "batch": 4,
+      "cell": 25,
+      "file": "trollstitch_coat.png"
+    },
+    {
+      "id": "roadward_mantle",
+      "batch": 4,
+      "cell": 26,
+      "file": "roadward_mantle.png"
+    },
+    {
+      "id": "mercythread_robe",
+      "batch": 4,
+      "cell": 27,
+      "file": "mercythread_robe.png"
+    },
+    {
+      "id": "riveted_work_grips",
+      "batch": 4,
+      "cell": 28,
+      "file": "riveted_work_grips.png"
+    },
+    {
+      "id": "padded_capture_gloves",
+      "batch": 4,
+      "cell": 29,
+      "file": "padded_capture_gloves.png"
+    },
+    {
+      "id": "rescue_gloves",
+      "batch": 4,
+      "cell": 30,
+      "file": "rescue_gloves.png"
+    },
+    {
+      "id": "breach_gauntlets",
+      "batch": 4,
+      "cell": 31,
+      "file": "breach_gauntlets.png"
+    },
+    {
+      "id": "meridian_coil_grips",
+      "batch": 4,
+      "cell": 32,
+      "file": "meridian_coil_grips.png"
+    },
+    {
+      "id": "chieftains_chain_grips",
+      "batch": 4,
+      "cell": 33,
+      "file": "chieftains_chain_grips.png"
+    },
+    {
+      "id": "patched_travel_trousers",
+      "batch": 4,
+      "cell": 34,
+      "file": "patched_travel_trousers.png"
+    },
+    {
+      "id": "scout_trail_leggings",
+      "batch": 4,
+      "cell": 35,
+      "file": "scout_trail_leggings.png"
+    },
+    {
+      "id": "quarry_greaves",
+      "batch": 5,
+      "cell": 0,
+      "file": "quarry_greaves.png"
+    },
+    {
+      "id": "creekwarden_waders",
+      "batch": 5,
+      "cell": 1,
+      "file": "creekwarden_waders.png"
+    },
+    {
+      "id": "bramble_chaps",
+      "batch": 5,
+      "cell": 2,
+      "file": "bramble_chaps.png"
+    },
+    {
+      "id": "emberlined_skirt",
+      "batch": 5,
+      "cell": 3,
+      "file": "emberlined_skirt.png"
+    },
+    {
+      "id": "astral_fold_wraps",
+      "batch": 5,
+      "cell": 4,
+      "file": "astral_fold_wraps.png"
+    },
+    {
+      "id": "shepherds_carrier_wraps",
+      "batch": 5,
+      "cell": 5,
+      "file": "shepherds_carrier_wraps.png"
+    },
+    {
+      "id": "softstep_boots",
+      "batch": 5,
+      "cell": 6,
+      "file": "softstep_boots.png"
+    },
+    {
+      "id": "rubble_cleats",
+      "batch": 5,
+      "cell": 7,
+      "file": "rubble_cleats.png"
+    },
+    {
+      "id": "ferrymans_boots",
+      "batch": 5,
+      "cell": 8,
+      "file": "ferrymans_boots.png"
+    },
+    {
+      "id": "counterweight_boots",
+      "batch": 5,
+      "cell": 9,
+      "file": "counterweight_boots.png"
+    },
+    {
+      "id": "cometstep_boots",
+      "batch": 5,
+      "cell": 10,
+      "file": "cometstep_boots.png"
+    },
+    {
+      "id": "starless_anchor_boots",
+      "batch": 5,
+      "cell": 11,
+      "file": "starless_anchor_boots.png"
+    },
+    {
+      "id": "plank_buckler",
+      "batch": 5,
+      "cell": 12,
+      "file": "plank_buckler.png"
+    },
+    {
+      "id": "riveted_guard_shield",
+      "batch": 5,
+      "cell": 13,
+      "file": "riveted_guard_shield.png"
+    },
+    {
+      "id": "field_triage_kit",
+      "batch": 5,
+      "cell": 14,
+      "file": "field_triage_kit.png"
+    },
+    {
+      "id": "cartmasters_tether_reel",
+      "batch": 5,
+      "cell": 15,
+      "file": "cartmasters_tether_reel.png"
+    },
+    {
+      "id": "charred_signal_lantern",
+      "batch": 5,
+      "cell": 16,
+      "file": "charred_signal_lantern.png"
+    },
+    {
+      "id": "glacier_page_focus",
+      "batch": 5,
+      "cell": 17,
+      "file": "glacier_page_focus.png"
+    },
+    {
+      "id": "tide_bastion",
+      "batch": 5,
+      "cell": 18,
+      "file": "tide_bastion.png"
+    },
+    {
+      "id": "meridian_field_projector",
+      "batch": 5,
+      "cell": 19,
+      "file": "meridian_field_projector.png"
+    },
+    {
+      "id": "parcelkeepers_string",
+      "batch": 5,
+      "cell": 20,
+      "file": "parcelkeepers_string.png"
+    },
+    {
+      "id": "glass_filter_charm",
+      "batch": 5,
+      "cell": 21,
+      "file": "glass_filter_charm.png"
+    },
+    {
+      "id": "flicker_charm",
+      "batch": 5,
+      "cell": 22,
+      "file": "flicker_charm.png"
+    },
+    {
+      "id": "field_seal_knot",
+      "batch": 5,
+      "cell": 23,
+      "file": "field_seal_knot.png"
+    },
+    {
+      "id": "bloodtrail_pendant",
+      "batch": 5,
+      "cell": 24,
+      "file": "bloodtrail_pendant.png"
+    },
+    {
+      "id": "second_chance_button",
+      "batch": 5,
+      "cell": 25,
+      "file": "second_chance_button.png"
+    },
+    {
+      "id": "rootbound_heart",
+      "batch": 5,
+      "cell": 26,
+      "file": "rootbound_heart.png"
+    },
+    {
+      "id": "deadstar_orbit_pendant",
+      "batch": 5,
+      "cell": 27,
+      "file": "deadstar_orbit_pendant.png"
+    },
+    {
+      "id": "field_crossbow",
+      "batch": 5,
+      "cell": 28,
+      "file": "field_crossbow.png"
+    },
+    {
+      "id": "brace_hook_pike",
+      "batch": 5,
+      "cell": 29,
+      "file": "brace_hook_pike.png"
+    },
+    {
+      "id": "triage_baton",
+      "batch": 5,
+      "cell": 30,
+      "file": "triage_baton.png"
+    },
+    {
+      "id": "cinderhook_blade",
+      "batch": 5,
+      "cell": 31,
+      "file": "cinderhook_blade.png"
+    },
+    {
+      "id": "serpentglass_wand",
+      "batch": 5,
+      "cell": 32,
+      "file": "serpentglass_wand.png"
+    },
+    {
+      "id": "mooncord_sling",
+      "batch": 5,
+      "cell": 33,
+      "file": "mooncord_sling.png"
+    },
+    {
+      "id": "saltward_flail",
+      "batch": 5,
+      "cell": 34,
+      "file": "saltward_flail.png"
+    },
+    {
+      "id": "starburst_caster",
+      "batch": 5,
+      "cell": 35,
+      "file": "starburst_caster.png"
     }
   ],
   "races": [
@@ -931,6 +1363,14 @@
     "races_batch_001.png": {
       "sha256": "02eb37a856727c5675a693cbd75cf8b4c4a2bd2422e0118b62c7b76f3c8908c0",
       "source": "staging-ui/equipment-icons-v1/races_batch_001.png"
+    },
+    "items_batch_004.png": {
+      "sha256": "2e858fa49805245e9a7941938f019173a80cf56101bf1070f201d83d320b3fa9",
+      "source": "staging-ui/equipment-icons-v1/items_batch_004.png"
+    },
+    "items_batch_005.png": {
+      "sha256": "0d4941c431cccb1a5f1d087bf903fa42b539fc2eb53bc3b359873d082bdf3590",
+      "source": "staging-ui/equipment-icons-v1/items_batch_005.png"
     }
   }
 }

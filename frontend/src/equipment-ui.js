@@ -20,6 +20,24 @@ export function describeGear(item, perks={}) {
   if(item.element)lines.push(`${label(item.element)} attacks: racial resistance −25%, weakness +25% damage. Nonlethal strikes ignore enchantments.`);
   if(item.combat_skill)lines.push(`Grants ${item.combat_skill.name}: ${item.combat_skill.description} Uses ${(item.combat_skill.scaling||item.weapon_scaling||'str').toUpperCase()}.`);
   if(item.on_hit)lines.push(`${item.on_hit.chance}% ${label(item.on_hit.id)} chance on a successful lethal hit; ${item.on_hit.turns} activations. 4% maximum HP per activation (2–5 damage). Does not stack.`);
+  const rules=item.combat_rules||{};
+  if(rules.carry_strength)lines.push(`+${rules.carry_strength} effective STR for carrying only; strongest equipped bonus applies, capped at +6.`);
+  if(rules.throw_range)lines.push(`+${rules.throw_range} tile of payload throw range; total range remains capped at 5.`);
+  if(rules.breach_damage)lines.push(`+${rules.breach_damage} damage against destructible structures; strongest bonus applies.`);
+  if(rules.guard_heal)lines.push(`Guard restores ${rules.guard_heal} HP, up to maximum HP. Uses your action. Strongest bonus applies, capped at 4.`);
+  if(rules.water_walk)lines.push('Shallow water terrain costs 1 movement. Climbing costs still apply; does not cross pits.');
+  if(rules.rubble_walk)lines.push('Rubble and destroyed structures cost 1 terrain movement. Climbing costs still apply.');
+  if(rules.opening_guard)lines.push('Begin the battle guarding: halves the first incoming attack until hit or the next round.');
+  if(rules.subdue_gloves)lines.push('Enables melee Subdue with any equipped weapon.');
+  if(rules.lifeline)lines.push('Once per battle, survive lethal damage at 1 HP. Does not prevent nonlethal capture. Multiple safeguards share one use.');
+  if(rules.wounded_damage)lines.push(`+${rules.wounded_damage} direct damage against enemies at half HP or lower. Damage-over-time excluded.`);
+  if(rules.boss_damage)lines.push(`+${rules.boss_damage} direct damage against bosses. Damage-over-time excluded.`);
+  if(rules.resistances?.length){
+    const effects=['Matching elements deal 25% less damage'];
+    if(rules.resistances.includes('poison'))effects.push('Poison procs blocked');
+    if(rules.resistances.includes('burn'))effects.push('Burn proc chance halved');
+    lines.push(`Equipment resistance: ${rules.resistances.map(label).join(', ')}. ${effects.join('; ')}. Equipment and race resistance do not stack.`);
+  }
   for(const perk of item.granted_perks||[])lines.push(`${perks[perk]?.name||label(perk)}: ${perks[perk]?.effect||perks[perk]?.description||'Granted while equipped.'}`);
   return lines;
 }

@@ -1278,3 +1278,7 @@ for _item_id, _item in ITEMS.items():
 
 from .progression_content import apply_progression
 apply_progression(BUILDINGS, MISSION_TEMPLATES, ITEMS, PERK_TRACKS, GUILD_HALL_UPGRADES)
+from .gear_progression import apply_slot_gear
+apply_slot_gear(ITEMS,MISSION_TEMPLATES,GENERAL_LOOT_TABLE,EVENT_REWARD_TABLES)
+for _item_id,_item in ITEMS.items():
+    _item['icon']=f'/assets/catalogue/items/{_item_id}.png'

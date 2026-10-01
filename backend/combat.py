@@ -11,9 +11,12 @@ from .tactical_contracts import TACTICAL_CONTRACTS
 from .portraits import choose_pool_portrait, portrait_pool_key
 from .races import race_gameplay
 from .perk_effects import modifiers
+from .equipment_rules import collect_rules,equipped_skills
 
 
 STATUS_DEFINITIONS = {
+    "lifeline_ready":{"name":"Survival safeguard","icon":"✧","description":"Equipped gear can prevent one lethal defeat this battle, leaving this unit at 1 HP. Does not prevent a nonlethal capture."},
+    "lifeline_spent":{"name":"Safeguard spent","icon":"◇","description":"This unit's once-per-battle survival safeguard has been used. The next lethal hit can defeat them."},
     "stun": {"name": "Stun", "icon": "✦", "description": "Cannot act during the next activation."},
     "sleep": {"name": "Sleep", "icon": "Zz", "description": "Cannot act. Taking direct damage wakes the unit."},
     "poison": {"name": "Poison", "icon": "☠", "description": "Takes damage at activation start; armor does not reduce it."},
@@ -257,6 +260,7 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
         None
     )
     equipped_ids = set(character.get("equipment", {}).values())
+    basic_special=deepcopy(special)
     equipped = [ITEMS.get(instance["item_id"], {}) for instance in state.get("inventory", []) if instance["instance_id"] in equipped_ids]
     skill_item = weapon if weapon.get("combat_skill") else next((item for item in equipped if item.get("combat_skill")), {})
     granted_skill = skill_item.get("combat_skill")
@@ -273,6 +277,10 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
     combat_training = {"none": 0, "basic": 1, "skilled": 2, "expert": 3, "master": 4}.get(character.get("perks", {}).get("combat", "none"), 0)
     if granted_skill:
         special["attack"] += combat_training
+    skills=equipped_skills(equipped,lambda key:_effective_attribute(state,character,key),combat_training,
+                           fallback=basic_special,weapon=weapon)
+    if skills:special=skills[0]
+    rules=collect_rules(equipped)
     race = character.get("race", "Human")
     racial = race_gameplay(race)
     perks = modifiers(state,character,ITEMS,'combat')
@@ -286,18 +294,19 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
         "initiative": 10 + agi + int(racial["initiative_bonus"]) + perks.get('initiative',0), "attack_range": attack_range,
         "evasion": int(racial["evasion"]) + perks.get('evasion',0), "movement_type": racial["movement_type"],
         "perk_modifiers":perks,
-        "racial_resistances": list(racial["resistances"]), "racial_weaknesses": list(racial["weaknesses"]),
+        "racial_resistances": sorted(set(racial["resistances"])|set(rules['resistances'])), "racial_weaknesses": list(racial["weaknesses"]),
+        "gear_rules":rules,
         "race": race, "race_summary": racial["summary"],
         "strength": strength, "weight": _race_weight(character.get("race", "human")),
         "attack": 5 + scaling_value // 2 + int(weapon.get("power", 0)) + combat_training,
         "attack_elevation_rule": "ballistic" if ranged else "ignore" if magical else "melee",
-        "nonlethal_capable": weapon_type in {"unarmed", "hammer", "club", "mace"} or "nonlethal" in weapon.get("tags", []),
+        "nonlethal_capable": weapon_type in {"unarmed", "hammer", "club", "mace"} or "nonlethal" in weapon.get("tags", []) or rules.get('subdue_gloves',False),
         "weapon": weapon.get("name", "Unarmed"), "scaling": scaling,
         "element": weapon.get("element"), "on_hit": deepcopy(weapon.get("on_hit")),
         "portrait": character.get("portrait_thumbnail") or character.get("portrait", ""),
-        "special": special, "special_used": False, "guarding": False,
+        "special": special, "skills":skills, "special_used": False, "guarding": rules.get('opening_guard',False),
         "moved": False, "acted": False, "alive": True, "conscious": True, "condition": "active",
-        "statuses": [], "carrying": None, "carrying_object": None, "carried_by": None, "panicked": False, "fled": False,
+        "statuses": ([{'id':'lifeline_ready'}] if rules.get('lifeline') else []), "carrying": None, "carrying_object": None, "carried_by": None, "panicked": False, "fled": False,
         "loyalty": 100 if character.get("is_player") or character["id"] == "player" else int(character.get("loyalty", 100)),
         "player_avatar": bool(character.get("is_player") or character["id"] == "player"),
     }
@@ -767,7 +776,7 @@ def _movement_limit(unit: dict) -> int:
 
 
 def _carry_penalty(unit: dict, weight: int) -> int:
-    capacity = max(1, int(unit.get("strength", 5)) // 3)
+    capacity = max(1, (int(unit.get("strength", 5))+unit.get('gear_rules',{}).get('carry_strength',0)) // 3)
     return max(0, min(3, int(weight) - capacity + 1))
 
 
@@ -789,13 +798,18 @@ def _step_cost(battle: dict, x: int, y: int, nx: int, ny: int, unit: dict) -> in
         return 1
     climb = _tile_height(battle, nx, ny) - _tile_height(battle, x, y)
     elevation_cost = max(1, climb * 2)
-    _, ground = _ground_at(battle, nx, ny)
+    material, ground = _ground_at(battle, nx, ny)
     terrain_cost = max(
         [int(tile.get("movement_cost", 1)) for tile in _terrain_at(battle, nx, ny) if not tile.get("destroyed")]
         + [int(tile.get("destroyed_movement_cost", 1)) for tile in _terrain_at(battle, nx, ny) if tile.get("destroyed")]
         + [int(ground.get("movement_cost", 1))]
         + [1]
     )
+    rules=unit.get('gear_rules',{})
+    kinds={tile.get('kind') for tile in _terrain_at(battle,nx,ny)}
+    water=bool(kinds.intersection({'shallow_water','water'})) or material.startswith('water')
+    rubble='rubble' in kinds or 'rubble' in material or any(tile.get('destroyed') for tile in _terrain_at(battle,nx,ny))
+    if water and rules.get('water_walk') or rubble and rules.get('rubble_walk'):terrain_cost=1
     return elevation_cost + terrain_cost - 1
 
 
@@ -1068,9 +1082,13 @@ def _deal_damage(
         attacker = {**attacker, "attack": ability.get("attack", attacker["attack"]),
                     "attack_elevation_rule": ability["elevation_rule"],
                     "element": ability.get("element", attacker.get("element")),
-                    "on_hit": ability.get("on_hit", attacker.get("on_hit"))}
+                    "on_hit": ability.get("on_hit", attacker.get("on_hit")),"weapon":ability.get('source_name',attacker.get('weapon',''))}
     armor = max(0, int(target.get("armor", 0)) - armor_pierce)
     damage = max(1, int(attacker["attack"]) + bonus - armor)
+    if not attacker.get('status_tick'):
+        rules=attacker.get('gear_rules',{})
+        if target['hp']<=target.get('max_hp',target['hp'])*.5:damage+=rules.get('wounded_damage',0)
+        if target.get('boss') or target.get('kind') in {'chieftain','boss'}:damage+=rules.get('boss_damage',0)
     perks=attacker.get('perk_modifiers',{})
     if target.get('race') in {'Goblin','Hobgoblin','Bugbear'}:damage+=perks.get('damage_goblin',0)
     if target.get('race') in {'Undead','Revenant','Banshee','Vampire'}:damage+=perks.get('damage_deathless',0)
@@ -1094,6 +1112,10 @@ def _deal_damage(
         target["guarding"] = False
         _record_sound(battle, "shield_block", offset=185)
     target["hp"] = max(0, int(target["hp"]) - damage)
+    if target['hp']==0 and intent!='nonlethal' and target.get('gear_rules',{}).get('lifeline') and not target.get('lifeline_used'):
+        target['hp']=1;target['lifeline_used']=True
+        target['statuses']=[s for s in target.get('statuses',[]) if s.get('id')!='lifeline_ready']+[{'id':'lifeline_spent'}]
+        battle['log'].append(f"{target['name']}'s survival safeguard leaves them at 1 HP. It is spent for this battle.")
     if not attacker.get("status_tick"):
         target["statuses"] = [status for status in target.get("statuses", []) if status.get("id") != "sleep"]
     proc = attacker.get("on_hit")
@@ -1601,6 +1623,14 @@ def _advance_to_player(battle: dict) -> None:
         safety += 1
 
 
+def _guard(battle: dict,unit: dict) -> None:
+    unit['guarding']=True
+    heal=min(unit.get('gear_rules',{}).get('guard_heal',0),unit['max_hp']-unit['hp'])
+    if heal>0:
+        unit['hp']+=heal
+        battle['log'].append(f"{unit['name']} recovers {heal} HP while guarding.")
+
+
 def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
     objective_runner = max(_living(battle, "player"), key=lambda candidate: (candidate["move"], candidate["initiative"], candidate["id"]))
     world_has_active_objects = any(obj["state"] in {"locked", "active"} for obj in battle["objects"].values())
@@ -1627,15 +1657,14 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
         if non_chiefs:
             targets = non_chiefs
         else:
-            unit["guarding"] = True; unit["acted"] = True
-            _record_sound(battle, "guard")
+            _guard(battle,unit); unit["acted"] = True
             _record_sound(battle, "guard")
             chief_name = battle.get("units", {}).get("gob_chief", {}).get("name", "the goblin chieftain")
             battle["log"].append(f"{unit['name']} holds back from {chief_name} while the other objectives remain unfinished.")
             _finish_turn(battle)
             return
-    available_skill = unit.get("special") if not unit.get("special_used") else None
-    auto_range = max(unit["attack_range"], available_skill["range"] if available_skill else 0)
+    available_skills=(unit.get('skills') or ([unit['special']] if unit.get('special') else [])) if not unit.get('special_used') else []
+    auto_range = max([unit['attack_range']]+[s['range'] for s in available_skills])
     in_range = [candidate for candidate in targets if _can_attack(battle, unit, candidate, auto_range)]
     target_priority = lambda candidate: (
         0 if tactic == "objective" and candidate.get("capture_role") == "live_target" else 1,
@@ -1647,11 +1676,22 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
         if in_range else
         min(targets, key=lambda candidate: (target_priority(candidate), _distance(unit, candidate)))
     )
+    capturing=tactic=='objective' and target.get('capture_role')=='live_target'
+    if capturing:
+        safe_ranges=([1] if unit.get('nonlethal_capable') else [])+[s['range'] for s in available_skills if s.get('nonlethal')]
+        if not safe_ranges:
+            _guard(battle,unit);unit['acted']=True
+            battle['log'].append(f"{unit['name']} holds fire rather than killing the capture target.")
+            _finish_turn(battle)
+            return
+        auto_range=max(safe_ranges)
     if not _can_attack(battle, unit, target, auto_range) and not pursuing_objective:
         _move_toward(battle, unit, target)
     if _can_attack(battle, unit, target, auto_range):
-        nonlethal = tactic == "objective" and target.get("capture_role") == "live_target" and unit.get("nonlethal_capable")
-        special = None if nonlethal else unit.get("special")
+        nonlethal = tactic == "objective" and target.get("capture_role") == "live_target" and unit.get("nonlethal_capable") and _can_attack(battle,unit,target,1)
+        choices=[s for s in available_skills if _can_attack(battle,unit,target,s['range']) and (not capturing or s.get('nonlethal'))]
+        special=max(choices,key=lambda s:(s.get('armor_pierce',0)+s.get('damage_bonus',0),s.get('attack',unit['attack']))) if choices and not nonlethal else None
+        if special:unit['special']=special
         use_skill = bool(special and not unit.get("special_used") and _can_attack(battle, unit, target, special["range"]))
         if not use_skill and not _can_attack(battle, unit, target, 1 if nonlethal else unit["attack_range"]):
             unit["acted"] = True
@@ -1673,7 +1713,7 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
         attack_name = "a nonlethal takedown" if nonlethal else special["name"] if use_skill else unit["weapon"]
         battle["log"].append(f"{unit['name']} uses {attack_name} on {target['name']} for {damage} damage." if hit else f"{unit['name']} misses {target['name']} ({roll} vs {preview['chance']}% accuracy).")
     elif tactic == "defensive":
-        unit["guarding"] = True
+        _guard(battle,unit)
         _record_sound(battle, "guard")
         battle["log"].append(f"{unit['name']} takes a guarded stance.")
     unit["acted"] = True
@@ -1778,7 +1818,7 @@ def _throw_profile(battle: dict, unit: dict) -> dict | None:
     if not payload:
         return None
     strength = int(unit.get("strength", 5))
-    throw_range = max(1, min(5, 1 + strength // 4 - max(0, weight - 2)))
+    throw_range = max(1, min(5, 1 + strength // 4 - max(0, weight - 2)+unit.get('gear_rules',{}).get('throw_range',0)))
     damage = max(1, impact + strength // 3 + weight // 2)
     return {
         "payload_id": payload["id"], "payload_name": payload["name"], "payload_kind": payload_kind,
@@ -1843,7 +1883,7 @@ def _damage_terrain(battle: dict, unit: dict, target_id: str) -> None:
     tile = next((item for item in battle.get("terrain", []) if item.get("id") == target_id), None)
     if not tile or not tile.get("destructible") or tile.get("destroyed"):
         raise ValueError("That terrain cannot be damaged")
-    damage = max(1, int(unit.get("attack", 1)) - int(tile.get("armor", 0)))
+    damage = max(1, int(unit.get("attack", 1)) - int(tile.get("armor", 0))+unit.get('gear_rules',{}).get('breach_damage',0))
     tile["hp"] = max(0, int(tile.get("hp", tile.get("max_hp", 10))) - damage)
     battle["log"].append(f"{unit['name']} strikes {tile['name']} for {damage} damage.")
     if tile["hp"] <= 0:
@@ -1967,6 +2007,13 @@ def battle_view(battle: dict) -> dict:
                 actor, approach = _attack_position(view, current, target, reach, reachable, parents) if available else (None, None)
                 previews[action] = {**_attack_preview(view, actor, target, rule), **(approach or {})} if actor else None
             view['attack_previews'][target['id']] = previews
+        view['skill_previews']={}
+        for choice in current.get('skills',[]):
+            entries={}
+            for target in _living(view,'enemy'):
+                actor,approach=_attack_position(view,current,target,choice['range'],reachable,parents) if not current.get('acted') and not current.get('special_used') else (None,None)
+                entries[target['id']]={**_attack_preview(view,actor,target,choice['elevation_rule']),**(approach or {})} if actor else None
+            view['skill_previews'][choice['id']]=entries
         view['terrain_attack_previews'] = {}
         for tile in view.get('terrain', []):
             if not tile.get('destructible') or tile.get('destroyed') or current.get('acted'):
@@ -2162,6 +2209,10 @@ def apply_player_command(battle: dict, command: dict) -> dict:
     elif action in {"attack", "skill", "subdue"}:
         if unit.get("acted"):
             raise ValueError("This unit already used its action")
+        if action=='skill' and command.get('skill_id'):
+            choice=next((s for s in unit.get('skills',[]) if s['id']==command['skill_id']),None)
+            if not choice:raise ValueError('That skill is not granted by the equipped gear')
+            unit['special']=choice
         target_id = str(command.get("target_id", ""))
         terrain_target = next((
             tile for tile in battle.get("terrain", [])
@@ -2258,7 +2309,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         if unit.get("acted"):
             raise ValueError("This unit already used its action")
         _commit_player_movement(battle, unit)
-        unit["guarding"] = True; unit["acted"] = True
+        _guard(battle,unit); unit["acted"] = True
         _record_sound(battle, "guard")
         battle["log"].append(f"{unit['name']} guards against the next attack.")
     elif action == "interact":

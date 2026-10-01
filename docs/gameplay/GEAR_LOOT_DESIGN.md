@@ -1,6 +1,6 @@
 # Gear and loot design
 
-Implemented September 30, 2026. The live catalogue has 108 items; this pass adds 28. `backend/gear_expansion.py` contains the additions and cache assignments, `backend/mission_loot.py` controls mixed cache rolls, and `backend/combat.py` applies actual abilities and enchantments.
+Updated October 1, 2026. The live catalogue has 180 items. The September pass added 28 tactical items; this pass adds 56 equipment pieces to a live baseline of 124. `backend/gear_expansion.py` and `backend/gear_progression.py` contain additions and placements, `backend/mission_loot.py` controls mixed cache rolls, and `backend/combat.py` applies actual abilities and enchantments. See [the complete catalogue audit](ITEM_CATALOGUE_AUDIT.md) for counts, individual effects and drop sources.
 
 ## Drop sequence
 
@@ -23,7 +23,7 @@ Missed caches only pay fallback gold when that contract actually pays gold. Fail
 
 Ordinary gear now includes a capture cudgel, apprentice wand, armor-piercing Hooked Spear, nonlethal Weighted Sling, fire-enchanted Coalbrand Sabre, poison-focused Venomthorn Bow, lightning Stormglass Rod, and legendary Mercykeeper's Maul. Five events each add a Common, Uncommon and Rare weapon to their existing higher-tier pool.
 
-An equipment skill replaces the current single special-action slot, once per battle, using the normal action cost. A weapon skill takes priority over a skill from another equipped slot. Every new skill declares range, STR/DEX/INT scaling, armor piercing, damage adjustment, nonlethal behavior and elevation rules. Both manual and auto battle honor those fields. This is not yet a multi-spell hotbar.
+All equipped techniques are available in a selector beside the battle Skill action. The weapon technique is the initial choice; skills from offhand, gloves or accessories remain selectable. All choices share one use per battle and the normal action cost. Every new skill declares range, STR/DEX/INT scaling, armor piercing, damage adjustment, nonlethal behavior and elevation rules. Selection updates authoritative target/approach previews; the server validates the equipped technique ID and remaining charge. Auto battle chooses an in-range technique and respects nonlethal rescue objectives. This is not an unlimited spell hotbar.
 
 Fire/Ice/Holy match existing Burn/Freeze/Radiant racial affinities. Matching elemental resistance reduces damage 25%; weakness increases it 25%. Lightning and Void affect matching affinities when present. Magic damage also follows existing magic-resistance rules. A magic skill explicitly ignores elevation; a magical bow still uses ballistic rules. Enchantments do not amplify nonlethal takedowns.
 
@@ -41,8 +41,22 @@ Burn/Poison effects occur only after a successful lethal hit that leaves the tar
 
 Each has a separate 14% discovery check on success and 22% on critical success. The check requires follow-up provenance; opening a raw final template does not qualify. These items are neither ordinary cache drops nor guaranteed progression rewards. Existing chain entry/continuation probabilities and rank gates also apply. They are rare equipment discoveries, not globally unique Champion-style ownership records; multiple copies remain possible through distinct completed chains.
 
+## October slot/build expansion
+
+Added 6 head, 6 body, 6 hands, 8 legs, 6 feet, 8 offhand, 8 accessories and 8 weapons. Plain early equipment remains useful and inexpensive in power; higher tiers offer conditional or positional choices rather than uniformly larger attributes. Six existing items also receive utility: Gravity Boots, Tower Shield, Ironcap Buckler, Saint's Censer, Bell of Last Rites and Starfall Core.
+
+Numeric equipment rules use the strongest equipped bonus, with caps: carrying STR +6, throwing range +1 (total range at most 5), structure damage +3, Guard recovery +4 HP, wounded-target direct damage +2 and boss direct damage +2. Carrying STR does not improve ordinary attacks or thrown damage. Guard recovery costs the action normally; it cannot revive unconscious units. Regeneration perks keep their existing shared +4 HP/round cap and duplicate perk IDs do not stack.
+
+Water/rubble gear reduces the relevant terrain cost to 1 while preserving elevation movement costs, impassable cliffs and pits. Opening Guard protects against the first direct hit or expires at the next round. Capture Gloves unlock melee Subdue regardless of weapon. Equipment resistances join racial resistances without stacking; elemental mitigation and Poison/Burn proc protection retain existing rules.
+
+Survival safeguards leave the wearer at 1 HP on one lethal attack, thrown impact or damaging status tick per battle. Multiple equipped safeguards share that one use; nonlethal capture bypasses them. They are not an escape or resurrection guarantee.
+
+The pass adds 18 restricted discoveries: six E-rank revisiting incentives, four other authored mission finds, five nonweapon chain rewards, two live-capture-only rewards and a Starfall tomb relic. Each has an independent rate listed in the audit. The new chain pieces roll 4% on success / 6% critical success in addition to the existing 14% / 22% weapon relic checks. The Starfall pendant rolls 2% / 4%. Killing the chieftain/cartmaster removes the new capture-exclusive opportunity. Ordinary/faction/event caches exclude all 43 mission-exclusive items.
+
+Nonexclusive new equipment enters mixed general caches and suitable Goblin, Procession, Arcane, Beast Tide and Starfall caches. New Common/Uncommon pieces begin at E; Rare at C, Epic at B, Legendary at A, Mythic at S. Existing tables retain their authored rank exceptions. Rare low-rank jackpots use separate checks, so they remain worth seeking later without flooding higher-rank pools.
+
 ## Names and remaining scope
 
 **Proficiencies** are Basic → Skilled → Expert → Master training tracks. **Perks** are distinctive traits, backgrounds, racial traits and equipment-granted properties. Internal saved `perks` track fields and existing endpoints remain compatible to preserve progress.
 
-The equipment browser is under Roster → Equipment. It pages item types, stacks duplicates, searches names/elements/abilities, filters by slot/rarity, sorts, identifies owners and supports named transfers and quick unequip. On-mission equipment stays locked; injured characters can change gear. Comparisons show attribute/weapon-power differences, not a misleading universal gear score. Granted effects are expandable. A dedicated shared armory, loadouts, multi-skill selection, consumable actions and deeper capture/branch-specific pools remain future passes.
+The equipment browser is under Roster → Equipment. It pages item types, stacks duplicates, searches names/elements/abilities, filters by slot/rarity, sorts, identifies owners and supports named transfers and quick unequip. On-mission equipment stays locked; injured characters can change gear. Comparisons show attribute/weapon-power differences, not a universal gear score. Granted effects include the actual bounded equipment rules. A dedicated shared armory, loadouts, consumable actions and further branch-specific pools remain future passes.

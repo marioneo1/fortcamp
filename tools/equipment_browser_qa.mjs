@@ -21,4 +21,16 @@ await evaluate(`{let q=document.querySelector('.armory-filters input');q.value='
 const shot=await call('Page.captureScreenshot',{format:'png'});writeFileSync('staging-ui/equipment-icons-v1/equipment-desktop.png',Buffer.from(shot.data,'base64'));
 await call('Emulation.setDeviceMetricsOverride',{width:390,height:844,deviceScaleFactor:1,mobile:true});await new Promise(r=>setTimeout(r,200));
 await check(`document.documentElement.scrollWidth<=innerWidth`,'narrow inventory has no horizontal overflow');
-if(errors.length)throw Error(errors.join('\n'));console.log('PASS no equipment script errors');ws.close();
+await call('Emulation.setDeviceMetricsOverride',{width:1100,height:1000,deviceScaleFactor:1,mobile:false});
+await call('Page.navigate',{url:'http://127.0.0.1:8766/staging-ui/equipment-icons-v1/battle-preview.html'});
+await new Promise(r=>setTimeout(r,1300));
+await check(`window.gearReady&&document.querySelector('#battle-gear-skill')?.options.length>=2`,'actual battle renders all equipped techniques');
+await evaluate(`{let s=document.querySelector('#battle-gear-skill');s.value='field_lance';s.dispatchEvent(new Event('change'))}`);
+await check(`document.querySelector('[data-combat-mode="skill"]').textContent.includes('Field Lance')`,'choosing an offhand technique updates the real Skill action');
+await evaluate(`window.gearRender()`);
+await check(`document.querySelector('#battle-gear-skill').value==='field_lance'`,'technique selection survives battle refresh');
+await evaluate(`window.gearSend()`);
+await check(`window.gearCommands.at(-1).skill_id==='field_lance'`,'battle command sends selected equipped technique ID');
+await evaluate(`window.gearPreparation()`);
+await check(`!!document.querySelector('.battlefield')`,'defense preparation still renders');
+if(errors.length)throw Error(errors.join('\n'));console.log('PASS no equipment or battle script errors');ws.close();
