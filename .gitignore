@@ -3,6 +3,8 @@ __pycache__/
 *.pyc
 .env
 .fortcamp-releases/
+.fortcamp-release.json
+.fortcamp-release-destination.json
 .env.*
 !.env.example
 *.db

@@ -1,5 +1,8 @@
 @echo off
 cd /d "%~dp0"
-title Fortcamp Friend Trial
-.venv\Scripts\python.exe tools\run_profile.py stable
-if errorlevel 1 pause
+if exist .fortcamp-release.json (
+  call run_release_windows.bat
+) else (
+  echo This is the development copy. Run run_release_windows.bat in the sibling release folder.
+  pause
+)
