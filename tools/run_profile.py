@@ -23,7 +23,7 @@ def profile_config(profile):
     if profile=='stable':
         env.update(DEV_BYPASS_AUTH='false',GAME_DEBUG_MODE='false',MISSION_TIME_SCALE='1.0',BOT_ENABLED='true',DISCORD_TEST_GUILD_ID='')
         pointer=ROOT/'.fortcamp-releases'/'current.json'
-        if not pointer.exists():raise SystemExit('Run update_stable_windows.bat first.')
+        if not pointer.exists():raise SystemExit('Prepare a sibling release with create_release_windows.bat and launch it from that folder.')
         cwd=(ROOT/json.loads(pointer.read_text())['release']).resolve()
         if not cwd.is_relative_to((ROOT/'.fortcamp-releases').resolve()):raise ValueError('Invalid release location')
         return env,cwd,[5173]

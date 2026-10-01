@@ -34,3 +34,5 @@ data/portrait_sheets/*
 !data/portrait_sheets/README.md
 data/champion_portraits/**/*.webp
 frontend/node_modules/
+# Generated only in prepared release copies; alpha has no release launch shortcut.
+/run_release_windows.bat

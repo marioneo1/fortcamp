@@ -2,6 +2,8 @@
 
 The current workspace stays the development copy on Git branch `main`. The friend trial is an independent Git clone on branch `release`, connected to the same GitHub repository. It has its own `.env`, virtual environment, source, built frontend, generic/Champion portraits, and frontend art/audio assets. No junctions or shared code directories are used.
 
+The alpha folder has no release or stable launchers. `create_release_windows.bat` prepares a new sibling copy; it does not start production. Its release launcher is generated only inside the new release folder. Dev deliberately uses a single window for backend and frontend output; Ctrl+C stops both. A separate tunnel window is unnecessary for local browser development.
+
 ## Folders
 
 - Development: `E:/Other Games/Fortcamp/fortcamp-alpha-0.3.1/fortcamp-alpha-0.3.1`

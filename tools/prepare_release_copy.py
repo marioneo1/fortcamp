@@ -64,6 +64,8 @@ def main():
         else:(data/'portraits').mkdir()
     info={'version':args.version,'commit':commit,'branch':'release','runtime_data':str(data),'created_at':datetime.now().isoformat()}
     (target/'.fortcamp-release.json').write_text(json.dumps(info,indent=2))
+    # Only release copies receive a release launcher; keep alpha's entry points unambiguous.
+    (target/'run_release_windows.bat').write_text('@echo off\ncd /d "%~dp0"\ntitle Fortcamp Release\n.venv\\Scripts\\python.exe tools\\run_profile.py release\nif errorlevel 1 pause\n')
     subprocess.run(['git','-c','user.name=Fortcamp Workspace','-c','user.email=workspace@fortcamp.invalid','tag','-a',tag,commit,'-m',f'Fortcamp {args.version} friend trial'],cwd=ROOT,check=True)
     subprocess.run(['git','push','origin',f'refs/tags/{tag}'],cwd=ROOT,check=True)
     subprocess.run(['git','fetch','origin','--tags'],cwd=target,check=True)
