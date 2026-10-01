@@ -132,7 +132,7 @@ class ReservationTests(unittest.IsolatedAsyncioTestCase):
                     self.assertEqual(player.state['characters'][0]['status'],'idle')
                     self.assertEqual(claim_budget(player.state,self.ts,self.ts,self.ts+5)['remaining'],0)
                     self.assertEqual(claim_budget(player.state,self.ts,self.ts,self.ts+65)['remaining'],5)
-                    self.assertEqual(claim_budget(player.state,self.ts,self.ts,self.ts+125)['remaining'],3)
+                    self.assertEqual(claim_budget(player.state,self.ts,self.ts,self.ts+125)['remaining'],13)
 
     async def test_owned_contract_is_private_then_starts_and_resolves_immediately(self):
         with patch('backend.services.now_ts',return_value=self.ts+5):

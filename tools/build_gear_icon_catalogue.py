@@ -43,15 +43,11 @@ def main():
         conflicts = [out / row["file"] for row in rows if (out / row["file"]).exists()]
         if conflicts:
             raise SystemExit(f"Refusing to overwrite {conflicts[0]}; preserve existing icons before explicitly replacing a sheet")
+        from tools.audit_catalogue_crops import source_icons,recovered_icon
+        silhouettes,parts,labels=source_icons(source,columns,row_count,len(rows))
         for row in rows:
-            x, y = row["cell"] % columns, row["cell"] // columns
-            box = (round(x * source.width / columns), round(y * source.height / row_count), round((x + 1) * source.width / columns), round((y + 1) * source.height / row_count))
             target = out / row["file"]
-            tile = source.crop(box)
-            tile.thumbnail((192, 192), Image.Resampling.LANCZOS)
-            framed = Image.new("RGBA", (192, 192))
-            framed.alpha_composite(tile, ((192 - tile.width) // 2, (192 - tile.height) // 2))
-            framed.save(target)
+            recovered_icon(source,silhouettes[row['cell']],parts,labels).save(target)
         print(f"Extracted {len(rows)} {args.kind} icons")
     else:
         specs = []

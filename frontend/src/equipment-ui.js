@@ -8,7 +8,7 @@ export function saveHideEquipped(storage,key,value){
 const ranks = ['common','uncommon','rare','epic','legendary','mythic','event','story'];
 const escape = value => String(value??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const label = value => String(value??'').replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
-export const iconPath = (id, kind='items') => `/assets/catalogue/${kind}/${id.toLowerCase().replaceAll('-','_').replaceAll(' ','_').replaceAll("'",'')}.png`;
+export const iconPath = (id, kind='items') => `/assets/catalogue/${kind}/${id.toLowerCase().replaceAll('-','_').replaceAll(' ','_').replaceAll("'",'')}.png?v=crops-20261001`;
 const icon = id => `<img class="catalogue-icon" src="${escape(iconPath(id))}" alt="" loading="lazy">`;
 
 export function describeGear(item, perks={}) {

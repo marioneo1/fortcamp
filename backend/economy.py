@@ -137,13 +137,7 @@ def camp_action(state,action,**data):
         if blueprint in state['learned_blueprints']:raise ValueError('Blueprint already learned')
         pay(state,RESEARCH[blueprint]);state['learned_blueprints'].append(blueprint)
     elif action=='hire':
-        from .game import _make_generic
-        archetype=data.get('archetype','builder')
-        if archetype not in {'builder','fighter','scout','medic'}:raise ValueError('Choose an ordinary camp specialist')
-        count=int(state.get('hires',0));pay(state,{'gold':30+20*count})
-        recruit=_make_generic(archetype,random.Random(f'{state["trade"]["seed"]}:hire:{count}:{archetype}'))
-        recruit['perks']={ {'builder':'building','fighter':'combat','scout':'survival','medic':'medicine'}[archetype]:'basic'}
-        state['characters'].append(recruit);state['hires']=count+1
+        raise ValueError('Camp hiring is unavailable. Find recruits through missions.')
     elif action=='eat':
         meal=data.get('meal');character=next((c for c in state['characters'] if c['id']==data.get('character_id')),None)
         if not character or character.get('status')=='mission':raise ValueError('Choose a character at camp')

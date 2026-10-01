@@ -187,10 +187,11 @@ def claim_budget(state, slot, started_at, ts=None):
     ts=now_ts() if ts is None else ts
     age=max(0,ts-started_at)
     phase='wave1' if age<60 else 'wave2' if age<120 else 'free'
-    limit=3+int(state.get('claim_upgrade',0)) if phase=='free' else 5
+    solo_bonus=10 if len(state.get('characters',[]))==1 else 0
+    limit=3+int(state.get('claim_upgrade',0))+solo_bonus if phase=='free' else 5
     ledger=state.get('contract_points',{})
     used=int(ledger.get('spent',{}).get(phase,0)) if ledger.get('slot')==slot else 0
-    return {'phase':phase,'remaining':max(0,limit-used),'limit':limit,
+    return {'phase':phase,'remaining':max(0,limit-used),'limit':limit,'solo_bonus':solo_bonus if phase=='free' else 0,
             'next_phase_at':started_at+(60 if phase=='wave1' else 120) if phase!='free' else None,
             'costs':POINT_COST}
 

@@ -11,7 +11,7 @@ test('inventory stacks copies without losing ownership, and filters skills/eleme
 });
 test('descriptions include actual skills, enchantment and granted perk effects',()=>{
   const text=describeGear({description:'A rod.',element:'fire',combat_skill:{name:'Flare',description:'Once per battle.'},granted_perks:['guard']},{guard:{name:'Guard',effect:'+1 armor'}}).join(' ');
-  assert.match(text,/Flare/);assert.match(text,/25%/);assert.match(text,/\+1 armor/);assert.equal(iconPath('Half-Orc','races'),'/assets/catalogue/races/half_orc.png');
+  assert.match(text,/Flare/);assert.match(text,/25%/);assert.match(text,/\+1 armor/);assert.equal(iconPath('Half-Orc','races').split('?')[0],'/assets/catalogue/races/half_orc.png');assert.match(iconPath('Half-Orc','races'),/\?v=/);
 });
 
 test('hide equipped removes occupied copies but keeps spares and the equipped slots intact',()=>{

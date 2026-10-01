@@ -19,7 +19,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, Response
 from fastapi.staticfiles import StaticFiles
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, select
 
 from .auth import IdentityDep, create_session_token, exchange_discord_code, verify_discord_identity
@@ -127,6 +127,14 @@ class CharacterCreate(BaseModel):
     stats: dict[str, int] = {}
     attributes: dict[str, int] = {}
     perks: dict[str, str] = {}
+
+    @field_validator('race')
+    @classmethod
+    def known_starting_race(cls, value):
+        from .races import RACE_CATALOG
+        if value not in RACE_CATALOG or RACE_CATALOG[value][0]=='Limited':
+            raise ValueError('Choose a starting race from the race dropdown')
+        return value
 
 
 class NewGameRequest(BaseModel):

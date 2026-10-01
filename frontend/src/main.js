@@ -9,6 +9,7 @@ import {createMusicPlayer,musicTransitionPolicy} from './music-player.js';
 import {mountDecisionScene} from './mission-scene-ui.js';
 import {createAudioMixer,mountAudioSettings,audioCategory} from './audio-settings.js';
 import {raceEffects,perkModifiers} from './character-effects.js';
+import {mountCharacterCreator} from './character-creator.js';
 import {attackCommand,nextCombatMode,approachDescription} from './combat-targeting.js';
 import {mountReservation} from './mission-reservation-ui.js';
 import {renderCampEconomy} from './camp-economy-ui.js';
@@ -220,7 +221,7 @@ async function init(){
     await setupIdentity(); content=await rawApi('/api/content');
     $('#loading').classList.add('hidden'); $('#identity-label').textContent=`${identity.display_name} · server ${identity.guild_id}${debugEnabled()?' · DEBUG':''}`;
     const data=await rawApi('/api/state');
-    if(data.exists){state=data.state;showGame()}else{$('#creator').classList.remove('hidden');renderCreatorStats()}
+    if(data.exists){state=data.state;showGame()}else{$('#creator').classList.remove('hidden');mountCharacterCreator($('#creator'),content);renderCreatorStats()}
   }catch(e){$('#loading').classList.remove('hidden');$('#loading-text').textContent=e.message;console.error(e)}
 }
 
@@ -316,7 +317,7 @@ function syncRegionalTheme(){
 }
 function renderMissions(){
   if(!pool)return;$('#pool-countdown').textContent=countdown(pool.next_refresh);$('#mission-rank-label').textContent=`${pool.rank}-RANK`;$('#pool-player-count').textContent=`Pool scaled for ${pool.active_players??pool.registered_players} active player${(pool.active_players??pool.registered_players)===1?'':'s'}`;
-  if(pool.budget)$('#pool-player-count').innerHTML+=` · ${pool.budget.phase==='free'?'Free-for-all':pool.budget.phase==='wave1'?'Wave 1':'Wave 2'} · ${pool.budget.remaining}/${pool.budget.limit} Contract Points${pool.budget.next_phase_at?` · next phase <span data-phase-countdown data-countdown-end="${pool.budget.next_phase_at}">${countdown(pool.budget.next_phase_at)}</span>`:''}`;
+  if(pool.budget)$('#pool-player-count').innerHTML+=` · ${pool.budget.phase==='free'?'Free-for-all':pool.budget.phase==='wave1'?'Wave 1':'Wave 2'} · ${pool.budget.remaining}/${pool.budget.limit} Contract Points${pool.budget.solo_bonus?' · +10 solo bonus':''}${pool.budget.next_phase_at?` · next phase <span data-phase-countdown data-countdown-end="${pool.budget.next_phase_at}">${countdown(pool.budget.next_phase_at)}</span>`:''}`;
   const eventBanner=$('#mission-event-banner'),event=pool.event||{id:'general'};
   syncRegionalTheme();
   eventBanner.className=`event-banner guild-board-event event-${event.theme||'general'}`;stableBoardHTML(eventBanner,eventHeader(event));syncContractNavigation();
