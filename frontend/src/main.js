@@ -1,3 +1,5 @@
+import {patchLiveHTML,captureMovingPositions,restartWalking,trackBattleAnimation} from './live-dom.js';
+import {createLatestMovement} from './latest-movement.js';
 import {createBoardVFX} from './board-vfx.js';
 import {boardIcon,rankSeal,missionCard,eventHeader,filterChips,stableBoardHTML} from './mission-board-ui.js';
 import {createAmbientPlayer,ambientContext} from './ambient-player.js';
@@ -33,7 +35,9 @@ const rosterCollectionOpen={champions:false,celestials:false,prisoners:false};
 const appearanceEditorOpen={};
 const appearanceDrafts={};
 const rosterFilters={query:'',status:'',race:'',kind:'',sort:'name',page:0};
-let rosterDetailTab='overview',rosterNeedsRefresh=false;
+let rosterDetailTab='overview',rosterNeedsRefresh=false,baseNeedsRefresh=true;
+const latestMovement=createLatestMovement();
+let inFlightCombatAction=null;
 let missionPlanner=null,analysisSequence=0;
 const missionFilters={query:'',rank:'',form:'',available:true,sort:'shortest'};
 let missionClaimPending=false,activeDecisionMission=null;
@@ -228,14 +232,14 @@ function updateLiveCountdowns(){
   if(due&&Date.now()-lastDeadlineRefresh>600){lastDeadlineRefresh=Date.now();refreshDynamic()}
 }
 function showGame(){ $('#game').classList.remove('hidden');syncMusic(); refreshAll(); if(!pollTimer)pollTimer=setInterval(refreshDynamic,5000);if(!clockTimer)clockTimer=setInterval(updateLiveCountdowns,250); }
-async function refreshAll(){renderResources();renderBase();renderRoster();await refreshDynamic()}
+async function refreshAll(){renderResources();rosterNeedsRefresh=true;baseNeedsRefresh=true;await refreshDynamic()}
 function refreshDynamic(){
   if(dynamicRefreshPromise)return dynamicRefreshPromise;
   dynamicRefreshPromise=(async()=>{try{
     const previous=new Map(activeMissions.map(m=>[m.id,m.status]));
     const [p,pc,a]=await Promise.all([rawApi('/api/missions/pool'),rawApi('/api/private-contracts'),rawApi('/api/missions/active')]);
     const s=await rawApi('/api/state');
-    pool=p;syncMusic();
+    pool=p;syncRegionalTheme();syncMusic();
     privateContracts=pc.missions||[];
     const incoming=a.missions;
     if(dynamicReady){
@@ -250,19 +254,35 @@ function refreshDynamic(){
     }
     const uiState=value=>value&&JSON.stringify({characters:value.characters?.map(({practice,...c})=>c),buildings:value.buildings,inventory:value.inventory,prisoners:value.prisoners,rank:value.mission_rank,size:value.base_size,claims:value.claim_upgrade,blueprints:value.learned_blueprints,meals:value.meals});
     const stateChanged=!!(s.exists&&uiState(s.state)!==uiState(state));
-    activeMissions=incoming;dynamicReady=true;if(s.exists)state=s.state;renderResources();renderMissions();renderPrivateContracts();renderActive();updateLiveCountdowns();
-    if(stateChanged)rosterNeedsRefresh=true;
-    if(rosterNeedsRefresh&&!document.querySelector('#tab-roster input:focus, #tab-roster textarea:focus, #tab-roster select:focus'))renderRoster();
-    if(stateChanged&&!document.querySelector('#tab-base select:focus'))renderBase();
-    $$('[data-build]').forEach(button=>{const costs=content.buildings[button.dataset.build]?.cost||{};button.disabled=Object.entries(costs).some(([r,n])=>(state.resources[r]||0)<n)});
+    activeMissions=incoming;dynamicReady=true;if(s.exists)state=s.state;renderResources();
+    if(stateChanged){rosterNeedsRefresh=true;baseNeedsRefresh=true}
+    renderVisiblePanels();updateLiveCountdowns();
+    if($('.tabs button.active')?.dataset.tab==='base')$$('[data-build]').forEach(button=>{const costs=content.buildings[button.dataset.build]?.cost||{};button.disabled=Object.entries(costs).some(([r,n])=>(state.resources[r]||0)<n)});
     if(stateChanged&&$('.mission-planner')&&!$('#mission-modal').classList.contains('hidden'))missionPlanner?.refresh(state.characters);
   }catch(e){console.warn(e.message)}})().finally(()=>{dynamicRefreshPromise=null});
   return dynamicRefreshPromise;
 }
 
-$$('.tabs button').forEach(btn=>btn.onclick=()=>{$$('.tabs button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');$$('.tab-panel').forEach(x=>x.classList.add('hidden'));$(`#tab-${btn.dataset.tab}`).classList.remove('hidden');syncMusic();syncContractNavigation()});
+$$('.tabs button').forEach(btn=>btn.onclick=()=>{$$('.tabs button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');$$('.tab-panel').forEach(x=>x.classList.add('hidden'));$(`#tab-${btn.dataset.tab}`).classList.remove('hidden');syncMusic();renderVisiblePanels();syncContractNavigation()});
 
-function renderResources(){if(!state)return;$('#resources').innerHTML=Object.entries(state.resources).map(([k,v])=>`<div class="resource"><b>${v}</b><span>${title(k)}</span></div>`).join('')}
+function renderResources(){
+  if(!state)return;const root=$('#resources');
+  for(const [key,value] of Object.entries(state.resources)){
+    let node=root.querySelector(`[data-resource="${key}"]`);
+    if(!node){node=document.createElement('div');node.className='resource';node.dataset.resource=key;const count=document.createElement('b'),label=document.createElement('span');label.textContent=title(key);node.append(count,label);root.append(node)}
+    const text=String(value);if(node.firstChild.textContent!==text)node.firstChild.textContent=text;
+  }
+  for(const node of [...root.children])if(!(node.dataset.resource in state.resources))node.remove();
+}
+function renderVisiblePanels(){
+  if(activeBattleView||activeDecisionMission){syncContractNavigation();return}
+  const tab=$('.tabs button.active')?.dataset.tab;
+  if(tab==='missions'){renderMissions();renderActive()}
+  else if(tab==='private'){renderPrivateContracts();syncContractNavigation()}
+  else if(tab==='roster'&&rosterNeedsRefresh&&!$('#tab-roster input:focus, #tab-roster textarea:focus, #tab-roster select:focus')){renderRoster()}
+  else if(tab==='base'&&baseNeedsRefresh&&!$('#tab-base select:focus')){renderBase();baseNeedsRefresh=false}
+}
+
 function portraitHTML(c,small=false,viewable=false){const cls=`portrait ${small?'smallp':''} ${c.status!=='idle'?'deployed':''} ${viewable?'viewable':''}`;if(c.portrait){const full=portraitSrc(c.portrait),thumb=portraitSrc(c.portrait_thumbnail||c.portrait);return `<img class="${cls}" draggable="${c.status==='idle'}" data-char="${c.id}" src="${esc(thumb)}" ${viewable?`data-portrait-view="${esc(full)}" data-portrait-name="${esc(c.name)}"`:''} title="${esc(c.name)}" onerror="this.outerHTML='<div class=&quot;${cls}&quot; title=&quot;Portrait could not be loaded&quot;>${initials(c.name)}</div>'">`}return `<div class="${cls}" draggable="${c.status==='idle'}" data-char="${c.id}">${initials(c.name)}</div>`}
 
 function syncContractNavigation(){
@@ -274,12 +294,16 @@ function syncContractNavigation(){
   });
 }
 
+function syncRegionalTheme(){
+  const event=pool?.event||{id:'general'};
+  const themeClass=event.id==='general'?null:`theme-${event.theme}`;
+  for(const theme of ['goblin','undead','arcane','beast','starfall'])document.body.classList.toggle(`theme-${theme}`,`theme-${theme}`===themeClass);
+}
 function renderMissions(){
   if(!pool)return;$('#pool-countdown').textContent=countdown(pool.next_refresh);$('#mission-rank-label').textContent=`${pool.rank}-RANK`;$('#pool-player-count').textContent=`Pool scaled for ${pool.active_players??pool.registered_players} active player${(pool.active_players??pool.registered_players)===1?'':'s'}`;
   if(pool.budget)$('#pool-player-count').textContent+=` · ${pool.budget.phase==='free'?'Free-for-all':pool.budget.phase==='wave1'?'Wave 1':'Wave 2'} · ${pool.budget.remaining}/${pool.budget.limit} Contract Points${pool.budget.next_phase_at?` · next phase ${countdown(pool.budget.next_phase_at)}`:''}`;
   const eventBanner=$('#mission-event-banner'),event=pool.event||{id:'general'};
-  document.body.classList.remove('theme-goblin','theme-undead','theme-arcane','theme-beast','theme-starfall');
-  if(event.id!=='general')document.body.classList.add(`theme-${event.theme}`);
+  syncRegionalTheme();
   eventBanner.className=`event-banner guild-board-event event-${event.theme||'general'}`;stableBoardHTML(eventBanner,eventHeader(event));syncContractNavigation();
   const debugBox=$('#debug-pool-controls');debugBox.classList.toggle('hidden',!debugEnabled());
   if(debugEnabled()&&!$('#debug-pool-event').options.length){$('#debug-pool-event').innerHTML=Object.entries(content.mission_events).map(([id,e])=>`<option value="${id}">${esc(e.name)}</option>`).join('');$('#debug-force-refresh').onclick=async()=>{const btn=$('#debug-force-refresh');btn.disabled=true;try{const d=await rawApi('/api/debug/missions/refresh',{method:'POST',body:JSON.stringify({event_id:$('#debug-pool-event').value})});toast(`Forced ${d.event.name}`);await refreshDynamic()}catch(err){toast(err.message)}finally{btn.disabled=false}};$('#debug-goblin-battle').onclick=()=>launchDebugBattle($('#debug-goblin-battle'),'/api/debug/battles/goblin-warcamp','Goblin Warcamp battle')}
@@ -502,13 +526,19 @@ function tileActionsForBattle(b,x,y){
   return actions;
 }
 
-function animateBattleMovement(previous,battle,durationFloor=260){
+function animateBattleMovement(previous,battle,durationFloor=260,movingPositions=new Map()){
   const animationEvents=[...(battle.animation_events||[])];
   battle.animation_events=[];
   if(!previous||previous.encounter_id!==battle.encounter_id)return;
   const field=$('.battlefield');if(!field)return;
   const cellWidth=field.getBoundingClientRect().width/battle.width,cellHeight=field.getBoundingClientRect().height/battle.height;
   if(animationEvents.length){
+    const actingId=previous.current_unit_id,actingToken=field.querySelector(`[data-battle-unit="${CSS.escape(actingId||'')}"]`);
+    if(movingPositions.has(actingId)&&!animationEvents.some(event=>event.unit_id===actingId&&event.type==='movement')){
+      const remaining=Math.max(0,...(actingToken?.getAnimations()||[]).map(a=>Number(a.effect.getTiming().duration)-Number(a.currentTime||0)));
+      if(remaining>0)animationEvents.unshift({type:'sound',cues:[],duration:Math.min(remaining,350)});
+    }
+    const animatedUnits=new Set();
     playBattleSounds(battle,animationEvents);
     let delay=0;
     animationEvents.forEach(event=>{
@@ -526,8 +556,7 @@ function animateBattleMovement(previous,battle,durationFloor=260){
           {transform:`translate(${dx}px,${dy}px) scale(${attackerScale*1.08})`,offset:.52},
           {transform:`translate(0,0) scale(${attackerScale})`,offset:1},
         ],{duration:420,delay,easing:'cubic-bezier(.2,.8,.25,1)',fill:'forwards'});
-        const finishAttack=()=>attackerToken.classList.remove('is-attacking');
-        lunge.addEventListener('finish',finishAttack,{once:true});lunge.addEventListener('cancel',finishAttack,{once:true});
+        trackBattleAnimation(attackerToken,lunge,'is-attacking');
         if(event.hit){
           targetToken.classList.add('is-hit');
           const impactX=Math.sign(target.x-attacker.x)*cellWidth*.12,impactY=Math.sign(target.y-attacker.y)*cellHeight*.12;
@@ -537,8 +566,7 @@ function animateBattleMovement(previous,battle,durationFloor=260){
             {transform:`translate(${-impactX*.25}px,${-impactY*.25}px) scale(${targetScale})`,filter:'brightness(.8)',offset:.55},
             {transform:`translate(0,0) scale(${targetScale})`,filter:'brightness(1)',offset:1},
           ],{duration:300,delay:delay+185,easing:'ease-out',fill:'forwards'});
-          const finishImpact=()=>targetToken.classList.remove('is-hit');
-          impact.addEventListener('finish',finishImpact,{once:true});impact.addEventListener('cancel',finishImpact,{once:true});
+          trackBattleAnimation(targetToken,impact,'is-hit');
         }
         delay+=490;
         return;
@@ -546,6 +574,8 @@ function animateBattleMovement(previous,battle,durationFloor=260){
       const unit=battle.units?.[event.unit_id],points=event.points||[];
       const token=field.querySelector(`[data-battle-unit="${CSS.escape(event.unit_id)}"]`);
       if(!unit||!token||!points.length)return;
+      const offset=animatedUnits.has(unit.id)?null:restartWalking(token,movingPositions.get(unit.id));
+      animatedUnits.add(unit.id);
       const baseScale=unit.id===battle.current_unit_id?1.15:1;
       const frames=[];
       if(points.length===1){
@@ -556,13 +586,12 @@ function animateBattleMovement(previous,battle,durationFloor=260){
         frames.push({transform:`translate(${((from.x+to.x)/2-unit.x)*cellWidth}px, ${((from.y+to.y)/2-unit.y)*cellHeight-5}px) scale(${baseScale*1.025}) rotate(${index%2?2:-2}deg)`,opacity:1,offset:middle});
       }
       frames.push({transform:`translate(0,0) scale(${baseScale}) rotate(0deg)`,opacity:event.extracted?0:1,offset:1});
+      if(offset)frames[0].transform=`translate(${offset.x}px,${offset.y}px) scale(${baseScale})`;
       token.classList.remove('extracted');
       token.classList.add('is-walking');
       const duration=Math.max(220,Math.min(850,Math.max(1,points.length-1)*155));
       const animation=token.animate(frames,{duration,delay,easing:'ease-in-out',fill:'both'});
-      const finishWalking=()=>{token.classList.remove('is-walking');if(event.extracted)token.classList.add('extracted')};
-      animation.addEventListener('finish',finishWalking,{once:true});
-      animation.addEventListener('cancel',finishWalking,{once:true});
+      trackBattleAnimation(token,animation,'is-walking',()=>{if(event.extracted)token.classList.add('extracted')});
       delay+=duration+70;
     });
     return;
@@ -578,6 +607,7 @@ function animateBattleMovement(previous,battle,durationFloor=260){
       points=previousIndex>=0?[{x:before.x,y:before.y},...fullPath.slice(previousIndex+1)]:[{x:before.x,y:before.y},{x:unit.x,y:unit.y}];
     }
     if(points.length<2||points.at(-1).x!==unit.x||points.at(-1).y!==unit.y)points.push({x:unit.x,y:unit.y});
+    const offset=restartWalking(token,movingPositions.get(unit.id));
     const baseScale=unit.id===battle.current_unit_id?1.15:1;
     const frames=[];
     for(let index=0;index<points.length-1;index++){
@@ -587,12 +617,11 @@ function animateBattleMovement(previous,battle,durationFloor=260){
     }
     frames.push({transform:`translate(0px, 0px) scale(${baseScale}) rotate(0deg)`,offset:1});
     token.classList.add('is-walking');
+    if(offset)frames[0].transform=`translate(${offset.x}px,${offset.y}px) scale(${baseScale})`;
     const duration=Math.max(durationFloor,Math.min(950,(points.length-1)*190));
     playWalkingSounds(battle,unit,points,duration);
     const animation=token.animate(frames,{duration,easing:'ease-in-out'});
-    const finishWalking=()=>token.classList.remove('is-walking');
-    animation.addEventListener('finish',finishWalking,{once:true});
-    animation.addEventListener('cancel',finishWalking,{once:true});
+    trackBattleAnimation(token,animation,'is-walking');
   });
 }
 function renderBattlePreparation(b){
@@ -614,7 +643,8 @@ function renderBattlePreparation(b){
   const options=(prep.available||[]).map(option=>{const used=(prep.placements||[]).filter(row=>row.type===option.id).length,disabled=prep.remaining<option.cost||used>=option.limit;return `<button class="prep-option ${selectedPreparation.mode==='defense'&&selectedPreparation.id===option.id?'active':''}" data-prep-defense="${esc(option.id)}" ${disabled?'disabled':''} title="${esc(option.description)}"><b>${esc(option.name)}</b><span>${option.cost} points · ${used}/${option.limit}</span><small>${esc(option.description)}</small></button>`}).join('');
   const deployButtons=party.map(unit=>`<button class="prep-unit ${selectedPreparation.mode==='deploy'&&selectedPreparation.id===unit.id?'active':''}" data-prep-unit="${unit.id}"><b>${esc(unit.name)}</b><span>Position ${unit.x+1},${unit.y+1}</span></button>`).join('');
   const bonus=[];if(prep.race_bonus)bonus.push(`+${prep.race_bonus} race`);if(prep.gear_bonus)bonus.push(`+${prep.gear_bonus} equipment`);
-  $('#mission-detail').innerHTML=`<div class="battle-header preparation-header"><div><div class="eyebrow">DEFENSE PREPARATION</div><h2>${esc(b.name)}</h2><p>Choose a defense, then click a blue tile. Choose a character, then click a gold deployment tile. Placed defenses can be removed for a full refund until battle begins.</p></div><div class="prep-budget"><b>${prep.remaining}</b><span>of ${prep.budget} points left</span><small>${prep.base_budget} base${bonus.length?` · ${bonus.join(' · ')}`:''}</small></div></div><div class="battle-layout"><div class="battle-viewport" id="battle-viewport"><div class="battlefield preparing terrain-style-custom-painted theme-${b.theme||'wilds'}" style="--battle-w:${b.width};--battle-h:${b.height};--battle-scale-width:${battleZoom*100}%;--battle-scale-min:${Math.round(b.width*72*battleZoom)}px">${cells}${elevations}${decorations}${terrain}${units}</div></div><aside class="battle-sidebar prep-sidebar"><div class="battle-camera"><b>Map view</b><button data-battle-zoom="out">−</button><button data-battle-zoom="reset">${Math.round(battleZoom*100)}%</button><button data-battle-zoom="in">+</button></div><section><h3>Field defenses</h3><div class="prep-options">${options}</div></section><section><h3>Deploy party</h3><div class="prep-units">${deployButtons}</div></section><button id="start-defense" class="primary big">Start Defense</button><div class="prep-legend"><span><i class="prep-swatch"></i>Defense zone</span><span><i class="deploy-swatch"></i>Deployment zone</span></div><div class="battle-log">${(b.log||[]).slice().reverse().map(line=>`<p>${esc(line)}</p>`).join('')}</div></aside></div>`;
+  const movingPositions=captureMovingPositions($('.battlefield'));
+  patchLiveHTML($('#mission-detail'),`<div class="battle-header preparation-header"><div><div class="eyebrow">DEFENSE PREPARATION</div><h2>${esc(b.name)}</h2><p>Choose a defense, then click a blue tile. Choose a character, then click a gold deployment tile. Placed defenses can be removed for a full refund until battle begins.</p></div><div class="prep-budget"><b>${prep.remaining}</b><span>of ${prep.budget} points left</span><small>${prep.base_budget} base${bonus.length?` · ${bonus.join(' · ')}`:''}</small></div></div><div class="battle-layout"><div class="battle-viewport" id="battle-viewport"><div class="battlefield preparing terrain-style-custom-painted theme-${b.theme||'wilds'}" style="--battle-w:${b.width};--battle-h:${b.height};--battle-scale-width:${battleZoom*100}%;--battle-scale-min:${Math.round(b.width*72*battleZoom)}px">${cells}${elevations}${decorations}${terrain}${units}</div></div><aside class="battle-sidebar prep-sidebar"><div class="battle-camera"><b>Map view</b><button data-battle-zoom="out">−</button><button data-battle-zoom="reset">${Math.round(battleZoom*100)}%</button><button data-battle-zoom="in">+</button></div><section><h3>Field defenses</h3><div class="prep-options">${options}</div></section><section><h3>Deploy party</h3><div class="prep-units">${deployButtons}</div></section><button id="start-defense" class="primary big">Start Defense</button><div class="prep-legend"><span><i class="prep-swatch"></i>Defense zone</span><span><i class="deploy-swatch"></i>Deployment zone</span></div><div class="battle-log">${(b.log||[]).slice().reverse().map(line=>`<p>${esc(line)}</p>`).join('')}</div></aside></div>`);
   $$('[data-prep-defense]').forEach(button=>button.onclick=()=>{selectedPreparation={mode:'defense',id:button.dataset.prepDefense};renderBattlePreparation(b)});
   $$('[data-prep-unit]').forEach(button=>button.onclick=()=>{selectedPreparation={mode:'deploy',id:button.dataset.prepUnit};renderBattlePreparation(b)});
   $$('[data-battle-unit]').forEach(token=>{const unit=b.units[token.dataset.battleUnit];if(unit?.team==='player'&&!unit.defense_objective)token.onclick=e=>{e.stopPropagation();selectedPreparation={mode:'deploy',id:unit.id};renderBattlePreparation(b)}});
@@ -622,7 +652,7 @@ function renderBattlePreparation(b){
   $$('[data-prep-remove]').forEach(button=>button.onclick=e=>{e.stopPropagation();sendCombat({action:'remove_defense',target_id:button.dataset.prepRemove})});
   $('#start-defense').onclick=()=>sendCombat({action:'start_battle'});
   $$('[data-battle-zoom]').forEach(button=>button.onclick=()=>{battleZoom=button.dataset.battleZoom==='reset'?DEFAULT_BATTLE_ZOOM:Math.max(.5,Math.min(1.75,battleZoom+(button.dataset.battleZoom==='in'?.25:-.25)));renderBattlePreparation(b)});
-  requestAnimationFrame(()=>animateBattleMovement(previousBattle,b,140));
+  requestAnimationFrame(()=>animateBattleMovement(previousBattle,b,140,movingPositions));
 }
 function renderBattle(b){
   if(activeBattleView?.current_unit_id!==b.current_unit_id)selectedCombatAction='move';
@@ -664,12 +694,13 @@ function renderBattle(b){
   const usedMaterials=[...new Set((b.ground_tiles||[]).map(tile=>tile.material))].map(material=>{const info=groundMaterials[material]||{name:title(material),description:''};return `<span title="${esc(info.description||'')}"><i class="ground-swatch ground-${material}"></i>${esc(info.name)}</span>`}).join('');
   const mapLegend=`<div class="battle-map-legend"><b>Terrain</b><div>${usedMaterials}<span title="Higher terrain affects movement and physical accuracy"><i class="legend-height">▲</i>Elevation</span><span title="Guild extraction region"><i class="legend-exit">↙</i>Exit</span></div></div>`;
   const actionHelp={move:`Choose any green tile. Path numbers show cumulative movement cost.${throwProfile?` Carrying ${throwProfile.payload_name} applies a ${current?.carried_payload_penalty||0}-point movement penalty from STR versus weight.`:''} Shallow water and rubble cost 2. Uphill movement costs 2 per level and a single step can climb at most 2 levels.`,attack:'Hover a target to preview your approach. Click a reachable target outside weapon range, then choose Move & Attack to commit. After attacking, controls return to Move. Walls and gates can also be attacked.',subdue:'Make a reduced-damage adjacent attack to knock the target unconscious. Hover to preview an approach; choose Move & Subdue to commit. Requires an unarmed or blunt-capable weapon. Returns to Move after use.',throw:throwProfile?`Throw ${throwProfile.payload_name} at an enemy. STR ${throwProfile.strength} against weight ${throwProfile.weight} gives range ${throwProfile.range} and ${throwProfile.damage} base impact before armor. The payload lands beside the target.`:'Pick up a portable object or carry an unconscious body before throwing.',skill:`${special?.description||'No combat skill is equipped.'} This commits movement and ends the activation.`,context:'Show actions available from the current tile, including objectives, portable objects, bodies, carried units, and extraction handoff.',carry:'Select an adjacent unconscious unit or corpse. The movement penalty is calculated from the carrier’s STR and the target’s weight.',drop:'Put the carried payload into the first safe adjacent tile.',extract_body:'After holding an EXIT for one activation, hand the carried body or prisoner over for free. The carrier may then leave or continue fighting.',interact:'Use an adjacent objective or pick up a portable battlefield object.',guard:'End this activation in a defensive stance. The next incoming hit deals half damage.',end_turn:'End this activation without attacking or gaining Guard.',leave:`Leave through ${b.extraction?.name||'the exit'}. End one activation on an EXIT tile first; Leave becomes available on that character’s next activation.`,retreat_all:'Order every guild fighter to path toward the nearest exit, hold there for one turn, and then leave automatically. Before securing the required objective this concedes the mission; afterward it preserves the victory.'};
-  $('#mission-detail').innerHTML=`<div class="battle-header"><div><div class="eyebrow">TACTICAL BATTLE · ROUND ${b.round}</div><h2>${esc(b.name)}</h2>${currentActor}</div><div class="battle-objectives"><b>Objectives</b><ul>${objectives}</ul></div></div>${victoryPrompt}<div class="turn-order"><b>Turn order</b><div>${turnOrder}</div></div><div class="battle-layout"><div class="battle-viewport" id="battle-viewport"><div class="battlefield terrain-style-custom-painted theme-${b.theme||'wilds'} mode-${selectedCombatAction} ${contextMenuOpen?'context-open':''}" style="--battle-w:${b.width};--battle-h:${b.height};--battle-scale-width:${battleZoom*100}%;--battle-scale-min:${Math.round(b.width*72*battleZoom)}px">${cells}${elevations}${decorations}${terrain}${objects}${units}${bodyMarkers}${tileMenu}</div></div><aside class="battle-sidebar"><div class="battle-camera"><b>Map view</b><button data-battle-zoom="out" title="Zoom out">−</button><button data-battle-zoom="reset" title="Reset zoom">${Math.round(battleZoom*100)}%</button><button data-battle-zoom="in" title="Zoom in">+</button><small>Middle-click to auto-scroll · wheel to scroll</small></div>${mapLegend}<div class="combat-actions ${!current?'combat-locked':''}"><button data-combat-mode="move" data-description="${esc(actionHelp.move)}" title="${esc(actionHelp.move)}" class="${selectedCombatAction==='move'?'active':''}">${combatActionArt('move')}<span><kbd>M</kbd> Move</span></button><button data-combat-mode="attack" data-description="${esc(actionHelp.attack)}" title="${esc(actionHelp.attack)}" class="${selectedCombatAction==='attack'?'active':''}" ${current?.acted?'disabled':''}>${combatActionArt('attack')}<span><kbd>A</kbd> Attack</span></button><button data-combat-mode="subdue" data-description="${esc(actionHelp.subdue)}" title="${esc(actionHelp.subdue)}" class="${selectedCombatAction==='subdue'?'active':''}" ${b.can_subdue?'':'disabled'}>${combatActionArt('subdue')}<span><kbd>N</kbd> Subdue</span></button><button data-combat-mode="throw" data-description="${esc(actionHelp.throw)}" title="${esc(actionHelp.throw)}" class="${selectedCombatAction==='throw'?'active':''}" ${throwProfile&&!current?.acted?'':'disabled'}>${combatActionArt('throw')}<span><kbd>T</kbd> Throw</span></button>${skillButton}<button data-combat-action="guard" data-description="${esc(actionHelp.guard)}" title="${esc(actionHelp.guard)}" ${current?.acted?'disabled':''}>${combatActionArt('guard')}<span><kbd>G</kbd> Guard</span></button><button data-context-toggle data-description="${esc(actionHelp.context)}" title="${esc(actionHelp.context)}" class="${contextMenuOpen?'active':''}" ${contextActions.length?'':'disabled'}>${combatActionArt('interact')}<span><kbd>I</kbd> Actions <span class="action-count">${contextActions.length}</span></span></button><button data-combat-action="end_turn" data-description="${esc(actionHelp.end_turn)}" title="${esc(actionHelp.end_turn)}"><span><kbd>Space</kbd> End Turn</span></button><button data-combat-action="leave" data-description="${esc(actionHelp.leave)}" title="${esc(actionHelp.leave)}" class="leave-map" ${b.can_extract?'':'disabled'}>${combatActionArt('exit')}<span>Leave Map</span></button><button data-combat-action="retreat_all" data-description="${esc(actionHelp.retreat_all)}" title="${esc(actionHelp.retreat_all)}" class="retreat-all ${retreatAllArmed?'armed':''}">${combatActionArt('exit')}<span><kbd>R</kbd> ${retreatAllArmed?'Confirm Retreat All':'Retreat All'}</span></button></div><small class="combat-hotkey-note">Keyboard: M Move · A Attack · N Subdue · T Throw · S Skill · I Actions · G Guard · Space End Turn</small>${contextPanel}<div id="combat-action-help" class="combat-action-help">${esc(actionHelp[selectedCombatAction]||actionHelp.move)}</div><div class="auto-controls"><select id="battle-tactic"><option value="balanced">Balanced</option><option value="objective">Seek Objectives</option><option value="defensive">Defensive</option></select><button id="auto-step">Auto One Turn</button><button id="auto-resolve">Auto Resolve Battle</button></div><div class="battle-log">${(b.log||[]).slice().reverse().map(line=>`<p>${esc(line)}</p>`).join('')}</div></aside></div>`;
+  const movingPositions=captureMovingPositions($('.battlefield'));
+  patchLiveHTML($('#mission-detail'),`<div class="battle-header"><div><div class="eyebrow">TACTICAL BATTLE · ROUND ${b.round}</div><h2>${esc(b.name)}</h2>${currentActor}</div><div class="battle-objectives"><b>Objectives</b><ul>${objectives}</ul></div></div>${victoryPrompt}<div class="turn-order"><b>Turn order</b><div>${turnOrder}</div></div><div class="battle-layout"><div class="battle-viewport" id="battle-viewport"><div class="battlefield terrain-style-custom-painted theme-${b.theme||'wilds'} mode-${selectedCombatAction} ${contextMenuOpen?'context-open':''}" style="--battle-w:${b.width};--battle-h:${b.height};--battle-scale-width:${battleZoom*100}%;--battle-scale-min:${Math.round(b.width*72*battleZoom)}px">${cells}${elevations}${decorations}${terrain}${objects}${units}${bodyMarkers}${tileMenu}</div></div><aside class="battle-sidebar"><div class="battle-camera"><b>Map view</b><button data-battle-zoom="out" title="Zoom out">−</button><button data-battle-zoom="reset" title="Reset zoom">${Math.round(battleZoom*100)}%</button><button data-battle-zoom="in" title="Zoom in">+</button><small>Middle-click to auto-scroll · wheel to scroll</small></div>${mapLegend}<div class="combat-actions ${!current?'combat-locked':''}"><button data-combat-mode="move" data-description="${esc(actionHelp.move)}" title="${esc(actionHelp.move)}" class="${selectedCombatAction==='move'?'active':''}">${combatActionArt('move')}<span><kbd>M</kbd> Move</span></button><button data-combat-mode="attack" data-description="${esc(actionHelp.attack)}" title="${esc(actionHelp.attack)}" class="${selectedCombatAction==='attack'?'active':''}" ${current?.acted?'disabled':''}>${combatActionArt('attack')}<span><kbd>A</kbd> Attack</span></button><button data-combat-mode="subdue" data-description="${esc(actionHelp.subdue)}" title="${esc(actionHelp.subdue)}" class="${selectedCombatAction==='subdue'?'active':''}" ${b.can_subdue?'':'disabled'}>${combatActionArt('subdue')}<span><kbd>N</kbd> Subdue</span></button><button data-combat-mode="throw" data-description="${esc(actionHelp.throw)}" title="${esc(actionHelp.throw)}" class="${selectedCombatAction==='throw'?'active':''}" ${throwProfile&&!current?.acted?'':'disabled'}>${combatActionArt('throw')}<span><kbd>T</kbd> Throw</span></button>${skillButton}<button data-combat-action="guard" data-description="${esc(actionHelp.guard)}" title="${esc(actionHelp.guard)}" ${current?.acted?'disabled':''}>${combatActionArt('guard')}<span><kbd>G</kbd> Guard</span></button><button data-context-toggle data-description="${esc(actionHelp.context)}" title="${esc(actionHelp.context)}" class="${contextMenuOpen?'active':''}" ${contextActions.length?'':'disabled'}>${combatActionArt('interact')}<span><kbd>I</kbd> Actions <span class="action-count">${contextActions.length}</span></span></button><button data-combat-action="end_turn" data-description="${esc(actionHelp.end_turn)}" title="${esc(actionHelp.end_turn)}"><span><kbd>Space</kbd> End Turn</span></button><button data-combat-action="leave" data-description="${esc(actionHelp.leave)}" title="${esc(actionHelp.leave)}" class="leave-map" ${b.can_extract?'':'disabled'}>${combatActionArt('exit')}<span>Leave Map</span></button><button data-combat-action="retreat_all" data-description="${esc(actionHelp.retreat_all)}" title="${esc(actionHelp.retreat_all)}" class="retreat-all ${retreatAllArmed?'armed':''}">${combatActionArt('exit')}<span><kbd>R</kbd> ${retreatAllArmed?'Confirm Retreat All':'Retreat All'}</span></button></div><small class="combat-hotkey-note">Keyboard: M Move · A Attack · N Subdue · T Throw · S Skill · I Actions · G Guard · Space End Turn</small>${contextPanel}<div id="combat-action-help" class="combat-action-help">${esc(actionHelp[selectedCombatAction]||actionHelp.move)}</div><div class="auto-controls"><select id="battle-tactic"><option value="balanced">Balanced</option><option value="objective">Seek Objectives</option><option value="defensive">Defensive</option></select><button id="auto-step">Auto One Turn</button><button id="auto-resolve">Auto Resolve Battle</button></div><div class="battle-log">${(b.log||[]).slice().reverse().map(line=>`<p>${esc(line)}</p>`).join('')}</div></aside></div>`);
   $$('[data-combat-mode]').forEach(btn=>btn.onclick=()=>{retreatAllArmed=false;contextMenuOpen=false;tileActionMenu=null;selectedCombatAction=btn.dataset.combatMode;renderBattle(b)});
   $$('[data-battle-zoom]').forEach(button=>button.onclick=()=>{battleZoom=button.dataset.battleZoom==='reset'?DEFAULT_BATTLE_ZOOM:Math.max(.5,Math.min(1.75,battleZoom+(button.dataset.battleZoom==='in'?.25:-.25)));renderBattle(b)});
   const viewport=$('#battle-viewport');
-  if(viewport){viewport.scrollLeft=battlePan.left;viewport.scrollTop=battlePan.top;viewport.addEventListener('scroll',()=>{battlePan={left:viewport.scrollLeft,top:viewport.scrollTop}},{passive:true})}
-  $('[data-context-toggle]')?.addEventListener('click',()=>{retreatAllArmed=false;contextMenuOpen=!contextMenuOpen;renderBattle(b)});
+  if(viewport){viewport.scrollLeft=battlePan.left;viewport.scrollTop=battlePan.top;viewport.onscroll=()=>{battlePan={left:viewport.scrollLeft,top:viewport.scrollTop}}}
+  const contextToggle=$('[data-context-toggle]');if(contextToggle)contextToggle.onclick=()=>{retreatAllArmed=false;contextMenuOpen=!contextMenuOpen;renderBattle(b)};
   $$('[data-context-action]').forEach(btn=>btn.onclick=()=>{const entry=contextActions[Number(btn.dataset.contextAction)];if(!entry)return;contextMenuOpen=false;retreatAllArmed=false;sendCombat(entry.command)});
   $$('[data-tile-action]').forEach(button=>button.onclick=e=>{e.stopPropagation();const entry=tileActions[Number(button.dataset.tileAction)];if(!entry)return;tileActionMenu=null;sendCombat(entry.command,entry.nextMode)});
   $$('.combat-actions button').forEach(btn=>{btn.onmouseenter=()=>{$('#combat-action-help').textContent=btn.dataset.description||''};btn.onmouseleave=()=>{$('#combat-action-help').textContent=retreatAllArmed?'Warning: Retreat All automatically withdraws the entire party and cannot be cancelled once confirmed.':actionHelp[selectedCombatAction]||actionHelp.move}});
@@ -703,7 +734,7 @@ function renderBattle(b){
     button.onfocus=button.onmouseenter;
   });
   if(tileActionMenu){const entry=tileActions.find(a=>a.command.action===selectedCombatAction);if(entry)showApproach(entry.command.target_id,entry.command.action)}
-  requestAnimationFrame(()=>animateBattleMovement(previousBattle,b));
+  requestAnimationFrame(()=>animateBattleMovement(previousBattle,b,260,movingPositions));
 }
 document.addEventListener('keydown',event=>{
   const tag=event.target?.tagName?.toLowerCase();
@@ -723,10 +754,14 @@ document.addEventListener('keydown',event=>{
   event.preventDefault();button.click();
 });
 async function sendCombat(command,nextMode=null){
-  if(combatRequestPending)return;
-  combatRequestPending=true;
+  const movementContext=`${activeBattleMissionId}:${activeBattleView?.current_unit_id}:${activeBattleView?.round}`;
+  const requestMissionId=activeBattleMissionId;
+  if(combatRequestPending){if(command.action==='move'&&inFlightCombatAction==='move')latestMovement.remember(command,movementContext);return}
+  if(command.action!=='move')latestMovement.clear();
+  combatRequestPending=true;inFlightCombatAction=command.action;
   try{
     const data=await rawApi(`/api/missions/${activeBattleMissionId}/battle/command`,{method:'POST',body:JSON.stringify(command)});
+    if(activeBattleMissionId!==requestMissionId||!activeBattleView||$('#mission-modal').classList.contains('hidden'))return;
     tileActionMenu=null;
     selectedCombatAction=nextCombatMode(command.action,nextMode,selectedCombatAction);
     if(data.result){const local=activeMissions.find(m=>m.id===activeBattleMissionId);if(local){local.status='completed';local.result=data.result}const soundDuration=playBattleSounds(data.battle);activeBattleView=null;retreatAllArmed=false;playOutcomeSound(data.result.outcome,soundDuration);showResult(data.result);await refreshDynamic();return}
@@ -739,11 +774,15 @@ async function sendCombat(command,nextMode=null){
     renderBattle(data.battle);
   }catch(e){
     toast(e.message);
-    if(activeBattleMissionId)try{const fresh=await rawApi(`/api/missions/${activeBattleMissionId}/battle`);renderBattle(fresh.battle)}catch{}
-  }finally{combatRequestPending=false}
+    if(activeBattleMissionId===requestMissionId&&activeBattleView&&!$('#mission-modal').classList.contains('hidden'))try{const fresh=await rawApi(`/api/missions/${requestMissionId}/battle`);if(activeBattleMissionId===requestMissionId&&activeBattleView&&!$('#mission-modal').classList.contains('hidden'))renderBattle(fresh.battle)}catch{}
+  }finally{
+    combatRequestPending=false;inFlightCombatAction=null;
+    const pending=latestMovement.take(`${activeBattleMissionId}:${activeBattleView?.current_unit_id}:${activeBattleView?.round}`);
+    if(pending&&activeBattleView?.status==='active'&&!$('#mission-modal').classList.contains('hidden'))sendCombat(pending);
+  }
 }
 async function sendCombatAuto(resolveAll){if(combatRequestPending)return;combatRequestPending=true;try{const tactic=$('#battle-tactic')?.value||'balanced',data=await rawApi(`/api/missions/${activeBattleMissionId}/battle/auto`,{method:'POST',body:JSON.stringify({tactic,resolve_all:resolveAll})});tileActionMenu=null;selectedCombatAction='move';if(data.result){const local=activeMissions.find(m=>m.id===activeBattleMissionId);if(local){local.status='completed';local.result=data.result}const soundDuration=resolveAll?0:playBattleSounds(data.battle);activeBattleView=null;retreatAllArmed=false;playOutcomeSound(data.result.outcome,soundDuration);showResult(data.result);await refreshDynamic()}else renderBattle(data.battle)}catch(e){toast(e.message)}finally{combatRequestPending=false}}
-$('#mission-close').onclick=()=>{retreatAllArmed=false;tileActionMenu=null;activeBattleView=null;activeDecisionMission=null;$('#mission-modal').classList.add('hidden');syncMusic()};
+$('#mission-close').onclick=()=>{latestMovement.clear();retreatAllArmed=false;tileActionMenu=null;activeBattleView=null;activeDecisionMission=null;$('#mission-modal').classList.add('hidden');syncMusic();renderVisiblePanels()};
 $('#sound-settings-open').onclick=()=>{closeAudioSettings?.();closeAudioSettings=mountAudioSettings($('#sound-settings-content'),audioMixer,name=>playSfx(name,name.startsWith('mission_')?.5:name.startsWith('ui_')?.16:.5));$('#sound-settings-modal').showModal()};
 $('#sound-settings-close').onclick=()=>$('#sound-settings-modal').close();
 $('#sound-settings-modal').addEventListener('close',()=>{closeAudioSettings?.();closeAudioSettings=null});
@@ -817,12 +856,12 @@ function renderSelectedBuilding(){
   if($('#assign-warden'))$('#assign-warden').onclick=async()=>{const selected=$('#warden-select').value;try{if(wardenId&&wardenId!==selected){const removed=await rawApi('/api/assign',{method:'POST',body:JSON.stringify({character_id:wardenId,building_id:null})});state=removed.state}if(selected){const assigned=await rawApi('/api/assign',{method:'POST',body:JSON.stringify({character_id:selected,building_id:b.id})});state=assigned.state}toast(selected?'Warden assigned':'Warden removed');renderBase();renderRoster()}catch(e){toast(e.message)}};
   $$('[data-train]').forEach(button=>button.onclick=async()=>{const track=button.dataset.train,charId=$(`[data-trainee="${track}"]`).value;try{const data=await rawApi('/api/train-perk',{method:'POST',body:JSON.stringify({character_id:charId,track})});state=data.state;toast(`${title(data.training.level)} ${content.perk_tracks[track].name} trained`);renderBase();renderRoster();renderMissions()}catch(e){toast(e.message)}});
 }
-function renderBase(){if(!state||!content)return;renderCampEconomy($('#camp-economy'),{state,content,api:rawApi,onState:value=>{state=value;renderResources();renderBase();renderRoster()},notify:toast});renderBlueprints();renderSelectedBuilding();const idle=state.characters.filter(c=>!c.assignment&&c.status==='idle');$('#idle-zone').innerHTML=idle.length?idle.map(c=>portraitHTML(c)).join(''):'<span class="muted small">No idle unassigned characters.</span>';renderBaseGrid();bindDrag()}
+function renderBase(){if(!state||!content)return;renderCampEconomy($('#camp-economy'),{state,content,api:rawApi,onState:value=>{state=value;rosterNeedsRefresh=true;baseNeedsRefresh=true;renderResources();renderVisiblePanels()},notify:toast});renderBlueprints();renderSelectedBuilding();const idle=state.characters.filter(c=>!c.assignment&&c.status==='idle');patchLiveHTML($('#idle-zone'),idle.length?idle.map(c=>portraitHTML(c)).join(''):'<span class="muted small">No idle unassigned characters.</span>');renderBaseGrid();bindDrag()}
 function renderBaseGrid(){
   const grid=$('#base-grid');if(!grid||!state)return;const placing=!!placementType();let html='';
   grid.style.gridTemplateColumns=`repeat(${state.base_size?.w||content.grid.w},58px)`;for(let y=0;y<(state.base_size?.h||content.grid.h);y++)for(let x=0;x<(state.base_size?.w||content.grid.w);x++)html+=`<div class="grid-cell ${placing?'build-target':''}" data-x="${x}" data-y="${y}" style="grid-column:${x+1};grid-row:${y+1}"></div>`;
   html+=state.buildings.map(b=>{const d=content.buildings[b.type],chars=(b.assigned||[]).map(id=>state.characters.find(c=>c.id===id)).filter(Boolean);return `<div class="building ${b.type} ${b.id===selectedBuildingId?'selected':''}" data-building="${b.id}" style="grid-column:${b.x+1}/span ${d.w};grid-row:${b.y+1}/span ${d.h}"><b>${esc(d.name)}</b><small>${d.w}×${d.h} · ${d.workers?`${chars.length}/${d.workers+(d.production?(b.level||1)-1:0)} assigned`:d.beds?`${d.beds} beds`:'Facility'}</small><div class="assigned">${chars.map(c=>portraitHTML(c,true)).join('')}</div></div>`}).join('');
-  if(placing)html+='<div id="placement-ghost" class="placement-ghost hidden"></div>';grid.innerHTML=html;
+  if(placing)html+='<div id="placement-ghost" class="placement-ghost hidden"></div>';patchLiveHTML(grid,html);
   $$('.grid-cell').forEach(cell=>{
     cell.onmouseenter=()=>{if(placementType())updatePlacementGhost(Number(cell.dataset.x),Number(cell.dataset.y))};
     cell.onclick=async()=>{const type=placementType();if(!type){selectedBuildingId=null;renderSelectedBuilding();renderBaseGrid();return}const x=Number(cell.dataset.x),y=Number(cell.dataset.y);if(!placementValid(type,x,y,moveModeBuildingId||null))return toast('That footprint does not fit there');try{let d;if(moveModeBuildingId)d=await rawApi('/api/move-building',{method:'POST',body:JSON.stringify({building_id:moveModeBuildingId,x,y})});else d=await rawApi('/api/build',{method:'POST',body:JSON.stringify({blueprint_id:buildMode,x,y})});state=d.state;selectedBuildingId=d.building?.id||selectedBuildingId;stopPlacement();renderBase();renderResources();if(d.building?.type==='guild_hall')await refreshDynamic()}catch(e){toast(e.message)}};
@@ -865,12 +904,12 @@ function renderRoster(){
   if(document.activeElement!==raceSelect){raceSelect.innerHTML='<option value="">All races</option>'+races.map(r=>`<option value="${esc(r)}">${esc(r)}</option>`).join('');raceSelect.value=rosterFilters.race}
   $('#roster-toolbar h2 small').textContent=`${state.characters.length} characters`;
   const page=rosterPage(state.characters,rosterFilters,combatMetrics);rosterFilters.page=page.page;
-  $('#roster-page-controls').innerHTML=`<span>${page.total} matching · page ${page.page+1}/${page.pages}</span><button data-roster-page="-1" ${page.page===0?'disabled':''} aria-label="Previous page">←</button><button data-roster-page="1" ${page.page+1===page.pages?'disabled':''} aria-label="Next page">→</button>`;
+  patchLiveHTML($('#roster-page-controls'),`<span>${page.total} matching · page ${page.page+1}/${page.pages}</span><button data-roster-page="-1" ${page.page===0?'disabled':''} aria-label="Previous page">←</button><button data-roster-page="1" ${page.page+1===page.pages?'disabled':''} aria-label="Next page">→</button>`);
   $$('[data-roster-page]').forEach(el=>el.onclick=()=>{rosterFilters.page+=Number(el.dataset.rosterPage);$('#roster-list').scrollTop=0;renderRoster()});
   if(!$('#roster-collections'))$('.roster-layout').insertAdjacentHTML('afterend','<div id="roster-collections" class="roster-collections"></div>');
-  $('#roster-collections').innerHTML=prisonerCollection+celestialCollection+collection;
-  $('#roster-list').innerHTML=page.rows.map(c=>`<div class="roster-card ${c.id===selectedCharacterId?'active':''}" data-roster="${c.id}">${portraitHTML(c,true,true)}<div><b>${esc(c.name)}</b><small>${c.source_kind==='champion'?'CHAMPION · ':c.source_kind==='celestial'?'CELESTIAL · ':''}${esc(c.specialty)} · ${esc(characterStatus(c))}</small></div></div>`).join('');
-  if(!page.rows.length)$('#roster-list').innerHTML='<p class="muted">No characters match. Change the search or filters.</p>';
+  patchLiveHTML($('#roster-collections'),prisonerCollection+celestialCollection+collection);
+  patchLiveHTML($('#roster-list'),page.rows.map(c=>`<div class="roster-card ${c.id===selectedCharacterId?'active':''}" data-roster="${c.id}">${portraitHTML(c,true,true)}<div><b>${esc(c.name)}</b><small>${c.source_kind==='champion'?'CHAMPION · ':c.source_kind==='celestial'?'CELESTIAL · ':''}${esc(c.specialty)} · ${esc(characterStatus(c))}</small></div></div>`).join(''));
+  if(!page.rows.length)patchLiveHTML($('#roster-list'),'<p class="muted">No characters match. Change the search or filters.</p>');
   $$('[data-roster-collection]').forEach(details=>details.ontoggle=()=>{rosterCollectionOpen[details.dataset.rosterCollection]=details.open});
   $$('[data-prisoner-action]').forEach(button=>button.onclick=async event=>{event.stopPropagation();const action=button.dataset.prisonerAction,id=button.dataset.prisonerId,prisoner=prisoners.find(p=>p.id===id);if(action==='sell'&&!confirm(`Sell ${prisoner?.name||'this prisoner'} for ${prisoner?.sale_value??8} gold?`))return;const swapId=action==='secure'?document.querySelector(`[data-prisoner-swap="${CSS.escape(id)}"]`)?.value||null:null;try{const data=await rawApi(`/api/prisoners/${encodeURIComponent(id)}/action`,{method:'POST',body:JSON.stringify({action,swap_prisoner_id:swapId})});state=data.state;toast(action==='sell'?`${data.result.name} sold for ${data.result.gold} gold`:action==='secure'?'Prisoner secured':'Prisoner moved to stockade');renderResources();renderRoster();renderBase()}catch(e){toast(e.message)}});
   $$('[data-roster]').forEach(el=>el.onclick=()=>{selectedCharacterId=el.dataset.roster;renderRoster()});
