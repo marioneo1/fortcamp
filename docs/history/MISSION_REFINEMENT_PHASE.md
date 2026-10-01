@@ -206,3 +206,12 @@ Validation: crop bounds, transparency and source metadata checked for all six ra
 Implemented the connected progression pass documented in RESOURCE_PROGRESSION_PROPOSAL.md. Existing saves retain balances and placement, with a pre-migration SQLite backup; Cloth converts to Stone once. Public reservations require no team; private expedition rolls resolve immediately. Added 46 contracts, twelve isolated lower-rank exclusives, personal merchants/faction trade, production, expansion and natural proficiency growth with optional teacher acceleration.
 
 Validation: 160 Python tests, 59 JavaScript tests and production Vite build. Browser checks run in isolated progression_qa.db with bot disabled; Base controls and Trade dialog render without runtime errors. Verified public claim without a planner/team, private assignment, immediate aftermath display, persistent merchant stock, and no page overflow at desktop and 390px mobile widths. Housing, crafting and extended faction quest unlocks remain pending; numeric balance needs real sessions.
+
+
+## September 30 ? public claim gateway and UI follow-up
+
+The public domain returned 502 for configuration and claim requests while backend port 8000 was healthy; frontend port 5173 had no listener. Restored the Vite frontend and confirmed public configuration returns 200 and unauthenticated claim reaches backend authentication (401). Reproduced authenticated claiming successfully on an isolated copy of the current save; no live player claims were changed during diagnosis.
+
+Replaced the bare claim text with a responsive contract brief, rank seal, objective, rolled reward previews, point allowance/cost and a 24-hour start explanation. Successful reservations offer Assign team now or Keep browsing. One bounded retry handles 502/503/504 only; existing owned reservations are idempotent. Budget/authentication failures are never auto-retried; failed board refresh after saving cannot turn a successful claim into a second reservation attempt.
+
+Validation: 63 frontend tests and production build pass. Browser check covers desktop/mobile layout, private reservation, immediate assignment and aftermath, with no runtime exceptions. QA used a separate save and bot was disabled.

@@ -5,6 +5,7 @@ import {createMusicPlayer,musicTransitionPolicy} from './music-player.js';
 import {mountDecisionScene} from './mission-scene-ui.js';
 import {createAudioMixer,mountAudioSettings,audioCategory} from './audio-settings.js';
 import {raceEffects,perkModifiers} from './character-effects.js';
+import {mountReservation} from './mission-reservation-ui.js';
 import {renderCampEconomy} from './camp-economy-ui.js';
 import {rosterPage} from './roster-tools.js';
 import {mountEquipmentBrowser,iconPath} from './equipment-ui.js';
@@ -156,7 +157,7 @@ async function rawApi(path, options={}){
   const headers={'Content-Type':'application/json',...devHeaders,...(options.headers||{})};
   if(sessionToken) headers.Authorization=`Bearer ${sessionToken}`;
   const res=await fetch(path,{...options,headers}); let data={}; try{data=await res.json()}catch{}
-  if(!res.ok) throw new Error(data.detail||`Request failed: ${res.status}`); return data;
+  if(!res.ok){const error=new Error(data.detail||`Request failed: ${res.status}`);error.status=res.status;throw error} return data;
 }
 
 async function setupIdentity(){
@@ -383,8 +384,9 @@ async function openMission(m){
   selectedMission=m;missionPlanner=null;analysisSequence++;$('#mission-modal').classList.remove('hidden');
   if(m.status==='available'&&!m.private_source&&!m.chain){
     const pointCost=m.point_cost||content.economy?.point_cost?.[m.rank]||1;
-    $('#mission-detail').innerHTML=`<div class="eyebrow">PUBLIC CONTRACT · ${esc(m.rank)} RANK</div><h2>${esc(m.name)}</h2><p>${esc(m.description)}</p><div class="reward-list">${(m.reward_preview||[]).map(p=>`<div>${esc(p)}</div>`).join('')}</div><p>Claim for ${pointCost} Contract Point${pointCost===1?'':'s'}. Assign characters later in Private Contracts. Claimed contracts have a 24-hour start window.</p><button id="reserve-contract" ${(pool.budget?.remaining??5)<pointCost?'disabled':''}>Claim to Private Contracts</button>`;
-    $('#reserve-contract').onclick=async event=>{event.target.disabled=true;try{await rawApi(`/api/missions/${m.id}/claim`,{method:'POST',body:'{}'});toast('Saved to Private Contracts');$('#mission-modal').classList.add('hidden');await refreshDynamic()}catch(error){toast(error.message);event.target.disabled=false}};
+    mountReservation($('#mission-detail'),m,{budget:pool.budget,cost:pointCost,api:rawApi,
+      onRefresh:refreshDynamic,onOpen:owned=>openMission(owned),
+      onBrowse:()=>$('#mission-modal').classList.add('hidden')});
     return;
   }
   if(m.status!=='available'&&m.status!=='reserved'){$('#mission-detail').innerHTML=`<div class="eyebrow">${title(m.status)}</div><h2>${esc(m.name)}</h2><p>${m.claimed_by_name?`Claimed by ${esc(m.claimed_by_name)}.`:'No longer available.'}</p>`;return}
