@@ -17,7 +17,11 @@ export function makeParticleTexture(name,document=globalThis.document){
     canvas.width=canvas.height=64;const glow=ctx.createRadialGradient(32,32,0,32,32,31);glow.addColorStop(0,'rgba(255,255,255,1)');glow.addColorStop(.12,'rgba(255,255,255,.9)');glow.addColorStop(.4,'rgba(255,255,255,.22)');glow.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=glow;ctx.fillRect(0,0,64,64);
   }else{
     // Broad feathered beam for deformable meshes and short moving light streaks.
-    const glow=ctx.createLinearGradient(0,0,0,64);glow.addColorStop(0,'rgba(255,255,255,0)');glow.addColorStop(.34,'rgba(255,255,255,.04)');glow.addColorStop(.5,'rgba(255,255,255,.75)');glow.addColorStop(.66,'rgba(255,255,255,.04)');glow.addColorStop(1,'rgba(255,255,255,0)');ctx.fillStyle=glow;ctx.fillRect(0,0,256,64);
+    const glow=ctx.createLinearGradient(0,0,0,64);
+    if(name==='fx:flame'){
+      glow.addColorStop(0,'rgba(210,57,12,0)');glow.addColorStop(.2,'rgba(240,82,15,.45)');glow.addColorStop(.4,'rgba(255,158,43,.85)');glow.addColorStop(.5,'rgba(255,226,133,1)');glow.addColorStop(.6,'rgba(255,158,43,.85)');glow.addColorStop(.8,'rgba(240,82,15,.45)');glow.addColorStop(1,'rgba(210,57,12,0)');
+    }else{glow.addColorStop(0,'rgba(255,255,255,0)');glow.addColorStop(.34,'rgba(255,255,255,.04)');glow.addColorStop(.5,'rgba(255,255,255,.75)');glow.addColorStop(.66,'rgba(255,255,255,.04)');glow.addColorStop(1,'rgba(255,255,255,0)')}
+    ctx.fillStyle=glow;ctx.fillRect(0,0,256,64);
     ctx.globalCompositeOperation='destination-in';const fade=ctx.createLinearGradient(0,0,256,0);fade.addColorStop(0,'rgba(255,255,255,0)');
     if(name==='fx:comet'){fade.addColorStop(.3,'rgba(255,255,255,.05)');fade.addColorStop(.7,'rgba(255,255,255,.4)');fade.addColorStop(1,'white')}
     else{fade.addColorStop(.2,'white');fade.addColorStop(.8,'white');fade.addColorStop(1,'rgba(255,255,255,0)')}

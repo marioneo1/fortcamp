@@ -7,16 +7,17 @@ import {vfxTextures} from './vfx-textures.js';
 import {makeParticleTexture} from './particle-textures.js';
 import {createEnergyRibbon} from './particle-ribbons.js';
 import {createShootingStar} from './particle-comets.js';
+import {createAtmosphere} from './particle-atmosphere.js';
 
 Emitter.registerBehavior(WindBehavior);
 export async function createParticleRenderer({canvas,width,height}){
   // No Application or shared ticker: the board owns one loop and suspension.
   const renderer=new Renderer({view:canvas,width,height,resolution:Math.min(1,1920/width),backgroundAlpha:0,antialias:false,powerPreference:'low-power'});
   const stage=new Container(),currents=new Container(),layers=new Container(),ornaments=new Container();stage.addChild(currents,layers,ornaments);
-  let emitters=[],ribbons=[],comet=null,theme=null,version=0,time=0,destroyed=false;
+  let emitters=[],ribbons=[],atmosphere=[],comet=null,theme=null,version=0,time=0,destroyed=false;
   const textureCache=new Map();
   function texture(name){if(!textureCache.has(name)){const image=name.startsWith('fx:')?makeParticleTexture(name):vfxTextures.get(name);if(image)textureCache.set(name,Texture.from(image))}return textureCache.get(name)}
-  function clear(){emitters.forEach(e=>e.destroy());emitters=[];layers.removeChildren();ribbons.forEach(r=>r.destroy());ribbons=[];currents.removeChildren();comet?.destroy();comet=null;ornaments.removeChildren()}
+  function clear(){emitters.forEach(e=>e.destroy());emitters=[];layers.removeChildren();ribbons.forEach(r=>r.destroy());ribbons=[];atmosphere.forEach(r=>r.destroy());atmosphere=[];currents.removeChildren();comet?.destroy();comet=null;ornaments.removeChildren()}
   async function setTheme(next){
     theme=next;const request=++version,presets=createParticlePreset(next,width,height);
     const names=[...new Set(presets.flatMap(p=>p.config.behaviors.find(b=>b.type==='textureRandom').config.textures))];
@@ -34,18 +35,24 @@ export async function createParticleRenderer({canvas,width,height}){
       ]){const ribbon=createEnergyRibbon(texture('fx:beam'),width,height,options);ribbons.push(ribbon);currents.addChild(ribbon.mesh)}
     }
     if(next==='starfall'){comet=createShootingStar(texture,width,height);ornaments.addChild(comet.trail,comet.head)}
+    if(next==='starfall'||next==='goblin'){
+      for(let i=0;i<(next==='starfall'?2:3);i++){
+        const effect=createAtmosphere(texture(next==='starfall'?'fx:beam':'fx:flame'),width,height,next==='starfall'?'gravity':'flame',i);
+        atmosphere.push(effect);currents.addChild(effect.mesh);
+      }
+    }
     // Seed an established atmosphere, also used for reduced-motion stills.
     for(let i=0;i<80;i++)emitters.forEach(e=>e.update(.25));
     render();return true;
   }
   function update(dt){
-    time+=dt;emitters.forEach(e=>e.update(dt));ribbons.forEach(r=>r.update(time));comet?.update(dt);
+    time+=dt;emitters.forEach(e=>e.update(dt));ribbons.forEach(r=>r.update(time));atmosphere.forEach(r=>r.update(time));comet?.update(dt);
   }
   function render(){if(!destroyed)renderer.render(stage)}
   return {
     setTheme,update,render,
     resize(w,h){width=w;height=h;renderer.resolution=Math.min(1,1920/w);renderer.resize(w,h)},
-    diagnostics(){return {renderer:'pixi',particles:emitters.reduce((n,e)=>n+e.particleCount,0),emitters:emitters.length,ribbons:ribbons.length,ornaments:0,comet:comet?.diagnostics(),theme,viewport:[width,height]}},
+    diagnostics(){return {renderer:'pixi',particles:emitters.reduce((n,e)=>n+e.particleCount,0),emitters:emitters.length,ribbons:ribbons.length,atmosphere:atmosphere.length,ornaments:0,comet:comet?.diagnostics(),theme,viewport:[width,height]}},
     pixelSignature(){const p=renderer.extract.pixels(stage);let hash=0;for(let i=0;i<p.length;i+=32)hash=(hash*31+p[i]+p[i+3])|0;return hash},
     destroy(){if(destroyed)return;destroyed=true;version++;clear();stage.destroy({children:true});textureCache.forEach(t=>t.destroy(true));renderer.destroy(false)},
   };

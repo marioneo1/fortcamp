@@ -28,8 +28,7 @@ export function createBoardVFX({document=globalThis.document,window=globalThis.w
       }
     }
     if(theme==='starfall'){
-      sprite('alien_ribbon',width*.1,height*.65,330,.23,Math.sin(t*.08)*.12);
-      sprite('alien_ribbon',width*.9,height*.25,260,.16,-t*.015);
+      for(let k=0;k<2;k++){ctx.beginPath();ctx.ellipse(width*(k?.92:.08),height*(k?.22:.76),Math.min(width,height)*(.3+k*.09),Math.min(width,height)*(.3+k*.09)*.62,t*.035*(k?-1:1),0,Math.PI*1.65);ctx.strokeStyle=`rgba(${color},.14)`;ctx.lineWidth=3;ctx.stroke()}
     }
     if(theme==='undead'){for(let i=0;i<3;i++)glow(width*(.1+i*.38)+Math.sin(t*.08+i)*70,height*(.25+i*.26),Math.min(width*.3,330),color,.12+Math.sin(t*.2+i)*.025)}
     if(theme==='arcane'){for(let i=0;i<2;i++)glow(width*(i?.87:.12),height*(.3+i*.4),220,color,.12+Math.sin(t*.5+i)*.05)}
@@ -38,7 +37,7 @@ export function createBoardVFX({document=globalThis.document,window=globalThis.w
       const falling=theme==='beast'||theme==='undead',travel=t*p.speed*(theme==='beast'?16:theme==='undead'?9:5),y=((p.y*height+(falling?travel:-travel))%height+height)%height,x=((p.x*width+Math.sin(t*.3+p.phase)*(theme==='beast'?34:12)+(theme==='beast'?t*p.speed*8:0))%width+width)%width;
       ctx.save();ctx.translate(x,y);ctx.globalAlpha=theme==='beast'?.4:theme==='undead'?.45:.28+.13*Math.sin(t*.5+p.phase);ctx.fillStyle=`rgb(${color})`;
       const index=particles.indexOf(p),names=BOARD_TEXTURES[theme];
-      const name=theme==='beast'?names[index%6]:theme==='undead'?names[index%2]:theme==='goblin'?names[index%5===0?1:0]:theme==='starfall'?'alien_mote':null;
+      const name=theme==='beast'?names[index%6]:theme==='undead'?names[index%2]:theme==='goblin'?names[index%5===0?1:0]:null;
       const textured=name&&sprite(name,0,0,theme==='beast'?18+p.size*1.5:theme==='undead'?6+p.size*.7:12+p.size,theme==='beast'?.55:theme==='undead'?.42:.4,theme==='beast'?p.phase+t*.25:p.phase*.15);
       if(textured){ctx.restore();continue}
       if(theme==='beast'){ctx.rotate(p.phase+t*.4);ctx.beginPath();ctx.moveTo(-p.size,0);ctx.bezierCurveTo(-p.size,-p.size,p.size,-p.size,p.size,0);ctx.bezierCurveTo(p.size,p.size,-p.size,p.size,-p.size,0);ctx.fill();ctx.strokeStyle='rgba(100,65,29,.65)';ctx.beginPath();ctx.moveTo(-p.size,0);ctx.lineTo(p.size,0);ctx.stroke()}

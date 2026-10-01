@@ -313,4 +313,10 @@ body.board-vfx-active .guild-contract{background:radial-gradient(ellipse at 100%
 body.board-vfx-active .guild-board-event{background:radial-gradient(ellipse at 85% 0,color-mix(in srgb,var(--accent) 8%,transparent),transparent 55%),linear-gradient(115deg,color-mix(in srgb,var(--panel2) 80%,transparent),color-mix(in srgb,var(--panel) 72%,transparent))}
 /* The full-board renderer replaces the old small CSS scene and its dragging trail. */
 body.board-vfx-active .guild-event-scene,body.board-vfx-active .guild-event-particles{display:none}
+/* Keep the liked banner sigils separate from the full-board flowing currents. */
+body.board-vfx-active .event-arcane .guild-event-scene{display:block;right:12px;left:auto;width:220px;opacity:.8}
+body.board-vfx-active .event-arcane .guild-event-scene .event-mote,
+body.board-vfx-active .event-arcane .guild-event-scene .event-atmosphere,
+body.board-vfx-active .event-arcane .guild-event-scene .event-trail{display:none}
+@media(max-width:650px){body.board-vfx-active .event-arcane .guild-event-scene{right:0;width:100px;opacity:.22}}
 body.board-vfx-active .event-arcane .guild-event-art:after{display:none}

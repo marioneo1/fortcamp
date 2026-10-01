@@ -45,15 +45,17 @@ for(const id of ['goblin_warhost','ashen_procession','arcane_convergence','great
   await check(`previewBackdrop.diagnostics().particles>0&&previewBackdrop.diagnostics().particles<=80`,'bounded live emitter particles for '+id);
   if(id==='arcane_convergence'){
     await check(`previewBackdrop.diagnostics().ribbons===3&&previewBackdrop.diagnostics().ornaments===0`,'arcane uses deforming currents without glyph stamps');
-    await check(`getComputedStyle(document.querySelector('.guild-event-scene')).display==='none'`,'old emblem scene is replaced by viewport atmosphere');
+    await check(`getComputedStyle(document.querySelector('.guild-event-scene')).display!=='none'&&[...document.querySelectorAll('.event-orbit')].every(n=>getComputedStyle(n).display!=='none')`,'two layered arcane banner circles are visible');
     await evaluate('window.scrollTo(0,0)');const shot=await call('Page.captureScreenshot',{format:'png'});writeFileSync('staging-ui/mission-board-v1/board-arcane-background.png',Buffer.from(shot.data,'base64'));
   }
+  if(id==='goblin_warhost')await check(`previewBackdrop.diagnostics().atmosphere===3`,'camp smoke includes three intermittent flame sources');
+  if(id==='starfall_omen')await check(`previewBackdrop.diagnostics().atmosphere===2`,'Starfall includes two animated gravity trails');
   if(id==='starfall_omen'){
     await check(`(async()=>{for(let i=0;i<120;i++){if(previewBackdrop.diagnostics().comet?.flights>0)return true;await new Promise(r=>setTimeout(r,50))}return false})()`,'fast shooting star actually launches');
     await new Promise(r=>setTimeout(r,150));const shot=await call('Page.captureScreenshot',{format:'png'});writeFileSync('staging-ui/mission-board-v1/board-starfall-background.png',Buffer.from(shot.data,'base64'));
   }
 }
-await check(`performance.getEntriesByType('resource').filter(e=>e.name.includes('/vfx/environment-v1/')).length>=11`,'regional painted textures are requested lazily across event previews');
+await check(`performance.getEntriesByType('resource').filter(e=>e.name.includes('/vfx/environment-v1/')).length>=10`,'regional painted textures are requested lazily across event previews');
 await check(`(async()=>{const {vfxTextures}=await import('/frontend/src/vfx-textures.js');const {createParticlePreset,PARTICLE_PRESETS}=await import('/frontend/src/particle-presets.js');return PARTICLE_PRESETS.filter(n=>!['rain','snow'].includes(n)).flatMap(n=>createParticlePreset(n,1440,1100)).flatMap(p=>p.config.behaviors.find(b=>b.type==='textureRandom').config.textures).filter(n=>!n.startsWith('fx:')).every(name=>vfxTextures.get(name)?.naturalWidth>0)})()`,'every painted emitter texture loads successfully');
 for(const weather of ['rain','snow']){
   await evaluate(`previewWeather('${weather}')`);await check(`waitForParticles()`,'weather preset ready: '+weather);const before=await evaluate('vfxHash()');await new Promise(r=>setTimeout(r,220));await check(`vfxHash()!==${before}`,'weather preset animates: '+weather);

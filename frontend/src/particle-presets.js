@@ -19,9 +19,9 @@ export function createParticlePreset(theme,width,height){
     layer('windborne seeds',['grass_seeds','petal_ochre'],field,{count:10,life:[12,18],size:[10,19],velocity:[14,27,6,14],sway:14,spin:15,alpha:.36}),
   ];
   if(theme==='goblin')return [
-    layer('green embers',['ember_green'],field,{count:36,life:[5,10],size:[10,20],velocity:[-9,9,-38,-18],sway:8,spin:8,alpha:.7,grow:.3}),
-    layer('warm sparks',['ember_orange'],field,{count:14,life:[4,8],size:[7,15],velocity:[-14,14,-48,-24],sway:5,spin:10,alpha:.65,grow:.2}),
-    layer('camp smoke',smoke,field,{count:12,life:[16,24],size:[230,390],velocity:[8,20,-16,-5],sway:18,spin:5,alpha:.3,grow:1.7,tint:'b5c394'}),
+    layer('green embers',['ember_green'],field,{count:8,life:[5,10],size:[5,10],velocity:[-9,9,-38,-18],sway:8,spin:8,alpha:.4,grow:.3}),
+    layer('warm sparks',['ember_orange'],{x:0,y:height*.8,width,height:height*.2},{count:18,life:[4,8],size:[5,12],velocity:[-14,14,-48,-24],sway:5,spin:10,alpha:.65,grow:.2}),
+    layer('camp smoke',smoke,field,{count:18,life:[16,24],size:[270,460],velocity:[8,20,-16,-5],sway:18,spin:5,alpha:.4,grow:1.7,tint:'b2ab92'}),
   ];
   if(theme==='undead')return [
     layer('ash',['ash_flake','ash_cluster'],field,{count:32,life:[12,20],size:[7,15],velocity:[4,15,9,21],sway:12,spin:30,alpha:.48}),
@@ -33,8 +33,9 @@ export function createParticlePreset(theme,width,height){
     layer('arcane vapor',smoke,field,{count:10,life:[14,23],size:[250,430],velocity:[8,16,-3,5],sway:20,spin:5,alpha:.3,grow:1.5,tint:'8c9fe0'}),
   ];
   if(theme==='starfall')return [
-    layer('alien sparks',['alien_mote'],field,{count:30,life:[9,16],size:[12,25],velocity:[-8,8,-13,-4],sway:24,spin:8,alpha:.62,grow:.6}),
-    layer('alien haze',smoke,field,{count:10,life:[20,30],size:[280,470],velocity:[-9,9,-3,3],sway:18,spin:4,alpha:.35,grow:1.5,tint:'b48ddc'}),
+    layer('distant starlight',['fx:mote'],field,{count:28,life:[12,22],size:[2,6],velocity:[-2,2,-2,2],sway:2,spin:0,alpha:.6,grow:.5,tint:'c9c6ec',blend:'add'}),
+    layer('falling cosmic dust',['fx:mote'],field,{count:12,life:[9,16],size:[4,9],velocity:[-12,-5,9,18],sway:8,spin:0,alpha:.48,grow:.3,tint:'9baad5',blend:'add'}),
+    layer('violet nebula',smoke,field,{count:12,life:[20,30],size:[330,550],velocity:[-9,9,-3,3],sway:18,spin:4,alpha:.4,grow:1.5,tint:'8875ac'}),
   ];
   if(theme==='rain')return [layer('rain',['rain_streaks'],field,{count:80,life:[1.2,2.2],size:[5,9],velocity:[-100,-75,380,500],sway:0,spin:0,alpha:.32})];
   if(theme==='snow')return [
