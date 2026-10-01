@@ -6,7 +6,7 @@
       <Node>
         <CommonValues>
           <MaxGeneration>
-            <Value>90</Value>
+            <Infinite>True</Infinite>
           </MaxGeneration>
           <Life>
             <Center>72</Center>
@@ -170,7 +170,7 @@
       <Node>
         <CommonValues>
           <MaxGeneration>
-            <Value>90</Value>
+            <Infinite>True</Infinite>
           </MaxGeneration>
           <Life>
             <Center>72</Center>
@@ -334,7 +334,7 @@
       <Node>
         <CommonValues>
           <MaxGeneration>
-            <Value>90</Value>
+            <Infinite>True</Infinite>
           </MaxGeneration>
           <Life>
             <Center>72</Center>

@@ -21,16 +21,16 @@ export async function createEffekseerFire(renderer,width,height,{load=loadRuntim
     context.setRestorationOfStatesFlag(false);renderer.reset();
     await new Promise((resolve,reject)=>{
       const timeout=setTimeout(()=>reject(Error('Effekseer effect load timed out')),15000);
-      effect=context.loadEffect('/assets/effekseer/campfire-v1/campfire.efk?v=foreground-20260930',1,()=>{clearTimeout(timeout);resolve()},(message,url)=>{clearTimeout(timeout);reject(Error(`${message}: ${url}`))});
+      effect=context.loadEffect('/assets/effekseer/campfire-v1/campfire.efk?v=continuous-20260930',1,()=>{clearTimeout(timeout);resolve()},(message,url)=>{clearTimeout(timeout);reject(Error(`${message}: ${url}`))});
     });
     if(isCancelled())throw Error('Effekseer initialization cancelled');
   }
   catch(error){runtime.releaseContext(context);renderer.reset();throw error}
   let enabled=false,time=0,starts=0,destroyed=false;
-  let sources=burningSources(width,height).map(s=>({...s,wait:s.delay,handle:null}));
+  let sources=burningSources(width,height).map(s=>({...s,handle:null}));
   // Orthographic pixel coordinates: world Y rises from the bottom of the viewport.
   function resize(w,h){
-    width=w;height=h;context.stopAll();sources=burningSources(width,height).map(s=>({...s,wait:s.delay,handle:null}));
+    width=w;height=h;context.stopAll();sources=burningSources(width,height).map(s=>({...s,handle:null}));
     context.setProjectionMatrix([2/width,0,0,0,0,2/height,0,0,0,0,-.01,0,-1,-1,0,1]);
     context.setCameraMatrix([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]);renderer.reset();
     if(enabled)seedScene();
@@ -39,7 +39,6 @@ export async function createEffekseerFire(renderer,width,height,{load=loadRuntim
   function start(source){
     source.handle=context.play(effect,source.x,source.y,0);
     if(source.handle){source.handle.setScale(source.scaleX,source.scaleY,source.scaleY);source.handle.setAllColor(255,185,75,245);starts++}
-    source.wait=4;
   }
   function seedScene(){
     // Unequal ages keep the cropped tongues from becoming a synchronized fire border.
@@ -50,14 +49,15 @@ export async function createEffekseerFire(renderer,width,height,{load=loadRuntim
     resize,
     setEnabled(value){
       context.stopAll();enabled=value;time=0;
-      for(const source of sources){source.handle=null;source.wait=source.delay}
+      for(const source of sources)source.handle=null;
       // Seed a visible established fire for static/reduced-motion composition.
       if(enabled)seedScene();renderer.reset();
     },
     update(dt){
       if(!enabled||destroyed)return;time+=dt;
       for(const source of sources){
-        source.wait-=dt;if(source.wait<=0&&!source.handle?.exists)start(source);
+        // Native emitters run continuously; particles still curl, age and fade independently.
+        if(!source.handle?.exists)start(source);
         if(source.handle?.exists){
           const swell=1+.07*Math.sin(time*.53+source.phase)+.035*Math.sin(time*1.17+source.phase);
           source.handle.setScale(source.scaleX,source.scaleY*swell,source.scaleY);

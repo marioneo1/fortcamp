@@ -12,6 +12,8 @@ test('Effekseer uses the shared clock, seeds stills, and stops updating outside 
   fire.setEnabled(true);assert.equal(s.calls.plays,3);assert.ok(s.calls.updates.every(n=>n>0));
   assert.ok(s.calls.locations.every(([,y])=>y<0),'flame bases stay below the camera');
   fire.update(.1);assert.equal(s.calls.updates.at(-1),6);fire.draw();assert.equal(s.calls.draws,1);
+  for(let frame=0;frame<600;frame++)fire.update(.1);
+  assert.equal(s.calls.plays,3,'continuous roots do not cycle through an extinguished restart');
   fire.setEnabled(false);const count=s.calls.updates.length;fire.update(.1);fire.draw();assert.equal(s.calls.updates.length,count);assert.equal(s.calls.draws,1);
   fire.destroy();fire.destroy();assert.equal(s.calls.releases,1);assert.equal(s.calls.effects,1);assert.equal(s.calls.limits.instanceMaxCount,512);
 });

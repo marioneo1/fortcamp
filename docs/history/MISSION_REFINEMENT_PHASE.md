@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## 2026-09-30: Continuous fire and soft wood crackle
+
+Changed all authored flame layers to infinite emission with finite particle lifetimes, removing the all-out gaps between bursts. The controller no longer schedules delayed restarts. Generated and installed one 24-second wood-fire loop: subdued dry crackles and embers, without roaring flames. It fades with board visibility and uses the existing Master/Ambient channels; occasional goblin ambience remains separate. Added targeted generation support without replacing preserved originals, and documented the source, processing and playback in docs/audio/WOOD_FIRE_AMBIENCE.md.
+
+Validation: 59 frontend tests and production build passed. A real browser sustained three native emitters for 30 seconds without restarting or reaching the 512-instance cap. One actual audio layer decoded and played through its 24-second wrap, then faded out when its context ended. Screenshot and sampled diagnostics are in staging-ui/effekseer-fire-trial. User listening review remains pending.
+
 ## 2026-09-30: Foreground flame tips
 
 Replaced the isolated visible-fire composition with the user's close-camera direction: enlarged, overlapping flames rooted below the frame, showing only their upper tongues. Widened the authored particle growth, extended particle life and shortened its final fade to keep the cropped tips bright. Runtime width and height are independent, seeded ages differ, and slow height variation avoids synchronized border motion. Smoke/embers use broad lower spawn regions above the unseen fire bed. Resize immediately seeds a fresh composition. Preserved the previous project locally and revisioned the binary URL for cache refresh.

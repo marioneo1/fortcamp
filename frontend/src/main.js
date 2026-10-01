@@ -38,7 +38,7 @@ let audioStorage;try{audioStorage=window.localStorage}catch{}
 const audioMixer=createAudioMixer(audioStorage);
 const musicPlayer=createMusicPlayer(audioMixer);
 const boardVFX=createBoardVFX();
-const ambientPlayer=createAmbientPlayer(audioMixer,{context:()=>ambientContext(musicPlayer.currentContext,$('.tabs button.active')?.dataset.tab)});
+const ambientPlayer=createAmbientPlayer(audioMixer,{context:()=>ambientContext(musicPlayer.currentContext,$('.tabs button.active')?.dataset.tab),fireContext:()=>pool?.event?.id==='goblin_warhost'&&!activeBattleView&&!$('#game').classList.contains('hidden')&&['missions','private'].includes($('.tabs button.active')?.dataset.tab)});
 function syncMusic(){boardVFX.setEvent(pool?.event,!activeBattleView&&!$('#game').classList.contains('hidden')&&['missions','private'].includes($('.tabs button.active')?.dataset.tab));const request=musicTransitionPolicy($('.tabs button.active')?.dataset.tab,activeBattleView,activeDecisionMission,musicPlayer.currentContext,pool?.event);musicPlayer.setContext(request.context,{delayMs:request.delayMs})}
 window.addEventListener('pointerdown',()=>{musicPlayer.unlock();ambientPlayer.unlock()});
 window.addEventListener('keydown',()=>{musicPlayer.unlock();ambientPlayer.unlock()});
