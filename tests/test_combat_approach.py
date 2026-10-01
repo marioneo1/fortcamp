@@ -25,6 +25,22 @@ class AttackApproachTests(unittest.TestCase):
         self.assertEqual([p['cost'] for p in preview['path']],[1,2])
         self.assertEqual((self.actor['x'],self.actor['y']),(1,5))
 
+    def test_movement_tree_exports_only_validated_routes_without_mutating_battle(self):
+        original=deepcopy(self.battle)
+        self.battle['elevation']=[{'x':2,'y':5,'height':4}]
+        view=battle_view(self.battle)
+        nodes={(p['x'],p['y']):p for p in view['movement_tree']}
+        self.assertNotIn((2,5),nodes)
+        self.assertEqual(set(nodes),{(p['x'],p['y']) for p in view['reachable']})
+        for point,node in nodes.items():
+            if node['parent'] is not None:
+                self.assertIn(tuple(node['parent']),nodes)
+                self.assertLess(nodes[tuple(node['parent'])]['cost'],node['cost'])
+            accepted=apply_player_command(deepcopy(self.battle),{'action':'move','x':point[0],'y':point[1]})
+            self.assertEqual((accepted['units']['player']['x'],accepted['units']['player']['y']),point)
+        self.assertNotIn('movement_tree',self.battle)
+        self.assertEqual(self.battle['units'],original['units'])
+
     def test_confirmed_approach_attacks_and_records_walk_before_hit(self):
         preview=battle_view(self.battle)['attack_previews'][self.target['id']]['attack']
         with patch('backend.combat._advance_to_player'):

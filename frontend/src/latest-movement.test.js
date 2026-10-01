@@ -4,6 +4,9 @@ import {createLatestMovement} from './latest-movement.js';
 test('rapid movement coalesces to the latest destination instead of replaying every click',()=>{
   const queue=createLatestMovement();
   for(let x=0;x<100;x++)queue.remember({action:'move',x,y:2},'battle:unit:1');
+  assert.equal(queue.peek('battle:other:1'),null);
+  const preview=queue.peek('battle:unit:1');preview.x=0;
+  assert.equal(queue.peek('battle:unit:1').x,99);
   assert.deepEqual(queue.take('battle:unit:1'),{action:'move',x:99,y:2});
   assert.equal(queue.take('battle:unit:1'),null);
 });

@@ -1933,6 +1933,13 @@ def battle_view(battle: dict) -> dict:
         view["reachable"] = [
             {"x": x, "y": y} for x, y in reachable
         ]
+        # One parent per reachable tile, rather than a full path for every tile.
+        # The client can preview only server-validated routes immediately.
+        view["movement_tree"] = [
+            {"x": x, "y": y, "cost": reachable[(x, y)],
+             "parent": list(parent) if parent is not None else None}
+            for (x, y), parent in parents.items()
+        ]
         origin = current.get("movement_origin") or {"x": current["x"], "y": current["y"]}
         view["movement_origin"] = {"x": int(origin["x"]), "y": int(origin["y"])}
         view["movement_path"] = list(current.get("movement_path", []))
@@ -1977,6 +1984,7 @@ def battle_view(battle: dict) -> dict:
         view["throw_profile"] = throw_profile
     else:
         view["reachable"] = []
+        view["movement_tree"] = []
         view["movement_origin"] = None
         view["movement_path"] = []
         view["can_extract"] = False

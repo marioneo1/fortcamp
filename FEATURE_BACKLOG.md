@@ -74,3 +74,5 @@ Effekseer Goblin fire is authored, compiled and browser-tested using the real WA
 - Next UI pass: full shared inventory view and loadouts; existing roster Equipment browser is functional now. Broader combat-status mechanics, stealth, dungeon floors, prisoner recruitment and male portraits retain their previous scope.
 
 See docs/gameplay/GEAR_LOOT_DESIGN.md and docs/art/EQUIPMENT_ICON_PIPELINE.md for the rules and asset workflow.
+
+- October 1 responsiveness follow-up: valid movement clicks now immediately redirect local walking using server-validated routes, without waiting for network replies. Older replies cannot undo newer input; failed moves restore the authoritative position. Tested with 400 ms simulated latency. Continue actual Discord/device review.

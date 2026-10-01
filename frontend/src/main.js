@@ -1,5 +1,6 @@
 import {patchLiveHTML,captureMovingPositions,restartWalking,trackBattleAnimation} from './live-dom.js';
 import {createLatestMovement} from './latest-movement.js';
+import {previewMovement} from './movement-preview.js';
 import {createBoardVFX} from './board-vfx.js';
 import {boardIcon,rankSeal,missionCard,eventHeader,filterChips,stableBoardHTML} from './mission-board-ui.js';
 import {createAmbientPlayer,ambientContext} from './ambient-player.js';
@@ -606,6 +607,7 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       const previousIndex=fullPath.findIndex(point=>point.x===before.x&&point.y===before.y);
       points=previousIndex>=0?[{x:before.x,y:before.y},...fullPath.slice(previousIndex+1)]:[{x:before.x,y:before.y},{x:unit.x,y:unit.y}];
     }
+    if(unit.id===battle.current_unit_id&&battle.preview_movement_points?.length)points=battle.preview_movement_points;
     if(points.length<2||points.at(-1).x!==unit.x||points.at(-1).y!==unit.y)points.push({x:unit.x,y:unit.y});
     const offset=restartWalking(token,movingPositions.get(unit.id));
     const baseScale=unit.id===battle.current_unit_id?1.15:1;
@@ -618,9 +620,10 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
     frames.push({transform:`translate(0px, 0px) scale(${baseScale}) rotate(0deg)`,offset:1});
     token.classList.add('is-walking');
     if(offset)frames[0].transform=`translate(${offset.x}px,${offset.y}px) scale(${baseScale})`;
-    const duration=Math.max(durationFloor,Math.min(950,(points.length-1)*190));
+    const instantPreview=!!battle.preview_movement_points;
+    const duration=instantPreview?Math.max(140,Math.min(800,(points.length-1)*140)):Math.max(durationFloor,Math.min(950,(points.length-1)*190));
     playWalkingSounds(battle,unit,points,duration);
-    const animation=token.animate(frames,{duration,easing:'ease-in-out'});
+    const animation=token.animate(frames,{duration,easing:instantPreview?'linear':'ease-in-out'});
     trackBattleAnimation(token,animation,'is-walking');
   });
 }
@@ -734,7 +737,8 @@ function renderBattle(b){
     button.onfocus=button.onmouseenter;
   });
   if(tileActionMenu){const entry=tileActions.find(a=>a.command.action===selectedCombatAction);if(entry)showApproach(entry.command.target_id,entry.command.action)}
-  requestAnimationFrame(()=>animateBattleMovement(previousBattle,b,260,movingPositions));
+  if(b.preview_movement_points)animateBattleMovement(previousBattle,b,260,movingPositions);
+  else requestAnimationFrame(()=>{if(activeBattleView===b)animateBattleMovement(previousBattle,b,260,movingPositions)});
 }
 document.addEventListener('keydown',event=>{
   const tag=event.target?.tagName?.toLowerCase();
@@ -756,12 +760,25 @@ document.addEventListener('keydown',event=>{
 async function sendCombat(command,nextMode=null){
   const movementContext=`${activeBattleMissionId}:${activeBattleView?.current_unit_id}:${activeBattleView?.round}`;
   const requestMissionId=activeBattleMissionId;
+  if(command.action==='move'&&(!combatRequestPending||inFlightCombatAction==='move')){
+    const field=$('.battlefield'),token=field?.querySelector(`[data-battle-unit="${CSS.escape(activeBattleView?.current_unit_id||'')}"]`);
+    const current=activeBattleView?.units?.[activeBattleView.current_unit_id];
+    if(token&&field&&current&&(current.x!==command.x||current.y!==command.y)){
+      const rect=field.getBoundingClientRect(),visual=token.getBoundingClientRect();
+      const position={x:(visual.x+visual.width/2-rect.x)/(rect.width/activeBattleView.width)-.5,y:(visual.y+visual.height/2-rect.y)/(rect.height/activeBattleView.height)-.5};
+      const preview=previewMovement(activeBattleView,{x:command.x,y:command.y},position);
+      if(preview)renderBattle(preview);
+    }
+  }
   if(combatRequestPending){if(command.action==='move'&&inFlightCombatAction==='move')latestMovement.remember(command,movementContext);return}
   if(command.action!=='move')latestMovement.clear();
   combatRequestPending=true;inFlightCombatAction=command.action;
   try{
     const data=await rawApi(`/api/missions/${activeBattleMissionId}/battle/command`,{method:'POST',body:JSON.stringify(command)});
     if(activeBattleMissionId!==requestMissionId||!activeBattleView||$('#mission-modal').classList.contains('hidden'))return;
+    // An older acknowledgement must not pull the displayed unit away from the
+    // newest click while that destination is waiting to be sent.
+    if(command.action==='move'&&latestMovement.peek(movementContext)&&data.battle?.current_unit_id===activeBattleView.current_unit_id&&data.battle?.round===activeBattleView.round)return;
     tileActionMenu=null;
     selectedCombatAction=nextCombatMode(command.action,nextMode,selectedCombatAction);
     if(data.result){const local=activeMissions.find(m=>m.id===activeBattleMissionId);if(local){local.status='completed';local.result=data.result}const soundDuration=playBattleSounds(data.battle);activeBattleView=null;retreatAllArmed=false;playOutcomeSound(data.result.outcome,soundDuration);showResult(data.result);await refreshDynamic();return}
@@ -773,6 +790,7 @@ async function sendCombat(command,nextMode=null){
     }
     renderBattle(data.battle);
   }catch(e){
+    latestMovement.clear();
     toast(e.message);
     if(activeBattleMissionId===requestMissionId&&activeBattleView&&!$('#mission-modal').classList.contains('hidden'))try{const fresh=await rawApi(`/api/missions/${requestMissionId}/battle`);if(activeBattleMissionId===requestMissionId&&activeBattleView&&!$('#mission-modal').classList.contains('hidden'))renderBattle(fresh.battle)}catch{}
   }finally{
