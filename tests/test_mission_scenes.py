@@ -88,6 +88,8 @@ class SceneDatabase(unittest.IsolatedAsyncioTestCase):
                     for i in range(2):
                         ally=deepcopy(state['characters'][0]);ally.update(id=f'ally{i}',is_player=False,name=f'Helper{i}');state['characters'].append(ally)
                     session.add(PlayerState(guild_id='scene',user_id='owner',display_name='Tester',state=state,updated_at=ts))
+                    from backend.registration import set_registration
+                    await set_registration(session,'scene','owner','Tester')
                     session.add(MissionInstance(id='accept-ledger',guild_id='scene',template_id='black_banner_ledger',pool_slot=-1,position=0,spawned_at=ts,expires_at=ts+3600,duration_seconds=120,status='available',analysis={'chain_owner_user_id':'owner'}))
             with patch('backend.main.SessionLocal',sessions):
                 response=await mission_claim('accept-ledger',PartyRequest(party_ids=['player','ally0','ally1']),SimpleNamespace(guild_id='scene',user_id='owner',display_name='Tester'))

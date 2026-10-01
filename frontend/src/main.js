@@ -1,6 +1,7 @@
 import {patchLiveHTML,captureMovingPositions,restartWalking,trackBattleAnimation} from './live-dom.js';
 import {createLatestMovement} from './latest-movement.js';
 import {previewMovement} from './movement-preview.js';
+import {applyContractUpdate} from './contract-state.js';
 import {createBoardVFX} from './board-vfx.js';
 import {boardIcon,rankSeal,missionCard,eventHeader,filterChips,stableBoardHTML} from './mission-board-ui.js';
 import {createAmbientPlayer,ambientContext} from './ambient-player.js';
@@ -18,6 +19,7 @@ import './equipment-ui.css';
 import {matchesMission,equipmentEditable} from './mission-planner.js';
 import { DiscordSDK } from "@discord/embedded-app-sdk";
 import "./styles.css?v=20260930u";
+import "./base-ui.css";
 
 const $ = s => document.querySelector(s);
 const $$ = s => [...document.querySelectorAll(s)];
@@ -39,6 +41,8 @@ const rosterFilters={query:'',status:'',race:'',kind:'',sort:'name',page:0};
 let rosterDetailTab='overview',rosterNeedsRefresh=false,baseNeedsRefresh=true;
 const latestMovement=createLatestMovement();
 let inFlightCombatAction=null;
+let missionMutationVersion=0,dynamicRefreshAgain=false;
+let baseBlueprintQuery='';
 let missionPlanner=null,analysisSequence=0;
 const missionFilters={query:'',rank:'',form:'',available:true,sort:'shortest'};
 let missionClaimPending=false,activeDecisionMission=null;
@@ -72,7 +76,7 @@ async function launchDebugBattle(button,endpoint,label){
   button.disabled=true;toast(`Preparing ${label}…`);
   try{
     const data=await rawApi(endpoint,{method:'POST',body:'{}'});
-    await refreshDynamic();
+    await refreshDynamic(true);
     if(!data?.mission?.id)throw new Error('The backend did not return a battle mission');
     await openBattle(data.mission.id);
     toast(`${label} ready`);
@@ -217,7 +221,7 @@ async function init(){
     $('#loading').classList.add('hidden'); $('#identity-label').textContent=`${identity.display_name} · server ${identity.guild_id}${debugEnabled()?' · DEBUG':''}`;
     const data=await rawApi('/api/state');
     if(data.exists){state=data.state;showGame()}else{$('#creator').classList.remove('hidden');renderCreatorStats()}
-  }catch(e){$('#loading-text').textContent=e.message;console.error(e)}
+  }catch(e){$('#loading').classList.remove('hidden');$('#loading-text').textContent=e.message;console.error(e)}
 }
 
 $('#create-game').onclick=async()=>{
@@ -228,18 +232,21 @@ $('#create-game').onclick=async()=>{
 function updateLiveCountdowns(){
   const now=Date.now()/1000;
   $$('[data-countdown-end]').forEach(element=>{const remaining=Math.max(0,Math.ceil(Number(element.dataset.countdownEnd)-now));element.textContent=`${fmtDuration(remaining)}${element.dataset.countdownSuffix||''}`});
-  if(pool?.next_refresh)$('#pool-countdown').textContent=countdown(pool.next_refresh);
-  const due=activeMissions.some(m=>m.status==='claimed'&&Number(m.completes_at||Infinity)<=now);
+  if(pool?.next_refresh)$('#pool-countdown').textContent=Number(pool.next_refresh)<=now?'Refreshing…':countdown(pool.next_refresh);
+  const phase=$('[data-phase-countdown]');if(phase&&Number(phase.dataset.countdownEnd)<=now)phase.textContent='Opening…';
+  const due=activeMissions.some(m=>m.status==='claimed'&&Number(m.completes_at||Infinity)<=now)||(pool?.budget?.next_phase_at&&pool.budget.next_phase_at<=now)||(pool?.next_refresh&&pool.next_refresh<=now);
   if(due&&Date.now()-lastDeadlineRefresh>600){lastDeadlineRefresh=Date.now();refreshDynamic()}
 }
 function showGame(){ $('#game').classList.remove('hidden');syncMusic(); refreshAll(); if(!pollTimer)pollTimer=setInterval(refreshDynamic,5000);if(!clockTimer)clockTimer=setInterval(updateLiveCountdowns,250); }
-async function refreshAll(){renderResources();rosterNeedsRefresh=true;baseNeedsRefresh=true;await refreshDynamic()}
-function refreshDynamic(){
-  if(dynamicRefreshPromise)return dynamicRefreshPromise;
+async function refreshAll(){renderResources();rosterNeedsRefresh=true;baseNeedsRefresh=true;await refreshDynamic(true)}
+function refreshDynamic(force=false){
+  if(dynamicRefreshPromise)return force?dynamicRefreshPromise.then(()=>refreshDynamic()):dynamicRefreshPromise;
+  const version=missionMutationVersion;
   dynamicRefreshPromise=(async()=>{try{
     const previous=new Map(activeMissions.map(m=>[m.id,m.status]));
     const [p,pc,a]=await Promise.all([rawApi('/api/missions/pool'),rawApi('/api/private-contracts'),rawApi('/api/missions/active')]);
     const s=await rawApi('/api/state');
+    if(version!==missionMutationVersion){dynamicRefreshAgain=true;return}
     pool=p;syncRegionalTheme();syncMusic();
     privateContracts=pc.missions||[];
     const incoming=a.missions;
@@ -260,8 +267,15 @@ function refreshDynamic(){
     renderVisiblePanels();updateLiveCountdowns();
     if($('.tabs button.active')?.dataset.tab==='base')$$('[data-build]').forEach(button=>{const costs=content.buildings[button.dataset.build]?.cost||{};button.disabled=Object.entries(costs).some(([r,n])=>(state.resources[r]||0)<n)});
     if(stateChanged&&$('.mission-planner')&&!$('#mission-modal').classList.contains('hidden'))missionPlanner?.refresh(state.characters);
-  }catch(e){console.warn(e.message)}})().finally(()=>{dynamicRefreshPromise=null});
+  }catch(e){console.warn(e.message)}})().finally(()=>{dynamicRefreshPromise=null;if(dynamicRefreshAgain){dynamicRefreshAgain=false;refreshDynamic()}});
   return dynamicRefreshPromise;
+}
+
+function syncMissionMutation(mission){
+  if(!mission?.id)return;
+  const next=applyContractUpdate({pool,privateContracts,activeMissions},mission);
+  pool=next.pool;privateContracts=next.privateContracts;activeMissions=next.activeMissions;
+  missionMutationVersion++;renderVisiblePanels();
 }
 
 $$('.tabs button').forEach(btn=>btn.onclick=()=>{$$('.tabs button').forEach(x=>x.classList.remove('active'));btn.classList.add('active');$$('.tab-panel').forEach(x=>x.classList.add('hidden'));$(`#tab-${btn.dataset.tab}`).classList.remove('hidden');syncMusic();renderVisiblePanels();syncContractNavigation()});
@@ -302,12 +316,12 @@ function syncRegionalTheme(){
 }
 function renderMissions(){
   if(!pool)return;$('#pool-countdown').textContent=countdown(pool.next_refresh);$('#mission-rank-label').textContent=`${pool.rank}-RANK`;$('#pool-player-count').textContent=`Pool scaled for ${pool.active_players??pool.registered_players} active player${(pool.active_players??pool.registered_players)===1?'':'s'}`;
-  if(pool.budget)$('#pool-player-count').textContent+=` · ${pool.budget.phase==='free'?'Free-for-all':pool.budget.phase==='wave1'?'Wave 1':'Wave 2'} · ${pool.budget.remaining}/${pool.budget.limit} Contract Points${pool.budget.next_phase_at?` · next phase ${countdown(pool.budget.next_phase_at)}`:''}`;
+  if(pool.budget)$('#pool-player-count').innerHTML+=` · ${pool.budget.phase==='free'?'Free-for-all':pool.budget.phase==='wave1'?'Wave 1':'Wave 2'} · ${pool.budget.remaining}/${pool.budget.limit} Contract Points${pool.budget.next_phase_at?` · next phase <span data-phase-countdown data-countdown-end="${pool.budget.next_phase_at}">${countdown(pool.budget.next_phase_at)}</span>`:''}`;
   const eventBanner=$('#mission-event-banner'),event=pool.event||{id:'general'};
   syncRegionalTheme();
   eventBanner.className=`event-banner guild-board-event event-${event.theme||'general'}`;stableBoardHTML(eventBanner,eventHeader(event));syncContractNavigation();
   const debugBox=$('#debug-pool-controls');debugBox.classList.toggle('hidden',!debugEnabled());
-  if(debugEnabled()&&!$('#debug-pool-event').options.length){$('#debug-pool-event').innerHTML=Object.entries(content.mission_events).map(([id,e])=>`<option value="${id}">${esc(e.name)}</option>`).join('');$('#debug-force-refresh').onclick=async()=>{const btn=$('#debug-force-refresh');btn.disabled=true;try{const d=await rawApi('/api/debug/missions/refresh',{method:'POST',body:JSON.stringify({event_id:$('#debug-pool-event').value})});toast(`Forced ${d.event.name}`);await refreshDynamic()}catch(err){toast(err.message)}finally{btn.disabled=false}};$('#debug-goblin-battle').onclick=()=>launchDebugBattle($('#debug-goblin-battle'),'/api/debug/battles/goblin-warcamp','Goblin Warcamp battle')}
+  if(debugEnabled()&&!$('#debug-pool-event').options.length){$('#debug-pool-event').innerHTML=Object.entries(content.mission_events).map(([id,e])=>`<option value="${id}">${esc(e.name)}</option>`).join('');$('#debug-force-refresh').onclick=async()=>{const btn=$('#debug-force-refresh');btn.disabled=true;try{const d=await rawApi('/api/debug/missions/refresh',{method:'POST',body:JSON.stringify({event_id:$('#debug-pool-event').value})});toast(`Forced ${d.event.name}`);await refreshDynamic(true)}catch(err){toast(err.message)}finally{btn.disabled=false}};$('#debug-goblin-battle').onclick=()=>launchDebugBattle($('#debug-goblin-battle'),'/api/debug/battles/goblin-warcamp','Goblin Warcamp battle')}
   if(debugEnabled()&&!$('#debug-captive-cart').onclick)$('#debug-captive-cart').onclick=()=>launchDebugBattle($('#debug-captive-cart'),'/api/debug/battles/captive-cart','Captive Cart battle');
   if(debugEnabled()&&!$('#debug-smoke-signals').onclick)$('#debug-smoke-signals').onclick=()=>launchDebugBattle($('#debug-smoke-signals'),'/api/debug/battles/smoke-signals','Investigation Ambush');
   const ranks=content.mission_ranks||['E','D','C','B','A','S'],viewerIndex=ranks.indexOf(pool.rank);
@@ -346,7 +360,7 @@ function renderPrivateContracts(){
   const debugButton=$('#debug-hedgerow-watch');
   if(debugEnabled()&&debugButton&&!debugButton.onclick)debugButton.onclick=async()=>{
     debugButton.disabled=true;
-    try{await rawApi('/api/debug/private-contracts/hedgerow-watch',{method:'POST',body:'{}'});toast('Defense contract added');await refreshDynamic()}
+    try{await rawApi('/api/debug/private-contracts/hedgerow-watch',{method:'POST',body:'{}'});toast('Defense contract added');await refreshDynamic(true)}
     catch(error){toast(error.message)}finally{debugButton.disabled=false}
   };
   if(!privateContracts.length){
@@ -365,7 +379,7 @@ function renderActive(){
   $$('[data-resume-battle]').forEach(el=>el.onclick=()=>openBattle(el.dataset.resumeBattle));
   $$('[data-result]').forEach(el=>el.onclick=()=>showResult(activeMissions.find(m=>m.id===el.dataset.result)?.result));
   $$('[data-debug-mission]').forEach(btn=>btn.onclick=async e=>{e.stopPropagation();await debugCompleteMission(btn.dataset.debugMission,btn.dataset.debug)});
-  $$('[data-debug-resolve-now]').forEach(btn=>btn.onclick=async e=>{e.stopPropagation();btn.disabled=true;try{const data=await rawApi(`/api/debug/missions/${btn.dataset.debugResolveNow}/resolve-now`,{method:'POST',body:'{}'});if(data.mission.status==='battle'){toast('The investigation turned into a fight');await openBattle(data.mission.id);await refreshDynamic();return}const local=activeMissions.find(m=>m.id===btn.dataset.debugResolveNow);if(local){local.status='completed';local.result=data.result}playOutcomeSound(data.result.outcome);toast(`Resolved: ${title(data.result.outcome)}`);showResult(data.result);await refreshDynamic()}catch(error){toast(error.message)}finally{btn.disabled=false}});
+  $$('[data-debug-resolve-now]').forEach(btn=>btn.onclick=async e=>{e.stopPropagation();btn.disabled=true;try{const data=await rawApi(`/api/debug/missions/${btn.dataset.debugResolveNow}/resolve-now`,{method:'POST',body:'{}'});syncMissionMutation(data.mission);if(data.mission.status==='battle'){toast('The investigation turned into a fight');await openBattle(data.mission.id);await refreshDynamic(true);return}const local=activeMissions.find(m=>m.id===btn.dataset.debugResolveNow);if(local){local.status='completed';local.result=data.result}playOutcomeSound(data.result.outcome);toast(`Resolved: ${title(data.result.outcome)}`);showResult(data.result);await refreshDynamic(true)}catch(error){toast(error.message)}finally{btn.disabled=false}});
 }
 
 function currentMissionSelection(){return missionPlanner?.selection()||{party_ids:[],role_assignments:null,bodyguard_ids:[]}}
@@ -373,8 +387,8 @@ function currentMissionSelection(){return missionPlanner?.selection()||{party_id
 async function debugCompleteMission(missionId,outcome,selection={party_ids:[],role_assignments:null}){
   try{
     const data=await rawApi(`/api/debug/missions/${missionId}/complete`,{method:'POST',body:JSON.stringify({outcome,...selection})});
-    const local=activeMissions.find(m=>m.id===missionId);if(local){local.status='completed';local.result=data.result}
-    playOutcomeSound(data.result.outcome);toast(`DEBUG: ${title(data.result.outcome)}`);showResult(data.result);await refreshDynamic();
+    syncMissionMutation(data.mission||{...(activeMissions.find(m=>m.id===missionId)||selectedMission),id:missionId,status:'completed',result:data.result})
+    playOutcomeSound(data.result.outcome);toast(`DEBUG: ${title(data.result.outcome)}`);showResult(data.result);await refreshDynamic(true);
   }catch(e){toast(e.message)}
 }
 
@@ -411,8 +425,8 @@ async function openMission(m){
   if(m.status==='available'&&!m.private_source&&!m.chain){
     const pointCost=m.point_cost||content.economy?.point_cost?.[m.rank]||1;
     mountReservation($('#mission-detail'),m,{budget:pool.budget,cost:pointCost,api:rawApi,
-      onRefresh:refreshDynamic,onOpen:owned=>openMission(owned),
-      onBrowse:()=>$('#mission-modal').classList.add('hidden')});
+      onRefresh:data=>{syncMissionMutation(data?.mission);return refreshDynamic(true)},onOpen:owned=>openMission(owned),
+      onBrowse:()=>$('#mission-close').click()});
     return;
   }
   if(m.status!=='available'&&m.status!=='reserved'){$('#mission-detail').innerHTML=`<div class="eyebrow">${title(m.status)}</div><h2>${esc(m.name)}</h2><p>${m.claimed_by_name?`Claimed by ${esc(m.claimed_by_name)}.`:'No longer available.'}</p>`;return}
@@ -421,7 +435,7 @@ async function openMission(m){
     statLabel:content.perk_tracks?.[m.stat]?.name||title(m.stat),debug:debugEnabled(),
     onChange:updateAnalysis,onClaimDebug:(outcome,selection)=>debugCompleteMission(m.id,outcome,selection)
   });
-  if(m.status==='reserved'){$('#mission-detail').insertAdjacentHTML('beforeend','<button id="abandon-contract">Abandon unstarted contract</button>');$('#abandon-contract').onclick=async()=>{if(!confirm('Abandon this contract? Contract Points are not refunded.'))return;try{await rawApi(`/api/missions/${m.id}/abandon`,{method:'POST',body:'{}'});$('#mission-modal').classList.add('hidden');await refreshDynamic()}catch(error){toast(error.message)}}}
+  if(m.status==='reserved'){$('#mission-detail').insertAdjacentHTML('beforeend','<button id="abandon-contract">Abandon unstarted contract</button>');$('#abandon-contract').onclick=async()=>{if(!confirm('Abandon this contract? Contract Points are not refunded.'))return;try{await rawApi(`/api/missions/${m.id}/abandon`,{method:'POST',body:'{}'});$('#mission-modal').classList.add('hidden');await refreshDynamic(true)}catch(error){toast(error.message)}}}
   const debugCrit=$('[data-debug-available="critical_success"]');if(debugCrit&&m.has_special_critical)debugCrit.disabled=true;
   await updateAnalysis();
 }
@@ -439,7 +453,7 @@ async function updateAnalysis(){
     btn.disabled=!analysis.claimable||missionClaimPending;btn.onclick=()=>claimMission(selection);
   }catch(e){if(requestId!==analysisSequence||selectedMission?.id!==missionId||!$('#odds'))return;$('#odds').textContent=e.message;btn.disabled=true}
 }
-async function claimMission(selection){if(missionClaimPending)return;missionClaimPending=true;const button=$('#claim-mission');if(button)button.disabled=true;try{const data=await rawApi(`/api/missions/${selectedMission.id}/claim`,{method:'POST',body:JSON.stringify(selection)});playSfx('ui_confirm',.25);toast(data.mission.status==='decision'?'Contract started · choose your approach':data.mission.status==='battle'?'Battle started':'Mission claimed');if(data.mission.status==='decision'){await openDecision(data.mission.id,data.mission,data.decision)}else if(data.mission.status==='battle'){await openBattle(data.mission.id)}else if(data.mission.status==='completed'&&data.mission.result){playOutcomeSound(data.mission.result.outcome);showResult(data.mission.result)}else{$('#mission-modal').classList.add('hidden')}await refreshDynamic()}catch(e){toast(e.message);await refreshDynamic()}finally{missionClaimPending=false;if($('.mission-planner'))await updateAnalysis()}}
+async function claimMission(selection){if(missionClaimPending)return;missionClaimPending=true;const button=$('#claim-mission');if(button)button.disabled=true;try{const data=await rawApi(`/api/missions/${selectedMission.id}/claim`,{method:'POST',body:JSON.stringify(selection)});syncMissionMutation(data.mission);playSfx('ui_confirm',.25);toast(data.mission.status==='decision'?'Contract started · choose your approach':data.mission.status==='battle'?'Battle started':'Mission claimed');if(data.mission.status==='decision'){await openDecision(data.mission.id,data.mission,data.decision)}else if(data.mission.status==='battle'){await openBattle(data.mission.id)}else if(data.mission.status==='completed'&&data.mission.result){playOutcomeSound(data.mission.result.outcome);showResult(data.mission.result)}else{$('#mission-modal').classList.add('hidden')}await refreshDynamic(true)}catch(e){toast(e.message);await refreshDynamic(true)}finally{missionClaimPending=false;if($('.mission-planner'))await updateAnalysis()}}
 
 async function openDecision(missionId,mission,initialDecision){
   missionPlanner=null;analysisSequence++;activeBattleView=null;activeDecisionMission=null;syncMusic();
@@ -449,11 +463,12 @@ async function openDecision(missionId,mission,initialDecision){
   $('#mission-modal').classList.remove('hidden');
   const draw=scene=>{mountDecisionScene($('#mission-detail'),current,scene,{esc,title,onChoose:async payload=>{
     const response=await rawApi(`/api/missions/${missionId}/decision`,{method:'POST',body:JSON.stringify(payload)});
+    syncMissionMutation(response.mission);
     playSfx('ui_confirm',.25);
     if(response.decision)draw(response.decision);
     else if(response.mission.status==='battle')await openBattle(missionId);
     else if(response.result){const local=activeMissions.find(m=>m.id===missionId);if(local){local.status='completed';local.result=response.result}playOutcomeSound(response.result.outcome);showResult(response.result)}
-    await refreshDynamic();
+    await refreshDynamic(true);
   }});const card=$('#mission-modal .modal-card');card.scrollTop=0;$('#mission-detail').querySelector('[data-scene-choice]:not(:disabled)')?.focus({preventScroll:true})};
   draw(data.decision);
 }
@@ -781,7 +796,7 @@ async function sendCombat(command,nextMode=null){
     if(command.action==='move'&&latestMovement.peek(movementContext)&&data.battle?.current_unit_id===activeBattleView.current_unit_id&&data.battle?.round===activeBattleView.round)return;
     tileActionMenu=null;
     selectedCombatAction=nextCombatMode(command.action,nextMode,selectedCombatAction);
-    if(data.result){const local=activeMissions.find(m=>m.id===activeBattleMissionId);if(local){local.status='completed';local.result=data.result}const soundDuration=playBattleSounds(data.battle);activeBattleView=null;retreatAllArmed=false;playOutcomeSound(data.result.outcome,soundDuration);showResult(data.result);await refreshDynamic();return}
+    if(data.result){syncMissionMutation({...activeMissions.find(m=>m.id===activeBattleMissionId),id:activeBattleMissionId,status:'completed',result:data.result});const soundDuration=playBattleSounds(data.battle);activeBattleView=null;retreatAllArmed=false;playOutcomeSound(data.result.outcome,soundDuration);showResult(data.result);await refreshDynamic(true);return}
     const optimisticDeployment=command.action==='deploy_unit'&&activeBattleView?.status==='preparing'&&activeBattleView.units?.[command.target_id]?.x===command.x&&activeBattleView.units?.[command.target_id]?.y===command.y;
     if(optimisticDeployment){
       activeBattleView=data.battle;
@@ -799,7 +814,7 @@ async function sendCombat(command,nextMode=null){
     if(pending&&activeBattleView?.status==='active'&&!$('#mission-modal').classList.contains('hidden'))sendCombat(pending);
   }
 }
-async function sendCombatAuto(resolveAll){if(combatRequestPending)return;combatRequestPending=true;try{const tactic=$('#battle-tactic')?.value||'balanced',data=await rawApi(`/api/missions/${activeBattleMissionId}/battle/auto`,{method:'POST',body:JSON.stringify({tactic,resolve_all:resolveAll})});tileActionMenu=null;selectedCombatAction='move';if(data.result){const local=activeMissions.find(m=>m.id===activeBattleMissionId);if(local){local.status='completed';local.result=data.result}const soundDuration=resolveAll?0:playBattleSounds(data.battle);activeBattleView=null;retreatAllArmed=false;playOutcomeSound(data.result.outcome,soundDuration);showResult(data.result);await refreshDynamic()}else renderBattle(data.battle)}catch(e){toast(e.message)}finally{combatRequestPending=false}}
+async function sendCombatAuto(resolveAll){if(combatRequestPending)return;combatRequestPending=true;try{const tactic=$('#battle-tactic')?.value||'balanced',data=await rawApi(`/api/missions/${activeBattleMissionId}/battle/auto`,{method:'POST',body:JSON.stringify({tactic,resolve_all:resolveAll})});tileActionMenu=null;selectedCombatAction='move';if(data.result){syncMissionMutation({...activeMissions.find(m=>m.id===activeBattleMissionId),id:activeBattleMissionId,status:'completed',result:data.result});const soundDuration=resolveAll?0:playBattleSounds(data.battle);activeBattleView=null;retreatAllArmed=false;playOutcomeSound(data.result.outcome,soundDuration);showResult(data.result);await refreshDynamic(true)}else renderBattle(data.battle)}catch(e){toast(e.message)}finally{combatRequestPending=false}}
 $('#mission-close').onclick=()=>{latestMovement.clear();retreatAllArmed=false;tileActionMenu=null;activeBattleView=null;activeDecisionMission=null;$('#mission-modal').classList.add('hidden');syncMusic();renderVisiblePanels()};
 $('#sound-settings-open').onclick=()=>{closeAudioSettings?.();closeAudioSettings=mountAudioSettings($('#sound-settings-content'),audioMixer,name=>playSfx(name,name.startsWith('mission_')?.5:name.startsWith('ui_')?.16:.5));$('#sound-settings-modal').showModal()};
 $('#sound-settings-close').onclick=()=>$('#sound-settings-modal').close();
@@ -811,6 +826,7 @@ $('#portrait-lightbox-close').onclick=closePortraitViewer;$('#portrait-lightbox'
 function showResult(r){
   if(!r)return;
   missionPlanner=null;analysisSequence++;activeBattleView=null;activeDecisionMission=null;syncMusic();
+  renderVisiblePanels();
   const rw=r.rewards||{},bits=[];
   if(rw.gold)bits.push(`+${rw.gold} Gold`);
   Object.entries(rw.materials||{}).forEach(([k,v])=>bits.push(`+${v} ${title(k)}`));
@@ -832,7 +848,7 @@ function showResult(r){
   $('#mission-modal').classList.remove('hidden');
   $('#mission-detail').innerHTML=`<div class="eyebrow">MISSION AFTERMATH${r.debug_forced?' · DEBUG FORCED':''}</div><h2>${esc(r.mission)}</h2><div class="aftermath-heading"><span class="outcome ${r.outcome}">${title(r.outcome)}</span><small>The choices, consequences, and rewards of this expedition.</small></div><div class="aftermath-layout"><section class="aftermath-story"><div class="mission-story">${story.map(p=>`<p>${esc(p)}</p>`).join('')}</div>${r.special_events?.length?`<div class="special-event"><b>Special event</b><br>${r.special_events.map(esc).join('<br>')}</div>`:''}${r.board_followups?.length?`<div class="world-consequence"><b>New leads</b><br>${r.board_followups.map(x=>esc(x.name)).join('<br>')}</div>`:''}${r.chain_unlocked?.length?`<div class="chain-unlocked"><b>Follow-ups ready in Private Contracts</b><br>${r.chain_unlocked.map(x=>`<button class="private-followup-link" data-open-followup="${esc(x.mission_id)}">${esc(x.name)} → <small>${countdown(x.expires_at)} to claim</small></button>`).join('')}</div>`:''}</section><aside class="aftermath-rewards"><h3>Recovered & earned</h3><div class="reward-list">${bits.length?bits.map(x=>`<div>${typeof x==='object'?`<img class="aftermath-item-icon" src="${esc(x.icon)}" alt="">${esc(x.text)}`:esc(x)}</div>`).join(''):'<div>No rewards recovered.</div>'}</div></aside></div><details class="aftermath-details"><summary>Checks & expedition details</summary>${resolutionRoll}${sceneRolls}${roles?`<div class="role-aftermath">${roles}</div>`:''}${battleReport}</details>${rolls?`<details class="aftermath-details"><summary>Loot chances & rolls</summary><div class="loot-rolls">${rolls}</div></details>`:''}`;
   $('#mission-modal .modal-card').scrollTop=0;
-  $$('[data-open-followup]').forEach(button=>button.onclick=async()=>{button.disabled=true;await refreshDynamic();const mission=privateContracts.find(m=>m.id===button.dataset.openFollowup);if(mission)openMission(mission);else{toast('This contract is already claimed or has expired');button.disabled=false}});
+  $$('[data-open-followup]').forEach(button=>button.onclick=async()=>{button.disabled=true;await refreshDynamic(true);const mission=privateContracts.find(m=>m.id===button.dataset.openFollowup);if(mission)openMission(mission);else{toast('This contract is already claimed or has expired');button.disabled=false}});
 }
 
 function placementType(){
@@ -853,9 +869,9 @@ function updatePlacementGhost(x,y){
 function stopPlacement(){buildMode=null;moveModeBuildingId=null;$('#cancel-build').classList.add('hidden');$('#build-mode-label').textContent='';renderBaseGrid()}
 function renderBlueprints(){
   const root=$('#blueprints');
-  const placed=new Set(state.buildings.map(b=>b.type)),available=state.learned_blueprints.filter(id=>!placed.has(id));
-  if(!available.length){root.innerHTML='<p class="muted small">All learned buildings are already placed.</p>';return}
-  root.innerHTML=available.map(id=>{const b=content.buildings[id],cost=Object.entries(b.cost||{}).map(([k,v])=>`${v} ${k}`).join(' · '),aff=Object.entries(b.cost||{}).every(([k,v])=>(state.resources[k]||0)>=v);return `<div class="blueprint"><strong>${esc(b.name)}</strong><small>${esc(b.description)}</small><span><b>${b.w} × ${b.h}</b> footprint · ${cost||'Free'}</span><button data-build="${id}" ${aff?'':'disabled'}>Place ${b.w}×${b.h}</button></div>`}).join('');
+  const placed=new Set(state.buildings.map(b=>b.type)),available=state.learned_blueprints.filter(id=>!placed.has(id)&&`${content.buildings[id]?.name} ${content.buildings[id]?.description}`.toLowerCase().includes(baseBlueprintQuery));
+  if(!available.length){root.innerHTML=baseBlueprintQuery?'<p class="muted small">No matching blueprints.</p>':'<p class="muted small">All learned buildings are already placed.</p>';return}
+  patchLiveHTML(root,available.map(id=>{const b=content.buildings[id],cost=Object.entries(b.cost||{}).map(([k,v])=>`${v} ${k}`).join(' · '),aff=Object.entries(b.cost||{}).every(([k,v])=>(state.resources[k]||0)>=v);return `<div class="blueprint"><strong>${esc(b.name)}</strong><small>${esc(b.description)}</small><span><b>${b.w} × ${b.h}</b> footprint · ${cost||'Free'}</span><button data-build="${id}" ${aff?'':'disabled'}>Place ${b.w}×${b.h}</button></div>`}).join(''));
   $$('[data-build]').forEach(b=>b.onclick=()=>{buildMode=b.dataset.build;moveModeBuildingId=null;const d=content.buildings[buildMode];$('#build-mode-label').textContent=`placing ${d.name} (${d.w}×${d.h})`;$('#cancel-build').classList.remove('hidden');renderBaseGrid()})
 }
 function renderSelectedBuilding(){
@@ -868,21 +884,21 @@ function renderSelectedBuilding(){
   const training=tracks.length?`<div class="training-panel"><div class="eyebrow">PROFICIENCY TRAINING</div>${tracks.map(([track,definition])=>{const currentLevels=idle.map(c=>perkLevel(c,track)),allMaster=idle.length&&currentLevels.every(level=>level==='master');return `<div class="training-row"><b>${esc(definition.name)}</b><select data-trainee="${track}">${idle.map(c=>`<option value="${c.id}">${esc(c.name)} · ${title(perkLevel(c,track))}</option>`).join('')}</select><button data-train="${track}" ${!idle.length||allMaster?'disabled':''}>Train next tier</button></div>`}).join('')}<small>Relevant work builds proficiency. A local Basic instructor costs 8 gold; higher tiers need an idle teacher at that tier. Skilled uses a Training Manual, Expert a Specialist Tome, and Master a Mastery Codex.</small><small>${esc(supplies)}</small></div>`:'';
   const wardenId=(b.assigned||[])[0]||'',warden=state.characters.find(c=>c.id===wardenId);
   const wardenPanel=b.type==='prison_cell'?`<div class="warden-panel"><div class="eyebrow">WARDEN</div><b>${warden?esc(warden.name):'No warden assigned'}</b><small>Warden mechanics will be added later. This assignment reserves the facility worker slot.</small><select id="warden-select"><option value="">— No warden —</option>${idle.map(c=>`<option value="${c.id}" ${c.id===wardenId?'selected':''}>${esc(c.name)}</option>`).join('')}</select><button id="assign-warden">Save Warden</button></div>`:'';
-  root.classList.remove('hidden');root.innerHTML=`<div class="eyebrow">SELECTED BUILDING</div><strong>${esc(d.name)}</strong><small>${d.w} × ${d.h} footprint · position ${b.x+1},${b.y+1}</small>${b.type==='guild_hall'?`<div class="guild-rank"><span>Mission visibility</span><b>${current}-Rank</b>${next?`<small>Next: ${next}-Rank · ${cost}</small><button id="upgrade-guild-hall" ${canUpgrade?'':'disabled'}>Unlock ${next}-Rank Missions</button>`:'<small>Maximum rank reached</small>'}</div>`:''}${wardenPanel}${training}<button id="move-building">Move</button>`;
+  root.classList.remove('hidden');patchLiveHTML(root,`<div class="eyebrow">SELECTED BUILDING</div><strong>${esc(d.name)}</strong><small>${d.w} × ${d.h} footprint · position ${b.x+1},${b.y+1}</small>${b.type==='guild_hall'?`<div class="guild-rank"><span>Mission visibility</span><b>${current}-Rank</b>${next?`<small>Next: ${next}-Rank · ${cost}</small><button id="upgrade-guild-hall" ${canUpgrade?'':'disabled'}>Unlock ${next}-Rank Missions</button>`:'<small>Maximum rank reached</small>'}</div>`:''}${wardenPanel}${training}<button id="move-building">Move building</button>`);
   $('#move-building').onclick=()=>{moveModeBuildingId=b.id;buildMode=null;$('#build-mode-label').textContent=`moving ${d.name} (${d.w}×${d.h})`;$('#cancel-build').classList.remove('hidden');renderBaseGrid()};
-  if($('#upgrade-guild-hall'))$('#upgrade-guild-hall').onclick=async()=>{try{const data=await rawApi('/api/guild-hall/upgrade',{method:'POST',body:'{}'});state=data.state;toast(`${data.rank}-Rank missions unlocked`);renderResources();renderBase();await refreshDynamic()}catch(e){toast(e.message)}};
+  if($('#upgrade-guild-hall'))$('#upgrade-guild-hall').onclick=async()=>{try{const data=await rawApi('/api/guild-hall/upgrade',{method:'POST',body:'{}'});state=data.state;toast(`${data.rank}-Rank missions unlocked`);renderResources();renderBase();await refreshDynamic(true)}catch(e){toast(e.message)}};
   if($('#assign-warden'))$('#assign-warden').onclick=async()=>{const selected=$('#warden-select').value;try{if(wardenId&&wardenId!==selected){const removed=await rawApi('/api/assign',{method:'POST',body:JSON.stringify({character_id:wardenId,building_id:null})});state=removed.state}if(selected){const assigned=await rawApi('/api/assign',{method:'POST',body:JSON.stringify({character_id:selected,building_id:b.id})});state=assigned.state}toast(selected?'Warden assigned':'Warden removed');renderBase();renderRoster()}catch(e){toast(e.message)}};
   $$('[data-train]').forEach(button=>button.onclick=async()=>{const track=button.dataset.train,charId=$(`[data-trainee="${track}"]`).value;try{const data=await rawApi('/api/train-perk',{method:'POST',body:JSON.stringify({character_id:charId,track})});state=data.state;toast(`${title(data.training.level)} ${content.perk_tracks[track].name} trained`);renderBase();renderRoster();renderMissions()}catch(e){toast(e.message)}});
 }
-function renderBase(){if(!state||!content)return;renderCampEconomy($('#camp-economy'),{state,content,api:rawApi,onState:value=>{state=value;rosterNeedsRefresh=true;baseNeedsRefresh=true;renderResources();renderVisiblePanels()},notify:toast});renderBlueprints();renderSelectedBuilding();const idle=state.characters.filter(c=>!c.assignment&&c.status==='idle');patchLiveHTML($('#idle-zone'),idle.length?idle.map(c=>portraitHTML(c)).join(''):'<span class="muted small">No idle unassigned characters.</span>');renderBaseGrid();bindDrag()}
+function renderBase(){if(!state||!content)return;const w=state.base_size?.w||12,h=state.base_size?.h||8;$('#base-size-label').textContent=`${w} \u00d7 ${h} SETTLEMENT`;patchLiveHTML($('#base-summary'),`<div><b>${state.buildings.length}</b><small>Facilities</small></div><div><b>${state.characters.filter(c=>c.status==='idle').length}</b><small>Available characters</small></div><div><b>${w} \u00d7 ${h}</b><small>Settlement size</small></div>`);$('#base-blueprint-search').oninput=event=>{baseBlueprintQuery=event.target.value.trim().toLowerCase();renderBlueprints()};renderCampEconomy($('#camp-economy'),{state,content,api:rawApi,onState:value=>{state=value;rosterNeedsRefresh=true;baseNeedsRefresh=true;renderResources();renderVisiblePanels()},notify:toast});renderBlueprints();renderSelectedBuilding();const idle=state.characters.filter(c=>!c.assignment&&c.status==='idle');patchLiveHTML($('#idle-zone'),idle.length?idle.map(c=>portraitHTML(c)).join(''):'<span class="muted small">No idle unassigned characters.</span>');renderBaseGrid();bindDrag()}
 function renderBaseGrid(){
   const grid=$('#base-grid');if(!grid||!state)return;const placing=!!placementType();let html='';
   grid.style.gridTemplateColumns=`repeat(${state.base_size?.w||content.grid.w},58px)`;for(let y=0;y<(state.base_size?.h||content.grid.h);y++)for(let x=0;x<(state.base_size?.w||content.grid.w);x++)html+=`<div class="grid-cell ${placing?'build-target':''}" data-x="${x}" data-y="${y}" style="grid-column:${x+1};grid-row:${y+1}"></div>`;
-  html+=state.buildings.map(b=>{const d=content.buildings[b.type],chars=(b.assigned||[]).map(id=>state.characters.find(c=>c.id===id)).filter(Boolean);return `<div class="building ${b.type} ${b.id===selectedBuildingId?'selected':''}" data-building="${b.id}" style="grid-column:${b.x+1}/span ${d.w};grid-row:${b.y+1}/span ${d.h}"><b>${esc(d.name)}</b><small>${d.w}×${d.h} · ${d.workers?`${chars.length}/${d.workers+(d.production?(b.level||1)-1:0)} assigned`:d.beds?`${d.beds} beds`:'Facility'}</small><div class="assigned">${chars.map(c=>portraitHTML(c,true)).join('')}</div></div>`}).join('');
+  html+=state.buildings.map(b=>{const d=content.buildings[b.type],chars=(b.assigned||[]).map(id=>state.characters.find(c=>c.id===id)).filter(Boolean);return `<div class="building ${b.type} ${d.w*d.h<=2?'compact-building':''} ${b.id===selectedBuildingId?'selected':''}" data-building="${b.id}" title="${esc(d.name)} - ${esc(d.description)}" style="grid-column:${b.x+1}/span ${d.w};grid-row:${b.y+1}/span ${d.h}"><b>${esc(d.name)}</b><small>${d.w}×${d.h} · ${d.workers?`${chars.length}/${d.workers+(d.production?(b.level||1)-1:0)} assigned`:d.beds?`${d.beds} beds`:'Facility'}</small><div class="assigned">${chars.map(c=>portraitHTML(c,true)).join('')}</div></div>`}).join('');
   if(placing)html+='<div id="placement-ghost" class="placement-ghost hidden"></div>';patchLiveHTML(grid,html);
   $$('.grid-cell').forEach(cell=>{
     cell.onmouseenter=()=>{if(placementType())updatePlacementGhost(Number(cell.dataset.x),Number(cell.dataset.y))};
-    cell.onclick=async()=>{const type=placementType();if(!type){selectedBuildingId=null;renderSelectedBuilding();renderBaseGrid();return}const x=Number(cell.dataset.x),y=Number(cell.dataset.y);if(!placementValid(type,x,y,moveModeBuildingId||null))return toast('That footprint does not fit there');try{let d;if(moveModeBuildingId)d=await rawApi('/api/move-building',{method:'POST',body:JSON.stringify({building_id:moveModeBuildingId,x,y})});else d=await rawApi('/api/build',{method:'POST',body:JSON.stringify({blueprint_id:buildMode,x,y})});state=d.state;selectedBuildingId=d.building?.id||selectedBuildingId;stopPlacement();renderBase();renderResources();if(d.building?.type==='guild_hall')await refreshDynamic()}catch(e){toast(e.message)}};
+    cell.onclick=async()=>{const type=placementType();if(!type){selectedBuildingId=null;renderSelectedBuilding();renderBaseGrid();return}const x=Number(cell.dataset.x),y=Number(cell.dataset.y);if(!placementValid(type,x,y,moveModeBuildingId||null))return toast('That footprint does not fit there');try{let d;if(moveModeBuildingId)d=await rawApi('/api/move-building',{method:'POST',body:JSON.stringify({building_id:moveModeBuildingId,x,y})});else d=await rawApi('/api/build',{method:'POST',body:JSON.stringify({blueprint_id:buildMode,x,y})});state=d.state;selectedBuildingId=d.building?.id||selectedBuildingId;stopPlacement();renderBase();renderResources();if(d.building?.type==='guild_hall')await refreshDynamic(true)}catch(e){toast(e.message)}};
   });
   $$('.building').forEach(el=>{
     el.onclick=e=>{if(e.target.closest('.portrait'))return;if(placementType())return;selectedBuildingId=el.dataset.building;renderBase()};

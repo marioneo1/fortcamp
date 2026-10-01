@@ -127,9 +127,8 @@ async def ensure_pool(session: AsyncSession, guild_id: str, ts: int | None = Non
         existing = (await session.execute(
             select(MissionInstance).where(MissionInstance.guild_id == guild_id, MissionInstance.pool_slot == slot).order_by(MissionInstance.position)
         )).scalars().all()
-        player_count = int((await session.execute(
-            select(func.count()).select_from(PlayerState).where(PlayerState.guild_id == guild_id,PlayerState.updated_at>=ts-7*86400)
-        )).scalar_one())
+        from .registration import registered_count
+        player_count = await registered_count(session,guild_id)
         template_ids = _rolled_pool_templates(guild_id, slot, player_count)
         pool_size = len(template_ids)
         if len(existing) >= pool_size:
@@ -435,6 +434,8 @@ async def get_player(session: AsyncSession, guild_id: str, user_id: str) -> Play
 async def create_player(session: AsyncSession, guild_id: str, user_id: str, display_name: str, character: dict) -> PlayerState:
     if await get_player(session, guild_id, user_id):
         raise ValueError("A save already exists in this Discord server")
+    from .registration import set_registration
+    await set_registration(session,guild_id,user_id,display_name)
     row = PlayerState(guild_id=guild_id, user_id=user_id, display_name=display_name, state=normalize_state(new_game(character)), updated_at=now_ts())
     session.add(row)
     await ensure_guild_config(session, guild_id)

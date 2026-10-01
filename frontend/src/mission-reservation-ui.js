@@ -37,7 +37,7 @@ export function mountReservation(root,m,{budget,cost,api,onRefresh,onOpen,onBrow
       button.textContent='Assign team now';button.disabled=false;button.onclick=()=>onOpen(data.mission);
       const browse=document.createElement('button');browse.className='reservation-browse';browse.textContent='Keep browsing';browse.onclick=onBrowse;button.before(browse);
       // A refresh failure must not turn an already successful claim into a retry.
-      try{await onRefresh()}catch{help.textContent='Your contract is saved. Refresh the board to update your allowance.'}
+      try{await onRefresh(data)}catch{help.textContent='Your contract is saved. Refresh the board to update your allowance.'}
     }catch(error){
       status.textContent=[502,503,504].includes(error.status)?'The game server is temporarily unavailable. Try again shortly.':error.message;
       status.classList.add('reservation-error');button.disabled=false;button.textContent='Retry claim';

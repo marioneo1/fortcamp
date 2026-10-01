@@ -3,7 +3,7 @@ import os
 from dataclasses import dataclass
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(os.getenv('FORTCAMP_ENV_FILE') or None)
 
 
 def _bool(name: str, default: bool) -> bool:

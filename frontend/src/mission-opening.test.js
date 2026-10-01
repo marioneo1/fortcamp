@@ -13,10 +13,12 @@ test('acceptance opens returned choices immediately without a second fetch or st
     $:selector=>({'#claim-mission':button,'#mission-modal':modal,'#mission-modal .modal-card':card,'#mission-detail':detail}[selector]),
     rawApi:async path=>{requests.push(path);return {mission:{id:'ledger',name:'Ledger',status:'decision'},decision:scene}},
     toast:()=>{},playSfx:()=>{},syncMusic:()=>{},esc:v=>v,title:v=>v,
+    syncMissionMutation:()=>calls.push('saved'),
     mountDecisionScene:(_,mission,value)=>{assert.equal(mission.id,'ledger');assert.equal(value,scene);calls.push('choices')},
     refreshDynamic:async()=>calls.push('refresh'),updateAnalysis:async()=>{},
   });
   assert.deepEqual(requests,['/api/missions/ledger/claim']);
+  assert.ok(calls.indexOf('saved')<calls.indexOf('choices'));
   assert.ok(calls.indexOf('choices')<calls.indexOf('refresh'));assert.equal(card.scrollTop,0);
   assert.ok(calls.includes('show:hidden'));assert.ok(calls.includes('focus'));
 });

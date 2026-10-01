@@ -109,6 +109,28 @@ class FortcampBot(commands.Bot):
 bot = FortcampBot()
 
 
+@bot.tree.command(name="register", description="Join Fortcamp in this server; keep your existing progress")
+@app_commands.guild_only()
+async def register(interaction: discord.Interaction):
+    from .registration import set_registration,registered_count
+    async with SessionLocal() as session:
+        async with session.begin():
+            await ensure_guild_config(session,str(interaction.guild_id))
+            await set_registration(session,str(interaction.guild_id),str(interaction.user.id),interaction.user.display_name)
+            count=await registered_count(session,str(interaction.guild_id))
+    await interaction.response.send_message(f"Registered! Open the Fortcamp Activity to create or resume your character. {count} registered player(s) in this server.",ephemeral=True)
+
+
+@bot.tree.command(name="unregister", description="Pause Fortcamp participation without deleting your characters or progress")
+@app_commands.guild_only()
+async def unregister(interaction: discord.Interaction):
+    from .registration import set_registration
+    async with SessionLocal() as session:
+        async with session.begin():
+            await set_registration(session,str(interaction.guild_id),str(interaction.user.id),interaction.user.display_name,False)
+    await interaction.response.send_message("Unregistered. Your characters, items and progress are kept. You no longer count toward new mission pools or start new contracts. Existing expeditions may still finish. Use /register to return.",ephemeral=True)
+
+
 def format_duration(seconds: int) -> str:
     if seconds < 60:
         return f"{seconds}s"

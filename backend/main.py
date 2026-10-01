@@ -42,10 +42,11 @@ from .services import (
 from .settings import settings
 from .economy import camp_action, trade_view, purchase
 from .services import reserve_instance, abandon_reservation, claim_budget
+from .registration import require_registration, registered_count
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND_DIST = ROOT / "frontend" / "dist"
-PORTRAIT_ROOT = ROOT / "data" / "portraits"
+PORTRAIT_ROOT = Path(os.getenv('FORTCAMP_UPLOAD_ROOT') or ROOT / "data" / "portraits")
 PORTRAIT_POOL_ROOT.mkdir(parents=True, exist_ok=True)
 CHAMPION_PORTRAIT_ROOT.mkdir(parents=True, exist_ok=True)
 Image.MAX_IMAGE_PIXELS = 25_000_000
@@ -302,6 +303,7 @@ async def content(identity: IdentityDep):
 async def state(identity: IdentityDep):
     async with SessionLocal() as session:
         async with session.begin():
+            if not settings.dev_bypass_auth:await require_registration(session,identity.guild_id,identity.user_id)
             row = await get_player(session, identity.guild_id, identity.user_id)
     return {"exists": row is not None, "state": row.state if row else None, "identity": identity.__dict__}
 
@@ -311,6 +313,7 @@ async def new_game_endpoint(req: NewGameRequest, identity: IdentityDep):
     async with SessionLocal() as session:
         try:
             async with session.begin():
+                if not settings.dev_bypass_auth:await require_registration(session,identity.guild_id,identity.user_id)
                 row = await create_player(session, identity.guild_id, identity.user_id, identity.display_name, req.character.model_dump())
                 await ensure_pool(session, identity.guild_id)
         except ValueError as exc:
@@ -657,10 +660,8 @@ async def mission_pool(identity: IdentityDep):
             missions, _ = await ensure_pool(session, identity.guild_id)
             player = await get_player(session, identity.guild_id, identity.user_id)
             viewer_rank = mission_rank(player.state) if player else "E"
-            registered_players = int((await session.execute(
-                select(func.count()).select_from(PlayerState).where(PlayerState.guild_id == identity.guild_id)
-            )).scalar_one())
-            active_players=int((await session.execute(select(func.count()).select_from(PlayerState).where(PlayerState.guild_id==identity.guild_id,PlayerState.updated_at>=int(time.time())-7*86400))).scalar_one())
+            registered_players = await registered_count(session,identity.guild_id)
+            active_players=registered_players
     current_slot = active_pool_slot(identity.guild_id)
     return {
         "pool_slot": current_slot, "next_refresh": missions[0].spawned_at+1800 if missions else pool_slot()+1800,
@@ -789,6 +790,7 @@ async def mission_claim(mission_id: str, req: PartyRequest, identity: IdentityDe
     async with SessionLocal() as session:
         try:
             async with session.begin():
+                if not settings.dev_bypass_auth:await require_registration(session,identity.guild_id,identity.user_id)
                 if not req.party_ids:
                     mission=await reserve_instance(session,identity.guild_id,identity.user_id,identity.display_name,mission_id)
                 else:

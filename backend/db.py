@@ -25,3 +25,8 @@ async def init_db() -> None:
             with sqlite3.connect(str(path)) as source,sqlite3.connect(str(backup)) as target:source.backup(target)
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+        # Carry existing players forward once; inactive registrations stay inactive.
+        from sqlalchemy import insert, select, literal, and_
+        from .models import PlayerRegistration, PlayerState
+        legacy=select(PlayerState.guild_id,PlayerState.user_id,PlayerState.display_name,literal(True),PlayerState.updated_at).outerjoin(PlayerRegistration,and_(PlayerState.guild_id==PlayerRegistration.guild_id,PlayerState.user_id==PlayerRegistration.user_id)).where(PlayerRegistration.user_id.is_(None))
+        await conn.execute(insert(PlayerRegistration).from_select(['guild_id','user_id','display_name','active','updated_at'],legacy))
