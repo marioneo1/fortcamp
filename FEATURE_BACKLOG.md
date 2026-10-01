@@ -15,6 +15,8 @@ Use this file for pending work and GAMEPLAY_VISION.md for standing design rules.
 
 ## Next priorities
 
+- Browser play implemented: Discord OAuth, server picker restricted to user membership and this instance's installed bot, registration gating, server switching and sign-out. Website/Activity share server-scoped saves. Dev/release sessions bind to environment/application/database; cookies and caches are separated. Alpha signing secret is independent. Launchers block conflicting simultaneous bot application IDs; release preparation preserves production credentials rather than copying dev env. Portal redirects and a separate dev Discord application remain manual setup; pinned release unchanged. See docs/WEB_PLAY.md.
+
 - October 1 gear/content pass implemented: 180 items total, 56 additions across all eight slots, 18 new mission-exclusive/capture/event discoveries, and six existing utility upgrades. Low-rank exclusives remain relevant; new long-chain pieces and Starfall relic retain independent drop rates. Equipment techniques are selectable with one shared battle use. Carrying, throwing, breaching, guarding, terrain mobility, elemental protection and survival rules are bounded and shown in gear descriptions. See docs/gameplay/ITEM_CATALOGUE_AUDIT.md and GEAR_LOOT_DESIGN.md. All 180 local icons installed; new sheets append existing assignments.
 - Follow-up item design: actual player drop-rate/progression feedback, additional authored branch rewards, party support/healing skills and consumable actions. Do not label unimplemented granted-perk effects as working mechanics. Loadouts/shared armory and deeper gear comparison remain separate UX work.
 

@@ -1,5 +1,8 @@
 from __future__ import annotations
 import time
+import hashlib
+from pathlib import Path
+from sqlalchemy.engine import make_url
 from dataclasses import dataclass
 from typing import Annotated
 
@@ -18,16 +21,25 @@ class Identity:
     guild_admin: bool = False
 
 
+def session_namespace() -> str:
+    database = settings.database_url
+    url = make_url(database)
+    if url.get_backend_name() == 'sqlite' and url.database not in {None, ':memory:'}:
+        database = str(Path(url.database).resolve())
+    value = f'{settings.environment}:{settings.discord_client_id}:{database}'
+    return hashlib.sha256(value.encode()).hexdigest()[:32]
+
+
 def create_session_token(identity: Identity) -> str:
     now = int(time.time())
     return jwt.encode(
-        {"sub": identity.user_id, "guild_id": identity.guild_id, "name": identity.display_name, "guild_admin": identity.guild_admin, "iat": now, "exp": now + 60 * 60 * 12},
+        {"sub": identity.user_id, "guild_id": identity.guild_id, "name": identity.display_name, "guild_admin": identity.guild_admin, "iat": now, "exp": now + 60 * 60 * 12, "aud": 'game:'+session_namespace(), "iss": 'fortcamp'},
         settings.app_session_secret,
         algorithm="HS256",
     )
 
 
-async def exchange_discord_code(code: str) -> str:
+async def exchange_discord_code(code: str, redirect_uri: str | None = None) -> str:
     if not settings.discord_client_id or not settings.discord_client_secret:
         raise HTTPException(500, "Discord OAuth credentials are not configured")
     async with httpx.AsyncClient(timeout=15) as client:
@@ -38,6 +50,7 @@ async def exchange_discord_code(code: str) -> str:
                 "client_secret": settings.discord_client_secret,
                 "grant_type": "authorization_code",
                 "code": code,
+                **({'redirect_uri': redirect_uri} if redirect_uri else {}),
             },
             headers={"Content-Type": "application/x-www-form-urlencoded"},
         )
@@ -77,7 +90,7 @@ async def require_identity(
     if authorization and authorization.startswith("Bearer "):
         token = authorization.removeprefix("Bearer ").strip()
         try:
-            payload = jwt.decode(token, settings.app_session_secret, algorithms=["HS256"])
+            payload = jwt.decode(token, settings.app_session_secret, algorithms=["HS256"], audience='game:'+session_namespace(), issuer='fortcamp', options={'require':['sub','guild_id','exp','aud','iss']})
             return Identity(guild_id=str(payload["guild_id"]), user_id=str(payload["sub"]), display_name=str(payload.get("name") or "Player"), guild_admin=bool(payload.get("guild_admin", False)))
         except jwt.PyJWTError:
             raise HTTPException(401, "Invalid or expired game session")

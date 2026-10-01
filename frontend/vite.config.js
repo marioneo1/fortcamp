@@ -11,7 +11,7 @@ export default defineConfig(({mode}) => {
       headers: {'Cache-Control': 'no-store, max-age=0'},
       allowedHosts: ['dev.fortcampgame.fyi','.trycloudflare.com','.ts.net',...(publicHost?[publicHost]:[])],
       proxy: {
-        '/api': env.FORTCAMP_API_TARGET || 'http://127.0.0.1:8000'
+        '/api': {target: env.FORTCAMP_API_TARGET || 'http://127.0.0.1:8000',changeOrigin:false}
       }
     },
     build: { outDir: 'dist', emptyOutDir: true }

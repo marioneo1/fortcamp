@@ -13,6 +13,16 @@ class PlayerState(Base):
     updated_at: Mapped[int] = mapped_column(BigInteger, nullable=False)
 
 
+class WebLoginSession(Base):
+    __tablename__ = 'web_login_sessions'
+    id: Mapped[str] = mapped_column(String(64), primary_key=True)
+    namespace: Mapped[str] = mapped_column(String(64), nullable=False)
+    user_id: Mapped[str] = mapped_column(String(32), nullable=False)
+    display_name: Mapped[str] = mapped_column(String(100), nullable=False)
+    guilds: Mapped[list] = mapped_column(JSON, nullable=False)
+    expires_at: Mapped[int] = mapped_column(BigInteger, nullable=False, index=True)
+
+
 class GuildConfig(Base):
     __tablename__ = "guild_configs"
     guild_id: Mapped[str] = mapped_column(String(32), primary_key=True)

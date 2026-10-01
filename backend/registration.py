@@ -19,4 +19,4 @@ async def require_registration(session,guild_id,user_id):
     row=await session.get(PlayerRegistration,(guild_id,user_id))
     if row is None or not row.active:
         from fastapi import HTTPException
-        raise HTTPException(403,'Run /register with the Fortcamp bot in this server, then reopen the Activity. Unregistering preserves your save.')
+        raise HTTPException(403,'Run /register with the Fortcamp bot in this server, then retry here. Unregistering preserves your save.')

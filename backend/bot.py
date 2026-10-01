@@ -118,7 +118,8 @@ async def register(interaction: discord.Interaction):
             await ensure_guild_config(session,str(interaction.guild_id))
             await set_registration(session,str(interaction.guild_id),str(interaction.user.id),interaction.user.display_name)
             count=await registered_count(session,str(interaction.guild_id))
-    await interaction.response.send_message(f"Registered! Open the Fortcamp Activity to create or resume your character. {count} registered player(s) in this server.",ephemeral=True)
+    where=f'{settings.web_origin} or the Fortcamp Activity' if settings.web_origin else 'the Fortcamp Activity'
+    await interaction.response.send_message(f"Registered! Open {where} to create or resume your character. {count} registered player(s) in this server.",ephemeral=True)
 
 
 @bot.tree.command(name="unregister", description="Pause Fortcamp participation without deleting your characters or progress")

@@ -65,3 +65,7 @@ Both copies are Git repositories linked to `https://github.com/marioneo1/fortcam
 Grimm's original save and 168 owned contracts were reset with a consistent SQLite backup. Shared contracts and guild configuration were preserved. The initial production data was bootstrapped from that reset save. Backups and private runtime data are excluded from GitHub.
 
 Future targeted resets: stop the release and run `tools/reset_player.py --database "E:/Other Games/Fortcamp/fortcamp-release-data/fortcamp.db" --guild SERVER_ID --user USER_ID` using that copy's Python environment. The reset keeps a backup and preserves other players and shared missions. Unregistering is not this reset operation.
+
+## Browser play
+
+Website login and a server picker are available in the new source. See [WEB_PLAY.md](WEB_PLAY.md) for the exact Discord OAuth redirects, separate dev application setup and credential-safe release update. Current pinned releases need a newly prepared version to gain this feature; their credentials/saves are preserved.

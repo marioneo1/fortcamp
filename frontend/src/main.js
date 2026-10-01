@@ -11,6 +11,8 @@ import {createAudioMixer,mountAudioSettings,audioCategory} from './audio-setting
 import {raceEffects,perkModifiers} from './character-effects.js';
 import {mountCharacterCreator} from './character-creator.js';
 import {selectBattleSkill,skillPicker} from './equipment-skills.js';
+import {authenticateWeb,activitySessionKey,mountWebAccountControls} from './web-login.js';
+import './web-login.css';
 import {attackCommand,nextCombatMode,approachDescription} from './combat-targeting.js';
 import {mountReservation} from './mission-reservation-ui.js';
 import {renderCampEconomy} from './camp-economy-ui.js';
@@ -181,7 +183,7 @@ async function setupIdentity(){
     if(!cfg.discord_client_id) throw new Error('DISCORD_CLIENT_ID is not configured on the backend.');
     const sdk=new DiscordSDK(cfg.discord_client_id); await sdk.ready();
     if(!sdk.guildId) throw new Error('Launch Fortcamp from inside a Discord server, not a DM.');
-    const sessionKey=`fortcamp-session:${cfg.discord_client_id}:${sdk.guildId}`;
+    const sessionKey=activitySessionKey(cfg,sdk.guildId);
     const cachedSession=localStorage.getItem(sessionKey);
     if(cachedSession){
       sessionToken=cachedSession;
@@ -202,7 +204,12 @@ async function setupIdentity(){
     sessionToken=gameSession.session_token; identity=gameSession.identity;
     localStorage.setItem(sessionKey,sessionToken);
   } else {
-    if(!cfg.dev_bypass_auth) throw new Error('This build requires launching from Discord.');
+    if(!cfg.dev_bypass_auth){
+      const login=await authenticateWeb(rawApi,cfg);
+      sessionToken=login.session_token;identity=login.identity;
+      mountWebAccountControls(rawApi,cfg);
+      return;
+    }
     devHeaders={
       'X-Dev-Guild':params.get('guild_id')||'local-guild',
       'X-Dev-User':params.get('user_id')||'local-user',

@@ -15,6 +15,8 @@ def _bool(name: str, default: bool) -> bool:
 
 @dataclass(frozen=True)
 class Settings:
+    environment: str = os.getenv('FORTCAMP_PROFILE', 'standalone')
+    web_origin: str = os.getenv('FORTCAMP_WEB_ORIGIN', '').rstrip('/')
     database_url: str = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./data/fortcamp.db")
     discord_client_id: str = os.getenv("DISCORD_CLIENT_ID", "")
     discord_client_secret: str = os.getenv("DISCORD_CLIENT_SECRET", "")

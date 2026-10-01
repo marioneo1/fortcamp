@@ -22,7 +22,8 @@ from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field, field_validator
 from sqlalchemy import func, select
 
-from .auth import IdentityDep, create_session_token, exchange_discord_code, verify_discord_identity
+from .auth import IdentityDep, create_session_token, exchange_discord_code, verify_discord_identity, session_namespace
+from .web_auth import browser_router
 from .content import MISSION_TEMPLATES
 from .db import SessionLocal, init_db
 from .game import (
@@ -109,6 +110,13 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="Fortcamp Alpha API", version="0.3.1", lifespan=lifespan)
+
+def installed_web_guilds():
+    if not _bot or not _bot.is_ready():
+        raise HTTPException(503,'Fortcamp’s bot is connecting. Try again shortly.')
+    return {str(g.id):{'name':g.name,'icon':str(g.icon.url) if g.icon else None} for g in _bot.guilds}
+
+app.include_router(browser_router(installed_web_guilds))
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], allow_credentials=False, allow_methods=["*"], allow_headers=["*"],
@@ -265,6 +273,10 @@ async def config():
         "version": "0.3.1",
         "mission_time_scale": settings.mission_time_scale,
         "debug_mode": settings.game_debug_mode,
+        "environment": settings.environment,
+        "session_namespace": session_namespace(),
+        "web_origin": settings.web_origin,
+        "web_login_enabled": bool(settings.web_origin and settings.discord_client_id and settings.discord_client_secret and settings.discord_bot_token),
     }
 
 

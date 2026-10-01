@@ -7,7 +7,7 @@ import sqlite3
 import subprocess
 from datetime import datetime
 from pathlib import Path
-from dotenv import set_key
+from dotenv import set_key, dotenv_values
 
 ROOT=Path(__file__).resolve().parents[1]
 
@@ -18,12 +18,28 @@ def release_paths(parent,version):
 
 def git(*args):return subprocess.check_output(['git',*args],cwd=ROOT,text=True).strip()
 
+def release_env_source(parent):
+    """Never carry development bot credentials into a new production copy."""
+    parent=Path(parent).resolve()
+    explicit=ROOT/'.env.release'
+    if explicit.is_file():return explicit
+    pointer=ROOT/'.fortcamp-release-destination.json'
+    if pointer.is_file():
+        previous=Path(json.loads(pointer.read_text())['folder']).resolve()
+        if previous.is_relative_to(parent) and (previous/'.fortcamp-release.json').is_file() and (previous/'.env').is_file():return previous/'.env'
+    candidates=[p for p in parent.glob('fortcamp-release-*') if (p/'.fortcamp-release.json').is_file() and (p/'.env').is_file()]
+    if candidates:
+        latest=max(candidates,key=lambda p:(p/'.fortcamp-release.json').stat().st_mtime)
+        return latest/'.env'
+    raise SystemExit('Create a private .env.release containing your production credentials first. The builder will not copy alpha/dev credentials into production.')
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--version',required=True);parser.add_argument('--parent',type=Path)
     args=parser.parse_args()
     if (ROOT/'.fortcamp-release.json').exists():raise SystemExit('Create new releases from the development folder, not a release copy.')
     parent=args.parent or next((p for p in ROOT.parents if p.name.lower()=='fortcamp'),ROOT.parent)
     target,data=release_paths(parent,args.version)
+    production_env=release_env_source(parent)
     if target.exists():raise SystemExit(f'That release folder already exists; nothing was overwritten: {target}')
     if git('status','--porcelain'):raise SystemExit('Commit all source changes before creating a release. Untracked secrets/media are ignored by Git.')
     commit=git('rev-parse','HEAD');tag='v'+args.version
@@ -47,8 +63,8 @@ def main():
     for name in ('portrait_pools','champion_portraits'):
         source=ROOT/'data'/name
         if source.exists():shutil.copytree(source,target/'data'/name)
-    shutil.copy2(ROOT/'.env',target/'.env')
-    values={'DATABASE_URL':f'sqlite+aiosqlite:///{(data/"fortcamp.db").as_posix()}','DEV_BYPASS_AUTH':'false','GAME_DEBUG_MODE':'false','MISSION_TIME_SCALE':'1.0','BOT_ENABLED':'true','DISCORD_TEST_GUILD_ID':'','FORTCAMP_UPLOAD_ROOT':str(data/'portraits')}
+    shutil.copy2(production_env,target/'.env')
+    values={'DATABASE_URL':f'sqlite+aiosqlite:///{(data/"fortcamp.db").as_posix()}','DEV_BYPASS_AUTH':'false','GAME_DEBUG_MODE':'false','MISSION_TIME_SCALE':'1.0','BOT_ENABLED':'true','DISCORD_TEST_GUILD_ID':'','FORTCAMP_UPLOAD_ROOT':str(data/'portraits'),'FORTCAMP_PROFILE':'release','FORTCAMP_WEB_ORIGIN':dotenv_values(production_env).get('FORTCAMP_RELEASE_WEB_ORIGIN') or 'https://play.fortcampgame.fyi'}
     for name,value in values.items():set_key(str(target/'.env'),name,value,quote_mode='always')
     data.mkdir(parents=True,exist_ok=True)
     save=data/'fortcamp.db'
