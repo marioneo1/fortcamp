@@ -218,11 +218,17 @@ class DebugPoolRefreshRequest(BaseModel):
     event_id: str = "general"
 
 
+class CombatApproachPosition(BaseModel):
+    x: int
+    y: int
+
+
 class CombatCommandRequest(BaseModel):
     action: str
     x: int | None = None
     y: int | None = None
     target_id: str | None = None
+    move_to: CombatApproachPosition | None = None
     placement_id: str | None = None
 
 

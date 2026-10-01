@@ -1,4 +1,10 @@
 const filters = new Map();
+export function readHideEquipped(storage,key){
+  try{return storage?.getItem(key)!=='false'}catch{return true}
+}
+export function saveHideEquipped(storage,key,value){
+  try{storage?.setItem(key,String(value))}catch{}
+}
 const ranks = ['common','uncommon','rare','epic','legendary','mythic','event','story'];
 const escape = value => String(value??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const label = value => String(value??'').replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
@@ -24,6 +30,7 @@ export function inventoryGroups(state,content,character,filter) {
   const groups=new Map();
   for(const instance of state.inventory||[]){
     const item=content.items[instance.item_id];if(!item)continue;
+    if(filter.hideEquipped&&owners.has(instance.instance_id))continue;
     if(filter.slot&&item.slot!==filter.slot)continue;
     if(filter.rarity&&item.rarity!==filter.rarity)continue;
     const query=filter.query.trim().toLowerCase();
@@ -35,8 +42,10 @@ export function inventoryGroups(state,content,character,filter) {
   return [...groups.values()].sort((a,b)=>filter.sort==='name'?a.item.name.localeCompare(b.item.name):(Number(wearable(b.item))-Number(wearable(a.item))||ranks.indexOf(b.item.rarity)-ranks.indexOf(a.item.rarity)||a.item.name.localeCompare(b.item.name)));
 }
 
-export function mountEquipmentBrowser(panel,{state,content,character,onEquip,onError,editable}) {
+export function mountEquipmentBrowser(panel,{state,content,character,onEquip,onError,editable,preferenceKey='fortcamp:hide-equipped'}) {
   const f=filters.get(character.id)||{query:'',slot:'',rarity:'',sort:'rarity',page:0};filters.set(character.id,f);
+  let storage;try{storage=globalThis.localStorage}catch{}
+  f.hideEquipped=readHideEquipped(storage,preferenceKey);
   let pending=false;
   const wearables=new Set(content.slots);
   panel.innerHTML=`<div class="armory-heading"><h3>Equipment & Inventory</h3><span>${state.inventory.length} items · duplicate gear is stacked</span></div>
@@ -45,6 +54,7 @@ export function mountEquipmentBrowser(panel,{state,content,character,onEquip,onE
     <select aria-label="Equipment slot" data-filter="slot"><option value="">All items</option>${content.slots.map(s=>`<option value="${s}" ${f.slot===s?'selected':''}>${label(s)}</option>`).join('')}</select>
     <select aria-label="Item rarity" data-filter="rarity"><option value="">All rarities</option>${ranks.map(r=>`<option value="${r}" ${f.rarity===r?'selected':''}>${label(r)}</option>`).join('')}</select>
     <select aria-label="Sort inventory" data-filter="sort"><option value="rarity" ${f.sort==='rarity'?'selected':''}>Rarity first</option><option value="name" ${f.sort==='name'?'selected':''}>Name</option></select></div>
+    <label class="armory-hide-equipped"><input type="checkbox" data-hide-equipped ${f.hideEquipped?'checked':''}> Hide equipped gear <small>Show spare copies only</small></label>
     <div class="armory-result-count" aria-live="polite"></div><div class="armory-grid"></div><div class="armory-pages"></div>`;
   const find=selector=>panel.querySelector(selector);
   const render=()=>{
@@ -57,7 +67,7 @@ export function mountEquipmentBrowser(panel,{state,content,character,onEquip,onE
     find('.armory-result-count').textContent=`${groups.length} matching item types${locked?' · Equipment locked during a mission':''}`;
     find('.armory-grid').innerHTML=groups.slice(f.page*18,(f.page+1)*18).map(group=>{
       const {id,item,instances}=group;
-      const owned=instances.some(i=>i.owner?.id===character.id);
+      const owned=instances.some(i=>i.owner?.id===character.id)&&!instances.some(i=>!i.owner);
       const candidate=instances.find(i=>!i.owner)||instances.find(i=>i.owner?.id!==character.id&&editable(i.owner));
       const owners=[...new Set(instances.filter(i=>i.owner).map(i=>i.owner.name))];
       const current=content.items[state.inventory.find(i=>i.instance_id===character.equipment?.[item.slot])?.item_id];
@@ -79,7 +89,8 @@ export function mountEquipmentBrowser(panel,{state,content,character,onEquip,onE
     });
     panel.querySelectorAll('.catalogue-icon').forEach(img=>img.onerror=()=>{img.classList.add('missing');img.removeAttribute('src')});
   };
-  find('input').oninput=e=>{f.query=e.target.value;f.page=0;render()};
+  find('input[type="search"]').oninput=e=>{f.query=e.target.value;f.page=0;render()};
+  find('[data-hide-equipped]').onchange=e=>{f.hideEquipped=e.target.checked;saveHideEquipped(storage,preferenceKey,f.hideEquipped);f.page=0;render()};
   panel.querySelectorAll('[data-filter]').forEach(el=>el.onchange=()=>{f[el.dataset.filter]=el.value;f.page=0;render()});
   render();
 }

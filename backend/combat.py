@@ -924,6 +924,55 @@ def _commit_player_movement(battle: dict, unit: dict) -> None:
     _apply_tile_entry(battle, unit)
 
 
+def _attack_position(battle, unit, target, attack_range, reachable, parents):
+    """Choose the cheapest legal firing position under this turn's movement budget."""
+    if _can_attack(battle, unit, target, attack_range):
+        return unit, None
+    candidates = []
+    for (x, y), cost in reachable.items():
+        actor = {**unit, 'x': x, 'y': y}
+        if _can_attack(battle, actor, target, attack_range):
+            candidates.append((cost, _distance(unit, actor), y, x, actor))
+    if not candidates:
+        return None, None
+    cost, _, y, x, actor = min(candidates, key=lambda row: row[:4])
+    return actor, {'move_to': {'x': x, 'y': y}, 'movement_cost': cost,
+                   'path': _movement_path(parents, reachable, (x, y))}
+
+
+def _apply_attack_approach(battle, unit, target, attack_range, command):
+    destination = command.get('move_to')
+    if destination is None:
+        return
+    if not isinstance(destination, dict):
+        raise ValueError('Choose a valid approach tile')
+    x, y = int(destination.get('x', -1)), int(destination.get('y', -1))
+    costs, parents = _movement_tree(battle, unit)
+    actor = {**unit, 'x': x, 'y': y}
+    if (x, y) not in costs or not _can_attack(battle, actor, target, attack_range):
+        raise ValueError('That approach cannot reach the target within this turn')
+    path = _movement_path(parents, costs, (x, y))
+    origin = unit.get('movement_origin') or {'x': unit['x'], 'y': unit['y']}
+    points = [{'x': unit['x'], 'y': unit['y']}]
+    current_index = next((i for i, point in enumerate(path) if (point['x'], point['y']) == (unit['x'], unit['y'])), None)
+    if current_index is not None:
+        points.extend(path[current_index + 1:])
+    else:
+        points.extend(reversed(unit.get('movement_path', [])[:-1]))
+        if (points[-1]['x'], points[-1]['y']) != (origin['x'], origin['y']):
+            points.append(origin)
+        points.extend(path)
+    if (unit['x'], unit['y']) != (x, y):
+        unit['exit_ready'] = False
+        battle.setdefault('animation_events', []).append({'type': 'movement', 'unit_id': unit['id'], 'points': points})
+    unit['movement_origin'] = origin
+    unit['movement_path'] = path
+    unit['x'], unit['y'] = x, y
+    unit['moved'] = (x, y) != (origin['x'], origin['y'])
+    if unit.get('carrying') in battle['units']:
+        battle['units'][unit['carrying']].update(x=x, y=y)
+
+
 def _apply_tile_entry(battle: dict, unit: dict) -> None:
     """Resolve immediate effects from the tile where a committed move ends."""
     tiles = _terrain_at(battle, unit["x"], unit["y"])
@@ -1880,7 +1929,7 @@ def battle_view(battle: dict) -> dict:
     current = _current_unit(view)
     view["current_unit_id"] = current["id"] if current else None
     if current and current["team"] == "player":
-        reachable, _ = _movement_tree(view, current)
+        reachable, parents = _movement_tree(view, current)
         view["reachable"] = [
             {"x": x, "y": y} for x, y in reachable
         ]
@@ -1899,27 +1948,26 @@ def battle_view(battle: dict) -> dict:
             and not target.get("carried_by") and not target.get("extracted") and _distance(current, target) == 1
         ]
         view["attack_previews"] = {}
-        for target in _living(view, "enemy"):
-            standard_valid = not current.get("acted") and _can_attack(view, current, target)
-            subdue_valid = (
-                not current.get("acted") and current.get("nonlethal_capable")
-                and _can_attack(view, current, target, 1)
-            )
-            skill = current.get("special")
-            skill_valid = (
-                not current.get("acted") and skill and not current.get("special_used")
-                and _can_attack(view, current, target, int(skill["range"]))
-            )
-            view["attack_previews"][target["id"]] = {
-                "attack": _attack_preview(view, current, target, current["attack_elevation_rule"]) if standard_valid else None,
-                "subdue": _attack_preview(view, current, target, "melee") if subdue_valid else None,
-                "skill": _attack_preview(view, current, target, skill["elevation_rule"]) if skill_valid else None,
-            }
-        view["terrain_targets"] = [
-            tile["id"] for tile in view.get("terrain", [])
-            if tile.get("destructible") and not tile.get("destroyed")
-            and not current.get("acted") and _can_attack(view, current, tile)
-        ]
+        skill = current.get('special')
+        options = {
+            'attack': (current['attack_range'], current['attack_elevation_rule'], not current.get('acted')),
+            'subdue': (1, 'melee', not current.get('acted') and current.get('nonlethal_capable')),
+            'skill': (skill['range'], skill['elevation_rule'], not current.get('acted') and not current.get('special_used')) if skill else (0, 'melee', False),
+        }
+        for target in _living(view, 'enemy'):
+            previews = {}
+            for action, (reach, rule, available) in options.items():
+                actor, approach = _attack_position(view, current, target, reach, reachable, parents) if available else (None, None)
+                previews[action] = {**_attack_preview(view, actor, target, rule), **(approach or {})} if actor else None
+            view['attack_previews'][target['id']] = previews
+        view['terrain_attack_previews'] = {}
+        for tile in view.get('terrain', []):
+            if not tile.get('destructible') or tile.get('destroyed') or current.get('acted'):
+                continue
+            actor, approach = _attack_position(view, current, tile, current['attack_range'], reachable, parents)
+            if actor:
+                view['terrain_attack_previews'][tile['id']] = approach or {}
+        view['terrain_targets'] = list(view['terrain_attack_previews'])
         throw_profile = _throw_profile(view, current)
         if throw_profile:
             throw_profile["target_ids"] = [
@@ -1939,6 +1987,7 @@ def battle_view(battle: dict) -> dict:
         view["carry_targets"] = []
         view["attack_previews"] = {}
         view["terrain_targets"] = []
+        view["terrain_attack_previews"] = {}
         view["throw_profile"] = None
     view["status_definitions"] = STATUS_DEFINITIONS
     view["log"] = view["log"][-30:]
@@ -2113,6 +2162,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         if terrain_target:
             if action != "attack":
                 raise ValueError("Only a standard attack can target this terrain")
+            _apply_attack_approach(battle, unit, terrain_target, unit["attack_range"], command)
             if not _can_attack(battle, unit, terrain_target):
                 raise ValueError("Terrain target is outside attack range")
             _commit_player_movement(battle, unit)
@@ -2127,10 +2177,11 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             if action == "skill" and not unit.get("special"):
                 raise ValueError("This unit has no equipped combat skill")
             attack_range = int(unit["special"]["range"] if action == "skill" else 1 if action == "subdue" else unit["attack_range"])
-            if not _can_attack(battle, unit, target, attack_range):
-                raise ValueError("Target is outside attack range")
             if action == "skill" and unit.get("special_used"):
                 raise ValueError("This unit's special skill has already been used")
+            _apply_attack_approach(battle, unit, target, attack_range, command)
+            if not _can_attack(battle, unit, target, attack_range):
+                raise ValueError("Target is outside attack range")
             _commit_player_movement(battle, unit)
             rule = unit["special"]["elevation_rule"] if action == "skill" else "melee" if action == "subdue" else unit["attack_elevation_rule"]
             hit, preview, roll = _attack_hits(battle, unit, target, rule)

@@ -331,3 +331,5 @@ body.board-vfx-active .event-arcane .guild-event-art:after{display:none}
 .reservation-footer>div{min-width:0}.reservation-footer button{width:auto}
 
 .modal-card:has(.reservation-panel){background:#17221d}
+
+.battle-cell.attack-approach-path{box-shadow:inset 0 0 0 3px #f3cd69;background-color:#b99a4433}.battle-cell.attack-approach-stop{box-shadow:inset 0 0 0 4px #ffe4a0}.battle-cell .approach-step{position:absolute;bottom:4px;right:4px;border-radius:5px;background:#302614ed;color:#ffe6ac;padding:2px 6px;font-weight:700;font-size:12px;pointer-events:none;z-index:4}

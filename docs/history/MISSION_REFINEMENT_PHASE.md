@@ -215,3 +215,12 @@ The public domain returned 502 for configuration and claim requests while backen
 Replaced the bare claim text with a responsive contract brief, rank seal, objective, rolled reward previews, point allowance/cost and a 24-hour start explanation. Successful reservations offer Assign team now or Keep browsing. One bounded retry handles 502/503/504 only; existing owned reservations are idempotent. Budget/authentication failures are never auto-retried; failed board refresh after saving cannot turn a successful claim into a second reservation attempt.
 
 Validation: 63 frontend tests and production build pass. Browser check covers desktop/mobile layout, private reservation, immediate assignment and aftermath, with no runtime exceptions. QA used a separate save and bot was disabled.
+
+
+## October 1 ? inventory filter and approach attacks
+
+Roster inventory defaults to hiding equipped instances while leaving spare copies available and equipped slots visible. The checkbox preference persists in browser storage per guild/player, shared between that player's character inventories. Opting out reveals ownership and transfer controls; inaccessible storage falls back safely to the default.
+
+Used Attack/Subdue/Skill/Throw and completed activations return targeting to Move; deliberate carry-to-throw remains available. Targets inside movement plus attack range have server-generated approach previews with path costs and destination-based accuracy. Hover highlights the path; selecting the target offers an explicit Move & Attack/Subdue/Skill confirmation. In-range actions remain direct. Destructible terrain uses the same approach system. The server revalidates terrain costs, occupancy, climb limits, line of sight and the original uncommitted movement budget before moving and using the action. Invalid approaches do not reposition a unit. Walking and impact animations run sequentially; delayed attack effects no longer override the walking transform before their start.
+
+Validation: 168 Python tests (including eight approach cases), 67 frontend tests, production build. Browser QA in a separate save confirms spare visibility, persisted opt-out after reload, two-tile hover preview, explicit approach command over HTTP, movement before impact and return to Move. Walking transform progresses between sampled frames; no runtime exceptions. No live player inventory/battle was altered during QA.
