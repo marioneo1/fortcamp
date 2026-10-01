@@ -7,6 +7,17 @@ from tools.run_profile import profile_config
 from tools.prepare_release_copy import release_paths
 
 class RunProfileTests(unittest.TestCase):
+    def test_discord_dev_uses_public_port_real_auth_and_the_same_dev_save(self):
+        with tempfile.TemporaryDirectory() as d,patch.dict('os.environ',{'DEV_BYPASS_AUTH':'true','BOT_ENABLED':'false'}):
+            root=Path(d)
+            with patch('tools.run_profile.ROOT',root):
+                env,cwd,ports=profile_config('dev-discord');local,_,_=profile_config('dev')
+            self.assertEqual(ports,[8001,5173]);self.assertEqual(cwd,root)
+            self.assertEqual(env['DEV_BYPASS_AUTH'],'false');self.assertEqual(env['BOT_ENABLED'],'true')
+            self.assertEqual(env['GAME_DEBUG_MODE'],'true')
+            self.assertEqual(env['DATABASE_URL'],local['DATABASE_URL'])
+            self.assertEqual(env['FORTCAMP_UPLOAD_ROOT'],local['FORTCAMP_UPLOAD_ROOT'])
+            self.assertEqual(env['FORTCAMP_API_TARGET'],'http://127.0.0.1:8001')
     def test_release_copy_uses_own_credentials_code_and_shared_production_save(self):
         with tempfile.TemporaryDirectory() as d:
             parent=Path(d);root,data=release_paths(parent,'0.3.1-trial.1');root.mkdir()

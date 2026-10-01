@@ -11,7 +11,8 @@ from pathlib import Path
 ROOT=Path(__file__).resolve().parents[1]
 def profile_config(profile):
     env=os.environ.copy()
-    env.update(FORTCAMP_ENV_FILE=str(ROOT/'.env'),DATABASE_URL=f'sqlite+aiosqlite:///{(ROOT/"data"/f"fortcamp-{profile}.db").as_posix()}',FORTCAMP_UPLOAD_ROOT=str(ROOT/'data'/f'{profile}_portraits'))
+    save_profile='dev' if profile=='dev-discord' else profile
+    env.update(FORTCAMP_ENV_FILE=str(ROOT/'.env'),DATABASE_URL=f'sqlite+aiosqlite:///{(ROOT/"data"/f"fortcamp-{save_profile}.db").as_posix()}',FORTCAMP_UPLOAD_ROOT=str(ROOT/'data'/f'{save_profile}_portraits'))
     if profile=='release' or profile=='stable' and (ROOT/'.fortcamp-release.json').exists():
         marker=ROOT/'.fortcamp-release.json'
         if not marker.is_file():raise SystemExit('Run the release launcher from a prepared sibling release folder.')
@@ -28,10 +29,13 @@ def profile_config(profile):
         if not cwd.is_relative_to((ROOT/'.fortcamp-releases').resolve()):raise ValueError('Invalid release location')
         return env,cwd,[5173]
     env.update(DEV_BYPASS_AUTH='true',GAME_DEBUG_MODE='true',MISSION_TIME_SCALE='0.05',BOT_ENABLED='false',FORTCAMP_API_TARGET='http://127.0.0.1:8001')
+    if profile=='dev-discord':
+        env.update(DEV_BYPASS_AUTH='false',BOT_ENABLED='true',DISCORD_TEST_GUILD_ID='')
+        return env,ROOT,[8001,5173]
     return env,ROOT,[8001,5174]
 
 def main():
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('profile',choices=['stable','release','dev'])
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('profile',choices=['stable','release','dev','dev-discord'])
     args=parser.parse_args();env,cwd,ports=profile_config(args.profile)
     if args.profile=='release':
         info=json.loads((ROOT/'.fortcamp-release.json').read_text())
@@ -43,9 +47,11 @@ def main():
         with socket.socket() as sock:
             if sock.connect_ex(('127.0.0.1',port))==0:raise SystemExit(f'Port {port} is already in use. Close the older Fortcamp runner first; it has not been killed.')
     commands=[[str(ROOT/'.venv'/'Scripts'/'python.exe'),'-m','uvicorn','backend.main:app','--host','127.0.0.1','--port',str(ports[0])]]
-    if args.profile=='dev':
+    if args.profile in ('dev','dev-discord'):
         commands[0].append('--reload')
-        commands.append(['cmd','/c','npm.cmd','--prefix','frontend','run','dev','--','--port','5174'])
+        commands.append(['cmd','/c','npm.cmd','--prefix','frontend','run','dev','--','--port',str(ports[-1])])
+    if args.profile=='dev-discord':
+        print('Discord development uses the existing public Activity and DEV saves. Stop the release first; keep the Cloudflare tunnel running.',flush=True)
     print(f'{args.profile.upper()}: http://127.0.0.1:{ports[-1]} | separate {args.profile} save | Ctrl+C to stop this session',flush=True)
     children=[]
     try:

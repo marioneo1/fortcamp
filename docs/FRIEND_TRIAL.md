@@ -48,6 +48,8 @@ Open the original development folder and run **run_dev_windows.bat**, then use *
 
 This browser-based dev mode uses local test identities. To test development inside Discord while the trial remains live, create a separate Discord development application and dev hostname/URL mapping later; do not point the production app at dev or expose the auth-bypass dev port publicly.
 
+To test dev through the **existing** Discord Activity instead, stop the release and any local dev runner, leave Cloudflare running, then start **run_dev_discord_windows.bat** in alpha. It serves port 5173, enables the bot and real Discord authentication, and uses the same isolated dev save as browser dev. Debug mode remains on. Close/relaunch the Activity after switching. The existing Activity cannot serve dev and release simultaneously; stop Discord dev before starting release again. No tunnel route or Discord URL mapping changes are needed.
+
 ## Publish a tested update
 
 1. Finish testing in dev and commit all source changes. Update `requirements.lock.txt` deliberately if Python packages change; test the pinned versions. Generated runtime media stays local, but the release builder copies it.
