@@ -1,5 +1,7 @@
 # Mission Refinement Phase
 
+Latest visual follow-up (2026-09-30): [actual Effekseer fire trial](../art/EFFEKSEER_FIRE_TRIAL.md) replaces Goblin Pixi flame meshes. The authored effect uses a supplied CC-0 Pierre flame texture, warm tint/alpha blending and a pinned MIT WebGL/WASM runtime. It shares the board canvas/context/clock, supports reduced-motion stills and cleanup, and loads only for Goblin events. One Python rebuild tool was added, no BAT/global installation. Validation: 55 frontend tests, production build and browser checks passed, including real native particles, allocation caps, event switching and clock freeze. Headless CPU submission comparison averaged 0.32 ms without fire and 0.64 ms with fire; live Discord/GPU performance and visual approval remain separate.
+
 This file records the rules for expanding Fortcamp's missions without turning their results into mechanical reports.
 
 ## Story rules

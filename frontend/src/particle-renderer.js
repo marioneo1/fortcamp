@@ -10,11 +10,11 @@ import {createMeteorShower} from './particle-comets.js';
 import {createAtmosphere} from './particle-atmosphere.js';
 
 Emitter.registerBehavior(WindBehavior);
-export async function createParticleRenderer({canvas,width,height}){
+export async function createParticleRenderer({canvas,width,height,fireTrial=true}){
   // No Application or shared ticker: the board owns one loop and suspension.
   const renderer=new Renderer({view:canvas,width,height,resolution:Math.min(1,1920/width),backgroundAlpha:0,antialias:false,powerPreference:'low-power'});
   const stage=new Container(),currents=new Container(),layers=new Container(),ornaments=new Container();stage.addChild(currents,layers,ornaments);
-  let emitters=[],ribbons=[],atmosphere=[],comet=null,theme=null,version=0,time=0,destroyed=false;
+  let emitters=[],ribbons=[],atmosphere=[],comet=null,fire=null,fireLoading=null,fireFailed=false,theme=null,version=0,time=0,destroyed=false;
   const textureCache=new Map();
   function texture(name){if(!textureCache.has(name)){const image=name.startsWith('fx:')?makeParticleTexture(name):vfxTextures.get(name);if(image)textureCache.set(name,Texture.from(image))}return textureCache.get(name)}
   function clear(){emitters.forEach(e=>e.destroy());emitters=[];layers.removeChildren();ribbons.forEach(r=>r.destroy());ribbons=[];atmosphere.forEach(r=>r.destroy());atmosphere=[];currents.removeChildren();comet?.destroy();comet=null;ornaments.removeChildren()}
@@ -22,6 +22,16 @@ export async function createParticleRenderer({canvas,width,height}){
     theme=next;const request=++version,presets=createParticlePreset(next,width,height);
     const names=[...new Set(presets.flatMap(p=>p.config.behaviors.find(b=>b.type==='textureRandom').config.textures))];
     await vfxTextures.load(names.filter(n=>!n.startsWith('fx:')));if(destroyed||request!==version)return false;
+    if(next==='goblin'&&fireTrial&&!fire&&!fireFailed){
+      try{
+        if(!fireLoading)fireLoading=import('./effekseer-fire.js').then(m=>m.createEffekseerFire(renderer,width,height,{isCancelled:()=>destroyed}));
+        fire=await fireLoading;fire.resize(width,height);
+      }
+      catch(error){fireFailed=true;console.warn('Effekseer fire trial unavailable; smoke and sparks remain.',error)}
+      if(destroyed){fire?.destroy();fire=null;return false}
+      if(request!==version)return false;
+    }
+    fire?.setEnabled(next==='goblin');
     clear();time=0;
     for(const {config} of presets){
       const behavior=config.behaviors.find(b=>b.type==='textureRandom'),available=behavior.config.textures.map(texture).filter(Boolean);
@@ -35,9 +45,9 @@ export async function createParticleRenderer({canvas,width,height}){
       ]){const ribbon=createEnergyRibbon(texture('fx:beam'),width,height,options);ribbons.push(ribbon);currents.addChild(ribbon.mesh)}
     }
     if(next==='starfall'){comet=createMeteorShower(texture,width,height);ornaments.addChild(...comet.sprites)}
-    if(next==='starfall'||next==='goblin'){
-      for(let i=0;i<(next==='starfall'?2:3);i++){
-        const effect=createAtmosphere(texture(next==='starfall'?'fx:beam':'fx:flame'),width,height,next==='starfall'?'gravity':'flame',i);
+    if(next==='starfall'){
+      for(let i=0;i<2;i++){
+        const effect=createAtmosphere(texture('fx:beam'),width,height,'gravity',i);
         atmosphere.push(effect);currents.addChild(effect.mesh);
       }
     }
@@ -46,14 +56,14 @@ export async function createParticleRenderer({canvas,width,height}){
     render();return true;
   }
   function update(dt){
-    time+=dt;emitters.forEach(e=>e.update(dt));ribbons.forEach(r=>r.update(time));atmosphere.forEach(r=>r.update(time));comet?.update(dt);
+    time+=dt;emitters.forEach(e=>e.update(dt));ribbons.forEach(r=>r.update(time));atmosphere.forEach(r=>r.update(time));comet?.update(dt);fire?.update(dt);
   }
-  function render(){if(!destroyed)renderer.render(stage)}
+  function render(){if(!destroyed){renderer.render(stage);fire?.draw()}}
   return {
     setTheme,update,render,
-    resize(w,h){width=w;height=h;renderer.resolution=Math.min(1,1920/w);renderer.resize(w,h)},
-    diagnostics(){return {renderer:'pixi',particles:emitters.reduce((n,e)=>n+e.particleCount,0),emitters:emitters.length,ribbons:ribbons.length,atmosphere:atmosphere.length,ornaments:0,comet:comet?.diagnostics(),theme,viewport:[width,height]}},
+    resize(w,h){width=w;height=h;renderer.resolution=Math.min(1,1920/w);renderer.resize(w,h);fire?.resize(w,h)},
+    diagnostics(){return {renderer:'pixi',particles:emitters.reduce((n,e)=>n+e.particleCount,0),emitters:emitters.length,ribbons:ribbons.length,atmosphere:atmosphere.length,fire:fire?.diagnostics(),ornaments:0,comet:comet?.diagnostics(),theme,viewport:[width,height]}},
     pixelSignature(){const p=renderer.extract.pixels(stage);let hash=0;for(let i=0;i<p.length;i+=32)hash=(hash*31+p[i]+p[i+3])|0;return hash},
-    destroy(){if(destroyed)return;destroyed=true;version++;clear();stage.destroy({children:true});textureCache.forEach(t=>t.destroy(true));renderer.destroy(false)},
+    destroy(){if(destroyed)return;destroyed=true;version++;fire?.destroy();fire=null;clear();stage.destroy({children:true});textureCache.forEach(t=>t.destroy(true));renderer.destroy(false)},
   };
 }

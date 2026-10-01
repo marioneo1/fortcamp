@@ -1,5 +1,7 @@
 # Painted environmental effects v1
 
+Current Goblin fire uses the [Effekseer trial](EFFEKSEER_FIRE_TRIAL.md), replacing the Pixi flame meshes described in this history. Smoke and sparks remain Pixi; other themes are unchanged.
+
 One new transparent 6-column × 4-row sheet was generated with the built-in image tool, using the painted interactable props and board icon sheet as style references. These are 24 separate static effects, not 24 frames of one animation. Code supplies drifting, rotation, pulsing and travel.
 
 Source: `staging-ui/vfx-atlas-v1/environment_vfx_6x4.png` (1536 × 1024). Review: `staging-ui/vfx-atlas-v1/extracted_preview.jpg`. The exact prompt is preserved in [environment-vfx-v1-prompt.md](environment-vfx-v1-prompt.md).

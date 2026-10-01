@@ -1,0 +1,9 @@
+{
+  "repository": "https://github.com/effekseer/EffekseerForWebGL",
+  "commit": "e8c3ce076644789918695b0cba0031461c817890",
+  "editor_release": "170e",
+  "files": {
+    "effekseer.js": "515bf5f0a5bc6c665e3d9884490f986518c3b3c382b8fe04de4ac07a8333b7ad",
+    "effekseer.wasm": "ad29bcee74521e6f103b30a4bab012ecd4b6cd57f06053e3cfe87af26f6ff775"
+  }
+}

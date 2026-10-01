@@ -48,7 +48,16 @@ for(const id of ['goblin_warhost','ashen_procession','arcane_convergence','great
     await check(`getComputedStyle(document.querySelector('.guild-event-scene')).display!=='none'&&[...document.querySelectorAll('.event-orbit')].every(n=>getComputedStyle(n).display!=='none')`,'two layered arcane banner circles are visible');
     await evaluate('window.scrollTo(0,0)');const shot=await call('Page.captureScreenshot',{format:'png'});writeFileSync('staging-ui/mission-board-v1/board-arcane-background.png',Buffer.from(shot.data,'base64'));
   }
-  if(id==='goblin_warhost')await check(`previewBackdrop.diagnostics().atmosphere===3`,'camp smoke includes three intermittent flame sources');
+  if(id==='goblin_warhost'){
+    await check(`previewBackdrop.diagnostics().fire?.engine==='effekseer'&&previewBackdrop.diagnostics().fire.enabled&&previewBackdrop.diagnostics().fire.instances>0&&previewBackdrop.diagnostics().atmosphere===0`,'real Effekseer fire is active and old Pixi flames are removed');
+    await check(`previewBackdrop.diagnostics().fire.instances<=512`,'Effekseer instance allocation stays bounded');
+    await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'reduce'}]});
+    const fireTime=await evaluate('previewBackdrop.diagnostics().fire.time');await new Promise(r=>setTimeout(r,250));
+    await check(`previewBackdrop.diagnostics().fire.time===${fireTime}`,'reduced motion freezes Effekseer simulation');
+    await call('Emulation.setEmulatedMedia',{features:[{name:'prefers-reduced-motion',value:'no-preference'}]});
+    await evaluate('window.scrollTo(0,0)');const shot=await call('Page.captureScreenshot',{format:'png'});writeFileSync('staging-ui/effekseer-fire-trial/fire-active.png',Buffer.from(shot.data,'base64'));
+  }
+  if(id==='ashen_procession')await check(`previewBackdrop.diagnostics().fire?.enabled===false`,'switching events disables Effekseer fire');
   if(id==='starfall_omen')await check(`previewBackdrop.diagnostics().atmosphere===2`,'Starfall includes two animated gravity trails');
   if(id==='starfall_omen'){
     await check(`(async()=>{for(let i=0;i<120;i++){if(previewBackdrop.diagnostics().comet?.flights>0)return true;await new Promise(r=>setTimeout(r,50))}return false})()`,'fast shooting star actually launches');

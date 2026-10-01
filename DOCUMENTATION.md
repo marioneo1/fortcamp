@@ -27,6 +27,7 @@ Use the feature backlog for current status, the gameplay vision for standing rul
 - [Map authoring](docs/art/BATTLE_MAP_AUTHORING.md) and [asset layering](docs/art/MAP_ASSET_LAYERING.md): scenario and terrain/prop rules.
 - [Mission Board assets](docs/art/MISSION_BOARD_ASSETS.md): approved icon pack, extraction, and browser preview.
 - [Painted environmental effects](docs/art/ENVIRONMENT_VFX_ASSETS.md): shared transparent textures, board use, and reserved weather/skill assets.
+- [Effekseer fire trial](docs/art/EFFEKSEER_FIRE_TRIAL.md): Goblin fire source, runtime, rebuild and measured browser checks.
 - [Combat UI assets](docs/art/COMBAT_UI_ASSET_GUIDE.md): icon and token assets.
 - [Music guide](docs/audio/MUSIC_GENERATION_GUIDE.md): palette, processing, and playback rules.
 - [Mureka prompts](docs/audio/MUREKA_MUSIC_PROMPTS.md): existing arrangements and remaining regional events.
