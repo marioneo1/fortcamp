@@ -8,7 +8,7 @@ export function rankSeal(rank){const letter=/^[EDCBAS]$/.test(rank)?rank:'E';ret
 export function missionCard(m,{count=1,claimed=0,privateContract=false}={}){
   if(m.locked)return '';
   const form=FORMS.has(m.mission_form)?m.mission_form:'operation',rewards=m.reward_preview||[],roles=m.roles||[],requirements=m.requirements||[];
-  const mode=m.resolution_mode==='combat'?'Combat':m.has_decisions?'Choices':null;
+  const mode=['combat','tactical'].includes(m.resolution_mode)?'Combat':m.has_decisions?'Choices':null;
   const attr=privateContract?'data-private-mission':'data-mission',rank=/^[EDCBAS]$/.test(m.rank)?m.rank:'E';
   const seconds=Math.max(0,Number(m.duration_seconds)||0),minutes=Math.ceil(seconds/60),duration=minutes<60?`${minutes} min`:`${Math.floor(minutes/60)}h ${minutes%60?minutes%60+'m':''}`;
   const source=m.chain?`Story chain ${m.chain.step}/${m.chain.total}`:m.world_trigger?'World consequence':privateContract?m.private_source||'Earned follow-up':m.story_thread?.name||`${title(m.stat)} \u00b7 DC ${m.difficulty}`;
@@ -16,13 +16,13 @@ export function missionCard(m,{count=1,claimed=0,privateContract=false}={}){
     <div class="contract-heading">${boardIcon('form_'+form,'contract-form-icon')}<div><span class="contract-kind">${title(form)}${mode?`<span class="contract-mode">${mode}</span>`:''}</span><h3>${escapeHTML(m.name)}</h3></div>${count>1?`<span class="mission-stack" title="${count} available copies">&times;${count}</span>`:''}</div>
     <div class="contract-context">${escapeHTML(source)}</div>
     <p class="contract-premise">${escapeHTML(m.description)}</p>
-    <div class="contract-facts"><span>${boardIcon('utility_clock')}${duration}</span><span>${boardIcon('utility_party')}${Number(m.party_size)||1} ${(Number(m.party_size)||1)===1?'character':'characters'}</span>${privateContract?'<span class="contract-personal">Only you</span>':''}</div>
+    <div class="contract-facts"><span>${boardIcon('utility_clock')}${m.duration_seconds===0?'Play immediately':duration}</span><span>${boardIcon('utility_party')}${Number(m.party_size)||1} ${(Number(m.party_size)||1)===1?'character':'characters'}</span>${privateContract?'<span class="contract-personal">Only you</span>':`<span>${m.point_cost||1} Contract Points</span>`}</div>
     ${roles.length?`<div class="contract-roles">${roles.map(r=>`<span>${escapeHTML(r.label)} <b>${escapeHTML(r.metric==='constitution'?'CON':String(r.metric||'').toUpperCase())} ${Number(r.recommended)||0}</b></span>`).join('')}<small>Recommended</small></div>`:''}
     <div class="contract-rewards"><span class="contract-section-label">${boardIcon('utility_reward')}Possible rewards</span><div>${rewards.slice(0,3).map(r=>`<span class="reward-pill">${escapeHTML(r)}</span>`).join('')||'<span class="muted">See contract details</span>'}${rewards.length>3?`<span class="reward-more">+${rewards.length-3} more</span>`:''}</div></div>
     ${requirements.length?`<div class="contract-requirements"><b>Required</b> ${requirements.slice(0,2).map(escapeHTML).join(' ? ')}${requirements.length>2?` ? +${requirements.length-2} more`:''}</div>`:''}
     ${m.world_trigger?`<div class="contract-origin">From ${escapeHTML(m.world_trigger.source_mission)}</div>`:''}
     ${privateContract?`<div class="contract-expiry">Claim within <span data-countdown-end="${Number(m.expires_at)||0}" data-countdown-suffix="">--:--</span></div>`:''}
-    <footer class="contract-footer"><span>${privateContract?'Personal lead':count?`${count} available${claimed?` &middot; ${claimed} claimed`:''}`:`${claimed} claimed`}</span><button type="button" class="contract-open" data-mission-action="${escapeHTML(m.id)}" aria-label="Inspect ${escapeHTML(m.name)}">${count?'Inspect &amp; assign':'View contract'} <span aria-hidden="true">&rarr;</span></button></footer>
+    <footer class="contract-footer"><span>${privateContract?'Personal lead':count?`${count} available${claimed?` &middot; ${claimed} claimed`:''}`:`${claimed} claimed`}</span><button type="button" class="contract-open" data-mission-action="${escapeHTML(m.id)}" aria-label="Inspect ${escapeHTML(m.name)}">${count?(privateContract?'Assign &amp; start':'Inspect &amp; claim'):'View contract'} <span aria-hidden="true">&rarr;</span></button></footer>
   </article>`;
 }
 export function eventHeader(event={id:'general'}){

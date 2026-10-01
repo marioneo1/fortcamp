@@ -16,7 +16,7 @@ class TacticalContractTests(unittest.TestCase):
         state=new_game({'name':'Tester','attributes':{'str':12,'dex':9,'agi':9,'vit':12,'int':8,'luk':7}})
         for mission_id in TACTICAL_CONTRACTS:
             with self.subTest(mission=mission_id):
-                encounter=MISSION_TEMPLATES[mission_id]['combat_encounter']['id']
+                encounter=MISSION_TEMPLATES[mission_id].get('combat_encounter',{'id':'contract:'+mission_id})['id']
                 battle=create_battle(state,['player'],mission_id,encounter)
                 self.assertEqual(battle,create_battle(state,['player'],mission_id,encounter))
                 self.assertTrue(all(u['race']==TACTICAL_CONTRACTS[mission_id]['race'] for u in battle['units'].values() if u['team']=='enemy'))

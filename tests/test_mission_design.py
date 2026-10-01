@@ -88,10 +88,11 @@ class MissionPoolRulesTests(unittest.TestCase):
         for slot in range(1000):
             ids = _rolled_pool_templates("pool-test", slot, 1)
             ranks = [MISSION_TEMPLATES[mission_id].get("rank", "E") for mission_id in ids]
-            self.assertEqual(ranks.count("D"), 7)
-            self.assertGreaterEqual(ranks.count("C"), 4)
-            self.assertGreaterEqual(ranks.count("B"), 2)
-            self.assertGreaterEqual(ranks.count("A"), 1)
+            self.assertEqual(ranks.count("E"), 16)
+            self.assertEqual(ranks.count("D"), 8)
+            self.assertLessEqual(ranks.count("C"), 5)
+            self.assertLessEqual(ranks.count("B"), 3)
+            self.assertLessEqual(ranks.count("A"), 2)
             self.assertLessEqual(ranks.count("S"), 3)
             s_counts.append(ranks.count("S"))
 
@@ -250,7 +251,7 @@ class RewardAndRecoveryTests(unittest.TestCase):
 
     def test_critical_failure_incapacitates_one_character_in_tent(self):
         state = player_state(scavenging=1)
-        mission = MISSION_TEMPLATES["fallen_orchard"]
+        mission = {**MISSION_TEMPLATES["fallen_orchard"], "rank": "D"}
         analysis = analyze_mission(state, mission, ["player"])
 
         result = resolve_mission(state, mission, ["player"], analysis, "injury", "critical_failure")
@@ -265,7 +266,7 @@ class RewardAndRecoveryTests(unittest.TestCase):
     def test_infirmary_shortens_recovery_and_expired_injury_normalizes(self):
         state = player_state(scavenging=1)
         state["buildings"].append({"id": "clinic", "type": "infirmary", "x": 7, "y": 1, "assigned": []})
-        mission = MISSION_TEMPLATES["fallen_orchard"]
+        mission = {**MISSION_TEMPLATES["fallen_orchard"], "rank": "D"}
         result = resolve_mission(state, mission, ["player"], analyze_mission(state, mission, ["player"]), "clinic-injury", "critical_failure")
         injury = result["rewards"]["injuries"][0]
 
@@ -416,7 +417,7 @@ class RaceDiscoveryTests(unittest.TestCase):
             self.assertEqual(character["race"], new_race)
             self.assertEqual(character["generation_profile"], new_profile)
             self.assertEqual(character["traits"], ["deathless", "radiant_soul"])
-        self.assertEqual(state["version"], 9)
+        self.assertEqual(state["version"], 10)
 
 
 class PrisonerManagementTests(unittest.TestCase):
@@ -1199,7 +1200,7 @@ class TacticalCombatDatabaseTests(unittest.IsolatedAsyncioTestCase):
             async with session.begin():
                 claimed = await claim_instance(session, "timer-db", "tester", "Tester", "timer-mission", ["player"])
             self.assertEqual(claimed.status, "claimed")
-            self.assertGreater(claimed.completes_at, now_ts())
+            self.assertLessEqual(claimed.completes_at, now_ts())
             async with session.begin():
                 completed = await debug_resolve_now_instance(session, "timer-db", "tester", "timer-mission")
             saved = await session.get(PlayerState, {"guild_id": "timer-db", "user_id": "tester"})
@@ -1537,11 +1538,14 @@ class ForcedPoolDatabaseTests(unittest.IsolatedAsyncioTestCase):
 
 
 class PerkTrainingTests(unittest.TestCase):
-    def test_basic_is_facility_only_and_skilled_consumes_common_manual(self):
+    def test_basic_uses_local_instructor_and_skilled_uses_teacher_and_manual(self):
         state = player_state()
         state["buildings"].append({"id": "training", "type": "training_ground", "x": 8, "y": 1, "assigned": []})
 
+        state["resources"]["gold"] = 8
         basic = train_perk(state, "player", "combat")
+        self.assertEqual(state["resources"]["gold"],0)
+        teacher=deepcopy(state["characters"][0]);teacher.update(id="teacher",name="Teacher",is_player=False,status="idle");teacher["perks"]["combat"]="skilled";state["characters"].append(teacher)
         self.assertEqual(basic["level"], "basic")
         with self.assertRaisesRegex(ValueError, "Training Manual"):
             train_perk(state, "player", "combat")

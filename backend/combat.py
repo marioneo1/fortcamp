@@ -608,7 +608,7 @@ def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission
     units = {cid: _player_unit(state, characters[cid], tile["x"], tile["y"])
              for cid, tile in zip(party_ids, board["spawn_zones"]["player"])}
     tier = {"E":0,"D":0,"C":1,"B":2,"A":3,"S":4}[mission["rank"]]
-    count = min(8, 3 + tier + (1 if tier else 0))
+    count = min(8, spec.get('enemy_count',3 + tier + (1 if tier else 0)))
     rng = random.Random(f"contract:{seed}")
     race = spec["race"]
     racial = race_gameplay(race)
@@ -641,12 +641,17 @@ def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission
             "weapon":"Short Bow" if kind == "archer" else "Chapel Blade" if race == "Undead" else "Raider Spear",
             "corpse_item":"short_bow" if kind == "archer" else "rusty_knife",
             "corpse_item_chance":35 if index == 0 else 25})
+        if spec.get('rookie'):
+            unit.update(hp=10 if index==0 else 7,max_hp=10 if index==0 else 7,armor=0,attack=3,initiative=8+index,move=3)
+        if spec.get('creature'):
+            unit.update(name=f"{spec['creature']} {index+1}",portrait='',weapon='Bite',corpse_item=None,corpse_item_chance=0,boss=False,creature=True)
+            unit['corpse_gold']=(0,0)
         units[uid] = unit
     commander = units["contract_enemy_0"]
     return_battle = {**board,"version":1,"encounter_id":f"contract:{mission_id}","name":mission["name"],
         "round":1,"turn_index":0,"turn_order":sorted(units,key=lambda uid:(-units[uid]["initiative"],uid)),
         "units":units,"objects":{},"primary_target_id":commander["id"],
-        "leader_target":bool(spec.get("leader_target")),"capture_bonus":race != "Undead",
+        "leader_target":bool(spec.get("leader_target")),"capture_bonus":race != "Undead" and not spec.get('rookie') and not spec.get('creature'),
         "objectives":[{"id":"route","name":f"Defeat or subdue {commander['name']}" if spec.get("leader_target") else f"Break the {spec['faction']}","required":True,"complete":False},
                       {"id":"clean_extraction","name":mission["combat_critical_condition"],"required":False,"complete":False}],
         "status":"active","outcome":None,"reinforcements_spawned":False,

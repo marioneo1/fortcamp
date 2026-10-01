@@ -1275,3 +1275,6 @@ from .gear_expansion import apply_gear_expansion
 apply_gear_expansion(ITEMS, MISSION_TEMPLATES, GENERAL_LOOT_TABLE, EVENT_REWARD_TABLES)
 for _item_id, _item in ITEMS.items():
     _item["icon"] = f"/assets/catalogue/items/{_item_id}.png"
+
+from .progression_content import apply_progression
+apply_progression(BUILDINGS, MISSION_TEMPLATES, ITEMS, PERK_TRACKS, GUILD_HALL_UPGRADES)

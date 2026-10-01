@@ -16,6 +16,7 @@ from .portraits import champion_portrait, choose_pool_portrait, portrait_pool_ke
 from .appearance import has_appearance, sanitize_appearance, tagged_appearance
 from .perk_effects import modifiers
 from .mission_loot import roll_item_pool
+from .economy import initialize as initialize_economy, settle as settle_economy, public_economy, earn_relationship, practice
 from .races import RACE_CATALOG, RACE_FAMILIES, RACE_GAMEPLAY, REGIONAL_RECRUIT_TABLES, race_families, race_mission_bonus
 
 GRID_W = 12
@@ -62,8 +63,8 @@ def new_game(character: dict[str, Any]) -> dict[str, Any]:
     return {
         "version": 9,
         "created_at": int(time.time()),
-        "resources": {"gold": 0, "food": 5, "wood": 10, "scrap": 0, "cloth": 2, "medicine": 0},
-        "learned_blueprints": ["guild_hall", "training_ground", "prison_cell"],
+        "resources": {"gold": 0, "food": 5, "wood": 10, "scrap": 4, "stone": 8, "medicine": 0},
+        "learned_blueprints": ["guild_hall", "training_ground", "prison_cell", "lumbermill", "quarry", "salvage_yard", "farm", "herb_garden", "kitchen", "workshop", "infirmary", "storage_shed"],
         "mission_rank": "E",
         "buildings": [
             {"id": "tent_1", "type": "tent", "x": 1, "y": 1, "assigned": []},
@@ -95,6 +96,7 @@ def new_game(character: dict[str, Any]) -> dict[str, Any]:
 
 def public_content() -> dict[str, Any]:
     return {
+        "economy": public_economy({}),
         "buildings": BUILDINGS,
         "items": ITEMS,
         "slots": EQUIPMENT_SLOTS,
@@ -232,9 +234,12 @@ def manage_prisoner(
 
 def normalize_state(state: dict) -> dict:
     state.setdefault("resources", {})
-    for resource in ("gold", "food", "wood", "scrap", "cloth", "medicine"):
+    initialize_economy(state)
+    for resource in ("gold", "food", "wood", "scrap", "stone", "medicine"):
         state["resources"].setdefault(resource, 0)
     state.setdefault("learned_blueprints", [])
+    for blueprint in ('lumbermill','quarry','salvage_yard','farm','herb_garden','kitchen','workshop','infirmary','storage_shed'):
+        if blueprint not in state['learned_blueprints']:state['learned_blueprints'].append(blueprint)
     if "guild_hall" not in state["learned_blueprints"]:
         state["learned_blueprints"].append("guild_hall")
     if "training_ground" not in state["learned_blueprints"]:
@@ -325,7 +330,8 @@ def normalize_state(state: dict) -> dict:
             for track in PERK_TRACKS:
                 if char["perks"].get(track) not in PERK_LEVELS:
                     char["perks"][track] = "none"
-    state["version"] = max(9, int(state.get("version", 1)))
+    settle_economy(state)
+    state["version"] = max(10, int(state.get("version", 1)))
     return state
 
 
@@ -408,7 +414,7 @@ def effective_stat(state: dict, char: dict, stat: str) -> int:
     total = sum(attributes) // max(1, len(attributes)) + perk_rank(char, track)
     for item in equipped_item_defs(state, char):
         total += int(item.get("bonuses", {}).get(stat, item.get("bonuses", {}).get(track, 0)))
-    return total + modifiers(state,char,ITEMS,'capabilities').get(track,0)
+    return total + modifiers(state,char,ITEMS,'capabilities').get(track,0) + (1 if track=='survival' and char.get('prepared_meal')=='trail_meal' else 0)
 
 
 def effective_attribute(state: dict, char: dict, attribute: str) -> int:
@@ -835,6 +841,7 @@ def _random_champion(state: dict, rank: str, rng: random.Random) -> str | None:
 
 def _award_reward_block(state: dict, block: dict, awarded: dict, rng: random.Random, target_character_id: str | None = None) -> None:
     for resource, amount in block.get("materials", {}).items():
+        resource = "stone" if resource == "cloth" else resource
         state["resources"][resource] = state["resources"].get(resource, 0) + int(amount)
         awarded["materials"][resource] = awarded["materials"].get(resource, 0) + int(amount)
 
@@ -1006,6 +1013,8 @@ def _award_scaled_rewards(
         )
 
     for reward_roll in mission.get("reward_rolls", []):
+        if reward_roll.get('requires_combat') and not mission.get('completed_combat'):
+            continue
         if reward_roll.get("requires_chain_parent") and not mission.get("chain_reward_eligible"):
             continue
         chance = int(reward_roll.get("chance", 0))
@@ -1270,6 +1279,10 @@ def resolve_mission(state: dict, mission: dict, party_ids: list[str], analysis: 
     }
     reward_target = analysis.get("lead_id") or (party_ids[0] if party_ids else None)
     if outcome in {"success", "critical_success"}:
+        completed=state.setdefault('completed_by_rank',{});rank=mission.get('rank','E');completed[rank]=completed.get(rank,0)+1
+        earn_relationship(state, mission, outcome)
+        for member in party:
+            practice(member, 'alchemy' if mission['stat']=='cooking' else mission['stat'], 6 if outcome=='critical_success' else 3)
         _award_scaled_rewards(state, mission, awarded, rng, reward_target, outcome == "critical_success")
         if mission.get("celestial_reward"):
             _award_reward_block(
@@ -1301,6 +1314,11 @@ def resolve_mission(state: dict, mission: dict, party_ids: list[str], analysis: 
         for c in party:
             c["morale"] = max(0, int(c.get("morale", 70)) - 10)
         injury = _incapacitate_character(state, party, rng, resolved_at)
+        # A solo beginner must not lose the entire playable roster for hours.
+        if injury and mission.get('rank') == 'E' and len(state.get('characters', [])) == 1:
+            injured = find_char(state, injury['character_id'])
+            injured['recovers_at'] = injury['recovers_at'] = resolved_at + 120
+            injured['recovery_location'] = injury['location'] = 'Beginner field rest'
         if injury:
             awarded["injuries"].append(injury)
     elif outcome == "failure":
@@ -1332,6 +1350,7 @@ def resolve_mission(state: dict, mission: dict, party_ids: list[str], analysis: 
             story.append(f"The expedition uncovered a new lead: {names}. The guild has set aside the follow-up contracts for your party.")
     result = {
         "mission": mission["name"], "outcome": outcome, "die": die, "total": total,
+        "rank":mission.get('rank','E'),
         "difficulty": difficulty, "lead": analysis.get("lead"), "stat": mission["stat"],
         "triggered": analysis.get("triggered", []), "critical_unlocks": analysis.get("critical_unlocks", []),
         "roles": analysis.get("roles", []), "role_assignments": analysis.get("role_assignments", {}),
@@ -1342,6 +1361,7 @@ def resolve_mission(state: dict, mission: dict, party_ids: list[str], analysis: 
     }
     state.setdefault("mission_history", []).insert(0, result)
     state["mission_history"] = state["mission_history"][:30]
+    for member in party:member.pop('prepared_meal',None)
     return result
 
 
@@ -1350,7 +1370,8 @@ def _placement_error(state: dict, building_type: str, x: int, y: int, ignore_bui
         return "Unknown building"
     bdef = BUILDINGS[building_type]
     w, h = int(bdef["w"]), int(bdef["h"])
-    if x < 0 or y < 0 or x + w > GRID_W or y + h > GRID_H:
+    size=state.get('base_size',{'w':GRID_W,'h':GRID_H})
+    if x < 0 or y < 0 or x + w > size['w'] or y + h > size['h']:
         return "Building would be outside the base"
     for placed in state.get("buildings", []):
         if ignore_building_id and placed.get("id") == ignore_building_id:
@@ -1398,6 +1419,7 @@ def place_building(state: dict, blueprint_id: str, x: int, y: int) -> dict:
 
 
 def assign_character(state: dict, char_id: str, building_id: str | None) -> None:
+    settle_economy(state)
     char = find_char(state, char_id)
     if char.get("status") != "idle":
         raise ValueError("An unavailable character cannot be reassigned")
@@ -1410,7 +1432,7 @@ def assign_character(state: dict, char_id: str, building_id: str | None) -> None
     building = next((b for b in state["buildings"] if b["id"] == building_id), None)
     if not building:
         raise ValueError("Building not found")
-    capacity = int(BUILDINGS[building["type"]].get("workers", 0))
+    capacity = int(BUILDINGS[building["type"]].get("workers", 0)) + (building.get('level',1)-1 if BUILDINGS[building['type']].get('production') else 0)
     if capacity <= 0:
         raise ValueError("This building has no worker assignment slots")
     if len(building.get("assigned", [])) >= capacity:
@@ -1419,7 +1441,7 @@ def assign_character(state: dict, char_id: str, building_id: str | None) -> None
     char["assignment"] = building_id
 
 
-def train_perk(state: dict, char_id: str, track: str) -> dict:
+def train_perk(state: dict, char_id: str, track: str, teacher_id: str | None = None) -> dict:
     normalize_state(state)
     if track not in PERK_TRACKS:
         raise ValueError("Unknown perk track")
@@ -1434,6 +1456,13 @@ def train_perk(state: dict, char_id: str, track: str) -> dict:
     if current_index >= len(PERK_LEVELS) - 1:
         raise ValueError("This perk is already Master tier")
     target = PERK_LEVELS[current_index + 1]
+    teachers=[c for c in state['characters'] if c['id']!=char_id and c.get('status')=='idle' and perk_rank(c,track)>=current_index+1]
+    teacher=next((c for c in teachers if c['id']==teacher_id),None) if teacher_id else next(iter(teachers),None)
+    if not teacher and current_index>0:
+        raise ValueError(f'An idle teacher with {target.title()} {PERK_TRACKS[track]["name"]} is required. Relevant work also builds proficiency naturally.')
+    # Local instructors teach the fundamentals, so a solo camp is not blocked.
+    fee=8 if not teacher else 0
+    if state['resources'].get('gold',0)<fee:raise ValueError('A local basic instructor costs 8 gold')
     required_item = PERK_TRAINING_ITEMS.get(target)
     consumed = None
     if required_item:
@@ -1441,10 +1470,12 @@ def train_perk(state: dict, char_id: str, track: str) -> dict:
         if not consumed:
             raise ValueError(f"{ITEMS[required_item]['name']} required for {target.title()} training")
         state["inventory"].remove(consumed)
+    state['resources']['gold']-=fee
     char.setdefault("perks", {})[track] = target
     return {
         "character_id": char_id, "track": track, "level": target,
         "consumed": required_item, "attribute_bonus": PERK_TRACKS[track]["attribute_bonus"],
+        "teacher": teacher['name'] if teacher else 'Local instructor', "fee":fee,
     }
 
 

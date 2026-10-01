@@ -8,6 +8,7 @@ from copy import deepcopy
 
 from sqlalchemy import func, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm.attributes import set_committed_value
 
 from .combat import apply_player_command, auto_resolve, auto_step, battle_view, create_battle
 from .content import MISSION_EVENTS, MISSION_RANKS, MISSION_TEMPLATES
@@ -19,6 +20,7 @@ from .models import GuildConfig, MissionInstance, PlayerState
 from .settings import settings
 from .mission_decisions import initial_scene, decision_view, advance_scene, setup_encounter
 from .mission_loot import scene_reward_template
+from .economy import POINT_COST
 from .combat import _advance_to_player
 
 POOL_SECONDS = 30 * 60
@@ -54,7 +56,7 @@ def force_pool_refresh(guild_id: str, event_id: str) -> int:
     _debug_pool_sequence += 1
     forced_slot = -(base * 1000 + _debug_pool_sequence)
     _debug_pool_overrides[guild_id] = {
-        "slot": forced_slot, "event_id": event_id, "expires_at": base + POOL_SECONDS,
+        "slot": forced_slot, "event_id": event_id, "started_at":now_ts(), "expires_at":now_ts() + POOL_SECONDS,
     }
     return forced_slot
 
@@ -92,19 +94,15 @@ def _weighted_template(rng: random.Random, rank: str, event_id: str) -> str:
 def _rolled_pool_templates(guild_id: str, slot: int, player_count: int) -> list[str]:
     # Stable player cohorts let the current pool grow when another player joins without
     # changing the missions that were already generated earlier in the slot.
-    scaled_players = max(1, min(player_count, 16))
+    scaled_players = max(1, player_count)
     event_id = pool_event(guild_id, slot)["id"]
     rng = random.Random(int.from_bytes(hashlib.sha256(f"pool:{guild_id}:{slot}".encode()).digest()[:8], "big"))
     template_ids: list[str] = []
     for player_index in range(scaled_players):
-        e_count = max(12, settings.mission_pool_size) if player_index == 0 else 1
+        e_count = 16
         template_ids.extend(_weighted_template(rng, "E", event_id) for _ in range(e_count))
-        template_ids.extend(_weighted_template(rng, "D", event_id) for _ in range(7))
-        if player_index == 0:
-            template_ids.extend(_weighted_template(rng, "C", event_id) for _ in range(4))
-            template_ids.extend(_weighted_template(rng, "B", event_id) for _ in range(2))
-            template_ids.append(_weighted_template(rng, "A", event_id))
-        for rank, possible, chance in (("C", 4, 0.60), ("B", 3, 0.35), ("A", 2, 0.12), ("S", 3, 0.01)):
+        template_ids.extend(_weighted_template(rng, "D", event_id) for _ in range(8))
+        for rank, possible, chance in (("C", 5, 0.60), ("B", 3, 0.35), ("A", 2, 0.12), ("S", 3, 0.01)):
             for _ in range(possible):
                 if rng.random() < chance:
                     template_ids.append(_weighted_template(rng, rank, event_id))
@@ -123,14 +121,14 @@ async def ensure_guild_config(session: AsyncSession, guild_id: str) -> GuildConf
 async def ensure_pool(session: AsyncSession, guild_id: str, ts: int | None = None) -> tuple[list[MissionInstance], bool]:
     ts = ts or now_ts()
     slot = active_pool_slot(guild_id, ts)
-    refresh_window = pool_slot(ts)
+    refresh_window = _debug_pool_overrides.get(guild_id,{}).get('started_at',pool_slot(ts))
     lock = _pool_locks.setdefault(guild_id, asyncio.Lock())
     async with lock:
         existing = (await session.execute(
             select(MissionInstance).where(MissionInstance.guild_id == guild_id, MissionInstance.pool_slot == slot).order_by(MissionInstance.position)
         )).scalars().all()
         player_count = int((await session.execute(
-            select(func.count()).select_from(PlayerState).where(PlayerState.guild_id == guild_id)
+            select(func.count()).select_from(PlayerState).where(PlayerState.guild_id == guild_id,PlayerState.updated_at>=ts-7*86400)
         )).scalar_one())
         template_ids = _rolled_pool_templates(guild_id, slot, player_count)
         pool_size = len(template_ids)
@@ -149,7 +147,7 @@ async def ensure_pool(session: AsyncSession, guild_id: str, ts: int | None = Non
                 id=f"mis_{uuid.uuid4().hex}", guild_id=guild_id, template_id=template_id,
                 pool_slot=slot, position=position, spawned_at=refresh_window, expires_at=refresh_window + POOL_SECONDS,
                 duration_seconds=effective_duration, status="available",
-                analysis=None,
+                analysis={'public_wave':1 if position%2==0 else 2},
             )
             session.add(instance)
             spawned.append(instance)
@@ -176,7 +174,7 @@ async def available_chain_missions(
     candidates = (await session.execute(
         select(MissionInstance).where(
             MissionInstance.guild_id == guild_id,
-            MissionInstance.status == "available",
+            MissionInstance.status.in_(["available", "reserved"]),
             MissionInstance.expires_at > ts,
         ).order_by(MissionInstance.spawned_at, MissionInstance.position)
     )).scalars().all()
@@ -184,6 +182,56 @@ async def available_chain_missions(
         row for row in candidates
         if (row.analysis or {}).get("chain_owner_user_id") == user_id
     ]
+
+
+def claim_budget(state, slot, started_at, ts=None):
+    ts=now_ts() if ts is None else ts
+    age=max(0,ts-started_at)
+    phase='wave1' if age<60 else 'wave2' if age<120 else 'free'
+    limit=3+int(state.get('claim_upgrade',0)) if phase=='free' else 5
+    ledger=state.get('contract_points',{})
+    used=int(ledger.get('spent',{}).get(phase,0)) if ledger.get('slot')==slot else 0
+    return {'phase':phase,'remaining':max(0,limit-used),'limit':limit,
+            'next_phase_at':started_at+(60 if phase=='wave1' else 120) if phase!='free' else None,
+            'costs':POINT_COST}
+
+
+def spend_claim(state, mission, ts):
+    if (mission.analysis or {}).get('chain_owner_user_id'):return
+    budget=claim_budget(state,mission.pool_slot,mission.spawned_at,ts)
+    if (mission.analysis or {}).get('public_wave',1)==2 and ts<mission.spawned_at+60:
+        raise ValueError('This contract arrives in the second wave')
+    cost=POINT_COST[MISSION_TEMPLATES[mission.template_id].get('rank','E')]
+    if budget['remaining']<cost:raise ValueError(f"Not enough Contract Points: {cost} needed, {budget['remaining']} left in this phase")
+    if state.get('contract_points',{}).get('slot')!=mission.pool_slot:state['contract_points']={'slot':mission.pool_slot,'spent':{}}
+    spent=state['contract_points']['spent'];spent[budget['phase']]=spent.get(budget['phase'],0)+cost
+
+
+async def reserve_instance(session,guild_id,user_id,name,mission_id):
+    async with _player_locks.setdefault((guild_id,user_id),asyncio.Lock()):
+        player=(await session.execute(select(PlayerState).where(PlayerState.guild_id==guild_id,PlayerState.user_id==user_id).with_for_update())).scalar_one_or_none()
+        if not player:raise ValueError('Create your character first')
+        mission=await session.get(MissionInstance,mission_id);ts=now_ts()
+        if not mission or mission.guild_id!=guild_id:raise ValueError('Mission not found')
+        _check_chain_owner(mission,user_id)
+        if mission.status=='reserved' and mission.claimed_by_user_id==user_id:return mission
+        if mission.status!='available' or mission.expires_at<=ts:raise ValueError('This contract was claimed or expired')
+        original_state=deepcopy(player.state)
+        state=normalize_state(deepcopy(original_state));template=MISSION_TEMPLATES[mission.template_id]
+        if not (mission.analysis or {}).get('chain_owner_user_id') and not mission_rank_unlocked(state,template.get('rank','E')):raise ValueError('Unlock this mission rank first')
+        spend_claim(state,mission,ts)
+        metadata={**(mission.analysis or {}),'chain_owner_user_id':user_id,'private_source_name':'Claimed from the public board'}
+        changed=await session.execute(update(MissionInstance).where(MissionInstance.id==mission_id,MissionInstance.status=='available',MissionInstance.expires_at>ts).values(status='reserved',claimed_by_user_id=user_id,claimed_by_name=name,claimed_at=ts,expires_at=ts+86400,analysis=metadata))
+        if changed.rowcount!=1:raise ValueError('Someone claimed this contract just before you')
+        updated=await session.execute(update(PlayerState).where(PlayerState.guild_id==guild_id,PlayerState.user_id==user_id,PlayerState.state==original_state).values(state=state,updated_at=ts).execution_options(synchronize_session=False))
+        if updated.rowcount!=1:raise ValueError('Your camp changed while claiming; try again')
+        set_committed_value(player,'state',state);set_committed_value(player,'updated_at',ts)
+        await session.flush();return await session.get(MissionInstance,mission_id)
+
+
+async def abandon_reservation(session,guild_id,user_id,mission_id):
+    changed=await session.execute(update(MissionInstance).where(MissionInstance.id==mission_id,MissionInstance.guild_id==guild_id,MissionInstance.claimed_by_user_id==user_id,MissionInstance.status=='reserved').values(status='abandoned'))
+    if changed.rowcount!=1:raise ValueError('Only unstarted owned contracts can be abandoned')
 
 
 def _check_chain_owner(mission: MissionInstance, user_id: str) -> None:
@@ -269,7 +317,7 @@ async def spawn_private_contract(
         select(MissionInstance).where(
             MissionInstance.guild_id == guild_id,
             MissionInstance.template_id == template_id,
-            MissionInstance.status.in_(["available", "claimed", "battle", "decision"]),
+            MissionInstance.status.in_(["available", "reserved", "claimed", "battle", "decision"]),
             (MissionInstance.status != 'available') | (MissionInstance.expires_at > ts),
         )
     )).scalars().all()
@@ -319,7 +367,7 @@ def mission_summary(row: MissionInstance, include_result: bool = False, viewer_r
     m = MISSION_TEMPLATES[row.template_id]
     rank = m.get("rank", "E")
     display_status = row.status
-    if row.status == "available" and row.expires_at <= now_ts():
+    if row.status in {"available","reserved"} and row.expires_at <= now_ts():
         display_status = "expired"
     locked = not (row.analysis or {}).get("chain_owner_user_id") and viewer_rank in MISSION_RANKS and MISSION_RANKS.index(rank) > MISSION_RANKS.index(viewer_rank)
     if locked:
@@ -332,8 +380,9 @@ def mission_summary(row: MissionInstance, include_result: bool = False, viewer_r
     data = {
         "id": row.id, "template_id": row.template_id, "name": m["name"], "description": m["description"],
         "rank": rank, "locked": False,
+        "point_cost": POINT_COST[rank],
         "stat": m["stat"], "difficulty": m["difficulty"], "party_size": m["party_size"],
-        "duration_seconds": row.duration_seconds, "status": display_status,
+        "duration_seconds": 0, "status": display_status,
         "spawned_at": row.spawned_at, "expires_at": row.expires_at,
         "claimed_by_user_id": row.claimed_by_user_id, "claimed_by_name": row.claimed_by_name,
         "claimed_at": row.claimed_at, "completes_at": row.completes_at,
@@ -374,14 +423,19 @@ def mission_summary(row: MissionInstance, include_result: bool = False, viewer_r
 async def get_player(session: AsyncSession, guild_id: str, user_id: str) -> PlayerState | None:
     row = await session.get(PlayerState, {"guild_id": guild_id, "user_id": user_id})
     if row:
-        row.state = normalize_state(deepcopy(row.state))
+        previous=deepcopy(row.state);normalized=normalize_state(deepcopy(previous))
+        if normalized!=previous:
+            changed=await session.execute(update(PlayerState).where(PlayerState.guild_id==guild_id,PlayerState.user_id==user_id,PlayerState.state==previous).values(state=normalized,updated_at=now_ts()).execution_options(synchronize_session=False))
+            if changed.rowcount==1:
+                set_committed_value(row,'state',normalized);set_committed_value(row,'updated_at',now_ts())
+            else:await session.refresh(row)
     return row
 
 
 async def create_player(session: AsyncSession, guild_id: str, user_id: str, display_name: str, character: dict) -> PlayerState:
     if await get_player(session, guild_id, user_id):
         raise ValueError("A save already exists in this Discord server")
-    row = PlayerState(guild_id=guild_id, user_id=user_id, display_name=display_name, state=new_game(character), updated_at=now_ts())
+    row = PlayerState(guild_id=guild_id, user_id=user_id, display_name=display_name, state=normalize_state(new_game(character)), updated_at=now_ts())
     session.add(row)
     await ensure_guild_config(session, guild_id)
     await session.flush()
@@ -397,7 +451,7 @@ async def analyze_instance(
     if not mission or mission.guild_id != guild_id:
         raise ValueError("Mission not found")
     _check_chain_owner(mission, user_id)
-    if mission.status != "available" or mission.expires_at <= now_ts():
+    if mission.status not in {"available","reserved"} or mission.expires_at <= now_ts():
         raise ValueError("Mission is no longer available")
     player = await get_player(session, guild_id, user_id)
     if not player:
@@ -438,7 +492,7 @@ async def claim_instance(
         if not mission or mission.guild_id != guild_id:
             raise ValueError("Mission not found")
         _check_chain_owner(mission, user_id)
-        if mission.status != "available" or mission.expires_at <= now_ts():
+        if mission.status not in {"available","reserved"} or mission.expires_at <= now_ts():
             raise ValueError("Someone already claimed this mission, or it expired")
         if not (mission.analysis or {}).get("chain_owner_user_id") and not mission_rank_unlocked(player.state, MISSION_TEMPLATES[mission.template_id].get("rank", "E")):
             raise ValueError("Upgrade your Guild Hall to claim this mission rank")
@@ -446,6 +500,7 @@ async def claim_instance(
         state = deepcopy(player.state)
         template = MISSION_TEMPLATES[mission.template_id]
         chain_metadata = dict(mission.analysis or {})
+        if mission.status=='available':spend_claim(state,mission,now_ts())
         analysis = analyze_mission(state, template, party_ids, role_assignments, bodyguard_ids)
         for key in (
             "chain_owner_user_id", "chain_parent_id", "chain_id", "chain_step", "chain_total",
@@ -487,14 +542,15 @@ async def claim_instance(
         elif combat_definition:
             analysis["battle"] = create_battle(state, deployed_party_ids, mission.id, combat_definition.get("id", mission.template_id))
         mission_status = "decision" if has_scene else "battle" if combat_definition else "claimed"
-        completes_at = None if combat_definition or has_scene else claimed_at + int(mission.duration_seconds)
+        completes_at = None if combat_definition or has_scene else claimed_at
+        original_status=mission.status
         stmt = (
             update(MissionInstance)
             .where(
                 MissionInstance.id == mission_id,
                 MissionInstance.guild_id == guild_id,
-                MissionInstance.status == "available",
-                MissionInstance.claimed_by_user_id.is_(None),
+                MissionInstance.status == original_status,
+                (MissionInstance.claimed_by_user_id.is_(None) | (MissionInstance.claimed_by_user_id==user_id)),
                 MissionInstance.expires_at > claimed_at,
             )
             .values(
@@ -994,7 +1050,7 @@ def _store_captured_prisoners(state: dict, battle: dict, mission: MissionInstanc
     mission_name = MISSION_TEMPLATES.get(mission.template_id, {}).get("name", mission.template_id)
     for unit_id in sorted(captured_ids):
         unit = battle.get("units", {}).get(unit_id)
-        if not unit or unit.get("team") != "enemy" or unit.get("condition") != "unconscious":
+        if not unit or unit.get("team") != "enemy" or unit.get("condition") != "unconscious" or unit.get('creature'):
             continue
         capture_key = f"{mission.id}:{unit_id}"
         if capture_key in existing_sources:
@@ -1102,6 +1158,7 @@ async def _finish_battle(
             continue
         kind = unit.get("kind", "raider")
         gold_low, gold_high = (6, 12) if kind == "chieftain" else (1, 5) if kind == "archer" else (0, 4)
+        if unit.get('corpse_gold') is not None:gold_low,gold_high=unit['corpse_gold']
         gold = loot_rng.randint(gold_low, gold_high)
         item_id = None
         item_roll = loot_rng.randint(1, 100)
@@ -1337,7 +1394,7 @@ async def debug_complete_instance(
     if not mission:
         raise ValueError("Mission not found")
     _check_chain_owner(mission, user_id)
-    completing_available = mission.status == "available" and mission.expires_at > now_ts()
+    completing_available = mission.status in {"available","reserved"} and mission.expires_at > now_ts()
     completing_owned = mission.status == "claimed" and mission.claimed_by_user_id == user_id
     if not completing_available and not completing_owned:
         raise ValueError("Mission is no longer available for debug completion")

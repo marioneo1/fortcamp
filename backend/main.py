@@ -40,6 +40,8 @@ from .services import (
     spawn_private_contract, update_battle_instance,
 )
 from .settings import settings
+from .economy import camp_action, trade_view, purchase
+from .services import reserve_instance, abandon_reservation, claim_budget
 
 ROOT = Path(__file__).resolve().parents[1]
 FRONTEND_DIST = ROOT / "frontend" / "dist"
@@ -159,7 +161,7 @@ class PrisonerActionRequest(BaseModel):
 
 
 class PartyRequest(BaseModel):
-    party_ids: list[str]
+    party_ids: list[str] = Field(default_factory=list)
     role_assignments: dict[str, str] | None = None
     bodyguard_ids: list[str] = Field(default_factory=list)
 
@@ -200,6 +202,16 @@ class AppearanceRequest(BaseModel):
 class TrainPerkRequest(BaseModel):
     character_id: str
     track: str
+    teacher_id: str | None = None
+
+
+class CampActionRequest(BaseModel):
+    action: str
+    data: dict = Field(default_factory=dict)
+
+
+class TradeRequest(BaseModel):
+    offer_id: str
 
 
 class DebugPoolRefreshRequest(BaseModel):
@@ -313,6 +325,47 @@ async def locked_player(identity) -> tuple[Any, Any]:
     return session, row
 
 
+@app.post("/api/camp")
+async def camp_endpoint(req: CampActionRequest, identity: IdentityDep):
+    session,row=await locked_player(identity)
+    try:
+        changed=deepcopy(row.state);camp_action(changed,req.action,**req.data)
+        row.state=changed;row.updated_at=int(time.time());await session.commit()
+        return {'state':changed}
+    except ValueError as exc:
+        await session.rollback();raise HTTPException(400,str(exc))
+    finally:await session.close()
+
+
+@app.get('/api/trade')
+async def trade_endpoint(identity: IdentityDep):
+    session,row=await locked_player(identity)
+    try:
+        changed=deepcopy(row.state);offers=trade_view(changed,f'{identity.guild_id}:{identity.user_id}')
+        row.state=changed;await session.commit();return {'trade':offers,'state':changed}
+    finally:await session.close()
+
+
+@app.post('/api/trade')
+async def buy_endpoint(req: TradeRequest,identity: IdentityDep):
+    session,row=await locked_player(identity)
+    try:
+        changed=deepcopy(row.state);purchase(changed,f'{identity.guild_id}:{identity.user_id}',req.offer_id)
+        row.state=changed;await session.commit();return {'state':changed}
+    except ValueError as exc:
+        await session.rollback();raise HTTPException(400,str(exc))
+    finally:await session.close()
+
+
+@app.post('/api/missions/{mission_id}/abandon')
+async def abandon_endpoint(mission_id:str,identity:IdentityDep):
+    async with SessionLocal() as session:
+        try:
+            async with session.begin():await abandon_reservation(session,identity.guild_id,identity.user_id,mission_id)
+        except ValueError as exc:raise HTTPException(409,str(exc))
+    return {'message':'Contract abandoned. Points are not refunded.'}
+
+
 @app.post("/api/build")
 async def build(req: BuildRequest, identity: IdentityDep):
     session, row = await locked_player(identity)
@@ -393,7 +446,7 @@ async def train_character_perk(req: TrainPerkRequest, identity: IdentityDep):
     session, row = await locked_player(identity)
     try:
         state = deepcopy(row.state)
-        training = train_perk(state, req.character_id, req.track)
+        training = train_perk(state, req.character_id, req.track, req.teacher_id)
         row.state = state; row.updated_at = int(time.time())
         await session.commit()
         return {"training": training, "state": state}
@@ -601,12 +654,15 @@ async def mission_pool(identity: IdentityDep):
             registered_players = int((await session.execute(
                 select(func.count()).select_from(PlayerState).where(PlayerState.guild_id == identity.guild_id)
             )).scalar_one())
+            active_players=int((await session.execute(select(func.count()).select_from(PlayerState).where(PlayerState.guild_id==identity.guild_id,PlayerState.updated_at>=int(time.time())-7*86400))).scalar_one())
     current_slot = active_pool_slot(identity.guild_id)
     return {
-        "pool_slot": current_slot, "next_refresh": pool_slot() + 1800,
+        "pool_slot": current_slot, "next_refresh": missions[0].spawned_at+1800 if missions else pool_slot()+1800,
         "rank": viewer_rank, "registered_players": registered_players,
+        "active_players":active_players,
+        "budget":claim_budget(player.state if player else {},current_slot,missions[0].spawned_at if missions else pool_slot()),
         "event": pool_event(identity.guild_id, current_slot),
-        "missions": [mission_summary(x, viewer_rank=viewer_rank) for x in missions],
+        "missions": [mission_summary(x, viewer_rank=viewer_rank) for x in missions if (x.analysis or {}).get('public_wave',1)==1 or int(time.time())>=x.spawned_at+60],
     }
 
 
@@ -727,17 +783,21 @@ async def mission_claim(mission_id: str, req: PartyRequest, identity: IdentityDe
     async with SessionLocal() as session:
         try:
             async with session.begin():
-                mission = await claim_instance(
-                    session, identity.guild_id, identity.user_id, identity.display_name,
-                    mission_id, req.party_ids, req.role_assignments, req.bodyguard_ids,
-                )
+                if not req.party_ids:
+                    mission=await reserve_instance(session,identity.guild_id,identity.user_id,identity.display_name,mission_id)
+                else:
+                    mission = await claim_instance(
+                        session, identity.guild_id, identity.user_id, identity.display_name,
+                        mission_id, req.party_ids, req.role_assignments, req.bodyguard_ids,
+                    )
+                if mission.status=='claimed':await resolve_due(session,identity.guild_id,identity.user_id)
                 decision = None
                 if mission.status == "decision":
                     from .services import get_decision_instance
                     decision = await get_decision_instance(session, identity.guild_id, identity.user_id, mission_id)
         except ValueError as exc:
             raise HTTPException(409, str(exc))
-    return {"mission": mission_summary(mission), "decision": decision, "message": "Mission claimed. Your selected characters are now deployed."}
+    return {"mission": mission_summary(mission,include_result=True), "decision": decision, "message": "Contract saved to Private Contracts." if mission.status=='reserved' else 'Expedition started.'}
 
 
 @app.get("/api/missions/{mission_id}/decision")
@@ -870,7 +930,7 @@ async def active_missions(identity: IdentityDep):
             rows = (await session.execute(
                 select(MissionInstance)
                 .where(MissionInstance.guild_id == identity.guild_id, MissionInstance.claimed_by_user_id == identity.user_id)
-                .order_by(MissionInstance.claimed_at.desc()).limit(20)
+                .order_by(MissionInstance.claimed_at.desc()).limit(200)
             )).scalars().all()
     if _bot and _bot.is_ready():
         for row in resolved_rows:

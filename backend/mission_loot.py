@@ -34,6 +34,7 @@ def apply_loot(items,missions):
 
 def scene_reward_template(template,analysis):
     mission=deepcopy(template)
+    mission['completed_combat']=bool(analysis.get('battle'))
     mission['chain_reward_eligible']=bool(analysis.get('chain_parent_id'))
     mission['reward_rolls']=[roll for roll in mission.get('reward_rolls',[]) if not roll.get('requires_chain_parent') or analysis.get('chain_parent_id')]
     for key in analysis.get('scene',{}).get('bonus_keys',[]):

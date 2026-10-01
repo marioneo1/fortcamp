@@ -1,4 +1,5 @@
 from __future__ import annotations
+import time
 import discord
 from discord import app_commands
 from discord.ext import commands
@@ -72,10 +73,10 @@ class FortcampBot(commands.Bot):
         if not isinstance(channel, discord.abc.Messageable):
             return
         lines = []
-        e_rank = [row for row in missions if MISSION_TEMPLATES[row.template_id].get("rank", "E") == "E"]
+        e_rank = [row for row in missions if (row.analysis or {}).get("public_wave",1)==1 and MISSION_TEMPLATES[row.template_id].get("rank", "E") == "E"]
         for row in e_rank[:8]:
             m = mission_summary(row)
-            lines.append(f"**[E] {m['name']}** · {m['party_size']} char · {format_duration(m['duration_seconds'])}")
+            lines.append(f"**[E] {m['name']}** · {m['party_size']} char · play immediately")
         for rank in MISSION_RANKS[1:]:
             count = sum(1 for row in missions if MISSION_TEMPLATES[row.template_id].get("rank", "E") == rank)
             if count:
@@ -84,7 +85,7 @@ class FortcampBot(commands.Bot):
         title = "New Fortcamp mission pool" if event["id"] == "general" else f"EVENT · {event['name']}"
         description = event["splash"] + "\n\n" + "\n".join(lines)
         embed = discord.Embed(title=title, description=description, colour=0xD7B66A)
-        embed.set_footer(text="The shared pool refreshes every 30 minutes. Open the Activity to inspect odds and claim.")
+        embed.set_footer(text="New pool every 30 minutes. Five points per opening wave; wave two opens after one minute, free-for-all after two.")
         try:
             await channel.send(embed=embed)
         except discord.HTTPException as exc:
@@ -148,13 +149,15 @@ async def fortcamp_pool(interaction: discord.Interaction):
     lines = []
     locked_counts = {rank: 0 for rank in MISSION_RANKS}
     for row in missions:
+        if (row.analysis or {}).get("public_wave",1)==2 and int(time.time())<row.spawned_at+60:
+            continue
         m = mission_summary(row, viewer_rank=viewer_rank)
         if m.get("locked"):
             if m["status"] == "available":
                 locked_counts[m["rank"]] += 1
             continue
         owner = f" — claimed by **{m['claimed_by_name']}**" if m["claimed_by_name"] else ""
-        lines.append(f"• **[{m['rank']}] {m['name']}** ({m['party_size']} chars, {format_duration(m['duration_seconds'])}){owner}")
+        lines.append(f"• **[{m['rank']}] {m['name']}** ({m['party_size']} chars, play immediately){owner}")
     for rank in MISSION_RANKS:
         if locked_counts[rank]:
             lines.append(f"• **{rank}-Rank missions available:** {locked_counts[rank]} · details locked")

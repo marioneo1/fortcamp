@@ -199,3 +199,10 @@ Validation: 51 frontend tests, production build and local browser checks passed,
 Re-extracted all six rank seals from the user-cleaned 1536 x 268 row, keeping full independent row height and equal horizontal cells. Removed tiny neighboring flecks and normalized uniformly without stretching. Backed up previous assets, kept runtime names, recorded per-icon crop sources and added a rank URL revision for Discord cache refresh. Row-only importer updates no other icons; full atlas extraction honors the corrected row when present. Starfall now emits clusters of 6-10 varied meteors with up to four concurrent flights and quiet gaps. Goblin flames are still Pixi meshes; no Effekseer effect/runtime integration is claimed.
 
 Validation: crop bounds, transparency and source metadata checked for all six ranks; 52 frontend tests, production build and local browser checks passed, including several live shower flights, reduced-motion freezing and no script errors. Live Discord appearance remains separate.
+
+
+## September 30 ? solo economy and contract progression
+
+Implemented the connected progression pass documented in RESOURCE_PROGRESSION_PROPOSAL.md. Existing saves retain balances and placement, with a pre-migration SQLite backup; Cloth converts to Stone once. Public reservations require no team; private expedition rolls resolve immediately. Added 46 contracts, twelve isolated lower-rank exclusives, personal merchants/faction trade, production, expansion and natural proficiency growth with optional teacher acceleration.
+
+Validation: 160 Python tests, 59 JavaScript tests and production Vite build. Browser checks run in isolated progression_qa.db with bot disabled; Base controls and Trade dialog render without runtime errors. Verified public claim without a planner/team, private assignment, immediate aftermath display, persistent merchant stock, and no page overflow at desktop and 390px mobile widths. Housing, crafting and extended faction quest unlocks remain pending; numeric balance needs real sessions.
