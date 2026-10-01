@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## 2026-09-30: Foreground flame tips
+
+Replaced the isolated visible-fire composition with the user's close-camera direction: enlarged, overlapping flames rooted below the frame, showing only their upper tongues. Widened the authored particle growth, extended particle life and shortened its final fade to keep the cropped tips bright. Runtime width and height are independent, seeded ages differ, and slow height variation avoids synchronized border motion. Smoke/embers use broad lower spawn regions above the unseen fire bed. Resize immediately seeds a fresh composition. Preserved the previous project locally and revisioned the binary URL for cache refresh.
+
+Validation: 57 frontend tests, production build and actual board-browser QA passed, including active Effekseer particles, the 512-instance cap, reduced-motion freeze, event switching and narrow layout. Desktop/mobile screenshots are preserved in staging-ui/effekseer-fire-trial. Live Discord visual approval remains separate.
+
 ## 2026-09-30: Burning scene, tactical gear, loot and equipment browser
 
 Distributed larger Effekseer fires across the background and paired their positions with rising Pixi smoke and sparks. Added 28 items (108 total), real equipment-granted abilities, explicit scaling/elevation behavior, elemental affinity checks and deterministic Burn/Poison procs. Damage-over-time ticks once per activation, expires and respects nonlethal safety. Added low-tier event gear, nine authored mission caches and five follow-up-only chain relic checks (14% success, 22% critical). Ordinary pools cannot award those relics.

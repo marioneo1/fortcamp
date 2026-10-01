@@ -22,8 +22,8 @@ export function createParticlePreset(theme,width,height){
   if(theme==='goblin')return [
     layer('green embers',['ember_green'],field,{count:8,life:[5,10],size:[5,10],velocity:[-9,9,-38,-18],sway:8,spin:8,alpha:.4,grow:.3}),
     ...burningSources(width,height).flatMap((source,index)=>[
-      layer('fire sparks '+index,['ember_orange'],{x:source.x-45,y:height-source.y-30,width:90,height:35},{count:6,life:[3,7],size:[5,12],velocity:[-12,14,-85,-40],sway:5,spin:10,alpha:.65,grow:.2}),
-      layer('rising fire smoke '+index,smoke,{x:source.x-45,y:height-source.y-85,width:90,height:45},{count:6,life:[9,16],size:[140,220],velocity:[-8,18,-58,-30],sway:20,spin:5,alpha:.42,grow:2.1,tint:'9c9789'}),
+      layer('fire sparks '+index,['ember_orange'],{x:source.x-source.spread/2,y:height-source.smokeY,width:source.spread,height:40},{count:6,life:[3,7],size:[5,12],velocity:[-18,22,-100,-55],sway:12,spin:10,alpha:.65,grow:.2}),
+      layer('rising fire smoke '+index,smoke,{x:source.x-source.spread/2,y:height-source.smokeY-50,width:source.spread,height:70},{count:6,life:[9,16],size:[180,280],velocity:[-12,24,-65,-35],sway:28,spin:5,alpha:.4,grow:2.1,tint:'8b8171'}),
     ]),
   ];
   if(theme==='undead')return [
