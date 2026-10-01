@@ -15,7 +15,7 @@ The production data folder stays in place when you create a newer version. Prepa
 | | Release copy | Development copy |
 |---|---|---|
 | Start in its folder | `run_release_windows.bat` | `run_dev_windows.bat` |
-| Browser/public port | 5173 | 5174, local only |
+| Browser/public port | 5173 | 5174, local browser or authenticated Discord dev |
 | API | Same server on 5173 | 8001 |
 | Save | `../fortcamp-release-data/fortcamp.db` | `data/fortcamp-dev.db` |
 | Uploaded portraits | `../fortcamp-release-data/portraits/` | `data/dev_portraits/` |
@@ -48,7 +48,7 @@ Open the original development folder and run **run_dev_windows.bat**, then use *
 
 This browser-based dev mode uses local test identities. To test development inside Discord while the trial remains live, create a separate Discord development application and dev hostname/URL mapping later; do not point the production app at dev or expose the auth-bypass dev port publicly.
 
-To test dev through the **existing** Discord Activity instead, stop the release and any local dev runner, leave Cloudflare running, then start **run_dev_discord_windows.bat** in alpha. It serves port 5173, enables the bot and real Discord authentication, and uses the same isolated dev save as browser dev. Debug mode remains on. Close/relaunch the Activity after switching. The existing Activity cannot serve dev and release simultaneously; stop Discord dev before starting release again. No tunnel route or Discord URL mapping changes are needed.
+For the separate **Fortcamp Dev** Discord Activity, add a Cloudflare published application route for **dev.fortcampgame.fyi** with HTTP service **127.0.0.1:5174**. Set the dev application's Activity URL mapping `/` to **dev.fortcampgame.fyi**. Use its application ID, client secret and bot token in alpha's `.env`; leave the release `.env` on the original application credentials. Vite allows the dev hostname. Stop any local dev runner, keep Cloudflare running, then start **run_dev_discord_windows.bat** in alpha. It serves port 5174, enables the dev bot and real Discord authentication, and uses the same isolated dev save as browser dev. Debug mode remains on. Close/relaunch the Activity after switching. With separate application credentials, release and Discord dev can run simultaneously. Only expose port 5174 while using the authenticated Discord dev launcher; the browser dev launcher enables authentication bypass.
 
 ## Publish a tested update
 

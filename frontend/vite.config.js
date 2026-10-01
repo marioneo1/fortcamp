@@ -9,7 +9,7 @@ export default defineConfig(({mode}) => {
       port: 5173,
       strictPort: true,
       headers: {'Cache-Control': 'no-store, max-age=0'},
-      allowedHosts: ['.trycloudflare.com','.ts.net',...(publicHost?[publicHost]:[])],
+      allowedHosts: ['dev.fortcampgame.fyi','.trycloudflare.com','.ts.net',...(publicHost?[publicHost]:[])],
       proxy: {
         '/api': env.FORTCAMP_API_TARGET || 'http://127.0.0.1:8000'
       }

@@ -31,7 +31,7 @@ def profile_config(profile):
     env.update(DEV_BYPASS_AUTH='true',GAME_DEBUG_MODE='true',MISSION_TIME_SCALE='0.05',BOT_ENABLED='false',FORTCAMP_API_TARGET='http://127.0.0.1:8001')
     if profile=='dev-discord':
         env.update(DEV_BYPASS_AUTH='false',BOT_ENABLED='true',DISCORD_TEST_GUILD_ID='')
-        return env,ROOT,[8001,5173]
+        return env,ROOT,[8001,5174]
     return env,ROOT,[8001,5174]
 
 def main():
@@ -51,7 +51,7 @@ def main():
         commands[0].append('--reload')
         commands.append(['cmd','/c','npm.cmd','--prefix','frontend','run','dev','--','--port',str(ports[-1])])
     if args.profile=='dev-discord':
-        print('Discord development uses the existing public Activity and DEV saves. Stop the release first; keep the Cloudflare tunnel running.',flush=True)
+        print('Discord development: dev.fortcampgame.fyi -> port 5174, with real Discord login and DEV saves. Use your dev application credentials in alpha .env; keep Cloudflare running.',flush=True)
     print(f'{args.profile.upper()}: http://127.0.0.1:{ports[-1]} | separate {args.profile} save | Ctrl+C to stop this session',flush=True)
     children=[]
     try:

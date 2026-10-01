@@ -12,7 +12,7 @@ class RunProfileTests(unittest.TestCase):
             root=Path(d)
             with patch('tools.run_profile.ROOT',root):
                 env,cwd,ports=profile_config('dev-discord');local,_,_=profile_config('dev')
-            self.assertEqual(ports,[8001,5173]);self.assertEqual(cwd,root)
+            self.assertEqual(ports,[8001,5174]);self.assertEqual(cwd,root)
             self.assertEqual(env['DEV_BYPASS_AUTH'],'false');self.assertEqual(env['BOT_ENABLED'],'true')
             self.assertEqual(env['GAME_DEBUG_MODE'],'true')
             self.assertEqual(env['DATABASE_URL'],local['DATABASE_URL'])
