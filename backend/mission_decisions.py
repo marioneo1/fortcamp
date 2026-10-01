@@ -3,6 +3,7 @@ import random
 from copy import deepcopy
 from .content import ITEMS, MISSION_TEMPLATES
 from .game import effective_stat, effective_attribute, perk_rank
+from .outcome_balance import classify_roll, outcome_probabilities
 from .races import race_mission_bonus
 from .perk_effects import character_perks
 
@@ -23,13 +24,12 @@ def choice_check(state,mission,analysis,choice):
     dc=int(choice.get('difficulty',14))
     probabilities={key:0 for key in ('critical_failure','failure','success','critical_success')}
     if stat:
-        for die in range(1,21):probabilities[classify(die,die+bonus,dc)]+=5
+        probabilities=outcome_probabilities(bonus,dc,mission.get('rank','E'),bool(analysis.get('critical_success_available',not mission.get('critical_any'))),severe_failure=False)
     return {'allowed':allowed,'bonus':bonus,'difficulty':dc,'stat':stat,'lead':lead['name'] if lead else '', 'probabilities':probabilities}
 
-def classify(die,total,dc):
-    if die==1:return 'critical_failure'
-    if total<dc:return 'failure'
-    return 'critical_success' if die==20 or total>=dc+7 else 'success'
+def classify(die,total,dc,rank="E",available=True,critical_roll=101):
+    return classify_roll(die,total,dc,rank,available,critical_roll,severe_failure=False)
+
 
 def decision_view(state,template,analysis):
     scene=analysis['scene'];definition=template['decision_scene']
@@ -46,8 +46,9 @@ def advance_scene(state,template,analysis,seed,node_id,revision,choice_id):
     if not choice:raise ValueError('Unknown choice')
     check=choice_check(state,template,analysis,choice)
     if not check['allowed']:raise ValueError('This approach needs an Engineer or Constructor training in the assigned party')
-    die=random.Random(f'{seed}:scene:{current}:{revision}:{choice_id}').randint(1,20) if choice.get('stat') else None
-    outcome=classify(die,die+check['bonus'],check['difficulty']) if die else 'success'
+    rng=random.Random(f'{seed}:scene:{current}:{revision}:{choice_id}')
+    die=rng.randint(1,20) if choice.get('stat') else None
+    outcome=classify(die,die+check['bonus'],check['difficulty'],template.get('rank','E'),bool(analysis.get('critical_success_available',not template.get('critical_any'))),rng.randint(1,100)) if die else 'success'
     transition=deepcopy(choice['success' if outcome=='critical_success' else outcome])
     scene['history'].append({'choice':choice['label'],'outcome':outcome,'die':die,'total':die+check['bonus'] if die else None,'difficulty':check['difficulty'] if die else None,'lead':check['lead'],'text':transition.get('text','')})
     if transition.get('bonus') and transition['bonus'] not in scene['bonus_keys']:scene['bonus_keys'].append(transition['bonus'])

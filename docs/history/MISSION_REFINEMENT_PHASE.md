@@ -297,3 +297,8 @@ Game sessions include an audience bound to environment, application and canonica
 Release preparation now inherits the existing production env or an explicitly supplied private .env.release. It refuses silently copying alpha/dev credentials into a new release. Source changes and browser origins are configured in alpha; the existing pinned trial copy, production credentials and player saves are unchanged.
 
 Validation: 208 backend tests, 87 frontend tests and production build pass. New tests cover state/cookie expiry and tampering, registered/shared/installed servers, membership removal, logout, persisted accounts after restart, separate guild saves, cross-environment JWT rejection even with shared secrets, duplicate-application guards and production env preservation. Real Vite proxy test verifies forwarded Host/Origin. Browser fixture runs actual frontend startup, picker selection, selected-guild token requests, development labels and narrow layouts without live player traffic. Actual Discord authorization remains untested until portal redirects and the separate dev application are configured; no claim of live end-to-end approval is made.
+
+
+## October 1: rare critical outcomes with veteran progression
+
+Removed automatic critical success from high totals and natural twenties. Rolled missions and dialogue use independent bounded confirmation with increasing chances for developed teams revisiting easy ranks. Authored criteria remain required. Scene finales use one confirmation rather than accumulating critical opportunities across nodes. Combat bonus objectives remain earned; normal rewards and independent exclusive loot rolls are preserved. See `docs/gameplay/CRITICAL_SUCCESS_BALANCE.md`.

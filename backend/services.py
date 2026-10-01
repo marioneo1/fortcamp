@@ -624,7 +624,11 @@ async def choose_decision_instance(session: AsyncSession, guild_id: str, user_id
         elif transition.get('finish'):
             party_ids=list(analysis.get('mission_party_ids') or analysis.get('party_ids') or mission.party_ids)
             finish=transition['finish']
-            if finish=='success' and analysis.get('critical_success_available') and any(h['outcome']=='critical_success' for h in scene['history']) and all(h['outcome'] in {'success','critical_success'} for h in scene['history']):finish='critical_success'
+            # More dialogue nodes must not multiply the chance of a critical mission finish.
+            if finish=='success':
+                from .outcome_balance import scene_critical_chance
+                chance=scene_critical_chance(scene['history'],template.get('rank','E'),analysis.get('critical_success_available',not template.get('critical_any')))
+                if random.Random(f'{mission.id}:scene-finale').randint(1,100)<=chance:finish='critical_success'
             result=resolve_mission(state,scene_reward_template(template,analysis),party_ids,analysis,seed=mission.id,forced_outcome=finish)
             result['debug_forced']=False
             result['resolution_source']='scene'

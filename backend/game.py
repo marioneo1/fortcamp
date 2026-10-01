@@ -19,6 +19,8 @@ from .mission_loot import roll_item_pool
 from .economy import initialize as initialize_economy, settle as settle_economy, public_economy, earn_relationship, practice
 from .races import RACE_CATALOG, RACE_FAMILIES, RACE_GAMEPLAY, REGIONAL_RECRUIT_TABLES, race_families, race_mission_bonus
 
+from .outcome_balance import CRITICAL_CAPS, classify_roll, outcome_probabilities
+
 GRID_W = 12
 GRID_H = 8
 
@@ -620,21 +622,11 @@ def analyze_mission(
 
     critical_success_available = not mission.get("critical_any") or bool(critical_unlock_labels)
     secret_event_ids = [event["id"] for event in eligible_secret_events(state, mission, party)]
-    crit_threshold = int(mission["difficulty"]) + (3 if critical_unlock_labels else 8)
-    counts = {"critical_failure": 0, "failure": 0, "success": 0, "critical_success": 0}
-    for die in range(1, 21):
-        total = die + lead_stat + support_bonus + criteria_bonus
-        if die == 1 or total <= int(mission["difficulty"]) - 6:
-            outcome = "critical_failure"
-        elif total < int(mission["difficulty"]):
-            outcome = "failure"
-        elif critical_success_available and (die == 20 or total >= crit_threshold):
-            outcome = "critical_success"
-        else:
-            outcome = "success"
-        counts[outcome] += 1
-
-    probabilities = {k: v * 5 for k, v in counts.items()}
+    crit_threshold = int(mission["difficulty"]) + 8  # Legacy display field, not an automatic critical trigger.
+    probabilities = outcome_probabilities(
+        lead_stat + support_bonus + criteria_bonus, int(mission["difficulty"]),
+        mission.get("rank", "E"), critical_success_available,
+    )
     return {
         "party_size_ok": party_size_ok,
         "availability_ok": availability_ok,
@@ -657,6 +649,7 @@ def analyze_mission(
         "secret_event_possible": bool(secret_event_ids),
         "eligible_secret_event_ids": secret_event_ids,
         "critical_threshold": crit_threshold,
+        "critical_chance_cap": CRITICAL_CAPS.get(mission.get("rank", "E"), 20),
         "probabilities": probabilities,
     }
 
@@ -1230,14 +1223,8 @@ def _mission_story(
     return paragraphs
 
 
-def _classify_roll(die: int, total: int, difficulty: int, critical_threshold: int, critical_success_available: bool) -> str:
-    if die == 1 or total <= difficulty - 6:
-        return "critical_failure"
-    if total < difficulty:
-        return "failure"
-    if critical_success_available and (die == 20 or total >= critical_threshold):
-        return "critical_success"
-    return "success"
+def _classify_roll(die: int, total: int, difficulty: int, critical_threshold: int, critical_success_available: bool, rank: str = "E", critical_roll: int = 101) -> str:
+    return classify_roll(die, total, difficulty, rank, critical_success_available, critical_roll)
 
 
 def resolve_mission(state: dict, mission: dict, party_ids: list[str], analysis: dict, seed: str, forced_outcome: str | None = None) -> dict:
@@ -1264,7 +1251,8 @@ def resolve_mission(state: dict, mission: dict, party_ids: list[str], analysis: 
     else:
         die = rng.randint(1, 20)
         total = die + bonus
-        outcome = _classify_roll(die, total, difficulty, crit_threshold, critical_success_available)
+        critical_roll = rng.randint(1, 100)
+        outcome = _classify_roll(die, total, difficulty, crit_threshold, critical_success_available, mission.get("rank", "E"), critical_roll)
 
     party = [find_char(state, cid) for cid in party_ids]
     special_events = []
