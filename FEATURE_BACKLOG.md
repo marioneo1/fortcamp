@@ -211,3 +211,6 @@ Implemented door-aware pursuit and panic escape; one-third lantern artwork; peri
 Fixed global CSS overriding perimeter offsets; browser QA now checks actual sprite placement. Battle Lab has named layouts and verified seeds per selected encounter, retains launched choices and shows the template in the battle toolbar. Custom seeds still work.
 
 Proposed, awaiting user direction: replace overlapping corpse/unconscious tokens on a tile with one small body marker and a count badge. Clicking opens a per-body name/state/action list; living occupants stay prominent. Do not confuse this proposal with implemented rendering.
+# October 2 — coordinated building parts and independent building plans
+
+Implemented four distinct tool-shed and four workshop buildings, separate from map placement; union footprints, shared-wall removal, inward corners, anchor/quarter-turn transforms and spawn/furniture transforms. New 40-piece structural library supplies matching walls/corners/breaches/door/gate pairs across four families; workshop mixed stone art replaced. Battle Lab lists all eight plans with verified seeds. Canonical docs: docs/design/BUILDING_TEMPLATES.md. Stairs and castle/prison pieces are prepared assets; stair gameplay, further location/map variation and friend-server balance review remain pending. Earlier flipped layouts preserved in snapshots. Dev only.

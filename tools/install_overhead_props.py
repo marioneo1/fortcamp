@@ -50,7 +50,8 @@ def main():
         registry_path = ROOT/'frontend/src/map-prop-art.json'
         existing = json.loads(registry_path.read_text(encoding='utf-8')) if registry_path.exists() else {}
         other_libraries = {key:value for key,value in existing.items() if '/overhead-v2/' not in value}
-        registry_path.write_text(json.dumps({**other_libraries, **registry}, indent=2)+'\n', encoding='utf-8')
+        building_aliases={key:value for key,value in existing.items() if value.startswith('structures/building-v1/')}
+        registry_path.write_text(json.dumps({**other_libraries, **registry, **building_aliases}, indent=2)+'\n', encoding='utf-8')
     (destination/'extraction.json').write_text(json.dumps({'installed': args.install, 'selected_count': len(registry), 'sprites': report}, indent=2)+'\n', encoding='utf-8')
     cards = []
     for sprite in registry:

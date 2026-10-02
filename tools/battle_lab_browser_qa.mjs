@@ -39,7 +39,7 @@ assert.ok(await evaluate('Boolean(document.querySelector("#start-defense"))'));
 assert.ok(await evaluate('Boolean(document.querySelector("[data-lab-return]"))'));
 await evaluate("document.querySelector('[data-lab-return]').click()");await wait();
 await evaluate("{const q=document.querySelector('[data-lab-query]');q.value='intruders at the workshop';q.dispatchEvent(new Event('input'));document.querySelector('[data-lab-mission]').click();}");
-assert.equal(await evaluate("document.querySelectorAll('[data-lab-layout] option').length"),4);
+assert.equal(await evaluate("document.querySelectorAll('[data-lab-layout] option').length"),5);
 const presets=await evaluate("Array.from(document.querySelectorAll('[data-lab-layout] option')).slice(1).map(o=>({seed:o.value,label:o.textContent}))");
 for(const preset of presets){
  await evaluate(`{const layout=document.querySelector('[data-lab-layout]');layout.value=${JSON.stringify(preset.seed)};layout.dispatchEvent(new Event('change'));}`);

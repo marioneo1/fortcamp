@@ -37,7 +37,8 @@ def main():
     destination.mkdir(parents=True,exist_ok=True)
     for ident,sprite in output.items():
         sprite.save(destination/f'{ident}.png',optimize=True)
-        registry['structure:'+ident]=f'structures/location-v1/{ident}.png'
+        if not registry.get('structure:'+ident,'').startswith('structures/building-v1/'):
+            registry['structure:'+ident]=f'structures/location-v1/{ident}.png'
     registry_path.write_text(json.dumps(registry,indent=2)+'\n',encoding='utf-8')
     (folder/'extraction.json').write_text(json.dumps(report,indent=2)+'\n',encoding='utf-8')
     print(f'Installed {len(output)} structure sprites, including complete open gate pairs')

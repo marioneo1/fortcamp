@@ -15,7 +15,9 @@ for(const [mid,material,prop] of [
  ['tool_shed','shed_floor','repair_workbench'],['workshop_intruders','workshop_floor','iron_anvil'],
  ['undead_bone_collectors','grave_earth','mossy_gravestone'],['bone_patrol','forest_dark','grave_cross'],
  ['timber_creek','wood_bridge_bottom','stacked_planks'],['goblin_bridge','deep_river','bound_barrels'],['goblin_armory','workshop_floor','weapon_rack'],
- ['workshop_intruders_v2','smithy_cobbles','repair_workbench'],['workshop_intruders_v3','smithy_cobbles','small_coal_forge'],
+ ['workshop_intruders_v1','workshop_floor','small_coal_forge'],['workshop_intruders_v2','smithy_cobbles','repair_workbench'],['workshop_intruders_v3','smithy_cobbles','small_coal_forge'],['workshop_intruders_v4','workshop_floor','repair_workbench'],
+ ['tool_shed_v1','shed_floor','repair_workbench'],['tool_shed_v2','shed_floor','carpenter_tool_rack'],
+ ['tool_shed_v3','shed_floor','carpenter_sawhorse'],['tool_shed_v4','shed_floor','repair_workbench'],
  ['goblin_armory_v1','shed_floor','weapon_rack'],['goblin_armory_v2','shed_floor','weapon_rack']]){
  await evaluate(`window.propEncounter('${mid}')`);await new Promise(r=>setTimeout(r,220));
  assert.ok(await evaluate(`document.querySelectorAll('.ground-${material}').length>0`));

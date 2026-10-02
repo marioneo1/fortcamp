@@ -1,0 +1,14 @@
+{
+  "timber": {
+    "join_offset": 0.3603
+  },
+  "fieldstone": {
+    "join_offset": 0.3496
+  },
+  "limestone": {
+    "join_offset": 0.3427
+  },
+  "iron": {
+    "join_offset": 0.3406
+  }
+}

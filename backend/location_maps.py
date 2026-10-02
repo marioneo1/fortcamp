@@ -1,7 +1,12 @@
-"""Authored location pieces; variation changes dressing, never the place's identity."""
+"""Authored maps assembled from reusable buildings and location pieces."""
 from copy import deepcopy
 import random
+import json
+from pathlib import Path
 from .location_templates import BUILDING_PLANS
+from .building_templates import BUILDINGS, footprint, shell
+
+ART_GEOMETRY=json.loads(Path(__file__).with_name('building_art_geometry.json').read_text())
 
 MATERIALS = {
     'shed_floor': {'name': 'Weathered Shed Boards', 'movement_cost': 1, 'description': 'A worn wooden interior.'},
@@ -26,18 +31,20 @@ MISSION_LOCATIONS = {
 }
 
 
-def wall(x, y, ident, wood=False, rotation=0):
+def wall(x, y, ident, wood=False, rotation=0, family=None):
+    family=family or ('timber' if wood else 'fieldstone')
     return {'id': ident, 'name': 'Shed Wall' if wood else 'Boundary Wall', 'x': x, 'y': y,
-            'kind': 'palisade' if wood else 'wall', 'sprite': 'structure:shed_wall_straight' if wood else 'structure:stone_wall_straight',
+            'kind': 'palisade' if wood else 'wall', 'sprite': f'structure:{family}_wall',
             'art_scale': 1.25,
             'rotation': rotation, 'blocking': True, 'blocks_sight': True, 'destructible': True,
             'hp': 16, 'max_hp': 16, 'armor': 2, 'destroyed_kind': 'rubble', 'destroyed_movement_cost': 2,
-            'destroyed_sprite': 'structure:shed_wall_broken' if wood else 'structure:wall_rubble'}
+            'destroyed_sprite': f'structure:{family}_breach'}
 
 
 def enclosure(ident, rect, doorway, wood=False):
     """Continuous perimeter with one operable/breakable gate. No duplicate corners."""
     x, y, w, h = rect
+    family='timber' if wood else 'fieldstone';offset=ART_GEOMETRY[family]['join_offset']
     edge = {(xx, yy) for xx in range(x, x+w) for yy in range(y, y+h)
             if xx in (x, x+w-1) or yy in (y, y+h-1)}
     terrain = [wall(xx, yy, f'{ident}_wall_{xx}_{yy}', wood, 90 if xx in (x, x+w-1) else 0)
@@ -45,20 +52,21 @@ def enclosure(ident, rect, doorway, wood=False):
     corners={(x,y):270,(x+w-1,y):0,(x+w-1,y+h-1):90,(x,y+h-1):180}
     for segment in terrain:
         if (segment['x'],segment['y']) in corners:
-            segment.update(sprite='structure:shed_wall_corner' if wood else 'structure:cemetery_wall_corner',
+            segment.update(sprite=f'structure:{family}_corner',
                            rotation=corners[(segment['x'],segment['y'])])
         else:
-            segment['art_offset'] = [(-.28 if segment['x']==x else .28) if segment['x'] in (x,x+w-1) else 0,
-                                     (-.28 if segment['y']==y else .28) if segment['y'] in (y,y+h-1) else 0]
+            segment['art_offset'] = [(-offset if segment['x']==x else offset) if segment['x'] in (x,x+w-1) else 0,
+                                     (-offset if segment['y']==y else offset) if segment['y'] in (y,y+h-1) else 0]
     dx, dy = doorway
-    prefix = 'structure:shed_door' if wood else 'structure:yard_gate'
+    prefix = f'structure:{family}_door' if wood else f'structure:{family}_gate'
     terrain.append({'id': f'{ident}_gate', 'name': 'Shed Door' if wood else 'Yard Gate', 'x': dx, 'y': dy,
                     'kind': 'gate', 'state': 'closed', 'sprite': prefix+'_closed', 'closed_sprite': prefix+'_closed',
                     'open_sprite': prefix+'_open', 'rotation': 90 if dx in (x,x+w-1) else 0,
                     'blocking': True, 'blocks_sight': True, 'destructible': True, 'hp': 12, 'max_hp': 12,
                     'armor': 1, 'destroyed_kind': 'rubble', 'destroyed_movement_cost': 2})
-    terrain[-1]['art_offset'] = [(-.28 if dx==x else .28) if dx in (x,x+w-1) else 0,
-                                (-.28 if dy==y else .28) if dy in (y,y+h-1) else 0]
+    terrain[-1]['art_scale']=1.25
+    terrain[-1]['art_offset'] = [(-offset if dx==x else offset) if dx in (x,x+w-1) else 0,
+                                (-offset if dy==y else offset) if dy in (y,y+h-1) else 0]
     return terrain
 
 
@@ -108,6 +116,70 @@ def river_crossing(x, road_y, height, damaged=False, family='wood'):
             [{'x':xx,'y':yy,'kind':'deep_water'} for xx,yy in sorted(water)])
 
 
+def place_building(template_id, anchor, ident, rotation=0):
+    """Stamp a reusable local building at an anchor, independently of mission/map.
+
+    Multiple instances may share a map; identifiers, joins and spawn candidates
+    move/rotate together. No exits, enemy budgets, objectives or rewards live here.
+    """
+    template=BUILDINGS[template_id];cells=footprint(template);boundary=shell(template)
+    width=max(x for x,y in cells)+1;height=max(y for x,y in cells)+1
+    for x,y,w,h in template.get('yard',[]):
+        width=max(width,x+w);height=max(height,y+h)
+    if rotation not in (0,90,180,270):raise ValueError('Building rotation must be a quarter turn')
+    def position(x,y):
+        if rotation==90:x,y=height-1-y,x
+        elif rotation==180:x,y=width-1-x,height-1-y
+        elif rotation==270:x,y=y,width-1-x
+        return x+anchor[0],y+anchor[1]
+    def shifted(offset):
+        x,y=offset
+        if rotation==90:x,y=-y,x
+        elif rotation==180:x,y=-x,-y
+        elif rotation==270:x,y=y,-x
+        return [x,y]
+    family=template['family'];factor=ART_GEOMETRY[family]['join_offset']/.3125
+    terrain=[];decorations=[];paint=[]
+    for rect in template.get('yard',[]):
+        rx,ry,w,h=rect
+        paint.append({'material':'dirt' if family=='timber' else 'workshop_floor',
+                      'tiles':[list(position(x,y)) for x in range(rx,rx+w) for y in range(ry,ry+h)]})
+    paint.append({'material':template['floor'],'tiles':[list(position(x,y)) for x,y in sorted(cells)]})
+    for (x,y),piece in boundary.items():
+        xx,yy=position(x,y)
+        entry=wall(xx,yy,f'{ident}_wall_{x}_{y}',family=='timber',rotation=(piece['rotation']+rotation)%360,family=family)
+        entry.update(sprite=f"structure:{family}_{piece['piece']}",art_offset=shifted([v*factor for v in piece['offset']]))
+        terrain.append(entry)
+    for x,y in template.get('partitions',[]):
+        xx,yy=position(x,y)
+        terrain.append(wall(xx,yy,f'{ident}_divider_{x}_{y}',family=='timber',rotation=(90+rotation)%360,family=family))
+    for index,(x,y,type_) in enumerate(template['doors']+template.get('internal_doors',[])):
+        matches=[t for t in terrain if (t['x'],t['y'])==position(x,y)]
+        if (x,y) in boundary:
+            piece=boundary[(x,y)];turn=piece['rotation'];offset=[v*factor for v in piece['offset']]
+        else:turn=90;offset=[0,0]
+        terrain[:]=[t for t in terrain if t not in matches]
+        xx,yy=position(x,y);prefix=f'structure:{family}_{type_}'
+        gate=wall(xx,yy,f'{ident}_gate_{index}',family=='timber',family=family)
+        gate.update(name='Store Door' if type_=='door' else 'Workshop Gate',kind='gate',state='closed',
+                    sprite=prefix+'_closed',closed_sprite=prefix+'_closed',open_sprite=prefix+'_open',
+                    rotation=(turn+rotation)%360,art_offset=shifted(offset),hp=12,max_hp=12,armor=1)
+        terrain.append(gate)
+    for x,y in template.get('breaches',[]):
+        entry=next(t for t in terrain if (t['x'],t['y'])==position(x,y))
+        entry.update(kind='rubble',name='Broken Store Wall',sprite=f'structure:{family}_breach',
+                     blocking=False,blocks_sight=False,destructible=False,hp=0,movement_cost=2)
+    for index,(sprite,x,y) in enumerate(template.get('furniture',[])):
+        xx,yy=position(x,y);item=prop(f'{ident}_furniture_{index}',sprite.replace('_',' ').title(),sprite,xx,yy)
+        item['rotation']=rotation;terrain.append(item)
+    for index,(sprite,x,y) in enumerate(template.get('decorations',[])):
+        xx,yy=position(x,y);item=prop(f'{ident}_decoration_{index}',sprite.replace('_',' ').title(),sprite,xx,yy,False)
+        item['rotation']=rotation;decorations.append(item)
+    return {'id':template_id,'label':template['label'],'terrain':terrain,'decorations':decorations,'paint':paint,
+            'enemies':[{'x':x,'y':y} for x,y in (position(x,y) for x,y in template['enemies'])],
+            'width':height if rotation in (90,270) else width,'height':width if rotation in (90,270) else height}
+
+
 def location_blueprint(location, seed):
     if location not in set(MISSION_LOCATIONS.values()):
         raise ValueError(f'Unknown authored location: {location}')
@@ -124,6 +196,19 @@ def location_blueprint(location, seed):
     t, d, p = board['terrain'], board['decorations'], board['paint']
     plan = BUILDING_PLANS.get(location, [None]*(variant+1))[variant]
     board['template_id'] = plan['id'] if plan else f'{location}_{variant+1}'
+    if plan and plan.get('building'):
+        ax,ay=plan['anchor'];anchor=(ax+rng.randrange(2),ay+rng.randrange(2))
+        piece=place_building(plan['building'],anchor,'building')
+        board['width']=max(14,anchor[0]+piece['width']+2)
+        board['height']=max(11,anchor[1]+piece['height']+2)
+        board['theme']='location-shed' if location=='tool_shed' else 'location-workshop'
+        board['building_templates']=[{'id':piece['id'],'label':piece['label'],'anchor':list(anchor)}]
+        p.append({'material':'dirt','rect':[0,4,anchor[0]+1,3]});p.extend(piece['paint'])
+        t.extend(piece['terrain']);d.extend(piece['decorations'])
+        d.append(prop('yard_light','Approach Lantern','camp_lantern',anchor[0]-1,anchor[1]+2,False))
+        board['spawn_zones']['enemy']=piece['enemies']
+        board['enemy_extraction']=deepcopy(board['extraction'])
+        return board
     if plan and not plan.get('legacy'):
         board['theme']='location-workshop'
         p.extend([{'material':'dirt','rect':[0,4,14,3]},
@@ -145,42 +230,7 @@ def location_blueprint(location, seed):
         d.extend([prop('yard_light','Yard Lantern','camp_lantern',6,8,False),
                   prop('yard_cart','Supply Handcart','wooden_handcart',12,5,False)])
         return board
-    if location in {'tool_shed','repair_yard'}:
-        wood = location=='tool_shed'
-        board['theme']='location-shed' if wood else 'location-workshop'
-        p.extend([{'material':'dirt','rect':[0,4,8,3]},
-                  {'material':'shed_floor' if wood else 'workshop_floor','rect':[7,1,6,9]}])
-        t.extend(enclosure('shed' if wood else 'yard',(7,1,6,9),(7,5),wood))
-        t.extend(work_bay('north_bay',8,2,not wood))
-        if wood:
-            t.append(prop('shed_saw','Carpenter Sawhorse','carpenter_sawhorse',11,8))
-            d.append(prop('shed_tools','Spilled Toolbox','open_toolbox',8,7,False))
-            d.append(prop('shed_planks','Stored Boards','stacked_planks',10,8,False))
-        else:
-            t.append(prop('south_bay','Repair Bench','repair_workbench',9,8))
-            d.append(prop('repair_wheel','Detached Wagon Wheel','wagon_wheel',8,7,False))
-            d.append(prop('yard_cart','Repair Handcart','wooden_handcart',11,8,False))
-        d.extend([prop('approach_tree','Boundary Pine','pine_tree',3,1,False),
-                  prop('yard_light','Yard Lantern','camp_lantern',6,2 if variant else 8,False)])
-        # Exit is through the door or a breached wall; no fake exit through the enclosure.
-        board['enemy_extraction']=deepcopy(board['extraction'])
-        if wood:
-            # A collapsed roof section leaves one deliberate alternative entrance.
-            t[:] = [entry for entry in t if entry['id']!='shed_wall_10_9']
-            t.append({'id':'shed_collapse','name':'Collapsed Shed Wall','x':10,'y':9,'kind':'rubble',
-                      'sprite':'structure:shed_wall_broken','art_scale':1.25,'art_offset':[0,.28],
-                      'blocking':False,'movement_cost':2})
-            if variant:
-                # Mirrored entrance/breach makes the alternative plan tactically different.
-                for entry in t+d:
-                    entry['y']=height-1-entry['y']
-                    if entry.get('art_offset'):entry['art_offset'][1]*=-1
-                    if entry.get('sprite','').endswith('_corner'):
-                        entry['rotation']={0:90,90:0,180:270,270:180}[entry['rotation']]
-                board['template_id']='shed_west_door_north_breach'
-            else:
-                board['template_id']='shed_west_door_south_breach'
-    elif location in {'graveyard','cemetery_road'}:
+    if location in {'graveyard','cemetery_road'}:
         board['default_ground']='forest_dark'
         p.extend([{'material':'grave_earth','rect':[3,1,9,9]},
                   {'material':'grave_path','rect':[0,4,14,3]}])

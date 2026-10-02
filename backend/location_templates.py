@@ -1,17 +1,9 @@
 """Saved building plans. Rectangles include the perimeter; doorways are world cells."""
 BUILDING_PLANS = {
-    'repair_yard': [
-        {'id': 'enclosed_repair_yard', 'rooms': [], 'legacy': True},
-        {'id': 'workshops_across_courtyard', 'rooms': [
-            ('north_shop', (7,0,6,5), (9,4)), ('south_shop', (7,6,6,5), (9,6))],
-         'furniture': [('repair_workbench',8,1),('carpenter_tool_rack',10,1),('small_coal_forge',11,3),
-                       ('iron_anvil',8,9),('repair_workbench',10,9)],
-         'enemies': [(8,3),(9,3),(10,3),(11,2),(8,7),(9,7),(10,7),(11,8)]},
-        {'id': 'forge_house_and_open_bays', 'rooms': [('forge_house',(7,1,6,7),(7,4))],
-         'furniture': [('small_coal_forge',11,2),('iron_anvil',9,2),('carpenter_tool_rack',11,6),
-                       ('repair_workbench',5,8),('carpenter_sawhorse',8,9)],
-         'enemies': [(8,3),(9,3),(10,3),(11,3),(8,5),(9,5),(10,5),(11,5)]},
-    ],
+    'tool_shed': [{'id':name,'building':name,'anchor':(5,1)} for name in
+        ['tool_long_store','tool_divided_store','tool_annex_yard','tool_twin_sheds']],
+    'repair_yard': [{'id':name,'building':name,'anchor':(5,1)} for name in
+        ['workshop_forge_yard','workshop_courtyard_pair','workshop_l_forge','workshop_repair_hall']],
     'open_armory': [
         {'id':'armory_north_south_stores','rooms':[
             ('north_store',(7,0,6,4),(9,3)),('south_store',(7,7,6,4),(9,7))],

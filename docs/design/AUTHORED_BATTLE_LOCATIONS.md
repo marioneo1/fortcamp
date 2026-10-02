@@ -1,5 +1,9 @@
 # Authored battle locations
 
+## Current: coordinated building toolset and eight reusable plans
+
+Shed and workshop selection now uses four distinct building footprints each, assembled independently of the map. This supersedes the flipped shed and three earlier workshop choices below. Matching fieldstone straight/corner art replaces the mixed libraries. Small doors and gates have coordinated overhead state pairs. See BUILDING_TEMPLATES.md for the eight plans, 40-part structural toolset, source prompts, calibrated joins, installation and validation. The old layouts are preserved in `docs/maps/archive/building_locations_v2.json`.
+
 ## October 2 follow-up: doors, building plans and crossing art
 
 Current dev adds The Hidden Goblin Armory to the six locations below. Its two plans use north/south or east/west storage houses joined by an open, paved armory courtyard. Weapon racks, shields, armor and arrow storage identify the place. The existing mission objective, loot and rank budget are preserved.

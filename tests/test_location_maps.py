@@ -2,7 +2,8 @@ import unittest
 from collections import deque
 from copy import deepcopy
 
-from backend.location_maps import MISSION_LOCATIONS, location_blueprint
+from backend.location_maps import MISSION_LOCATIONS, location_blueprint, place_building
+from backend.building_templates import BUILDINGS, footprint, shell
 from backend.location_templates import BUILDING_PLANS
 from backend.battle_maps import compile_generated_battle_map, validate_battle_map, occupied_tiles
 from backend.combat import create_contract_battle, _interact, _blocked, battle_view, _damage_terrain, _move_toward, _auto_open_gate, _flee_turn
@@ -83,7 +84,7 @@ class LocationMapTests(unittest.TestCase):
 
     def test_templates_change_geometry_and_offsets_survive_destruction(self):
         layouts={location_blueprint('repair_yard',f'layout-{i}')['template_id'] for i in range(40)}
-        self.assertEqual(len(layouts),3)
+        self.assertEqual(len(layouts),4)
         battle=create_contract_battle(new_game({'name':'Tester'}),['player'],'offset','tool_shed',True)
         segment=next(t for t in battle['terrain'] if t.get('art_offset'))
         offset=segment['art_offset'][:]
@@ -92,25 +93,55 @@ class LocationMapTests(unittest.TestCase):
         self.assertEqual(segment['art_offset'],offset)
 
     def test_enclosure_is_closed_except_door_and_shed_collapse(self):
-        for location,prefix in [('tool_shed','shed'),('repair_yard','yard')]:
-            board=location_blueprint(location,'enclosure')
-            perimeter={(x,y) for x in range(7,13) for y in range(1,10) if x in (7,12) or y in (1,9)}
-            covered={(t['x'],t['y']) for t in board['terrain'] if t['id'].startswith(prefix+'_wall') or t['kind']=='gate'}
-            self.assertEqual(perimeter-covered,{(10,9)} if location=='tool_shed' else set())
-            self.assertEqual(len([t for t in board['terrain'] if t['kind']=='gate']),1)
+        for ident,template in BUILDINGS.items():
+            building=place_building(ident,(3,2),'test')
+            covered={(t['x']-3,t['y']-2) for t in building['terrain'] if t['id'].startswith('test_wall') or t['kind']=='gate'}
+            self.assertTrue(set(shell(template))<=covered,ident)
+            gate_count=len(template['doors'])+len(template.get('internal_doors',[]))
+            self.assertEqual(sum(t['kind']=='gate' for t in building['terrain']),gate_count)
+
+    def test_building_shapes_are_distinct_not_mirrors_and_instances_can_be_reused(self):
+        def signature(cells):
+            variants=[]
+            for swap in (False,True):
+                for sx,sy in ((1,1),(-1,1),(1,-1),(-1,-1)):
+                    points={(sx*(y if swap else x),sy*(x if swap else y)) for x,y in cells}
+                    ox=min(x for x,y in points);oy=min(y for x,y in points)
+                    variants.append(tuple(sorted((x-ox,y-oy) for x,y in points)))
+            return min(variants)
+        for location in ('tool_shed','repair_yard'):
+            plans=BUILDING_PLANS[location]
+            self.assertEqual(len({signature(footprint(BUILDINGS[p['building']])) for p in plans}),4)
+        # Stamping the same building at a new anchor and rotation moves all data together.
+        first=place_building('workshop_l_forge',(0,0),'a')
+        second=place_building('workshop_l_forge',(20,4),'b',90)
+        self.assertEqual((second['width'],second['height']),(first['height'],first['width']))
+        self.assertFalse({t['id'] for t in first['terrain']}&{t['id'] for t in second['terrain']})
+        for a,b in zip(first['terrain'],second['terrain']):
+            self.assertEqual((b['x'],b['y']),(20+first['height']-1-a['y'],4+a['x']))
+        for building in (first,second):
+            occupied={(t['x'],t['y']) for t in building['terrain'] if t.get('blocking')}
+            self.assertTrue(all((p['x'],p['y']) not in occupied for p in building['enemies']))
+        for ident in BUILDINGS:
+            for rotation in (0,90,180,270):
+                building=place_building(ident,(2,3),'rotated',rotation)
+                coordinates=[(t['x'],t['y']) for t in building['terrain']+building['decorations']+building['enemies']]
+                coordinates += [tuple(p) for entry in building['paint'] for p in entry['tiles']]
+                self.assertTrue(all(2<=x<2+building['width'] and 3<=y<3+building['height'] for x,y in coordinates),(ident,rotation))
 
     def test_gate_opens_closes_refuses_occupied_closure_and_can_be_broken(self):
         battle=create_contract_battle(new_game({'name':'Tester'}),['player'],'gate','tool_shed',True)
-        player=battle['units']['player'];player.update(x=6,y=5)
+        player=battle['units']['player']
         battle['turn_order']=['player',*[uid for uid in battle['turn_order'] if uid!='player']];battle['turn_index']=0
         gate=next(t for t in battle['terrain'] if t['kind']=='gate')
-        self.assertTrue(_blocked(battle,7,5,'player'))
+        gx,gy=gate['x'],gate['y'];player.update(x=gx-1,y=gy)
+        self.assertTrue(_blocked(battle,gx,gy,'player'))
         self.assertTrue(any(a['command']['target_id']==gate['id'] for a in battle_view(battle)['context_actions']))
         _interact(battle,player,gate['id'])
         self.assertFalse(gate['blocking']);self.assertEqual(gate['sprite'],gate['open_sprite'])
-        occupant=battle['units']['contract_enemy_0'];occupant.update(x=7,y=5)
+        occupant=battle['units']['contract_enemy_0'];occupant.update(x=gx,y=gy)
         with self.assertRaisesRegex(ValueError,'standing'):_interact(battle,player,gate['id'])
-        occupant.update(x=10,y=5)
+        occupant.update(x=gx+2,y=gy)
         _interact(battle,player,gate['id']);self.assertTrue(gate['blocking'])
         player['attack']=100
         _damage_terrain(battle,player,gate['id'])

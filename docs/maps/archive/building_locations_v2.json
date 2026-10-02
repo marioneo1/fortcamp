@@ -1,0 +1,4208 @@
+{
+  "tool_shed": {
+    "shed_west_door_north_breach": {
+      "name": "tool_shed",
+      "theme": "location-shed",
+      "width": 14,
+      "height": 11,
+      "default_ground": "grass",
+      "paint": [
+        {
+          "material": "dirt",
+          "rect": [
+            0,
+            4,
+            8,
+            3
+          ]
+        },
+        {
+          "material": "shed_floor",
+          "rect": [
+            7,
+            1,
+            6,
+            9
+          ]
+        }
+      ],
+      "void_tiles": [],
+      "elevation": [],
+      "terrain": [
+        {
+          "id": "shed_wall_7_1",
+          "name": "Shed Wall",
+          "x": 7,
+          "y": 9,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 180,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken"
+        },
+        {
+          "id": "shed_wall_7_2",
+          "name": "Shed Wall",
+          "x": 7,
+          "y": 8,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_7_3",
+          "name": "Shed Wall",
+          "x": 7,
+          "y": 7,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_7_4",
+          "name": "Shed Wall",
+          "x": 7,
+          "y": 6,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_7_6",
+          "name": "Shed Wall",
+          "x": 7,
+          "y": 4,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_7_7",
+          "name": "Shed Wall",
+          "x": 7,
+          "y": 3,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_7_8",
+          "name": "Shed Wall",
+          "x": 7,
+          "y": 2,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_7_9",
+          "name": "Shed Wall",
+          "x": 7,
+          "y": 1,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 270,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken"
+        },
+        {
+          "id": "shed_wall_8_1",
+          "name": "Shed Wall",
+          "x": 8,
+          "y": 9,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "shed_wall_8_9",
+          "name": "Shed Wall",
+          "x": 8,
+          "y": 1,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "shed_wall_9_1",
+          "name": "Shed Wall",
+          "x": 9,
+          "y": 9,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "shed_wall_9_9",
+          "name": "Shed Wall",
+          "x": 9,
+          "y": 1,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "shed_wall_10_1",
+          "name": "Shed Wall",
+          "x": 10,
+          "y": 9,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "shed_wall_11_1",
+          "name": "Shed Wall",
+          "x": 11,
+          "y": 9,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "shed_wall_11_9",
+          "name": "Shed Wall",
+          "x": 11,
+          "y": 1,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "shed_wall_12_1",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 9,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken"
+        },
+        {
+          "id": "shed_wall_12_2",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 8,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_12_3",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 7,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_12_4",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 6,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_12_5",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 5,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_12_6",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 4,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_12_7",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 3,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_12_8",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 2,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_12_9",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 1,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken"
+        },
+        {
+          "id": "shed_gate",
+          "name": "Shed Door",
+          "x": 7,
+          "y": 5,
+          "kind": "gate",
+          "state": "closed",
+          "sprite": "structure:shed_door_closed",
+          "closed_sprite": "structure:shed_door_closed",
+          "open_sprite": "structure:shed_door_open",
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 12,
+          "max_hp": 12,
+          "armor": 1,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "north_bay_bench",
+          "name": "Repair Workbench",
+          "sprite": "repair_workbench",
+          "x": 8,
+          "y": 8,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "north_bay_tools",
+          "name": "Tool Rack",
+          "sprite": "carpenter_tool_rack",
+          "x": 10,
+          "y": 8,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "shed_saw",
+          "name": "Carpenter Sawhorse",
+          "sprite": "carpenter_sawhorse",
+          "x": 11,
+          "y": 2,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "shed_collapse",
+          "name": "Collapsed Shed Wall",
+          "x": 10,
+          "y": 1,
+          "kind": "rubble",
+          "sprite": "structure:shed_wall_broken",
+          "art_scale": 1.25,
+          "art_offset": [
+            0,
+            -0.28
+          ],
+          "blocking": false,
+          "movement_cost": 2
+        }
+      ],
+      "decorations": [
+        {
+          "id": "shed_tools",
+          "name": "Spilled Toolbox",
+          "sprite": "open_toolbox",
+          "x": 8,
+          "y": 3
+        },
+        {
+          "id": "shed_planks",
+          "name": "Stored Boards",
+          "sprite": "stacked_planks",
+          "x": 10,
+          "y": 2
+        },
+        {
+          "id": "approach_tree",
+          "name": "Boundary Pine",
+          "sprite": "pine_tree",
+          "x": 3,
+          "y": 9
+        },
+        {
+          "id": "yard_light",
+          "name": "Yard Lantern",
+          "sprite": "camp_lantern",
+          "x": 6,
+          "y": 8,
+          "art_scale": 0.3333333333333333
+        }
+      ],
+      "location_id": "tool_shed",
+      "map_variation": 2,
+      "extraction": {
+        "name": "Guild Approach",
+        "tiles": [
+          {
+            "x": 0,
+            "y": 3
+          },
+          {
+            "x": 0,
+            "y": 4
+          },
+          {
+            "x": 0,
+            "y": 5
+          },
+          {
+            "x": 0,
+            "y": 6
+          },
+          {
+            "x": 0,
+            "y": 7
+          }
+        ]
+      },
+      "enemy_extraction": {
+        "name": "Guild Approach",
+        "tiles": [
+          {
+            "x": 0,
+            "y": 3
+          },
+          {
+            "x": 0,
+            "y": 4
+          },
+          {
+            "x": 0,
+            "y": 5
+          },
+          {
+            "x": 0,
+            "y": 6
+          },
+          {
+            "x": 0,
+            "y": 7
+          }
+        ]
+      },
+      "spawn_zones": {
+        "player": [
+          {
+            "x": 1,
+            "y": 5
+          },
+          {
+            "x": 1,
+            "y": 4
+          },
+          {
+            "x": 1,
+            "y": 6
+          },
+          {
+            "x": 2,
+            "y": 5
+          }
+        ],
+        "enemy": [
+          {
+            "x": 10,
+            "y": 5
+          },
+          {
+            "x": 9,
+            "y": 4
+          },
+          {
+            "x": 10,
+            "y": 6
+          },
+          {
+            "x": 11,
+            "y": 3
+          },
+          {
+            "x": 11,
+            "y": 7
+          },
+          {
+            "x": 9,
+            "y": 6
+          },
+          {
+            "x": 10,
+            "y": 7
+          },
+          {
+            "x": 11,
+            "y": 5
+          }
+        ]
+      },
+      "template_id": "shed_west_door_north_breach"
+    },
+    "shed_west_door_south_breach": {
+      "name": "tool_shed",
+      "theme": "location-shed",
+      "width": 14,
+      "height": 11,
+      "default_ground": "grass",
+      "paint": [
+        {
+          "material": "dirt",
+          "rect": [
+            0,
+            4,
+            8,
+            3
+          ]
+        },
+        {
+          "material": "shed_floor",
+          "rect": [
+            7,
+            1,
+            6,
+            9
+          ]
+        }
+      ],
+      "void_tiles": [],
+      "elevation": [],
+      "terrain": [
+        {
+          "id": "shed_wall_7_1",
+          "name": "Shed Wall",
+          "x": 7,
+          "y": 1,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 270,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken"
+        },
+        {
+          "id": "shed_wall_7_2",
+          "name": "Shed Wall",
+          "x": 7,
+          "y": 2,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_7_3",
+          "name": "Shed Wall",
+          "x": 7,
+          "y": 3,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_7_4",
+          "name": "Shed Wall",
+          "x": 7,
+          "y": 4,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_7_6",
+          "name": "Shed Wall",
+          "x": 7,
+          "y": 6,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_7_7",
+          "name": "Shed Wall",
+          "x": 7,
+          "y": 7,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_7_8",
+          "name": "Shed Wall",
+          "x": 7,
+          "y": 8,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_7_9",
+          "name": "Shed Wall",
+          "x": 7,
+          "y": 9,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 180,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken"
+        },
+        {
+          "id": "shed_wall_8_1",
+          "name": "Shed Wall",
+          "x": 8,
+          "y": 1,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "shed_wall_8_9",
+          "name": "Shed Wall",
+          "x": 8,
+          "y": 9,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "shed_wall_9_1",
+          "name": "Shed Wall",
+          "x": 9,
+          "y": 1,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "shed_wall_9_9",
+          "name": "Shed Wall",
+          "x": 9,
+          "y": 9,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "shed_wall_10_1",
+          "name": "Shed Wall",
+          "x": 10,
+          "y": 1,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "shed_wall_11_1",
+          "name": "Shed Wall",
+          "x": 11,
+          "y": 1,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "shed_wall_11_9",
+          "name": "Shed Wall",
+          "x": 11,
+          "y": 9,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "shed_wall_12_1",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 1,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken"
+        },
+        {
+          "id": "shed_wall_12_2",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 2,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_12_3",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 3,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_12_4",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 4,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_12_5",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 5,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_12_6",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 6,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_12_7",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 7,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_12_8",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 8,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "shed_wall_12_9",
+          "name": "Shed Wall",
+          "x": 12,
+          "y": 9,
+          "kind": "palisade",
+          "sprite": "structure:shed_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:shed_wall_broken"
+        },
+        {
+          "id": "shed_gate",
+          "name": "Shed Door",
+          "x": 7,
+          "y": 5,
+          "kind": "gate",
+          "state": "closed",
+          "sprite": "structure:shed_door_closed",
+          "closed_sprite": "structure:shed_door_closed",
+          "open_sprite": "structure:shed_door_open",
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 12,
+          "max_hp": 12,
+          "armor": 1,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "north_bay_bench",
+          "name": "Repair Workbench",
+          "sprite": "repair_workbench",
+          "x": 8,
+          "y": 2,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "north_bay_tools",
+          "name": "Tool Rack",
+          "sprite": "carpenter_tool_rack",
+          "x": 10,
+          "y": 2,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "shed_saw",
+          "name": "Carpenter Sawhorse",
+          "sprite": "carpenter_sawhorse",
+          "x": 11,
+          "y": 8,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "shed_collapse",
+          "name": "Collapsed Shed Wall",
+          "x": 10,
+          "y": 9,
+          "kind": "rubble",
+          "sprite": "structure:shed_wall_broken",
+          "art_scale": 1.25,
+          "art_offset": [
+            0,
+            0.28
+          ],
+          "blocking": false,
+          "movement_cost": 2
+        }
+      ],
+      "decorations": [
+        {
+          "id": "shed_tools",
+          "name": "Spilled Toolbox",
+          "sprite": "open_toolbox",
+          "x": 8,
+          "y": 7
+        },
+        {
+          "id": "shed_planks",
+          "name": "Stored Boards",
+          "sprite": "stacked_planks",
+          "x": 10,
+          "y": 8
+        },
+        {
+          "id": "approach_tree",
+          "name": "Boundary Pine",
+          "sprite": "pine_tree",
+          "x": 3,
+          "y": 1
+        },
+        {
+          "id": "yard_light",
+          "name": "Yard Lantern",
+          "sprite": "camp_lantern",
+          "x": 6,
+          "y": 8,
+          "art_scale": 0.3333333333333333
+        }
+      ],
+      "location_id": "tool_shed",
+      "map_variation": 1,
+      "extraction": {
+        "name": "Guild Approach",
+        "tiles": [
+          {
+            "x": 0,
+            "y": 3
+          },
+          {
+            "x": 0,
+            "y": 4
+          },
+          {
+            "x": 0,
+            "y": 5
+          },
+          {
+            "x": 0,
+            "y": 6
+          },
+          {
+            "x": 0,
+            "y": 7
+          }
+        ]
+      },
+      "enemy_extraction": {
+        "name": "Guild Approach",
+        "tiles": [
+          {
+            "x": 0,
+            "y": 3
+          },
+          {
+            "x": 0,
+            "y": 4
+          },
+          {
+            "x": 0,
+            "y": 5
+          },
+          {
+            "x": 0,
+            "y": 6
+          },
+          {
+            "x": 0,
+            "y": 7
+          }
+        ]
+      },
+      "spawn_zones": {
+        "player": [
+          {
+            "x": 1,
+            "y": 5
+          },
+          {
+            "x": 1,
+            "y": 4
+          },
+          {
+            "x": 1,
+            "y": 6
+          },
+          {
+            "x": 2,
+            "y": 5
+          }
+        ],
+        "enemy": [
+          {
+            "x": 10,
+            "y": 5
+          },
+          {
+            "x": 9,
+            "y": 4
+          },
+          {
+            "x": 10,
+            "y": 6
+          },
+          {
+            "x": 11,
+            "y": 3
+          },
+          {
+            "x": 11,
+            "y": 7
+          },
+          {
+            "x": 9,
+            "y": 6
+          },
+          {
+            "x": 10,
+            "y": 7
+          },
+          {
+            "x": 11,
+            "y": 5
+          }
+        ]
+      },
+      "template_id": "shed_west_door_south_breach"
+    }
+  },
+  "repair_yard": {
+    "workshops_across_courtyard": {
+      "name": "repair_yard",
+      "theme": "location-workshop",
+      "width": 14,
+      "height": 11,
+      "default_ground": "grass",
+      "paint": [
+        {
+          "material": "dirt",
+          "rect": [
+            0,
+            4,
+            14,
+            3
+          ]
+        },
+        {
+          "material": "workshop_floor",
+          "rect": [
+            7,
+            0,
+            6,
+            11
+          ]
+        },
+        {
+          "material": "smithy_cobbles",
+          "rect": [
+            8,
+            1,
+            4,
+            3
+          ]
+        },
+        {
+          "material": "smithy_cobbles",
+          "rect": [
+            8,
+            7,
+            4,
+            3
+          ]
+        }
+      ],
+      "void_tiles": [],
+      "elevation": [],
+      "terrain": [
+        {
+          "id": "north_shop_wall_7_0",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 0,
+          "kind": "wall",
+          "sprite": "structure:cemetery_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 270,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble"
+        },
+        {
+          "id": "north_shop_wall_7_1",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 1,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "north_shop_wall_7_2",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 2,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "north_shop_wall_7_3",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 3,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "north_shop_wall_7_4",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 4,
+          "kind": "wall",
+          "sprite": "structure:cemetery_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 180,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble"
+        },
+        {
+          "id": "north_shop_wall_8_0",
+          "name": "Boundary Wall",
+          "x": 8,
+          "y": 0,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "north_shop_wall_8_4",
+          "name": "Boundary Wall",
+          "x": 8,
+          "y": 4,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "north_shop_wall_9_0",
+          "name": "Boundary Wall",
+          "x": 9,
+          "y": 0,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "north_shop_wall_10_0",
+          "name": "Boundary Wall",
+          "x": 10,
+          "y": 0,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "north_shop_wall_10_4",
+          "name": "Boundary Wall",
+          "x": 10,
+          "y": 4,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "north_shop_wall_11_0",
+          "name": "Boundary Wall",
+          "x": 11,
+          "y": 0,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "north_shop_wall_11_4",
+          "name": "Boundary Wall",
+          "x": 11,
+          "y": 4,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "north_shop_wall_12_0",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 0,
+          "kind": "wall",
+          "sprite": "structure:cemetery_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble"
+        },
+        {
+          "id": "north_shop_wall_12_1",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 1,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "north_shop_wall_12_2",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 2,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "north_shop_wall_12_3",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 3,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "north_shop_wall_12_4",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 4,
+          "kind": "wall",
+          "sprite": "structure:cemetery_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble"
+        },
+        {
+          "id": "north_shop_gate",
+          "name": "Yard Gate",
+          "x": 9,
+          "y": 4,
+          "kind": "gate",
+          "state": "closed",
+          "sprite": "structure:yard_gate_closed",
+          "closed_sprite": "structure:yard_gate_closed",
+          "open_sprite": "structure:yard_gate_open",
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 12,
+          "max_hp": 12,
+          "armor": 1,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "south_shop_wall_7_6",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 6,
+          "kind": "wall",
+          "sprite": "structure:cemetery_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 270,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble"
+        },
+        {
+          "id": "south_shop_wall_7_7",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 7,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "south_shop_wall_7_8",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 8,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "south_shop_wall_7_9",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 9,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "south_shop_wall_7_10",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 10,
+          "kind": "wall",
+          "sprite": "structure:cemetery_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 180,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble"
+        },
+        {
+          "id": "south_shop_wall_8_6",
+          "name": "Boundary Wall",
+          "x": 8,
+          "y": 6,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "south_shop_wall_8_10",
+          "name": "Boundary Wall",
+          "x": 8,
+          "y": 10,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "south_shop_wall_9_10",
+          "name": "Boundary Wall",
+          "x": 9,
+          "y": 10,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "south_shop_wall_10_6",
+          "name": "Boundary Wall",
+          "x": 10,
+          "y": 6,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "south_shop_wall_10_10",
+          "name": "Boundary Wall",
+          "x": 10,
+          "y": 10,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "south_shop_wall_11_6",
+          "name": "Boundary Wall",
+          "x": 11,
+          "y": 6,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "south_shop_wall_11_10",
+          "name": "Boundary Wall",
+          "x": 11,
+          "y": 10,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "south_shop_wall_12_6",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 6,
+          "kind": "wall",
+          "sprite": "structure:cemetery_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble"
+        },
+        {
+          "id": "south_shop_wall_12_7",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 7,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "south_shop_wall_12_8",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 8,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "south_shop_wall_12_9",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 9,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "south_shop_wall_12_10",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 10,
+          "kind": "wall",
+          "sprite": "structure:cemetery_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble"
+        },
+        {
+          "id": "south_shop_gate",
+          "name": "Yard Gate",
+          "x": 9,
+          "y": 6,
+          "kind": "gate",
+          "state": "closed",
+          "sprite": "structure:yard_gate_closed",
+          "closed_sprite": "structure:yard_gate_closed",
+          "open_sprite": "structure:yard_gate_open",
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 12,
+          "max_hp": 12,
+          "armor": 1,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "bay_0",
+          "name": "Repair Workbench",
+          "sprite": "repair_workbench",
+          "x": 8,
+          "y": 1,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "bay_1",
+          "name": "Carpenter Tool Rack",
+          "sprite": "carpenter_tool_rack",
+          "x": 10,
+          "y": 1,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "bay_2",
+          "name": "Small Coal Forge",
+          "sprite": "small_coal_forge",
+          "x": 11,
+          "y": 3,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "bay_3",
+          "name": "Iron Anvil",
+          "sprite": "iron_anvil",
+          "x": 8,
+          "y": 9,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "bay_4",
+          "name": "Repair Workbench",
+          "sprite": "repair_workbench",
+          "x": 10,
+          "y": 9,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        }
+      ],
+      "decorations": [
+        {
+          "id": "yard_light",
+          "name": "Yard Lantern",
+          "sprite": "camp_lantern",
+          "x": 6,
+          "y": 8,
+          "art_scale": 0.3333333333333333
+        },
+        {
+          "id": "yard_cart",
+          "name": "Supply Handcart",
+          "sprite": "wooden_handcart",
+          "x": 12,
+          "y": 5
+        }
+      ],
+      "location_id": "repair_yard",
+      "map_variation": 2,
+      "extraction": {
+        "name": "Guild Approach",
+        "tiles": [
+          {
+            "x": 0,
+            "y": 3
+          },
+          {
+            "x": 0,
+            "y": 4
+          },
+          {
+            "x": 0,
+            "y": 5
+          },
+          {
+            "x": 0,
+            "y": 6
+          },
+          {
+            "x": 0,
+            "y": 7
+          }
+        ]
+      },
+      "enemy_extraction": {
+        "name": "Guild Approach",
+        "tiles": [
+          {
+            "x": 0,
+            "y": 3
+          },
+          {
+            "x": 0,
+            "y": 4
+          },
+          {
+            "x": 0,
+            "y": 5
+          },
+          {
+            "x": 0,
+            "y": 6
+          },
+          {
+            "x": 0,
+            "y": 7
+          }
+        ]
+      },
+      "spawn_zones": {
+        "player": [
+          {
+            "x": 1,
+            "y": 5
+          },
+          {
+            "x": 1,
+            "y": 4
+          },
+          {
+            "x": 1,
+            "y": 6
+          },
+          {
+            "x": 2,
+            "y": 5
+          }
+        ],
+        "enemy": [
+          {
+            "x": 8,
+            "y": 3
+          },
+          {
+            "x": 9,
+            "y": 3
+          },
+          {
+            "x": 10,
+            "y": 3
+          },
+          {
+            "x": 11,
+            "y": 2
+          },
+          {
+            "x": 8,
+            "y": 7
+          },
+          {
+            "x": 9,
+            "y": 7
+          },
+          {
+            "x": 10,
+            "y": 7
+          },
+          {
+            "x": 11,
+            "y": 8
+          }
+        ]
+      },
+      "template_id": "workshops_across_courtyard"
+    },
+    "enclosed_repair_yard": {
+      "name": "repair_yard",
+      "theme": "location-workshop",
+      "width": 14,
+      "height": 11,
+      "default_ground": "grass",
+      "paint": [
+        {
+          "material": "dirt",
+          "rect": [
+            0,
+            4,
+            8,
+            3
+          ]
+        },
+        {
+          "material": "workshop_floor",
+          "rect": [
+            7,
+            1,
+            6,
+            9
+          ]
+        }
+      ],
+      "void_tiles": [],
+      "elevation": [],
+      "terrain": [
+        {
+          "id": "yard_wall_7_1",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 1,
+          "kind": "wall",
+          "sprite": "structure:cemetery_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 270,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble"
+        },
+        {
+          "id": "yard_wall_7_2",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 2,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "yard_wall_7_3",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 3,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "yard_wall_7_4",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 4,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "yard_wall_7_6",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 6,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "yard_wall_7_7",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 7,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "yard_wall_7_8",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 8,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "yard_wall_7_9",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 9,
+          "kind": "wall",
+          "sprite": "structure:cemetery_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 180,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble"
+        },
+        {
+          "id": "yard_wall_8_1",
+          "name": "Boundary Wall",
+          "x": 8,
+          "y": 1,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "yard_wall_8_9",
+          "name": "Boundary Wall",
+          "x": 8,
+          "y": 9,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "yard_wall_9_1",
+          "name": "Boundary Wall",
+          "x": 9,
+          "y": 1,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "yard_wall_9_9",
+          "name": "Boundary Wall",
+          "x": 9,
+          "y": 9,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "yard_wall_10_1",
+          "name": "Boundary Wall",
+          "x": 10,
+          "y": 1,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "yard_wall_10_9",
+          "name": "Boundary Wall",
+          "x": 10,
+          "y": 9,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "yard_wall_11_1",
+          "name": "Boundary Wall",
+          "x": 11,
+          "y": 1,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "yard_wall_11_9",
+          "name": "Boundary Wall",
+          "x": 11,
+          "y": 9,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "yard_wall_12_1",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 1,
+          "kind": "wall",
+          "sprite": "structure:cemetery_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble"
+        },
+        {
+          "id": "yard_wall_12_2",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 2,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "yard_wall_12_3",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 3,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "yard_wall_12_4",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 4,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "yard_wall_12_5",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 5,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "yard_wall_12_6",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 6,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "yard_wall_12_7",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 7,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "yard_wall_12_8",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 8,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "yard_wall_12_9",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 9,
+          "kind": "wall",
+          "sprite": "structure:cemetery_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble"
+        },
+        {
+          "id": "yard_gate",
+          "name": "Yard Gate",
+          "x": 7,
+          "y": 5,
+          "kind": "gate",
+          "state": "closed",
+          "sprite": "structure:yard_gate_closed",
+          "closed_sprite": "structure:yard_gate_closed",
+          "open_sprite": "structure:yard_gate_open",
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 12,
+          "max_hp": 12,
+          "armor": 1,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "north_bay_bench",
+          "name": "Repair Workbench",
+          "sprite": "repair_workbench",
+          "x": 8,
+          "y": 2,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "north_bay_tools",
+          "name": "Tool Rack",
+          "sprite": "carpenter_tool_rack",
+          "x": 10,
+          "y": 2,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "north_bay_anvil",
+          "name": "Iron Anvil",
+          "sprite": "iron_anvil",
+          "x": 8,
+          "y": 4,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "north_bay_forge",
+          "name": "Coal Forge",
+          "sprite": "small_coal_forge",
+          "x": 10,
+          "y": 4,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "south_bay",
+          "name": "Repair Bench",
+          "sprite": "repair_workbench",
+          "x": 9,
+          "y": 8,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        }
+      ],
+      "decorations": [
+        {
+          "id": "repair_wheel",
+          "name": "Detached Wagon Wheel",
+          "sprite": "wagon_wheel",
+          "x": 8,
+          "y": 7
+        },
+        {
+          "id": "yard_cart",
+          "name": "Repair Handcart",
+          "sprite": "wooden_handcart",
+          "x": 11,
+          "y": 8
+        },
+        {
+          "id": "approach_tree",
+          "name": "Boundary Pine",
+          "sprite": "pine_tree",
+          "x": 3,
+          "y": 1
+        },
+        {
+          "id": "yard_light",
+          "name": "Yard Lantern",
+          "sprite": "camp_lantern",
+          "x": 6,
+          "y": 8,
+          "art_scale": 0.3333333333333333
+        }
+      ],
+      "location_id": "repair_yard",
+      "map_variation": 1,
+      "extraction": {
+        "name": "Guild Approach",
+        "tiles": [
+          {
+            "x": 0,
+            "y": 3
+          },
+          {
+            "x": 0,
+            "y": 4
+          },
+          {
+            "x": 0,
+            "y": 5
+          },
+          {
+            "x": 0,
+            "y": 6
+          },
+          {
+            "x": 0,
+            "y": 7
+          }
+        ]
+      },
+      "enemy_extraction": {
+        "name": "Guild Approach",
+        "tiles": [
+          {
+            "x": 0,
+            "y": 3
+          },
+          {
+            "x": 0,
+            "y": 4
+          },
+          {
+            "x": 0,
+            "y": 5
+          },
+          {
+            "x": 0,
+            "y": 6
+          },
+          {
+            "x": 0,
+            "y": 7
+          }
+        ]
+      },
+      "spawn_zones": {
+        "player": [
+          {
+            "x": 1,
+            "y": 5
+          },
+          {
+            "x": 1,
+            "y": 4
+          },
+          {
+            "x": 1,
+            "y": 6
+          },
+          {
+            "x": 2,
+            "y": 5
+          }
+        ],
+        "enemy": [
+          {
+            "x": 10,
+            "y": 5
+          },
+          {
+            "x": 9,
+            "y": 4
+          },
+          {
+            "x": 10,
+            "y": 6
+          },
+          {
+            "x": 11,
+            "y": 3
+          },
+          {
+            "x": 11,
+            "y": 7
+          },
+          {
+            "x": 9,
+            "y": 6
+          },
+          {
+            "x": 10,
+            "y": 7
+          },
+          {
+            "x": 11,
+            "y": 5
+          }
+        ]
+      },
+      "template_id": "enclosed_repair_yard"
+    },
+    "forge_house_and_open_bays": {
+      "name": "repair_yard",
+      "theme": "location-workshop",
+      "width": 14,
+      "height": 11,
+      "default_ground": "grass",
+      "paint": [
+        {
+          "material": "dirt",
+          "rect": [
+            0,
+            4,
+            14,
+            3
+          ]
+        },
+        {
+          "material": "workshop_floor",
+          "rect": [
+            7,
+            0,
+            6,
+            11
+          ]
+        },
+        {
+          "material": "smithy_cobbles",
+          "rect": [
+            8,
+            2,
+            4,
+            5
+          ]
+        }
+      ],
+      "void_tiles": [],
+      "elevation": [],
+      "terrain": [
+        {
+          "id": "forge_house_wall_7_1",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 1,
+          "kind": "wall",
+          "sprite": "structure:cemetery_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 270,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble"
+        },
+        {
+          "id": "forge_house_wall_7_2",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 2,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "forge_house_wall_7_3",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 3,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "forge_house_wall_7_5",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 5,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "forge_house_wall_7_6",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 6,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "forge_house_wall_7_7",
+          "name": "Boundary Wall",
+          "x": 7,
+          "y": 7,
+          "kind": "wall",
+          "sprite": "structure:cemetery_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 180,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble"
+        },
+        {
+          "id": "forge_house_wall_8_1",
+          "name": "Boundary Wall",
+          "x": 8,
+          "y": 1,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "forge_house_wall_8_7",
+          "name": "Boundary Wall",
+          "x": 8,
+          "y": 7,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "forge_house_wall_9_1",
+          "name": "Boundary Wall",
+          "x": 9,
+          "y": 1,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "forge_house_wall_9_7",
+          "name": "Boundary Wall",
+          "x": 9,
+          "y": 7,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "forge_house_wall_10_1",
+          "name": "Boundary Wall",
+          "x": 10,
+          "y": 1,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "forge_house_wall_10_7",
+          "name": "Boundary Wall",
+          "x": 10,
+          "y": 7,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "forge_house_wall_11_1",
+          "name": "Boundary Wall",
+          "x": 11,
+          "y": 1,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            -0.28
+          ]
+        },
+        {
+          "id": "forge_house_wall_11_7",
+          "name": "Boundary Wall",
+          "x": 11,
+          "y": 7,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0,
+            0.28
+          ]
+        },
+        {
+          "id": "forge_house_wall_12_1",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 1,
+          "kind": "wall",
+          "sprite": "structure:cemetery_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 0,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble"
+        },
+        {
+          "id": "forge_house_wall_12_2",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 2,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "forge_house_wall_12_3",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 3,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "forge_house_wall_12_4",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 4,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "forge_house_wall_12_5",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 5,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "forge_house_wall_12_6",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 6,
+          "kind": "wall",
+          "sprite": "structure:stone_wall_straight",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble",
+          "art_offset": [
+            0.28,
+            0
+          ]
+        },
+        {
+          "id": "forge_house_wall_12_7",
+          "name": "Boundary Wall",
+          "x": 12,
+          "y": 7,
+          "kind": "wall",
+          "sprite": "structure:cemetery_wall_corner",
+          "art_scale": 1.25,
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 16,
+          "max_hp": 16,
+          "armor": 2,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "destroyed_sprite": "structure:wall_rubble"
+        },
+        {
+          "id": "forge_house_gate",
+          "name": "Yard Gate",
+          "x": 7,
+          "y": 4,
+          "kind": "gate",
+          "state": "closed",
+          "sprite": "structure:yard_gate_closed",
+          "closed_sprite": "structure:yard_gate_closed",
+          "open_sprite": "structure:yard_gate_open",
+          "rotation": 90,
+          "blocking": true,
+          "blocks_sight": true,
+          "destructible": true,
+          "hp": 12,
+          "max_hp": 12,
+          "armor": 1,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2,
+          "art_offset": [
+            -0.28,
+            0
+          ]
+        },
+        {
+          "id": "bay_0",
+          "name": "Small Coal Forge",
+          "sprite": "small_coal_forge",
+          "x": 11,
+          "y": 2,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "bay_1",
+          "name": "Iron Anvil",
+          "sprite": "iron_anvil",
+          "x": 9,
+          "y": 2,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "bay_2",
+          "name": "Carpenter Tool Rack",
+          "sprite": "carpenter_tool_rack",
+          "x": 11,
+          "y": 6,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "bay_3",
+          "name": "Repair Workbench",
+          "sprite": "repair_workbench",
+          "x": 5,
+          "y": 8,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        },
+        {
+          "id": "bay_4",
+          "name": "Carpenter Sawhorse",
+          "sprite": "carpenter_sawhorse",
+          "x": 8,
+          "y": 9,
+          "kind": "furniture",
+          "blocking": true,
+          "blocks_sight": false,
+          "destructible": true,
+          "hp": 10,
+          "max_hp": 10,
+          "armor": 0,
+          "destroyed_kind": "rubble",
+          "destroyed_movement_cost": 2
+        }
+      ],
+      "decorations": [
+        {
+          "id": "yard_light",
+          "name": "Yard Lantern",
+          "sprite": "camp_lantern",
+          "x": 6,
+          "y": 8,
+          "art_scale": 0.3333333333333333
+        },
+        {
+          "id": "yard_cart",
+          "name": "Supply Handcart",
+          "sprite": "wooden_handcart",
+          "x": 12,
+          "y": 5
+        }
+      ],
+      "location_id": "repair_yard",
+      "map_variation": 3,
+      "extraction": {
+        "name": "Guild Approach",
+        "tiles": [
+          {
+            "x": 0,
+            "y": 3
+          },
+          {
+            "x": 0,
+            "y": 4
+          },
+          {
+            "x": 0,
+            "y": 5
+          },
+          {
+            "x": 0,
+            "y": 6
+          },
+          {
+            "x": 0,
+            "y": 7
+          }
+        ]
+      },
+      "enemy_extraction": {
+        "name": "Guild Approach",
+        "tiles": [
+          {
+            "x": 0,
+            "y": 3
+          },
+          {
+            "x": 0,
+            "y": 4
+          },
+          {
+            "x": 0,
+            "y": 5
+          },
+          {
+            "x": 0,
+            "y": 6
+          },
+          {
+            "x": 0,
+            "y": 7
+          }
+        ]
+      },
+      "spawn_zones": {
+        "player": [
+          {
+            "x": 1,
+            "y": 5
+          },
+          {
+            "x": 1,
+            "y": 4
+          },
+          {
+            "x": 1,
+            "y": 6
+          },
+          {
+            "x": 2,
+            "y": 5
+          }
+        ],
+        "enemy": [
+          {
+            "x": 8,
+            "y": 3
+          },
+          {
+            "x": 9,
+            "y": 3
+          },
+          {
+            "x": 10,
+            "y": 3
+          },
+          {
+            "x": 11,
+            "y": 3
+          },
+          {
+            "x": 8,
+            "y": 5
+          },
+          {
+            "x": 9,
+            "y": 5
+          },
+          {
+            "x": 10,
+            "y": 5
+          },
+          {
+            "x": 11,
+            "y": 5
+          }
+        ]
+      },
+      "template_id": "forge_house_and_open_bays"
+    }
+  }
+}

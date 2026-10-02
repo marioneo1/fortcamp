@@ -18,6 +18,7 @@ from .settings import settings
 from .tactical_contracts import TACTICAL_CONTRACTS
 from .location_maps import MISSION_LOCATIONS, location_blueprint
 from .location_templates import BUILDING_PLANS
+from .building_templates import BUILDINGS
 
 router = APIRouter(prefix='/api/debug/battle-lab')
 _sessions = {}
@@ -60,7 +61,7 @@ def layout_presets(encounter):
         board=location_blueprint(location,seed)
         variant=board['map_variation'];ident=board['template_id']
         if variant not in found:
-            label=LAYOUT_LABELS.get(ident,ident.replace('_',' ').title())
+            label=BUILDINGS.get(ident,{}).get('label') or LAYOUT_LABELS.get(ident,ident.replace('_',' ').title())
             if location in {'broken_creek_bridge','toll_bridge'}:
                 family='Stone' if '_stone_' in ident else 'Wood'
                 label=f'{family} bridge · {"upper" if ident.endswith("_4") else "lower"} crossing'
