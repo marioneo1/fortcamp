@@ -7,7 +7,8 @@ The alpha folder has no release or stable launchers. `create_release_windows.bat
 ## Folders
 
 - Development: `E:/Other Games/Fortcamp/fortcamp-alpha-0.3.1/fortcamp-alpha-0.3.1`
-- First release: `E:/Other Games/Fortcamp/fortcamp-release-0.3.1-trial.1`
+- Current prepared release: `E:/Other Games/Fortcamp/fortcamp-release-0.3.1-trial.2`
+- Previous release (rollback): `E:/Other Games/Fortcamp/fortcamp-release-0.3.1-trial.1`
 - Production progress and uploaded portraits: `E:/Other Games/Fortcamp/fortcamp-release-data`
 
 The production data folder stays in place when you create a newer version. Preparing or starting a new release never replaces an existing production database. Development saves remain inside the dev copy and cannot affect friends. The original internal `.fortcamp-releases` snapshots are legacy and preserved; launch the sibling copy instead.
@@ -28,7 +29,7 @@ The production data folder stays in place when you create a newer version. Prepa
 ## Start the friend trial
 
 1. Stop the older Fortcamp backend **and** Vite frontend. Do not leave the old backend's Discord bot running alongside the release. Leave the persistent Cloudflare tunnel running.
-2. Open `E:/Other Games/Fortcamp/fortcamp-release-0.3.1-trial.1` and double-click **run_release_windows.bat**. Keep this single control window open; Ctrl+C stops the server it launched. Port conflicts are reported rather than killing unrelated processes.
+2. Open `E:/Other Games/Fortcamp/fortcamp-release-0.3.1-trial.2` and double-click **run_release_windows.bat**. Keep this single control window open; Ctrl+C stops the server it launched. Port conflicts are reported rather than killing unrelated processes.
 3. Keep Cloudflare's `play.fortcampgame.fyi` route pointed at **http://127.0.0.1:5173**. Keep the existing Discord URL mapping. There is no Vite development server needed for the release.
 4. In the [Discord Developer Portal](https://discord.com/developers/applications), select the existing Fortcamp application. Under **Installation**, enable **Guild Install**, with **bot** and **applications.commands**. Copy the installation link and have your friend install it in the server as an owner or member with Manage Server permission. Grant View Channel, Send Messages and Embed Links in the announcement channel. [Official installation guide](https://github.com/discord/discord-api-docs/blob/main/developers/quick-start/getting-started.mdx).
 5. For an unverified Activity, go to **App Testers**, add your friend's Discord username, and have them accept the email invitation. In their Discord desktop **User Settings > Advanced**, enable **Application Test Mode**, paste the Application ID from the developer portal's **General Information**, and activate it. Discord documents unverified testing in servers with **fewer than 25 members**, so approximately 20 members fits. Add each additional tester who needs access. [Official tester instructions](https://support-dev.discord.com/hc/en-us/articles/21204493235991-How-Can-Users-Discover-and-Play-My-Activity).
@@ -38,7 +39,7 @@ Only registered people scale mission generation, not all server members. Registr
 
 ## Environment files
 
-The release has its own local `.env` copied during creation, with safe production defaults. Its launcher also forces `DEV_BYPASS_AUTH=false`, `GAME_DEBUG_MODE=false`, `MISSION_TIME_SCALE=1.0`, `BOT_ENABLED=true`, and an empty `DISCORD_TEST_GUILD_ID` so commands sync to all installed servers. Discord credentials, the session secret and tunnel settings were copied without being printed or committed. These local files stay excluded from GitHub.
+The release has its own local `.env`, preserved from the preceding production release (or an explicit private `.env.release`), with safe production defaults. Alpha credentials are never automatically copied. Its launcher also forces `DEV_BYPASS_AUTH=false`, `GAME_DEBUG_MODE=false`, `MISSION_TIME_SCALE=1.0`, `BOT_ENABLED=true`, and an empty `DISCORD_TEST_GUILD_ID` so commands sync to all installed servers. Production Discord credentials, the session secret and tunnel settings are preserved without being printed or committed. These local files stay excluded from GitHub.
 
 The dev launcher forces local debug/auth bypass on and the bot off, regardless of inherited settings. Changing dev settings after release creation does not alter the release's `.env`. If you rotate a Discord credential later, update each copy that needs it.
 
@@ -72,3 +73,11 @@ Website login and a server picker are available in the new source. See [WEB_PLAY
 
 
 Mission completion notices use the same server channel for browser and Activity. Run `/fortcamp_setup` in the desired channel for each environment/server. New results queue after their save transaction and retry while the bot reconnects or a channel is missing; historical results are not reposted automatically. Normal dispatch is leased to avoid duplicate sends; a crash after Discord accepted a message but before its receipt is saved can still produce a retry (at-least-once delivery). Discord HTTP waits do not block the mission completion response.
+
+## October 1, 2026 friend-trial update
+
+The trial.2 build includes the current prisoner recruitment interface and shared in-game confirmation dialogs. Production launch overrides debug and authentication bypass to false, keeps normal mission timing, and enables the bot for all installed servers. Creating this build does not start it, stop another host or edit player progress.
+
+The alpha and preceding production env files were checked and still have the same Discord application ID. Use the local `run_dev_windows.bat` for ongoing development while production runs. Do not run `run_dev_discord_windows.bat` concurrently until alpha has a separate development application. Registration is persistent; code updates and restarts do not require registering again. New players register once in each server.
+
+For the simplest friend trial, install the production bot, run `/fortcamp_setup` in the announcement channel, and have everyone run `/register` and open https://play.fortcampgame.fyi/ in their browser. Embedded Activity testing additionally needs Discord App Tester access and Application Test Mode for an unverified application; browser play does not need those Activity testing steps. Production browser OAuth requires `https://play.fortcampgame.fyi/api/web/callback` on the production application's OAuth2 Redirects.

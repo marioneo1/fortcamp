@@ -123,3 +123,8 @@ Stable capture terms and recruit profiles; eight initial concerns; shared INT-ba
 ### Completed October 1: prisoner UI standardization
 - Replaced native browser confirmations with a shared in-game dialog for agreement payments, prisoner sales and contract abandonment.
 - Organized prisoner cards into conversation/terms, recruit profile, warden resistance, and separate custody actions. Payment costs and follow-up requirements are explicit; tabs remain selected across refreshes.
+
+### October 1: friend trial.2 release preparation
+- Prepare an independent production clone from current tested main, preserving production credentials, database and media; force debug/auth bypass off in release env and launcher.
+- Alpha and production still share a Discord application ID: simultaneous local dev is supported; concurrent Discord dev requires separate application credentials.
+- Host startup and friend-server installation remain operator steps documented in docs/FRIEND_TRIAL.md.
