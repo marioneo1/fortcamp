@@ -98,11 +98,11 @@ GUILD_HALL_UPGRADES = {
 }
 MISSION_EVENTS = {
     "general": {"name": "Open Contracts", "splash": "The board carries the usual mix of local dangers, salvage leads, and unanswered requests.", "min_roll": 0, "theme": "general"},
-    "goblin_warhost": {"name": "The Green Warhost", "splash": "War horns echo beyond the roads. Goblin bands are gathering beneath a single banner, and every contract points toward the coming war.", "min_roll": 700, "theme": "goblin"},
-    "ashen_procession": {"name": "The Ashen Procession", "splash": "Cold ash falls without a fire. The dead are walking old roads again, and forgotten graves no longer stay quiet.", "min_roll": 850, "theme": "undead"},
-    "arcane_convergence": {"name": "Arcane Convergence", "splash": "Ley lines flare across the region. Ruins awaken, impossible weather gathers, and magic leaves valuable scars behind.", "min_roll": 930, "theme": "arcane"},
-    "great_beast_tide": {"name": "The Great Beast Tide", "splash": "Migrating monsters have broken every familiar boundary. Hunters, caravans, and settlements are all caught in their path.", "min_roll": 975, "theme": "beast"},
-    "starfall_omen": {"name": "Starfall Omen", "splash": "The night split open in silent fire. Something ancient fell beyond the horizon, and the strongest guilds are already moving.", "min_roll": 994, "theme": "starfall"},
+    "goblin_warhost": {"name": "The Green Warhost", "splash": "War horns echo beyond the roads. Goblin bands are gathering beneath a single banner, and every contract points toward the coming war.", "min_roll": 880, "theme": "goblin"},
+    "ashen_procession": {"name": "The Ashen Procession", "splash": "Cold ash falls without a fire. The dead are walking old roads again, and forgotten graves no longer stay quiet.", "min_roll": 940, "theme": "undead"},
+    "arcane_convergence": {"name": "Arcane Convergence", "splash": "Ley lines flare across the region. Ruins awaken, impossible weather gathers, and magic leaves valuable scars behind.", "min_roll": 970, "theme": "arcane"},
+    "great_beast_tide": {"name": "The Great Beast Tide", "splash": "Migrating monsters have broken every familiar boundary. Hunters, caravans, and settlements are all caught in their path.", "min_roll": 990, "theme": "beast"},
+    "starfall_omen": {"name": "Starfall Omen", "splash": "The night split open in silent fire. Something ancient fell beyond the horizon, and the strongest guilds are already moving.", "min_roll": 998, "theme": "starfall"},
 }
 
 BUILDINGS = {
@@ -121,6 +121,12 @@ BUILDINGS = {
 }
 
 ITEMS = {
+    "chipped_sword": {"name":"Chipped Sword","slot":"weapon","weapon_type":"sword","weapon_scaling":"str","power":1,"tags":["melee","improvised"],"bonuses":{"combat":1},"rarity":"common","description":"A battered practice sword. Enough to defend yourself; little more."},
+    "splintered_shield": {"name":"Splintered Shield","slot":"offhand","tags":["shield","improvised"],"bonuses":{},"attribute_bonuses":{"vit":1},"rarity":"common","description":"A patched wooden shield with barely enough strength left for another fight."},
+    "cracked_wand": {"name":"Cracked Wand","slot":"weapon","weapon_type":"wand","weapon_scaling":"int","power":1,"tags":["magic","magic_focus","improvised"],"bonuses":{"magic":1},"rarity":"common","description":"An unreliable-looking wand that still casts a weak basic bolt."},
+    "frayed_bow": {"name":"Frayed Bow","slot":"weapon","weapon_type":"bow","weapon_scaling":"dex","power":1,"tags":["ranged","improvised"],"bonuses":{"combat":1},"rarity":"common","description":"A poor bow with a worn string. Better equipment will hit harder."},
+    "worn_mallet": {"name":"Worn Mallet","slot":"weapon","weapon_type":"hammer","weapon_scaling":"str","power":1,"tags":["melee","nonlethal","improvised"],"bonuses":{"building":1},"rarity":"common","description":"A carpenter's discarded mallet. Can subdue at close range."},
+    "knotted_staff": {"name":"Knotted Staff","slot":"weapon","weapon_type":"club","weapon_scaling":"str","power":1,"tags":["melee","nonlethal","improvised"],"bonuses":{"medicine":1},"rarity":"common","description":"A worn walking staff. Can subdue at close range; it is not a magical focus."},
     "rusty_knife": {"name": "Rusty Knife", "slot": "weapon", "weapon_type": "blade", "weapon_scaling": "str", "power": 1, "tags": ["melee", "improvised"], "bonuses": {"combat": 1}, "rarity": "common"},
     "worn_jacket": {"name": "Worn Jacket", "slot": "body", "tags": ["clothing"], "bonuses": {"survival": 1}, "attribute_bonuses": {"vit": 1}, "rarity": "common"},
     "work_boots": {"name": "Work Boots", "slot": "feet", "tags": ["workwear"], "bonuses": {"scavenging": 1}, "attribute_bonuses": {"agi": 1}, "rarity": "common"},
@@ -1284,3 +1290,7 @@ for _item_id,_item in ITEMS.items():
     _item['icon']=f'/assets/catalogue/items/{_item_id}.png'
 from .prison_recruitment import apply_prison_contracts
 apply_prison_contracts(MISSION_TEMPLATES)
+
+# Starter kits use existing icon art until a dedicated low-grade gear art pass.
+for _id,_art in {'chipped_sword':'knight_blade','splintered_shield':'ironcap_buckler','cracked_wand':'ember_staff','frayed_bow':'short_bow','worn_mallet':'warhammer','knotted_staff':'scrap_hatchet'}.items():
+    ITEMS[_id]['icon']=f'/assets/catalogue/items/{_art}.png'

@@ -1,5 +1,6 @@
 # Fortcamp documentation map
 
+- [Mercenaries and early pacing](design/MERCENARIES.md): persistent hiring, betrayal, rare encounters, starter kits, and quieter regional events.
 - [Camp and roster UI](design/CAMP_INTERFACE.md): base sections, inventory, prisoner navigation and item selling.
 - [Relationships](design/CHARACTER_RELATIONSHIPS.md): loyalty, personality, records, conversations and staged roadmap.
 - [Prison recruitment proposal](design/PRISON_RECRUITMENT_PROPOSAL.md): original warden, conversation and boss pacing proposals; see the implemented reference below.

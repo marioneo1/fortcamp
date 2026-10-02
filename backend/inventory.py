@@ -25,6 +25,7 @@ def sell_items(state,instance_ids):
         if iid not in inventory:raise ValueError('An item is no longer in inventory. Refresh and try again.')
         if iid in equipped:raise ValueError('Unequip items before selling them')
         item=inventory[iid]
+        if item.get('mercenary_gear'):raise ValueError('Mercenary gear cannot be sold')
         if item['item_id'] not in ITEMS:raise ValueError('This item cannot be sold')
         selected.append(item)
     gold=sum(sale_price(i['item_id']) for i in selected)

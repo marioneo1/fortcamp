@@ -12,7 +12,7 @@ const ranks = ['common','uncommon','rare','epic','legendary','mythic','event','s
 const escape = value => String(value??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const label = value => String(value??'').replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
 export const iconPath = (id, kind='items') => `/assets/catalogue/${kind}/${id.toLowerCase().replaceAll('-','_').replaceAll(' ','_').replaceAll("'",'')}.png?v=crops-20261001`;
-const icon = id => `<img class="catalogue-icon" src="${escape(iconPath(id))}" alt="" loading="lazy">`;
+const icon = (id,item) => `<img class="catalogue-icon" src="${escape(item?.icon||iconPath(id))}" alt="" loading="lazy">`;
 
 export function describeGear(item, perks={}) {
   const lines=[];
@@ -50,6 +50,7 @@ export function inventoryGroups(state,content,character,filter) {
   for(const owner of state.characters||[])for(const iid of Object.values(owner.equipment||{}))if(iid)owners.set(iid,owner);
   const groups=new Map();
   for(const instance of state.inventory||[]){
+    if(instance.mercenary_gear)continue;
     const item=content.items[instance.item_id];if(!item)continue;
     if(filter.equipmentOnly&&!(content.slots||[]).includes(item.slot))continue;
     if(filter.hideEquipped&&owners.has(instance.instance_id))continue;
@@ -96,7 +97,7 @@ export function mountEquipmentBrowser(panel,{state,content,character,onEquip,onE
       const current=content.items[state.inventory.find(i=>i.instance_id===character.equipment?.[item.slot])?.item_id];
       const change=Object.entries({...current?.attribute_bonuses,...item.attribute_bonuses}).map(([a])=>[a,(item.attribute_bonuses?.[a]||0)-(current?.attribute_bonuses?.[a]||0)]).filter(([,v])=>v);
       if(item.slot==='weapon'&&current)change.unshift(['power',(item.power||0)-(current.power||0)]);
-      return `<article class="armory-card rarity-${escape(item.rarity||'common')}"><div class="armory-card-head">${icon(id)}<div><b>${escape(item.name)}</b><small>${label(item.rarity||'common')} · ${label(item.slot||'material')} · ×${instances.length}</small></div></div>
+      return `<article class="armory-card rarity-${escape(item.rarity||'common')}"><div class="armory-card-head">${icon(id,item)}<div><b>${escape(item.name)}</b><small>${label(item.rarity||'common')} · ${label(item.slot||'material')} · ×${instances.length}</small></div></div>
         ${owners.length?`<small class="armory-owners">Equipped: ${escape(owners.join(', '))}</small>`:'<small class="armory-owners">In inventory</small>'}
         <p>${escape(item.description||'')}</p>
         ${item.combat_skill?`<small>Ability: ${escape(item.combat_skill.name)}</small>`:''}${item.element?`<small>${label(item.element)} enchantment</small>`:''}

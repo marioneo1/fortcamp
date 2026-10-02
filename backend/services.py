@@ -71,6 +71,12 @@ def pool_event(guild_id: str, slot: int) -> dict:
         return {"id": event_id, "roll": None, "debug_forced": True, **MISSION_EVENTS[event_id]}
     seed = int.from_bytes(hashlib.sha256(f"event:{guild_id}:{slot}".encode()).digest()[:8], "big")
     roll = random.Random(seed).randrange(1000)
+    # A natural event must be followed by at least one ordinary board.
+    previous_seed=int.from_bytes(hashlib.sha256(f"event:{guild_id}:{slot-POOL_SECONDS}".encode()).digest()[:8],"big")
+    previous_roll=random.Random(previous_seed).randrange(1000)
+    event_floor=min(int(e['min_roll']) for eid,e in MISSION_EVENTS.items() if eid!='general')
+    if previous_roll>=event_floor:
+        return {"id":"general","roll":roll,"quiet_board":True,**MISSION_EVENTS['general']}
     event_id = "general"
     for candidate_id, event in sorted(MISSION_EVENTS.items(), key=lambda item: int(item[1].get("min_roll", 0))):
         if roll >= int(event.get("min_roll", 0)):
@@ -190,7 +196,7 @@ def claim_budget(state, slot, started_at, ts=None):
     ts=now_ts() if ts is None else ts
     age=max(0,ts-started_at)
     phase='wave1' if age<60 else 'wave2' if age<120 else 'free'
-    solo_bonus=10 if len(state.get('characters',[]))==1 else 0
+    solo_bonus=10 if sum(not c.get('temporary_mercenary') for c in state.get('characters',[]))==1 else 0
     limit=3+int(state.get('claim_upgrade',0))+solo_bonus if phase=='free' else 5
     ledger=state.get('contract_points',{})
     used=int(ledger.get('spent',{}).get(phase,0)) if ledger.get('slot')==slot else 0
@@ -476,7 +482,7 @@ async def create_player(session: AsyncSession, guild_id: str, user_id: str, disp
 async def analyze_instance(
     session: AsyncSession, guild_id: str, user_id: str, mission_id: str,
     party_ids: list[str], role_assignments: dict[str, str] | None = None,
-    bodyguard_ids: list[str] | None = None,
+    bodyguard_ids: list[str] | None = None, mercenary_ids: list[str] | None = None,
 ) -> dict:
     mission = await session.get(MissionInstance, mission_id)
     if not mission or mission.guild_id != guild_id:
@@ -489,9 +495,14 @@ async def analyze_instance(
         raise ValueError("Create your character first")
     if not (mission.analysis or {}).get("chain_owner_user_id") and not mission_rank_unlocked(player.state, MISSION_TEMPLATES[mission.template_id].get("rank", "E")):
         raise ValueError("Upgrade your Guild Hall to reveal this mission rank")
-    analysis = analyze_mission(player.state, MISSION_TEMPLATES[mission.template_id], party_ids, role_assignments, bodyguard_ids)
+    from .mercenaries import prepare, quote
+    preview = deepcopy(player.state)
+    preview['_mercenary_owner'] = user_id
+    offers = prepare(preview, mission, mercenary_ids, party_ids, bodyguard_ids, role_assignments)
+    analysis = analyze_mission(preview, MISSION_TEMPLATES[mission.template_id], party_ids, role_assignments, bodyguard_ids)
     # Hidden criteria remain hidden before resolution. Players get truthful rates, not the secret recipe.
     return {
+        "mercenary_fee": sum(quote(o)["fee"] for o in offers), "mercenary_penalty": -min(4,len(offers)),
         "party_size_ok": analysis["party_size_ok"], "availability_ok": analysis["availability_ok"],
         "requirements": analysis["requirements"], "claimable": analysis["claimable"],
         "lead": analysis["lead"], "lead_stat": analysis["lead_stat"], "stat": analysis["stat"],
@@ -507,7 +518,7 @@ async def analyze_instance(
 async def claim_instance(
     session: AsyncSession, guild_id: str, user_id: str, display_name: str,
     mission_id: str, party_ids: list[str], role_assignments: dict[str, str] | None = None,
-    bodyguard_ids: list[str] | None = None,
+    bodyguard_ids: list[str] | None = None, mercenary_ids: list[str] | None = None,
 ) -> MissionInstance:
     key = (guild_id, user_id)
     lock = _player_locks.setdefault(key, asyncio.Lock())
@@ -530,6 +541,10 @@ async def claim_instance(
 
         state = deepcopy(player.state)
         template = MISSION_TEMPLATES[mission.template_id]
+        from .mercenaries import prepare, betrayal, decorate_battle, betrayal_battle
+        state['_mercenary_owner'] = user_id
+        hired = prepare(state, mission, mercenary_ids, party_ids, bodyguard_ids, role_assignments, spend=True)
+        state.pop('_mercenary_owner', None)
         captive_id=(mission.analysis or {}).get('prisoner_allegiance_id')
         captive=next((p for p in state.get('prisoners',[]) if p['id']==captive_id),None) if captive_id else None
         if captive_id and (not captive or captive.get('holding')!='prison_cell' or captive.get('recruitment',{}).get('terms_met')):
@@ -544,6 +559,8 @@ async def claim_instance(
         ):
             if key in chain_metadata:
                 analysis[key] = chain_metadata[key]
+        analysis['mercenary_ids'] = [o['id'] for o in hired]
+        analysis['mercenary_traitors'] = betrayal(hired, mission.id)
         resolved_party_ids = list(analysis["party_ids"])
         if not analysis["claimable"]:
             missing = [x["label"] for x in analysis["requirements"] if not x["met"]]
@@ -578,7 +595,7 @@ async def claim_instance(
         if has_scene:
             analysis['scene'] = initial_scene()
         elif combat_definition:
-            analysis["battle"] = create_battle(state, deployed_party_ids, mission.id, combat_definition.get("id", mission.template_id),defer_start=bool(captive))
+            analysis["battle"] = create_battle(state, deployed_party_ids, mission.id, combat_definition.get("id", mission.template_id),defer_start=True)
             if captive and combat_definition.get('id','').startswith('contract:'):
                 from .combat import create_contract_battle
                 analysis['battle']=create_contract_battle(state,deployed_party_ids,mission.id,mission.template_id,defer_start=True,race_override=captive.get('race'))
@@ -598,11 +615,21 @@ async def claim_instance(
                     if unit.get('team')=='enemy':
                         unit['hp']=unit['max_hp']=round(unit['max_hp']*(1+.2*tier))
                         unit['attack']+=tier
+            decorate_battle(state, analysis, analysis["battle"], mission.id)
             if captive:
                 analysis['battle']['name']=f"{template['name']} - {captive['name']}"
-                _advance_to_player(analysis['battle'])
+            if analysis["battle"]["status"] == "active" and not analysis["mercenary_traitors"]:
+                _advance_to_player(analysis["battle"])
         mission_status = "decision" if has_scene else "battle" if combat_definition else "claimed"
         completes_at = None if combat_definition or has_scene else claimed_at
+        if analysis['mercenary_traitors']:
+            analysis['mercenary_resume_status'] = mission_status
+            analysis['mercenary_resume_battle'] = analysis.pop('battle', None)
+            analysis['battle'] = betrayal_battle(state, deployed_party_ids, analysis['mercenary_traitors'], mission.id)
+            mission_status, completes_at = 'battle', None
+        else:
+            for unit in analysis.get('battle',{}).get('units',{}).values():
+                if unit['id'] in analysis['mercenary_ids']:unit['mercenary_id']=unit['id']
         original_status=mission.status
         stmt = (
             update(MissionInstance)
@@ -629,6 +656,7 @@ async def claim_instance(
         player.updated_at = claimed_at
         await session.flush()
         refreshed = await session.get(MissionInstance, mission_id)
+        await session.refresh(refreshed)
         return refreshed
 
 
@@ -649,6 +677,10 @@ def _start_scene_encounter(state: dict, mission: MissionInstance, analysis: dict
         encounter = template['combat_encounter']['id']
     battle = create_battle(state,mission.party_ids,mission.id,encounter,defer_start=True)
     setup_encounter(battle,transition)
+    from .mercenaries import decorate_battle
+    decorate_battle(state,analysis,battle,mission.id)
+    for unit in battle['units'].values():
+        if unit['id'] in analysis.get('mercenary_ids',[]):unit['mercenary_id']=unit['id']
     if battle['status']=='active':
         _advance_to_player(battle)
     analysis['battle']=battle
@@ -693,6 +725,8 @@ async def choose_decision_instance(session: AsyncSession, guild_id: str, user_id
             result['scene_history']=scene['history']
             result['story']=[entry['text'] for entry in scene['history'] if entry.get('text')] + result['story']
             set_party_status(state,list(analysis.get('bodyguard_ids',[])),'idle')
+            from .mercenaries import settle
+            settle(state,analysis,result['outcome'])
             await _spawn_result_chains(session,mission,user_id,result,now_ts())
             mission.result=result;mission.status='completed';mission.resolved_at=now_ts();mission.completes_at=now_ts()
             await queue_result_notice(session,mission)
@@ -1115,7 +1149,7 @@ def _store_captured_prisoners(state: dict, battle: dict, mission: MissionInstanc
     mission_name = MISSION_TEMPLATES.get(mission.template_id, {}).get("name", mission.template_id)
     for unit_id in sorted(captured_ids):
         unit = battle.get("units", {}).get(unit_id)
-        if not unit or unit.get("team") != "enemy" or unit.get("condition") != "unconscious" or unit.get('creature'):
+        if not unit or unit.get("team") != "enemy" or unit.get("condition") != "unconscious" or unit.get('creature') or unit.get('mercenary_id'):
             continue
         capture_key = f"{mission.id}:{unit_id}"
         if capture_key in existing_sources:
@@ -1202,6 +1236,40 @@ async def _finish_battle(
     state = normalize_state(deepcopy(player.state))
     analysis = dict(mission.analysis or {})
     tactical_outcome = battle.get("outcome", "failure")
+    from .mercenaries import settle
+    if battle.get('mercenary_interlude') and tactical_outcome != 'critical_failure':
+        settle(state,analysis,tactical_outcome,battle,final=False)
+        traitors = set(analysis.get('mercenary_traitors',[]))
+        for offer in state.get('mercenaries',[]):
+            if offer['id'] in traitors:offer['busy_mission_id']=None
+        # Turncoats leave the expedition. The original objective and reward roll survive.
+        state['characters']=[c for c in state['characters'] if c['id'] not in traitors]
+        state['inventory']=[i for i in state['inventory'] if not i.get('mercenary_gear') or not any(mid in i['instance_id'] for mid in traitors)]
+        mission.party_ids=[cid for cid in (mission.party_ids or analysis.get('party_ids',[])) if cid not in traitors]
+        for key in ('party_ids','mission_party_ids','bodyguard_ids'):
+            if key in analysis:analysis[key]=[cid for cid in analysis[key] if cid not in traitors]
+        analysis['role_assignments']={key:cid for key,cid in analysis.get('role_assignments',{}).items() if cid not in traitors}
+        recalculated=analyze_mission(state,MISSION_TEMPLATES[mission.template_id],analysis.get('party_ids',mission.party_ids),analysis.get('role_assignments'),analysis.get('bodyguard_ids'))
+        for key in ('lead','lead_stat','support_bonus','criteria_bonus','probabilities','critical_success_available','critical_unlocks','triggered','roles'):
+            if key in recalculated:analysis[key]=recalculated[key]
+        resume=analysis.pop('mercenary_resume_status','claimed')
+        resumed_battle=analysis.pop('mercenary_resume_battle',None)
+        analysis.pop('battle',None)
+        if resume=='battle' and resumed_battle:
+            for mid in traitors:resumed_battle['units'].pop(mid,None)
+            resumed_battle['turn_order']=[cid for cid in resumed_battle['turn_order'] if cid not in traitors]
+            resumed_battle['turn_index']=0
+            for unit in resumed_battle['units'].values():
+                if unit['id'] in analysis.get('mercenary_ids',[]):unit['mercenary_id']=unit['id']
+            _advance_to_player(resumed_battle)
+            analysis['battle']=resumed_battle
+        mission.status=resume
+        mission.completes_at=now_ts() if resume=='claimed' else None
+        mission.analysis=analysis
+        player.state=state
+        await session.flush()
+        return {'mercenary_interlude':True,'resume_status':resume,'mission_id':mission.id}
+
     if analysis.get('scene_boss'):
         boss=battle.get('units',{}).get(battle.get('complication_boss'),{})
         recovered=set(battle.get('auto_looted_ids',[])) | set(battle.get('auto_captured_ids',[]))
@@ -1314,6 +1382,8 @@ async def _finish_battle(
     if analysis.get('scene'):
         result['scene_history']=analysis['scene']['history']
         result['story']=[entry['text'] for entry in analysis['scene']['history'] if entry.get('text')] + result['story']
+    settle(state,analysis,tactical_outcome,battle)
+    mission.analysis=analysis
     await _spawn_result_chains(session, mission, mission.claimed_by_user_id, result, now_ts())
     player.state = state; player.updated_at = now_ts()
     mission.result = result; mission.status = "completed"; mission.completes_at = now_ts(); mission.resolved_at = now_ts()
@@ -1323,6 +1393,15 @@ async def _finish_battle(
 
 
 async def update_battle_instance(
+    session: AsyncSession, guild_id: str, user_id: str, mission_id: str,
+    command: dict | None = None, auto: str | None = None, resolve_all: bool = False,
+) -> tuple[dict, dict | None]:
+    # Combat deaths and hiring/recruitment modify the same persistent contacts.
+    async with _player_locks.setdefault((guild_id,user_id),asyncio.Lock()):
+        return await _update_battle_instance(session,guild_id,user_id,mission_id,command,auto,resolve_all)
+
+
+async def _update_battle_instance(
     session: AsyncSession, guild_id: str, user_id: str, mission_id: str,
     command: dict | None = None, auto: str | None = None, resolve_all: bool = False,
 ) -> tuple[dict, dict | None]:
@@ -1353,9 +1432,22 @@ async def update_battle_instance(
         view = apply_player_command(battle, command)
     else:
         view = battle_view(battle)
+    from .mercenaries import settle
+    contacts={o['id']:o for o in player.state.get('mercenaries',[])}
+    needs_contact_update=any(u.get('mercenary_id') in contacts and
+        (u.get('condition')=='dead' or (u.get('condition')=='unconscious' and contacts[u['mercenary_id']].get('recovering_until',0)<=now_ts()))
+        for u in battle.get('units',{}).values())
+    if needs_contact_update:
+        changed_state=deepcopy(player.state)
+        settle(changed_state,metadata,'failure',battle,final=False)
+        player.state=changed_state
     metadata["battle"] = battle
     mission.analysis = metadata
     result = await _finish_battle(session, mission, player, battle) if battle.get("status") == "complete" else None
+    if result and result.get('mercenary_interlude') and mission.status=='claimed':
+        await resolve_due(session,guild_id,user_id)
+        result['resume_status']=mission.status
+        if mission.status=='completed':result['resumed_result']=mission.result
     await session.flush()
     return view, result
 
@@ -1401,6 +1493,8 @@ async def resolve_due(session: AsyncSession, guild_id: str | None = None, user_i
                 player.state=state;player.updated_at=now
                 continue
             set_party_status(state, list(analysis.get("bodyguard_ids", [])), "idle")
+            from .mercenaries import settle
+            settle(state,analysis,result["outcome"])
             await _spawn_result_chains(session, mission, mission.claimed_by_user_id, result, now)
             player.state = state
             player.updated_at = now
@@ -1444,6 +1538,8 @@ async def debug_resolve_now_instance(
         await session.flush()
         return mission
     set_party_status(state, list(analysis.get("bodyguard_ids", [])), "idle")
+    from .mercenaries import settle
+    settle(state,analysis,result["outcome"])
     now = now_ts()
     await _spawn_result_chains(session, mission, user_id, result, now)
     player.state = state
@@ -1521,6 +1617,8 @@ async def debug_complete_instance(
         state, MISSION_TEMPLATES[mission.template_id], party_ids,
         analysis, seed=f"{mission.id}:debug:{forced_outcome}", forced_outcome=forced_outcome,
     )
+    from .mercenaries import settle
+    settle(state,analysis,result["outcome"],analysis.get("battle"))
     await _spawn_result_chains(session, mission, user_id, result, now)
     player.state = state
     player.updated_at = now

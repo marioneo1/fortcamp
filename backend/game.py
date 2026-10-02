@@ -55,8 +55,10 @@ def new_game(character: dict[str, Any]) -> dict[str, Any]:
         if track in perks and level in PERK_LEVELS:
             perks[track] = level
 
+    from .starter_equipment import starter_kit
+    kit=starter_kit(traits,perks)
     inventory = [
-        {"instance_id": uid("item"), "item_id": "rusty_knife"},
+        {"instance_id": uid("item"), "item_id": kit[0]},
         {"instance_id": uid("item"), "item_id": "worn_jacket"},
         {"instance_id": uid("item"), "item_id": "work_boots"},
     ]
@@ -64,6 +66,9 @@ def new_game(character: dict[str, Any]) -> dict[str, Any]:
     equipment["weapon"] = inventory[0]["instance_id"]
     equipment["body"] = inventory[1]["instance_id"]
     equipment["feet"] = inventory[2]["instance_id"]
+    for item_id in kit[1:]:
+        item={'instance_id':uid('item'),'item_id':item_id};inventory.append(item)
+        equipment[ITEMS[item_id]['slot']]=item['instance_id']
 
     return {
         "version": 9,
@@ -107,6 +112,7 @@ def public_content() -> dict[str, Any]:
         "buildings": BUILDINGS,
         "items": ITEMS,
         "sale_prices": {iid:sale_price(iid) for iid in ITEMS},
+        "starter_kits": {"guard":["chipped_sword","splintered_shield"],"fire_magic":["cracked_wand"],"scout":["frayed_bow"],"engineer":["worn_mallet"],"medic":["knotted_staff"]},
         "slots": EQUIPMENT_SLOTS,
         "perk_tracks": PERK_TRACKS,
         "proficiency_tracks": PERK_TRACKS,
@@ -581,8 +587,9 @@ def analyze_mission(
         lead_stat = 0
         support_bonus = 0
 
-    criteria_bonus = 0
-    triggered = []
+    mercenary_count = sum(bool(c.get('temporary_mercenary')) for c in party + bodyguards)
+    criteria_bonus = -min(4, mercenary_count)
+    triggered = ([{'label':'Hired party coordination', 'bonus':criteria_bonus}] if mercenary_count else [])
 
     racial_bonus = 0
     if lead:
@@ -1316,7 +1323,7 @@ def resolve_mission(state: dict, mission: dict, party_ids: list[str], analysis: 
             c["morale"] = max(0, int(c.get("morale", 70)) - 10)
         injury = _incapacitate_character(state, party, rng, resolved_at)
         # A solo beginner must not lose the entire playable roster for hours.
-        if injury and mission.get('rank') == 'E' and len(state.get('characters', [])) == 1:
+        if injury and mission.get('rank') == 'E' and sum(not c.get('temporary_mercenary') for c in state.get('characters',[])) == 1:
             injured = find_char(state, injury['character_id'])
             injured['recovers_at'] = injury['recovers_at'] = resolved_at + 120
             injured['recovery_location'] = injury['location'] = 'Beginner field rest'
@@ -1495,6 +1502,8 @@ def equip_item(state: dict, char_id: str, instance_id: str | None, slot: str) ->
         return
     inv = _inventory_index(state)
     inst = inv.get(instance_id)
+    if inst and inst.get("mercenary_gear"):
+        raise ValueError("Mercenary equipment belongs to its owner")
     if not inst or inst.get("item_id") not in ITEMS:
         raise ValueError("Item not found")
     if ITEMS[inst["item_id"]]["slot"] != slot:

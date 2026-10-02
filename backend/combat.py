@@ -1215,6 +1215,8 @@ def _panic_unit(unit: dict) -> None:
 
 
 def _trigger_battle_victory(battle: dict, panic_enemies: bool = False) -> None:
+    if any(u.get('mercenary_hostile') and _combat_active(u) for u in battle['units'].values()):
+        return
     if battle.get("battle_won"):
         return
     battle["battle_won"] = True
@@ -1222,7 +1224,7 @@ def _trigger_battle_victory(battle: dict, panic_enemies: bool = False) -> None:
     battle["victory_phase"] = "decision"
     if panic_enemies:
         for enemy in _living(battle, "enemy"):
-            _panic_unit(enemy)
+            if not enemy.get("mercenary_hostile"):_panic_unit(enemy)
     battle["log"].append(battle.get("victory_log", "The required objective is secured. The guild can withdraw or pursue the remaining opportunities."))
 
 
@@ -1246,6 +1248,8 @@ def _secure_battlefield_loot(battle: dict) -> None:
 
 
 def _claim_victory(battle: dict) -> None:
+    if any(u.get('mercenary_hostile') and _combat_active(u) for u in battle['units'].values()):
+        raise ValueError('Stop the hostile mercenary before claiming victory')
     if not battle.get("battle_won"):
         raise ValueError("Victory has not been secured yet")
     if battle.get("battlefield_secured") or battle.get("encounter_id") == "goblin_warcamp":
@@ -1390,7 +1394,7 @@ def _check_frontier_watch_end(battle: dict) -> None:
 
 
 def _check_end(battle: dict) -> None:
-    if battle.get("encounter_id", "").startswith("contract:"):
+    if battle.get('mercenary_interlude') or battle.get("encounter_id", "").startswith("contract:"):
         _check_contract_end(battle)
     elif battle.get("encounter_id") == "goblin_captive_cart":
         _check_captive_cart_end(battle)
@@ -1400,6 +1404,19 @@ def _check_end(battle: dict) -> None:
         _check_frontier_watch_end(battle)
     else:
         _check_warcamp_end(battle)
+    hostile = any(u.get('mercenary_hostile') and u.get('condition') not in ('dead','unconscious') for u in battle['units'].values())
+    for objective in battle.get('objectives',[]):
+        if objective.get('id')=='mercenary_threat':objective['complete']=not hostile
+    crew = [u for u in battle['units'].values() if u['team']=='player' and not u.get('mercenary_guest')]
+    if hostile and not battle.get('mercenary_interlude'):
+        if any(u.get('mercenary_hostile') and u.get('fled') for u in battle['units'].values()):
+            battle.update(status='complete',outcome='failure',battle_won=False,decision_pending=False)
+            return
+        battle.update(battle_won=False, decision_pending=False)
+        if not any(_combat_active(u) for u in crew):
+            battle.update(status='complete',outcome='failure' if any(u.get('extracted') for u in crew) else 'critical_failure')
+        elif battle.get('status')=='complete' and battle.get('outcome') in ('success','critical_success'):
+            battle.update(status='active',outcome=None)
 
 
 def _finish_turn(battle: dict) -> None:
@@ -1607,9 +1624,19 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
     if unit.get("panicked"):
         _flee_turn(battle, unit)
         return
-    targets = _living(battle, "player")
+    if unit.get('mercenary_hostile_all'):
+        targets = [u for u in _living(battle) if u['id']!=unit['id'] and u.get('team') in ('player','enemy')]
+    elif unit.get('mercenary_guest') and unit['team']=='player':
+        crew = [u for u in _living(battle,'player') if not u.get('mercenary_guest')]
+        if not crew:
+            unit.update(extracted=True,alive=False)
+            _finish_turn(battle)
+            return
+        targets = _living(battle,'enemy')
+    else:
+        targets = _living(battle,'player') + [u for u in _living(battle,'enemy') if u.get('mercenary_hostile_all') and u['id']!=unit['id']]
     if not targets:
-        _check_end(battle); return
+        _finish_turn(battle); return
     target = min(targets, key=lambda candidate: (_distance(unit, candidate), candidate["hp"]))
     snared = int(unit.get("snared_until_round", 0)) >= int(battle.get("round", 1))
     if not _can_attack(battle, unit, target) and not snared:
@@ -1637,6 +1664,10 @@ def _advance_to_player(battle: dict) -> None:
         unit = _current_unit(battle)
         if not unit:
             return
+        if unit.get('mercenary_guest') and unit['team']=='player':
+            _enemy_turn(battle,unit)
+            safety += 1
+            continue
         if unit["team"] == "player":
             if battle.get("retreat_all") or _should_party_panic(battle, unit):
                 if _should_party_panic(battle, unit) and not unit.get("panicked"):

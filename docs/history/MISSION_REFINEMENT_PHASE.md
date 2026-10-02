@@ -340,3 +340,8 @@ Agreement fulfillment and sales now use a themed in-game confirmation with exact
 ## October 1, 2026 - Base and inventory workspace pass
 
 Reorganized Base into five task sections and moved prisoners into their own Base workspace with a Roster shortcut. Settlement has a facility browser, construction sidebar and explicit staffing controls. Development displays separate expansion, allowance and blueprint cards. Roster now separates Characters, Inventory and Collections. Non-wearable manuals/materials no longer enter Equipment; Inventory supports confirmed quantity sales of unequipped instances with server prices and replay/ownership checks. Production trial.2 remains pinned. See ../design/CAMP_INTERFACE.md for rules and verification.
+## October 2, 2026 — quieter boards, starter kits, and hired swords (dev)
+
+Reduced natural regional event candidates from 30% to 12%, with a quiet-board check preventing consecutive natural events. Added poor starter equipment for selected combat/magic/support perks, with creation preview and unchanged existing saves.
+
+Added a persistent four-contact player-specific mercenary board to the private contract planner. Hires fill required and bodyguard slots, charge on acceptance, impose bounded roll penalties, build trust/discounts, and unlock rank-priced permanent service. Betrayal starts a separate playable road encounter and resumes the original contract when survived. Selective outdoor maps can very rarely reveal a fallen contact or a friendly/hostile arrival. Hostile arrivals fight both sides and must be stopped for victory; deaths remove known contacts immediately. See ../design/MERCENARIES.md for implemented mechanics and limitations. Production remains unchanged.

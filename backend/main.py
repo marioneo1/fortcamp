@@ -189,6 +189,7 @@ class PrisonerActionRequest(BaseModel):
 
 
 class PartyRequest(BaseModel):
+    mercenary_ids: list[str] = Field(default_factory=list, max_length=8)
     party_ids: list[str] = Field(default_factory=list)
     role_assignments: dict[str, str] | None = None
     bodyguard_ids: list[str] = Field(default_factory=list)
@@ -363,6 +364,39 @@ async def locked_player(identity) -> tuple[Any, Any]:
         raise HTTPException(404, "Create your character first")
     row.state = normalize_state(deepcopy(row.state))
     return session, row
+
+
+@app.get('/api/mercenaries')
+async def mercenary_market(identity: IdentityDep):
+    from .mercenaries import market
+    from .services import _player_locks
+    async with _player_locks.setdefault((identity.guild_id,identity.user_id),asyncio.Lock()):
+        session,row=await locked_player(identity)
+        try:
+            changed=deepcopy(row.state)
+            offers=market(changed,f'{identity.guild_id}:{identity.user_id}')
+            row.state=changed
+            await session.commit()
+            return {'offers':offers,'state':changed}
+        finally:await session.close()
+
+
+@app.post('/api/mercenaries/{mercenary_id}/recruit')
+async def mercenary_recruit(mercenary_id: str, identity: IdentityDep):
+    from .mercenaries import recruit
+    from .services import _player_locks
+    async with _player_locks.setdefault((identity.guild_id,identity.user_id),asyncio.Lock()):
+        session,row=await locked_player(identity)
+        try:
+            changed=deepcopy(row.state)
+            character=recruit(changed,mercenary_id)
+            row.state=changed
+            await session.commit()
+            return {'character':character,'state':changed}
+        except ValueError as exc:
+            await session.rollback()
+            raise HTTPException(409,str(exc))
+        finally:await session.close()
 
 
 @app.post("/api/camp")
@@ -860,7 +894,7 @@ async def mission_analysis(mission_id: str, req: PartyRequest, identity: Identit
         try:
             analysis = await analyze_instance(
                 session, identity.guild_id, identity.user_id, mission_id, req.party_ids, req.role_assignments,
-                req.bodyguard_ids,
+                req.bodyguard_ids, req.mercenary_ids,
             )
         except ValueError as exc:
             raise HTTPException(400, str(exc))
@@ -878,7 +912,7 @@ async def mission_claim(mission_id: str, req: PartyRequest, identity: IdentityDe
                 else:
                     mission = await claim_instance(
                         session, identity.guild_id, identity.user_id, identity.display_name,
-                        mission_id, req.party_ids, req.role_assignments, req.bodyguard_ids,
+                        mission_id, req.party_ids, req.role_assignments, req.bodyguard_ids, req.mercenary_ids,
                     )
                 if mission.status=='claimed':await resolve_due(session,identity.guild_id,identity.user_id)
                 decision = None
@@ -935,7 +969,7 @@ async def battle_command(mission_id: str, req: CombatCommandRequest, identity: I
                     session, identity.guild_id, identity.user_id, mission_id,
                     command=req.model_dump(exclude_none=True),
                 )
-                if result:
+                if result and (not result.get("mercenary_interlude") or result.get("resumed_result")):
                     completed_mission = await session.get(MissionInstance, mission_id)
         except ValueError as exc:
             raise HTTPException(400, str(exc))
@@ -957,7 +991,7 @@ async def battle_auto(mission_id: str, req: CombatAutoRequest, identity: Identit
                     session, identity.guild_id, identity.user_id, mission_id,
                     auto=req.tactic, resolve_all=req.resolve_all,
                 )
-                if result:
+                if result and (not result.get("mercenary_interlude") or result.get("resumed_result")):
                     completed_mission = await session.get(MissionInstance, mission_id)
         except ValueError as exc:
             raise HTTPException(400, str(exc))

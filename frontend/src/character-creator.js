@@ -16,8 +16,8 @@ export function mountCharacterCreator(root,content){
     root.querySelector('#creator-race-info').innerHTML=`<b>${esc(race.value)}</b><p>${esc(profile?.summary||'')}</p><div class="tags">${raceEffects(profile).map(effect=>`<span>${esc(effect)}</span>`).join('')||'<span>No racial combat modifiers</span>'}</div>`;
   };
   const updateTraining=()=>{
-    const chosen=content.standalone_perks?.[perk.value],track=tracks[training.value];
-    root.querySelector('#creator-training-info').innerHTML=`<b>${esc(chosen?.name||'Starting perk')}</b><p>${esc(chosen?.description||'')} ${esc(chosen?.effect||'')}</p><b>${esc(track?.name||'Proficiency')} · Basic</b><p>${esc(track?.description||'')}${track?.attribute_bonus?` +1 ${esc(track.attribute_bonus.toUpperCase())}.`:''} Improve work proficiencies through camp jobs and qualified teachers.</p>`;
+    const chosen=content.standalone_perks?.[perk.value],track=tracks[training.value],kit=(content.starter_kits?.[perk.value]||['rusty_knife']).map(id=>content.items[id]?.name||id);
+    root.querySelector('#creator-training-info').innerHTML=`<b>${esc(chosen?.name||'Starting perk')}</b><p>${esc(chosen?.description||'')} ${esc(chosen?.effect||'')}</p><b>${esc(track?.name||'Proficiency')} · Basic</b><p>${esc(track?.description||'')}${track?.attribute_bonus?` +1 ${esc(track.attribute_bonus.toUpperCase())}.`:''} Improve work proficiencies through camp jobs and qualified teachers.</p><b>Starter equipment</b><p>${kit.map(esc).join(' + ')} / Worn Jacket / Work Boots. Your perk chooses this low-grade kit; equipment can be changed later.</p>`;
   };
   race.onchange=updateRace;perk.onchange=updateTraining;training.onchange=updateTraining;
   updateRace();updateTraining();

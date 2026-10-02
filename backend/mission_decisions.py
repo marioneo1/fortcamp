@@ -18,6 +18,7 @@ def choice_check(state,mission,analysis,choice):
         return effective_attribute(state,c,stat) if stat in {'str','dex','agi','vit','int','luk'} else effective_stat(state,c,stat)+race_mission_bonus(c.get('race'),stat,mission.get('mission_form','operation'))
     lead=max(party,key=lambda c:(rating(c),c['id'])) if party else None
     bonus=rating(lead) + min(2,max(0,len(party)-1)) if stat and lead else 0
+    if stat:bonus -= min(4,sum(bool(c.get("temporary_mercenary")) for c in state["characters"] if c["id"] in set(party_ids + analysis.get("bodyguard_ids",[]))))
     allowed=True
     if choice.get('requires')=='builder':
         allowed=any(perk_rank(c,'building')>=1 or 'engineer' in character_perks(state,c,ITEMS) for c in party)

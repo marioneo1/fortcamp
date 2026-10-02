@@ -134,3 +134,8 @@ Stable capture terms and recruit profiles; eight initial concerns; shared INT-ba
 - Prisoners have their own Base workspace with Roster shortcut, search and secure/stockade filters. Collections are a separate Roster view.
 - Party Inventory separates manuals/materials from wearable equipment and allows confirmed quantity sales of unequipped copies; server prevents equipped/duplicate/missing sales and publishes resale quotes.
 - See docs/design/CAMP_INTERFACE.md. Existing production trial.2 is unchanged; further sale-price tuning, buyback and material use remain future work.
+## Mercenary and early pacing pass — October 2, 2026
+
+Implemented in alpha/dev: four persistent player-specific mercenary contacts; private-contract hiring after assigning an own crew member; multiple hires/bodyguards, rank-scaled fees, −1 check penalty per hire (maximum −4), shared betrayal encounter with occasional loyal holdout, trust discounts and permanent recruitment. Original contracts resume after surviving turncoats. Low-frequency outdoor corpse/friendly/hostile encounters, a central notice, hostile victory gating, and removal of dead contacts are implemented. Missing contacts refill on opening the hiring board. Starter perk kits and quieter natural regional events are included. See docs/design/MERCENARIES.md for numbers and validation.
+
+Follow-ups: real multiplayer balance/soak testing; broader racial/named mercenary content; full pre-contract injury/consumable carryover into adventure encounters; dedicated worn starter-gear art if useful. Permanent companions remain the better long-term option. No release deployment in this pass.

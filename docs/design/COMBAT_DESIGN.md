@@ -299,3 +299,4 @@ Securing the primary objective displays a wide banner centered over the visible 
 ### Precise wheel zoom
 
 Wheel over the map smoothly zooms around the pointer without redrawing units or sending game commands. Shift+wheel keeps ordinary scrolling; Ctrl/Meta+wheel remains available for browser zoom. Fit and fixed zoom buttons remain available in combat and preparation. Zoom is bounded at 25?300%.
+Mercenary integration (October 2 dev pass): private-contract hires deploy as temporary controllable party/bodyguard units. Betrayal is a separate road encounter that preserves the original contract on survival. Rare appropriate outdoor maps can contain a fallen known contact, an automatic friendly helper, or a hostile mercenary who attacks both sides and blocks victory. See [Mercenaries](MERCENARIES.md) for availability, rates, death handling, notification, and limitations.
