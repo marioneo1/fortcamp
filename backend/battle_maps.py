@@ -193,6 +193,9 @@ def generated_scenario_blueprint(scenario: str, seed: str) -> dict:
     random material for every cell.  The same mission seed always produces the
     same map, so an active encounter cannot change after a restart.
     """
+    if scenario.startswith('showcase_'):
+        from .building_showcase import blueprint
+        return blueprint(scenario.removeprefix('showcase_'),seed)
     if scenario.startswith('location_'):
         return location_blueprint(scenario.removeprefix('location_'), seed)
     if scenario.startswith("contract_"):

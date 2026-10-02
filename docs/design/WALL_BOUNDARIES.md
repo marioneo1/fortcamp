@@ -1,5 +1,11 @@
 # Wall boundaries — implemented in dev
 
+## October 2: Replacement stone and broken-wall alignment
+
+Rough stone now selects a newly generated continuous-masonry v3 pack to remove the repeated oversized caps visible in the prior repair. Old source/runtime images are preserved. Timber's broken wall aligns using the surviving beam ends; rubble below no longer shifts the wall center. The same calibration handles rotation and a destroyed wall's selected breach sprite, in preparation and active battle. Physics and saved map geometry are unchanged.
+
+The existing clipped straight-wall sleeves still bridge unequal generated corner/T ends; new stone texture makes these continuous rather than multiplying end posts. Supporting short pieces preserve the straight wall's scale. Battle Lab now has four named material tests for each of timber, rough stone, polished stone and metal, covering every part across the four. See BATTLE_LAB.md and BUILDING_TEMPLATES.md. Current validation: 325 backend tests, 107 frontend tests, build and all 16 material-layout browser checks pass. Production untouched. The following section records the earlier join repair.
+
 ## October 2: Corner alignment and short-arm joins
 
 The material packs have unequal generated arm lengths. The renderer now aligns a corner's horizontal and vertical arms independently using calibrated `corner_offset`, and places short, clipped sections of the same straight-wall image beneath its two connection ends. T stems get a matching sleeve at the divider seam. Images preserve their proportions and beam thickness; no stretched corner or replacement art is generated. Destroying the parent removes its sleeves. These are presentation-only pieces, not additional walls, health pools or collision barriers. Rotation and inward-corner placement follow the parent. Existing saved battles receive this rendering fix after refreshing the client.

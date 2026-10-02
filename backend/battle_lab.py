@@ -19,6 +19,8 @@ from .tactical_contracts import TACTICAL_CONTRACTS
 from .location_maps import MISSION_LOCATIONS, location_blueprint
 from .location_templates import BUILDING_PLANS
 from .building_templates import BUILDINGS
+from .building_showcase import FAMILIES, presets as material_presets
+from .battle_maps import compile_generated_battle_map
 
 router = APIRouter(prefix='/api/debug/battle-lab')
 _sessions = {}
@@ -52,6 +54,8 @@ LAYOUT_LABELS = {
 @lru_cache(maxsize=128)
 def layout_presets(encounter):
     """Find repeatable seeds using the actual map selector, per encounter, not mission."""
+    if encounter.startswith('showcase:'):
+        return material_presets(encounter.removeprefix('showcase:'))
     mid=encounter.removeprefix('contract:')
     location=MISSION_LOCATIONS.get(mid) if encounter.startswith('contract:') else None
     if not location:return []
@@ -105,6 +109,13 @@ def catalogue():
         result.append({'id': mid, 'name': mission['name'], 'rank': mission.get('rank', 'E'),
                        'description': mission.get('description', ''), 'form': mission.get('mission_form', 'combat'),
                        'source': source, 'faction': mission.get('faction', ''), 'follows': parents, 'variants': variants})
+    for family,label in FAMILIES.items():
+        result.append({'id':'material_'+family,'name':label+' building kit','rank':'E',
+            'description':'Four authored material test maps. Every kit piece appears across the four layouts. No rewards or save changes.',
+            'form':'art test','source':'Building material tests','faction':'','follows':[],
+            'variants':[{'id':'direct','label':'Material test','node':'Building kit inspection','outcome':'direct',
+                         'description':'Inspect walls, openings, damage states and supporting parts. Doors and walls work normally; stairs are scenery.',
+                         'encounter_id':'showcase:'+family,'transition':{},'layout_presets':material_presets(family)}]})
     return sorted(result, key=lambda m: ('EDCBAS'.index(m['rank']), m['name']))
 
 
@@ -157,7 +168,19 @@ def start_session(identity, request, saved_state):
         state['characters'].append(helper)
         party = [*party, helper['id']]
     # Real roster stats/gear are copied; their availability and health in the save are untouched.
-    battle = create_battle(state, party, request.seed, variant['encounter_id'], defer_start=True)
+    showcase=variant['encounter_id'].startswith('showcase:')
+    battle = create_battle(state, party, request.seed, 'contract:tool_shed' if showcase else variant['encounter_id'], defer_start=True)
+    if showcase:
+        family=variant['encounter_id'].removeprefix('showcase:')
+        board=compile_generated_battle_map('showcase_'+family,request.seed)
+        battle.update(board,name=mission['name'],log=['Material test map. No rewards or save changes. Doors and walls work normally; stairs and braces are scenery.'])
+        for team in ('player','enemy'):
+            for unit,tile in zip([u for u in battle['units'].values() if u['team']==team],board['spawn_zones'][team]):
+                unit.update(x=tile['x'],y=tile['y'])
+        # Give the tester the first activation; art inspection should not start
+        # with enemies moving through the scene before the player can see it.
+        battle['turn_order']=[*[u['id'] for u in battle['units'].values() if u['team']=='player'],
+                              *[u['id'] for u in battle['units'].values() if u['team']=='enemy']]
     setup_encounter(battle, variant['transition'])
     if battle['status'] != 'preparing':
         _advance_to_player(battle)

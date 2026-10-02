@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Replace rough stone and expose all material parts
+
+User rejected the visible repeated stone caps in the earlier repair. Generated a fresh 16-piece rough-fieldstone atlas using built-in image generation, with continuous overhead masonry and no oversized cap blocks; installed as v3 while retaining v2 originals. Timber broken-wall placement now uses surviving beam alignment. Common reference scale prevents small supporting pieces from being inflated; shared geometry remains reproducible.
+
+Added owner-scoped diagnostic Battle Lab entries for timber, rough stone, polished stone and metal. Each offers four distinct reusable building footprints with fixed seeds, collectively using all 16 parts. The toolbar lists actual pieces present and distinguishes material tests from normal missions. Stairs/braces remain scenery; no new public contracts, rewards, save migration or physics changes. 325 backend tests, 107 frontend tests, build and all 16 material browser tests passed. Coverage expanded to 99 previews / 3,465 references with no missing art. Sources/prompts/screenshots in staging-terrain/building-toolset-v3. Production unchanged.
+
 ## 2026-10-02: Repair visible T and corner gaps
 
 User screenshots exposed shortened T stems, unequal corner arms and averaged-axis drift in the new generated structural pack. Added independent corner offsets to the reproducible material installer and synchronized backend/frontend geometry. The renderer now uses clipped sections of each material's existing straight wall beneath connection ends; no raster stretching/regeneration, health/collision changes or save migration. Sleeves rotate with parents and disappear when destroyed. Enlarged comparison screenshots confirm connected timber and forge stone joins; all four materials use the same repair. 106 frontend tests, frontend build, all authored-layout browser checks and enlarged real-CSS checks passed. Production untouched.

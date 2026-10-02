@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## Completed October 2: New rough stone and complete material test layouts
+
+Regenerated rough-stone structures as a continuous-masonry v3 kit, preserved legacy packs, and aligned timber breaches by surviving beam ends rather than rubble center. Short supporting pieces retain appropriate scale. Added four distinct Battle Lab layouts per material (16 total), covering all 16 parts across each material's four layouts, with exact piece lists in the toolbar. Source filter: Building material tests. Canonical instructions: docs/design/BATTLE_LAB.md, BUILDING_TEMPLATES.md and WALL_BOUNDARIES.md. Validation: 325 backend tests, 107 frontend tests, build and all 16 layout browser checks pass; 99-preview art audit finds no missing files across 3,465 references. Remaining: subjective review of other material packs and actual stair/floor transitions. Production and saves untouched.
+
 ## Completed October 2: Short T stems and forge corner alignment
 
 Fixed in dev: independent corner-axis alignment and matching clipped wall sleeves beneath short corner/T connection ends, including rotation and destruction cleanup. No stretched images, new collision or regenerated art. Added an enlarged four-material comparison tool and browser check. Canonical references: docs/design/WALL_BOUNDARIES.md and BUILDING_TEMPLATES.md. Validation: 106 frontend tests, build, all authored-map browser checks and enlarged four-material previews pass. Production untouched.

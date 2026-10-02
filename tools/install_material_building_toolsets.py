@@ -1,7 +1,7 @@
 """Install one complete, consistently styled building atlas per material.
 
 Recover entire alpha components, then fit without distorting their silhouettes.
-Keep source crops and old runtime libraries; stable sprite IDs select version 2.
+Keep source crops and old runtime libraries; stable IDs select each family's active pack.
 """
 import json
 from PIL import Image
@@ -19,8 +19,16 @@ def main():
     dest.mkdir(parents=True,exist_ok=True)
     report=[];geometry={}
     for family in FAMILIES:
-        cells=groups(Image.open(SOURCE/f'{family}.png').convert('RGBA'),4,4)
-        sprites={piece:centered(cut) for piece,(cut,_) in zip(PARTS,cells)}
+        source=ROOT/'staging-terrain/building-toolset-v3'/f'{family}.png'
+        version='building-v3' if source.exists() else 'building-v2'
+        if not source.exists():source=SOURCE/f'{family}.png'
+        dest=ROOT/f'frontend/public/assets/combat-terrain/structures/{version}'
+        dest.mkdir(parents=True,exist_ok=True)
+        cells=groups(Image.open(source).convert('RGBA'),4,4)
+        common_scale=320/cells[0][0].width
+        sprites={piece:centered(cut,min(common_scale,350/max(cut.size))
+                 if version=='building-v3' or piece in {'end','pillar','stairs','brace'} else None)
+                 for piece,(cut,_) in zip(PARTS,cells)}
         # Door/gate pairs share a scale and the fixed post centerline. Opening
         # may add a downward leaf, but must never shrink or move the posts.
         for prefix in ('door','gate'):
@@ -41,6 +49,12 @@ def main():
         # shift. Preserve aspect ratio; the renderer sleeves any short ends.
         geometry[family]['corner_offset']=[round(geometry[family]['join_offset']-(cx-.5)*1.25,4),
             round(-geometry[family]['join_offset']-(cy-.5)*1.25,4)]
+        # Rubble enlarges a breach's lower bounds. Align its surviving beam,
+        # measured at the two ends, rather than its whole silhouette's center.
+        breach=sprites['breach'].getchannel('A')
+        ends=[y for x in list(range(40,95))+list(range(290,340)) for y in range(384) if breach.getpixel((x,y))>100]
+        if not ends:raise ValueError(f'{family}: missing surviving breach ends')
+        geometry[family]['breach_offset']=[0,round((.5-sum(ends)/len(ends)/384)*1.25,4)]
         junction=sprites['edge_junction'].getchannel('A')
         top=[y for y in range(192) for x in range(32,145) if junction.getpixel((x,y))>100]
         stem=[x for x in range(96,288) for y in range(240,345) if junction.getpixel((x,y))>100]
@@ -50,8 +64,8 @@ def main():
         for piece,sprite in sprites.items():
             ident=f'{family}_{piece}'
             sprite.save(dest/f'{ident}.png',optimize=True)
-            registry['structure:'+ident]=f'structures/building-v2/{ident}.png'
-            report.append({'id':ident,'source':f'{family}.png','source_box':cells[PARTS.index(piece)][1]})
+            registry['structure:'+ident]=f'structures/{version}/{ident}.png'
+            report.append({'id':ident,'source':str(source.relative_to(ROOT)).replace('\\','/'),'source_box':cells[PARTS.index(piece)][1]})
     aliases={'shed_wall_straight':'timber_wall','shed_wall_corner':'timber_corner','shed_wall_broken':'timber_breach',
              'shed_door_closed':'timber_door_closed','shed_door_open':'timber_door_open',
              'stone_wall_straight':'fieldstone_wall','cemetery_wall_corner':'fieldstone_corner',

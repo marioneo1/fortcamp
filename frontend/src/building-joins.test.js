@@ -29,3 +29,11 @@ test('rotated inward corners retain their placement and destruction removes slee
  assert.deepEqual(structuralConnectors([{...item,destroyed:true}],geometry),[]);
  assert.deepEqual(structuralConnectors([{id:'prop',sprite:'wooden_handcart'}],geometry),[]);
 });
+test('a breach aligns its surviving beam even after destruction and rotation',()=>{
+ const g={timber:{breach_offset:[0,.04]}};
+ const item={sprite:'structure:timber_breach',art_offset:[.4,0],rotation:90,destroyed:true};
+ const result=structuralLayout(item,g);
+ assert.ok(Math.abs(result.offset[0]-.36)<1e-8);
+ assert.equal(result.offset[1],0);
+ assert.deepEqual(result.connectors,[]);
+});

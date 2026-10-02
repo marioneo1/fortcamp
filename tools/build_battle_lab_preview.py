@@ -18,7 +18,7 @@ identity = Identity(guild_id='preview', user_id='tester', display_name='Tester',
 missions = lab.catalogue()
 views = {}
 with patch.object(lab, 'settings', SimpleNamespace(environment='dev', game_debug_mode=True, dev_bypass_auth=True)):
-    for mid in ['goblin_warcamp', 'goblin_captive_cart', 'goblin_smoke_signals', 'hedgerow_watch_defense','tool_shed','workshop_intruders','goblin_armory']:
+    for mid in ['goblin_warcamp', 'goblin_captive_cart', 'goblin_smoke_signals', 'hedgerow_watch_defense','tool_shed','workshop_intruders','goblin_armory',*[m['id'] for m in missions if m['id'].startswith('material_')]]:
         for variant in next(m for m in missions if m['id'] == mid)['variants']:
             views[mid + '|' + variant['id']] = lab.start_session(
                 identity, lab.StartRequest(mission_id=mid, variant_id=variant['id']), state)
@@ -45,7 +45,7 @@ appConfig={debug_mode:true,dev_bypass_auth:true};identity={guild_admin:true};
 $('#mission-modal').classList.add('hidden');activeBattleView=null;
 $('#debug-pool-controls').classList.remove('hidden');
 $('#debug-battle-lab').onclick=()=>battleLab.open();
-window.labOpen=()=>battleLab.open();window.labFixtureReady=true;
+window.labOpen=()=>battleLab.open();window.labCurrentBattle=()=>activeBattleView;window.labFixtureReady=true;
 '''
 destination = ROOT / 'staging-ui/battle-lab'
 destination.mkdir(parents=True, exist_ok=True)

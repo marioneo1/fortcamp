@@ -121,13 +121,17 @@ def river_crossing(x, road_y, height, damaged=False, family='wood'):
             [{'x':xx,'y':yy,'kind':'deep_water'} for xx,yy in sorted(water)])
 
 
-def place_building(template_id, anchor, ident, rotation=0):
+def place_building(template_id, anchor, ident, rotation=0, family_override=None):
     """Stamp a reusable local building at an anchor, independently of mission/map.
 
     Multiple instances may share a map; identifiers, joins and spawn candidates
     move/rotate together. No exits, enemy budgets, objectives or rewards live here.
     """
-    template=BUILDINGS[template_id];cells=footprint(template);boundary=shell(template)
+    template=BUILDINGS[template_id]
+    if family_override:
+        if family_override not in ART_GEOMETRY:raise ValueError('Unknown building material')
+        template={**template,'family':family_override,'floor':'shed_floor' if family_override=='timber' else 'smithy_cobbles'}
+    cells=footprint(template);boundary=shell(template)
     width=max(x for x,y in cells)+1;height=max(y for x,y in cells)+1
     for x,y,w,h in template.get('yard',[]):
         width=max(width,x+w);height=max(height,y+h)

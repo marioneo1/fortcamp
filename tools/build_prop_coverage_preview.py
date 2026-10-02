@@ -3,6 +3,8 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+from types import SimpleNamespace
+from unittest.mock import patch
 
 ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0,str(ROOT))
@@ -12,6 +14,9 @@ from backend.combat import (create_goblin_warcamp_battle, create_captive_cart_ba
                            create_contract_battle, battle_view)
 from backend.tactical_contracts import TACTICAL_CONTRACTS
 from backend.location_maps import MISSION_LOCATIONS
+from backend import battle_lab as lab
+from backend.auth import Identity
+from backend.building_showcase import FAMILIES, presets
 
 subprocess.run([sys.executable,str(ROOT/'tools/build_gear_battle_preview.py')],check=True)
 state=new_game({'name':'Prop Preview'})
@@ -40,6 +45,12 @@ for battle in battles.values():
     battle['turn_order']=['player',*[uid for uid in battle['turn_order'] if uid!='player']]
     battle['turn_index']=0
 views={key:battle_view(value) for key,value in battles.items()}
+identity=Identity(guild_id='preview',user_id='tester',display_name='Tester',guild_admin=True)
+with patch.object(lab,'settings',SimpleNamespace(environment='dev',game_debug_mode=True,dev_bypass_auth=True)):
+    for family in FAMILIES:
+        for preset in presets(family):
+            views[preset['id']]=lab.start_session(identity,lab.StartRequest(
+                mission_id='material_'+family,seed=preset['seed']),state)['battle']
 edge_walk=create_contract_battle(state,['player'],'layout-0','tool_shed',True)
 for uid,unit in edge_walk['units'].items():unit['extracted']=uid!='player'
 edge_walk['turn_order']=['player'];edge_walk['turn_index']=0
@@ -63,4 +74,4 @@ window.propEncounter('captive_cart');window.propCoverageReady=true;
 (destination/'encounter-preview.js').write_text(source,encoding='utf-8')
 page=(ROOT/'staging-ui/equipment-icons-v1/battle-preview.html').read_text(encoding='utf-8').replace('/staging-ui/equipment-icons-v1/battle-preview.js','/staging-terrain/overhead-props-v2/encounter-preview.js')
 (destination/'encounter-preview.html').write_text(page,encoding='utf-8')
-print(f'Built {len(battles)} isolated encounter previews and coverage inputs')
+print(f'Built {len(views)} isolated encounter previews and coverage inputs')

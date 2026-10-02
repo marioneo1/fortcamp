@@ -1,5 +1,17 @@
 # Battle Lab — implemented development tool
 
+## Material tests (October 2)
+
+Open **Mission Board → debug controls → Open Battle Lab**. Set **Source** to **Building material tests**, or search **building kit**. Choose Timber, Rough stone, Polished stone or Metal, then select a named **Map layout** and click **Start Test Battle**. Restart the dev launcher after backend changes and refresh the Activity/browser. Production has no access to these tests.
+
+Each material has four distinct footprints: **Gatehouse and courtyard**, **Divided hall and branching partitions**, **Breached annex and repairs**, and **Twin stores and loading court**. The same footprints make comparisons between materials easier. They are diagnostic layouts based on existing reusable buildings, not new public contracts. Four entries join the 73 mission entries, for 77 catalogue entries total.
+
+Across each material's four layouts, all 16 parts appear at least once: wall, corner, centered T, cross, end, breach, closed/open door, closed/open gate, window, pillar, stairs, damaged corner, perimeter T and brace. Expand **Pieces in this layout** in the battle toolbar to see the exact subset used. Gatehouse demonstrates gate states/window/pillar; divided hall demonstrates branching partitions and ends; annex demonstrates an open door, damage and repair brace; twin stores demonstrates stairs and supporting pieces. Doors and walls use normal interactions. Stairs and braces are scenery; changing floors is not implemented here.
+
+Fixed seeds `material-layout-1` through `material-layout-4` select those plans. Custom seeds choose one of the four reproducibly. Sessions use copied characters and the actual combat renderer/engine, remain owner/server-scoped and never write rewards or player saves. The lab provides a visual review workspace; passing coverage checks does not establish subjective art approval.
+
+Current validation: 325 backend tests, 107 frontend tests and frontend build pass. Browser QA launches all 16 material layouts and verifies each material's complete piece coverage, rough-stone v3 assets, ordinary mission workflows and mobile layout. Screenshots: `staging-terrain/building-toolset-v3/<family>-<1..4>-in-game.png`. Art audit: 99 encounter previews, 3,465 references, no missing files. The fixture builders and coverage audit include these diagnostic maps without reading saves.
+
 ## Current building preview rules (October 2)
 
 Restart a test battle to see new edge-wall collision and material-specific building art. The divided tool house and partitioned repair hall now have actual T-junctions. Interior edge/corner floor tiles are walkable; centered dividers remain blocking. Existing saves are not regenerated. Rules and source packs: WALL_BOUNDARIES.md and BUILDING_TEMPLATES.md.

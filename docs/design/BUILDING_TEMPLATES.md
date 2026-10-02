@@ -1,8 +1,16 @@
 # Reusable building templates — implemented in dev
 
+## Current stone replacement and material tests (October 2)
+
+Rough fieldstone now uses a newly generated 16-piece atlas in `structures/building-v3`; oversized repeated end caps were replaced by continuous masonry. Timber, polished limestone and iron remain in `structures/building-v2`. Original packs and images are preserved. The exact new prompt/source are `staging-terrain/building-toolset-v3/fieldstone_PROMPT.md` and `fieldstone.png`.
+
+The material installer prefers a v3 source per family when present, otherwise v2. V3 pieces share the straight-wall scale; v2 end/pillar/stair/brace pieces also use that scale so short parts do not inflate to full-wall length. Existing v2 walls/corners remain unchanged. Broken-wall offsets align the surviving beam ends rather than the rubble silhouette's center, including rotation and damage-state rendering. Shared corner/T geometry and clipped matching sleeves still connect shorter generated arms; they add no collision or health.
+
+Battle Lab offers four distinct diagnostic building layouts per material, covering all 16 parts across the four. See [Battle Lab](BATTLE_LAB.md) for exact controls. These are reusable footprint demonstrations, not public contracts or additional rewards. `place_building` accepts an optional `family_override` without mutating the stored plan. Validation: 325 backend tests, 107 frontend tests, build and all 16 material-layout browser checks pass; 99 encounter previews / 3,465 asset references have no missing files. Production and player saves are untouched. Earlier entries below describe the preserved prior passes.
+
 ## Current join repair (October 2)
 
-Corner arms now have independent display offsets, and clipped matching wall sections fill short corner/T ends. This fixes forge corner drift and divided-store stem gaps while preserving image proportions, rotated placement and existing collision. No new asset generation is needed. The installer maintains the shared geometry manifests; source art is unchanged. Enlarged material comparison: tools/build_wall_join_preview.py. See WALL_BOUNDARIES.md for details and current validation (106 frontend tests plus build/browser checks).
+The earlier repair gave corner arms independent display offsets and filled short corner/T ends with clipped matching wall sections. Its fieldstone source is now superseded by the replacement described above. The installer maintains the shared geometry manifests. Enlarged material comparison: tools/build_wall_join_preview.py. See WALL_BOUNDARIES.md for details.
 
 Building plans are separate from battlefield plans. `backend/building_templates.py` defines local rooms, doors, breaches, dividers, furniture, courtyard paving and enemy spawn candidates. `place_building(template_id, anchor, instance_id, rotation)` in `backend/location_maps.py` places a complete instance at any map anchor, with 0/90/180/270-degree rotation. It returns a fragment; it does not own mission rewards, enemy budgets, exits or victory conditions. Distinct instance prefixes prevent ID collisions when a future map places multiple buildings.
 
@@ -25,7 +33,7 @@ These eight footprints are distinct even under reflection and rotation. Flipping
 
 ## Coordinated structural art
 
-Current runtime library: `frontend/public/assets/combat-terrain/structures/building-v2`. Four separate material atlases now contain 16 parts each: timber, rough fieldstone, polished limestone and iron. Walls, junctions, doors and gates for each material were generated together. Exact prompts/source sheets and extraction report are in `staging-terrain/building-toolset-v2`; old mixed-material `building-toolset-v1` sources and runtime files are preserved as legacy.
+Runtime library: `frontend/public/assets/combat-terrain/structures/building-v2` for timber, polished limestone and iron, and `building-v3` for rough fieldstone. Each family contains 16 parts. Walls, junctions, doors and gates for each material were generated together. Exact prompts/source sheets are in `staging-terrain/building-toolset-v2` and `building-toolset-v3`; the combined extraction report remains in v2. Old mixed-material v1 and superseded v2 fieldstone sources/runtime files are preserved as legacy.
 
 Install with `.venv\Scripts\python.exe tools\install_material_building_toolsets.py`. Complete silhouettes are recovered without stretching; open/closed doors share anchors and scale. `backend/building_art_geometry.json` calibrates corners and T-junctions. The old installer delegates to these packs when available. Generated media remain local and need separate backup.
 

@@ -5,20 +5,28 @@
       -0.0165,
       -0.0165
     ],
+    "breach_offset": [
+      0,
+      0.0415
+    ],
     "junction_offset": [
       0.0072,
       -0.0759
     ]
   },
   "fieldstone": {
-    "join_offset": 0.3608,
+    "join_offset": 0.3326,
     "corner_offset": [
-      -0.0399,
-      -0.04
+      -0.0348,
+      -0.0348
+    ],
+    "breach_offset": [
+      0,
+      0.0851
     ],
     "junction_offset": [
-      0.0034,
-      0.0113
+      0.004,
+      0.0132
     ]
   },
   "limestone": {
@@ -26,6 +34,10 @@
     "corner_offset": [
       -0.0477,
       -0.0478
+    ],
+    "breach_offset": [
+      0,
+      0.0365
     ],
     "junction_offset": [
       -0.0032,
@@ -37,6 +49,10 @@
     "corner_offset": [
       0.021,
       0.0209
+    ],
+    "breach_offset": [
+      0,
+      0.0363
     ],
     "junction_offset": [
       0.0043,

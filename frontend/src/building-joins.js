@@ -3,11 +3,16 @@
 function turn([x,y],rotation){for(let i=0;i<rotation/90;i++)[x,y]=[-y,x];return [x,y]}
 
 export function structuralLayout(item,geometry){
-  const base=item.art_offset||[0,0],match=/^structure:(timber|fieldstone|limestone|iron)_(corner|edge_junction)$/.exec(item.sprite||'');
-  if(!match||item.destroyed)return {offset:base,connectors:[]};
+  const base=item.art_offset||[0,0],match=/^structure:(timber|fieldstone|limestone|iron)_(corner|edge_junction|breach)$/.exec(item.sprite||'');
+  if(!match)return {offset:base,connectors:[]};
   const [,family,piece]=match,g=geometry[family];
   if(!g)return {offset:base,connectors:[]};
   const rotation=((Number(item.rotation)||0)%360+360)%360;
+  if(piece==='breach'){
+    const [x,y]=turn(g.breach_offset||[0,0],rotation);
+    return {offset:[base[0]+x,base[1]+y],connectors:[]};
+  }
+  if(item.destroyed)return {offset:base,connectors:[]};
   const delta=piece==='corner'?turn(g.corner_offset||[0,0],rotation):[0,0];
   const ports=piece==='corner'?[[[-.5,-g.join_offset],0],[[g.join_offset,.5],90]]:[[[0,.5],90]];
   const connectors=ports.map(([point,direction],index)=>{

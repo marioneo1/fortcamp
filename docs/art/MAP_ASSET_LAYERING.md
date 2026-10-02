@@ -1,5 +1,13 @@
 # Map Asset Layering
 
+## October 2: Rough-stone v3 and material review maps
+
+Current selection: rough fieldstone uses `structures/building-v3`; timber, polished limestone and iron use `structures/building-v2`. Built-in image generation made a new rough-stone atlas with continuous masonry instead of oversized repeat caps. Source and exact prompt: `staging-terrain/building-toolset-v3/fieldstone.png` and `fieldstone_PROMPT.md`. Original source packs and runtime files are retained. Generated media are excluded from Git and require separate backup.
+
+`tools/install_material_building_toolsets.py` chooses v3 per family when that source exists and falls back to v2 otherwise. It preserves silhouettes and proportions, scales v3 parts from the straight wall, keeps small supporting pieces small, and calibrates breached walls from their surviving beam ends. Geometry manifests remain synchronized. Matching clipped corner/T sleeves are still presentation-only joins. Terrain and furniture remain separate packs.
+
+Use Battle Lab's **Building material tests** source to review four layouts for every material; all 16 parts appear across its four. Screenshots are in `staging-terrain/building-toolset-v3`. `tools/build_prop_coverage_preview.py` now includes these 16 tests, giving 99 previews and 3,465 references with no missing runtime files. Earlier library notes below describe preserved previous passes; they are superseded for active fieldstone selection.
+
 ## Current connection repair (October 2)
 
 Generated corner/T silhouettes remain unchanged. Each corner has independent x/y calibration in building-art-geometry.json; matching straight-wall textures are clipped and drawn beneath short connection ends. These sleeves keep the original beam thickness and vanish with the parent. The installer writes the frontend geometry manifest as well as the backend copy. Enlarged comparison and exact rules: docs/design/WALL_BOUNDARIES.md, tools/build_wall_join_preview.py and tools/wall_join_browser_qa.mjs.
