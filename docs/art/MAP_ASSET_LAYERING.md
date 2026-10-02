@@ -1,5 +1,15 @@
 # Map Asset Layering
 
+## October 2: Installed overhead packs and alarm bell
+
+The earlier pilot-only status below is historical. Dev now selects 43 versioned overhead sprites: seven retained from the approved pilot plus 36 from three new twelve-image packs. Nature includes the missing pine and thorny bramble, other trees/shrubs, stump, branches, stones, hay and paired barrels. Defenses include palisades/gates/breached art, platform, rescue cage states, barricade, stone wall/rubble and alarm bell states. Containers include crate, silver/gold chests, coffer, reliquary and lever states. Palisades still show some front surfaces; the pack is a consistent improvement, not a claim of perfectly vertical projection.
+
+Runtime registry: frontend/src/map-prop-art.json, resolved by map-prop-art.js. Stable gameplay sprite IDs select props/overhead-v2 or structures/overhead-v2; original libraries remain untouched and cover unmapped art. Selected sprites use 100% sizing with preserved aspect ratio; footprints, collision, rotation, objectives and gameplay rules are unchanged. Reusing an existing sprite ID updates scenery in saved battles too. The old alarm_horn ID intentionally remains compatible with saves and commands, while current labels, logs and story text call it Alarm Bell. Active/disabled sprites replace the placeholder symbol; the disabled bell has a cut rope and fallen clapper.
+
+Sources and exact built-in image_gen prompts are in staging-terrain/overhead-props-v2, with the approved pilot as the object-style reference and mega terrain v4 as the palette reference. Art is new generation, not modification. All originals and crops are retained; media remain ignored by Git and need separate backup. The tracked source/order selection is docs/art/overhead_prop_manifest.json.
+
+Run `.venv\Scripts\python.exe tools/install_overhead_props.py` to recover silhouettes and audit/build the gallery. Add `--install` to write the validated versioned runtime assets and registry. All source packs are checked before runtime writes; ambiguous connected silhouettes reject extraction. This tool does not create new art, change gameplay data or edit legacy files. Selected crops are normalized to 384x384 with at least 32px transparent margins. Run tools/build_gear_battle_preview.py for an isolated current Warcamp preview and tools/installed_prop_browser_qa.mjs with the local fixture server/Chrome for gallery, asset loading and bell-state checks. These are development tools, not game launchers.
+
 ## October 2: Grounding and overhead study
 
 Live renderer preserves image aspect ratio when enlarging one-cell structures and interactables: horizontal size plus automatic height replaces independent width/height stretching. Short silhouette shadows replace the longer floating-looking drop shadow; hover retains the outline without a large glow. Multi-cell footprints and rotation remain unchanged. No gameplay collision or map placement changes.

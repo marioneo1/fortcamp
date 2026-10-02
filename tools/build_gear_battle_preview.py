@@ -37,6 +37,7 @@ window.fetch=(url,options)=>{
 };
 $('#loading').classList.add('hidden');$('#game').classList.remove('hidden');$('#mission-modal').classList.remove('hidden');
 window.gearRender=()=>renderBattle(fixture.battle);
+window.gearAlarmDisabled=()=>{fixture.battle.objects.alarm_horn.state='disabled';window.gearRender()};
 window.gearSend=()=>sendCombat({action:'skill',target_id:'gob_guard'});
 window.gearPreparation=()=>renderBattlePreparation({...fixture.battle,status:'preparing',preparation:{zone:[],deployment_zone:[],available:[],placements:[],budget:4,remaining:4}});
 window.gearCreator=()=>{mountCharacterCreator($('#creator'),content);$('#game').classList.add('hidden');$('#mission-modal').classList.add('hidden');$('#creator').classList.remove('hidden')};

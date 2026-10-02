@@ -421,19 +421,19 @@ def create_goblin_warcamp_battle(state: dict, party_ids: list[str], seed: str, d
         "objects": {
             "prisoner_pen": {"id": "prisoner_pen", "name": "Prisoner Pen", "x": 5, "y": 5,
                              "state": "locked", "footprint": [2, 2], "rotation": 0},
-            "alarm_horn": {"id": "alarm_horn", "name": "Alarm Horn", "x": 7, "y": 1, "state": "active"},
+            "alarm_horn": {"id": "alarm_horn", "name": "Alarm Bell", "x": 7, "y": 1, "state": "active"},
             "supply_crate": {"id": "supply_crate", "name": "Loose Supply Crate", "x": 0, "y": 6, "state": "ground", "portable": True, "blocking": False, "weight": 4, "impact_damage": 5, "carry_penalty": 1, "breaks_on_throw": True, "icon": "📦"},
             "loose_stone": {"id": "loose_stone", "name": "Loose Camp Stone", "x": 3, "y": 6, "state": "ground", "portable": True, "blocking": False, "weight": 1, "impact_damage": 2, "carry_penalty": 0, "breaks_on_throw": False, "icon": "●"},
         },
         "objectives": [
             {"id": "chieftain", "name": f"Defeat {chief_name}", "required": True, "complete": False},
             {"id": "captives", "name": "Free the captives", "required": False, "complete": False},
-            {"id": "alarm", "name": "Disable the alarm horn", "required": False, "complete": False},
+            {"id": "alarm", "name": "Disable the alarm bell", "required": False, "complete": False},
         ],
         "status": "active", "outcome": None, "reinforcements_spawned": False,
         "battle_won": False, "decision_pending": False, "victory_phase": None,
         "battlefield_secured": False, "auto_looted_ids": [], "retreat_all": False,
-        "log": [f"The party enters through the south approach. {chief_name} is inside the palisade. The captives and alarm horn are on opposite sides of the camp."],
+        "log": [f"The party enters through the south approach. {chief_name} is inside the palisade. The captives and alarm bell are on opposite sides of the camp."],
         "seed": seed, "action_count": 0,
     }
     if not defer_start:
@@ -1157,7 +1157,7 @@ def _spawn_reinforcements(battle: dict) -> None:
             battle["units"][unit["id"]] = unit
             battle["turn_order"].append(unit["id"])
     battle["reinforcements_spawned"] = True
-    battle["log"].append("The alarm horn answers across the hills. Warhost reinforcements enter the camp.")
+    battle["log"].append("The alarm bell answers across the hills. Warhost reinforcements enter the camp.")
 
 
 def _wake_ambush(battle: dict, target: dict | None = None) -> None:
@@ -2084,7 +2084,7 @@ def _interact(battle: dict, unit: dict, object_id: str) -> None:
     elif object_id == "alarm_horn" and obj["state"] == "active":
         obj["state"] = "disabled"
         obj.update({"handled_by": unit["name"], "handled_by_id": unit["id"], "handled_round": battle.get("round", 1)})
-        battle["log"].append(f"{unit['name']} disables the alarm horn before another signal can be sent.")
+        battle["log"].append(f"{unit['name']} disables the alarm bell before another signal can be sent.")
     else:
         raise ValueError("That object has already been handled")
     _record_sound(battle, "cage_open" if object_id == "prisoner_pen" else "objective_interact")
@@ -2269,7 +2269,7 @@ def _context_actions(battle: dict, unit: dict) -> list[dict]:
                 })
             elif obj["id"] == "alarm_horn" and obj.get("state") == "active":
                 actions.append({
-                    "id": "disable_alarm_horn", "label": "Disable Alarm Horn", "target": obj["name"],
+                    "id": "disable_alarm_horn", "label": "Disable Alarm Bell", "target": obj["name"],
                     "description": "Prevent the camp from calling reinforcements. Uses the main action and ends this activation.",
                     "cost": "Main action", "hotkey": "I", "command": {"action": "interact", "target_id": obj["id"]},
                 })
@@ -2319,6 +2319,12 @@ def _context_actions(battle: dict, unit: dict) -> list[dict]:
 
 def battle_view(battle: dict) -> dict:
     view = deepcopy(battle)
+    # Keep the existing object ID and alarm rules compatible with saved battles.
+    if 'alarm_horn' in view.get('objects', {}):
+        view['objects']['alarm_horn']['name'] = 'Alarm Bell'
+    for objective in view.get('objectives', []):
+        if objective.get('id') == 'alarm':
+            objective['name'] = 'Disable the alarm bell'
     current = _current_unit(view)
     for unit in view["units"].values():
         for status in unit.get("statuses", []):

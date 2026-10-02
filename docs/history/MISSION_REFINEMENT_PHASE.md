@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Three more overhead packs and live map assignments
+
+Generated 36 new sprites across vegetation, defenses/alarm and paired containers using approved overhead props plus terrain palette references. Recovered complete silhouettes and installed 43 selected sprites in versioned runtime folders with a stable registry; original files stay intact. Filled missing Warcamp pine/bramble, replaced alarm placeholder with active/disabled bell art, and aligned objectives/context/log/story labels while retaining legacy alarm_horn IDs and rules. Saved battle presentation remains compatible. Added a manifest-driven audit/install tool and a 43-image ground gallery, plus actual Warcamp loading/state browser checks.
+
+Validation: frontend build and isolated actual-browser checks passed for all 43 gallery sprites, map asset loading, pine/bramble/bell/cage assignments and bell sprite changes. All 301 backend regression tests passed. No live saves or production files changed. Some tall structure sprites still expose frontal faces; further camera polish remains optional rather than hidden as finished work.
+
 ## 2026-10-02: Grounded props and overhead pilot
 
 Corrected independent width/height enlargement of legacy painted props to preserve aspect ratio, shortened drop shadows and removed hover glow while retaining the selection outline. Generated one new transparent twelve-object atlas with the terrain sheet as the only style reference; old art was not modified. Connected-silhouette extraction recovered tent/tree crossing nominal cell edges and removed neighboring fragments. Added a comparison across three ground materials and an isolated actual Warcamp preview with old/new toggle. Atlas, exact prompt, extracted sprites and screenshots stay in staging-terrain/overhead-props-v1.

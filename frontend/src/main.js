@@ -1,3 +1,4 @@
+import {overheadPropStyle} from './map-prop-art.js';
 const seenMercenaryNotices=new Set();
 import {openMercenaryMarket} from './mercenary-ui.js';
 import {mountInventoryBrowser} from './inventory-ui.js';
@@ -532,6 +533,7 @@ async function openBattle(missionId){
 }
 const paintedTerrainSpriteByKind={palisade:'structure:palisade_straight',cookfire:'campfire_lit',watchtower:'structure:wooden_watch_platform',wagon:'wooden_handcart',pit:'terrain:pit_deep_earthen'};
 const paintedObjectSprites={
+  alarm_horn:{default:'alarm_bell_active',active:'alarm_bell_active',disabled:'alarm_bell_disabled'},
   prisoner_pen:{default:'structure:wooden_rescue_cage_closed',opened:'structure:wooden_rescue_cage_open'},
   iron_rescue_cage:{default:'structure:iron_rescue_cage_closed',opened:'structure:iron_rescue_cage_open'},
   wooden_rescue_cage:{default:'structure:wooden_rescue_cage_closed',opened:'structure:wooden_rescue_cage_open'},
@@ -549,7 +551,7 @@ const paintedObjectSprites={
   loose_stone:{default:'scattered_stones'},
 };
 function paintedObjectSprite(object){const set=paintedObjectSprites[object.id];return object.sprite||set?.[object.state]||set?.default||''}
-function paintedPropStyle(sprite){if(!sprite)return'';const terrain=sprite.startsWith('terrain:'),structure=sprite.startsWith('structure:'),id=terrain?sprite.slice(8):structure?sprite.slice(10):sprite,folder=terrain?'mega-terrain-tiles':structure?'structures':'props';return /^[a-z0-9_]+$/.test(id)?`--battle-prop:url('/assets/combat-terrain/${folder}/${id}.png');`:''}
+function paintedPropStyle(sprite){if(!sprite)return'';const overhead=overheadPropStyle(sprite);if(overhead)return overhead;const terrain=sprite.startsWith('terrain:'),structure=sprite.startsWith('structure:'),id=terrain?sprite.slice(8):structure?sprite.slice(10):sprite,folder=terrain?'mega-terrain-tiles':structure?'structures':'props';return /^[a-z0-9_]+$/.test(id)?`--battle-prop:url('/assets/combat-terrain/${folder}/${id}.png');`:''}
 function mapAssetLayout(item){const footprint=Array.isArray(item.footprint)?item.footprint:[1,1],baseWidth=Math.max(1,Number(footprint[0])||1),baseHeight=Math.max(1,Number(footprint[1])||1),rotation=((Number(item.rotation)||0)%360+360)%360,turned=rotation===90||rotation===270,width=turned?baseHeight:baseWidth,height=turned?baseWidth:baseHeight,multi=baseWidth>1||baseHeight>1||rotation!==0;return{className:multi?'multi-cell-asset':'',style:`grid-column:${item.x+1}/span ${width};grid-row:${item.y+1}/span ${height};--asset-width:${baseWidth/width*100}%;--asset-height:${baseHeight/height*100}%;--asset-rotation:${rotation}deg`}}
 function terrainVariant(mapId,material,x,y){const choices={grass:[0,0,0,0,0,1,1,2],dirt:[0,0,0,0,0,0,1],mud:[0,0,0,1],stone:[0,0,0,0,1],water:[0,0,0,1],timber:[0]}[material]||[0],patchX=Math.floor(x/2),patchY=Math.floor(y/2),key=`${mapId||'map'}:${material}:${patchX}:${patchY}`;let hash=2166136261;for(let i=0;i<key.length;i++){hash^=key.charCodeAt(i);hash=Math.imul(hash,16777619)}return choices[(hash>>>0)%choices.length]}
 function combatActionArt(name){return `<span class="combat-action-art action-${name}" aria-hidden="true"></span>`}

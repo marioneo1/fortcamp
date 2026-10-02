@@ -1,0 +1,11 @@
+{
+  "version": "overhead-v2",
+  "columns": 4,
+  "rows": 3,
+  "packs": [
+    {"name": "pilot", "source": "staging-terrain/overhead-props-v1/overhead_props_12_v1.png", "ids": ["treasure_chest_bronze_closed", "treasure_chest_bronze_open", "crate_closed", "bound_barrels", "campfire_lit", "cut_log_pile", "mossy_boulder", "canvas_tent", "structure:wooden_rescue_cage_closed", "structure:palisade_straight", "structure:palisade_corner", "oak_tree"], "install": ["treasure_chest_bronze_closed", "treasure_chest_bronze_open", "campfire_lit", "cut_log_pile", "mossy_boulder", "canvas_tent", "oak_tree"]},
+    {"name": "nature", "source": "staging-terrain/overhead-props-v2/nature_12.png", "ids": ["pine_tree", "birch_tree", "dead_tree", "dense_shrub", "thorny_bramble", "leafy_sapling", "tree_stump", "fallen_branches", "scattered_stones", "rounded_boulder", "hay_bale", "bound_barrels"]},
+    {"name": "structures", "source": "staging-terrain/overhead-props-v2/structures_12.png", "ids": ["structure:palisade_straight", "structure:palisade_gate_closed", "structure:palisade_gate_open", "structure:palisade_breached", "structure:wooden_watch_platform", "structure:wooden_rescue_cage_closed", "structure:wooden_rescue_cage_open", "structure:wooden_barricade", "structure:stone_wall_straight", "structure:wall_rubble", "alarm_bell_active", "alarm_bell_disabled"]},
+    {"name": "containers", "source": "staging-terrain/overhead-props-v2/containers_12.png", "ids": ["crate_closed", "crate_open", "treasure_chest_silver_closed", "treasure_chest_silver_open", "treasure_chest_gold_closed", "treasure_chest_gold_open", "military_supply_coffer_closed", "military_supply_coffer_open", "ancient_reliquary_closed", "ancient_reliquary_open", "floor_lever_off", "floor_lever_on"]}
+  ]
+}

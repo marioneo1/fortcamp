@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## Completed October 2: Expanded overhead props installed
+
+Generated three additional twelve-sprite packs and installed 43 selected overhead assets across nature, defenses and containers. The left pine, lower-right bramble and alarm bell now render in the actual Warcamp; bell active/disabled art and human-readable labels match. Stable IDs and old saves remain compatible, gameplay unchanged, original art preserved. Sources/prompts/gallery/screenshots: staging-terrain/overhead-props-v2. Manifest and reproducible import procedure: docs/art/MAP_ASSET_LAYERING.md. Remaining: subjective live review, unmapped specialist props and further camera refinement where tall structures still show frontal surfaces. Validation: 301 backend tests, frontend build and actual-browser asset/state checks passed. Production not deployed.
+
 ## Completed October 2: Prop grounding and camera pilot
 
 Live painted props now preserve aspect ratio when enlarged and use short silhouette shadows. Generated and safely extracted a twelve-object overhead study with terrain comparisons and actual Warcamp old/new toggle; existing runtime art remains intact. See docs/art/MAP_ASSET_LAYERING.md and staging-terrain/overhead-props-v1/PROMPT.md. Two catalogue crop tests, production build and browser study/Warcamp checks passed. Remaining: user visual review, steeper overhead palisades and coherent open/closed pairs before expanding or replacing the full prop pack. Do not describe the pilot as a completed art replacement.

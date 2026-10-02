@@ -897,7 +897,7 @@ def _warcamp_story(
     party_names = _plain_name_list([unit["name"] for unit in party]) or "The party"
     chief_name = primary["name"]
     paragraphs = [
-        f"{party_names} entered the warcamp from the south. {chief_name} was directing the defense from the command mound, with an archer behind the palisade and an alarm horn ready near the edge of the camp. A locked prisoner pen stood farther inside."
+        f"{party_names} entered the warcamp from the south. {chief_name} was directing the defense from the command mound, with an archer behind the palisade and an alarm bell ready near the edge of the camp. A locked prisoner pen stood farther inside."
     ]
 
     pen = battle.get("objects", {}).get("prisoner_pen", {})
