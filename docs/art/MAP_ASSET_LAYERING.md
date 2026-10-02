@@ -1,5 +1,13 @@
 # Map Asset Layering
 
+## October 2: Mission evidence, prison wagon and coverage audit
+
+Added a fourth expansion pack with 12 sprites: intact/wrecked prison wagon, dispatch satchel, wagon wheel, marked farm chart, armed/spent spike traps, armed/spent iron-jaw traps, handcart, cold campfire and wooden table. The registry now installs 55 sprites. This supersedes the earlier 43-sprite count below. Exact built-in image_gen prompt/source are preserved in staging-terrain/overhead-props-v2/mission_objects_PROMPT.md and mission_objects_12.png. Reference roles and extraction method remain as documented below.
+
+Fixed missing assignments in Captive Cart and Smoke over the Hedgerows; contract walls now use stone-wall art. map-object-art.js is the shared state resolver for preparation and active combat. New encounters declare mission-object sprite IDs explicitly; legacy encounters without them use stable object/kind fallbacks. Spent traps and broken prison wagons use their own images. Custom explicit art remains authoritative. No interaction, damage, collision, footprint or mission reward rules changed.
+
+Build isolated current encounters with `.venv\Scripts\python.exe tools/build_prop_coverage_preview.py`, then run `node tools/audit_battle_prop_art.mjs`. This pass checked 65 encounter setups and 888 intact/destroyed/object/decorative references with no missing assignments or runtime files. Shallow water intentionally uses ground; the existing deep pit remains a terrain asset. This audits sampled generated maps and all current tactical contract definitions, not every possible random layout or unused art-library entry. The browser fixture at /staging-terrain/overhead-props-v2/encounter-preview.html has an encounter selector; tools/prop_coverage_browser_qa.mjs checks actual Captive Cart, investigation and defense rendering. All fixtures are isolated from saves.
+
 ## October 2: Installed overhead packs and alarm bell
 
 The earlier pilot-only status below is historical. Dev now selects 43 versioned overhead sprites: seven retained from the approved pilot plus 36 from three new twelve-image packs. Nature includes the missing pine and thorny bramble, other trees/shrubs, stump, branches, stones, hay and paired barrels. Defenses include palisades/gates/breached art, platform, rescue cage states, barricade, stone wall/rubble and alarm bell states. Containers include crate, silver/gold chests, coffer, reliquary and lever states. Palisades still show some front surfaces; the pack is a consistent improvement, not a claim of perfectly vertical projection.

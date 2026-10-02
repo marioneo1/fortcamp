@@ -482,8 +482,8 @@ def create_captive_cart_battle(state: dict, party_ids: list[str], seed: str, def
         "round": 1, "turn_index": 0, "turn_order": order,
         "units": units,
         "objects": {
-            "dispatch_satchel": {"id": "dispatch_satchel", "name": "Stolen Dispatch Satchel", "x": 7, "y": 5, "state": "ground", "portable": True, "blocking": False, "weight": 1, "impact_damage": 1, "carry_penalty": 0, "breaks_on_throw": False, "objective_item": True, "icon": "▣"},
-            "loose_wheel": {"id": "loose_wheel", "name": "Loose Wagon Wheel", "x": 5, "y": 2, "state": "ground", "portable": True, "blocking": False, "weight": 3, "impact_damage": 4, "carry_penalty": 1, "breaks_on_throw": False, "icon": "◉"},
+            "dispatch_satchel": {"id": "dispatch_satchel", "name": "Stolen Dispatch Satchel", "sprite": "dispatch_satchel", "x": 7, "y": 5, "state": "ground", "portable": True, "blocking": False, "weight": 1, "impact_damage": 1, "carry_penalty": 0, "breaks_on_throw": False, "objective_item": True, "icon": "▣"},
+            "loose_wheel": {"id": "loose_wheel", "name": "Loose Wagon Wheel", "sprite": "wagon_wheel", "x": 5, "y": 2, "state": "ground", "portable": True, "blocking": False, "weight": 3, "impact_damage": 4, "carry_penalty": 1, "breaks_on_throw": False, "icon": "◉"},
         },
         "objectives": [
             {"id": "rescue_courier", "name": f"Extract {courier_name} alive", "required": True, "complete": False},
@@ -534,7 +534,7 @@ def create_smoke_signals_battle(state: dict, party_ids: list[str], seed: str, de
         "version": 1, "encounter_id": "goblin_smoke_signals", "name": "Smoke over the Hedgerows",
         "round": 1, "turn_index": 0, "turn_order": order, "units": units,
         "objects": {
-            "signal_chart": {"id": "signal_chart", "name": "Marked Farm Chart", "x": chart_x, "y": chart_y,
+            "signal_chart": {"id": "signal_chart", "name": "Marked Farm Chart", "sprite": "marked_farm_chart", "x": chart_x, "y": chart_y,
                              "state": "ground", "portable": True, "blocking": False, "weight": 1,
                              "impact_damage": 1, "carry_penalty": 0, "breaks_on_throw": True,
                              "objective_item": True, "icon": "▤"},
@@ -2464,11 +2464,11 @@ def _place_prepared_defense(battle: dict, command: dict) -> None:
         },
         "spike_trap": {
             "name": "Spike Trap", "kind": "prepared_trap", "sprite": "spike_trap", "blocking": False,
-            "prepared_trap": True, "trap_damage": 4, "destroyed_sprite": "spike_trap", "destroyed_movement_cost": 1,
+            "prepared_trap": True, "trap_damage": 4, "destroyed_sprite": "spike_trap_spent", "destroyed_movement_cost": 1,
         },
         "snare_trap": {
             "name": "Iron-Jaw Snare", "kind": "prepared_trap", "sprite": "iron_jaw_trap", "blocking": False,
-            "prepared_trap": True, "trap_damage": 2, "trap_effect": "snare", "destroyed_sprite": "iron_jaw_trap", "destroyed_movement_cost": 1,
+            "prepared_trap": True, "trap_damage": 2, "trap_effect": "snare", "destroyed_sprite": "iron_jaw_trap_spent", "destroyed_movement_cost": 1,
         },
         "watch_platform": {
             "name": "Raised Watch Platform", "kind": "platform", "sprite": "structure:wooden_watch_platform",

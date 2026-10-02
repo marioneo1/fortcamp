@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Mission evidence art and encounter-wide coverage
+
+Generated a twelve-sprite mission-object atlas in the approved overhead style using built-in image_gen. Preserved source/prompt and recovered complete isolated silhouettes; installed selection grows to 55. Added missing satchel/wheel/chart images, dedicated prison wagon/wreck art, distinct armed/spent trap states and stone-wall fallback. Shared frontend art resolution covers existing saved missions and preparation/live battle, while new mission data explicitly assigns evidence/wagon sprites.
+
+Validated 65 isolated encounter setups against the actual resolver: 888 references, no missing images or assignments. Browser QA confirmed visible Captive Cart satchel/wheel/prison wagon, investigation chart, and both defense trap states with working assets and narrow layouts. All 301 backend tests and 103 frontend tests passed; frontend build passed. No production files or live saves touched. Future unused-library art is not claimed as converted.
+
 ## 2026-10-02: Three more overhead packs and live map assignments
 
 Generated 36 new sprites across vegetation, defenses/alarm and paired containers using approved overhead props plus terrain palette references. Recovered complete silhouettes and installed 43 selected sprites in versioned runtime folders with a stable registry; original files stay intact. Filled missing Warcamp pine/bramble, replaced alarm placeholder with active/disabled bell art, and aligned objectives/context/log/story labels while retaining legacy alarm_horn IDs and rules. Saved battle presentation remains compatible. Added a manifest-driven audit/install tool and a 43-image ground gallery, plus actual Warcamp loading/state browser checks.

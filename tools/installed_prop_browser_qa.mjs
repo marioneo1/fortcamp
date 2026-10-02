@@ -1,6 +1,6 @@
 // Actual UI with isolated fixture state; no live game API or saves.
 import assert from 'node:assert/strict';
-import {writeFile} from 'node:fs/promises';
+import {writeFile,readFile} from 'node:fs/promises';
 const tabs=await(await fetch('http://127.0.0.1:9229/json')).json();
 const ws=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);await new Promise(r=>ws.onopen=r);
 let serial=0;const pending=new Map(),errors=[];
@@ -11,7 +11,7 @@ await call('Runtime.enable');
 await call('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
 await call('Page.navigate',{url:'http://127.0.0.1:8766/staging-terrain/overhead-props-v2/gallery.html'});
 await new Promise(r=>setTimeout(r,900));
-assert.equal(await evaluate('document.querySelectorAll("figure").length'),43);
+assert.equal(await evaluate('document.querySelectorAll("figure").length'),Object.keys(JSON.parse(await readFile("frontend/src/map-prop-art.json","utf8"))).length);
 const images=await evaluate(`Array.from(document.querySelectorAll('figure>div')).map(el=>getComputedStyle(el).getPropertyValue('--sprite'))`);
 for(const value of images){const path=value.match(/url\(['"]?([^'")]+)/)?.[1];assert.equal((await fetch(new URL(path,'http://127.0.0.1:8766/staging-terrain/overhead-props-v2/').href)).status,200,path)}
 await writeFile('staging-terrain/overhead-props-v2/gallery.png',Buffer.from((await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true})).data,'base64'));
@@ -27,5 +27,5 @@ await writeFile('staging-terrain/overhead-props-v2/warcamp-installed.png',Buffer
 await evaluate('window.gearAlarmDisabled()');
 assert.ok(await evaluate(`document.querySelector('[data-battle-object=alarm_horn]').style.getPropertyValue('--battle-prop').includes('alarm_bell_disabled')`));
 for(const width of [800,430]){await call('Emulation.setDeviceMetricsOverride',{width,height:1000,deviceScaleFactor:1,mobile:false});assert.ok(await evaluate('Boolean(document.querySelector(".battlefield"))'))}
-assert.deepEqual(errors,[]);console.log('PASS: 43 gallery sprites, live pine/bramble/bell/cage mapping, active/disabled bell art, runtime asset loading and responsive rendering');
+assert.deepEqual(errors,[]);console.log('PASS: gallery sprites, live pine/bramble/bell/cage mapping, active/disabled bell art, runtime asset loading and responsive rendering');
 await call('Browser.close');ws.close();

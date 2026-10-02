@@ -83,9 +83,9 @@ BATTLE_MAPS = {
         ],
         "terrain": [
             {"id": "cart_body", "name": "Shielded Prison Cart", "x": 8, "y": 3,
-             "kind": "wagon", "blocking": True, "blocks_sight": True, "destructible": True,
+             "kind": "wagon", "sprite": "prison_wagon", "blocking": True, "blocks_sight": True, "destructible": True,
              "hp": 20, "max_hp": 20, "armor": 3, "destroyed_kind": "rubble",
-             "destroyed_sprite": "structure:wooden_barricade", "destroyed_movement_cost": 2},
+             "destroyed_sprite": "prison_wagon_broken", "destroyed_movement_cost": 2},
             *[
                 {"id": f"road_mud_{index}", "name": "Deep Road Mud", "x": x, "y": y,
                  "kind": "shallow_water", "blocking": False, "movement_cost": 2, "tags": ["water"]}

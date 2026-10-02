@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## Completed October 2: Remaining active mission props
+
+Added twelve overhead sprites and wired missing dispatch satchel, loose wagon wheel and marked farm chart. Prison wagon now has dedicated intact/wrecked art; prepared traps have armed/spent variants and generic contract walls use the existing overhead stone-wall sprite. Shared state resolver supports older saved encounters without changing gameplay. Current registry: 55 sprites. Audit: 65 encounter setups, 888 references, no missing prop assignments/files. Validation: 301 backend and 103 frontend tests, browser encounter checks and frontend build passed. No production deployment. Remaining: subjective live review, unused legacy-library objects and future props needed by new mission forms.
+
 ## Completed October 2: Expanded overhead props installed
 
 Generated three additional twelve-sprite packs and installed 43 selected overhead assets across nature, defenses and containers. The left pine, lower-right bramble and alarm bell now render in the actual Warcamp; bell active/disabled art and human-readable labels match. Stable IDs and old saves remain compatible, gameplay unchanged, original art preserved. Sources/prompts/gallery/screenshots: staging-terrain/overhead-props-v2. Manifest and reproducible import procedure: docs/art/MAP_ASSET_LAYERING.md. Remaining: subjective live review, unmapped specialist props and further camera refinement where tall structures still show frontal surfaces. Validation: 301 backend tests, frontend build and actual-browser asset/state checks passed. Production not deployed.

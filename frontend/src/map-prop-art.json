@@ -41,5 +41,17 @@
   "ancient_reliquary_closed": "props/overhead-v2/ancient_reliquary_closed.png",
   "ancient_reliquary_open": "props/overhead-v2/ancient_reliquary_open.png",
   "floor_lever_off": "props/overhead-v2/floor_lever_off.png",
-  "floor_lever_on": "props/overhead-v2/floor_lever_on.png"
+  "floor_lever_on": "props/overhead-v2/floor_lever_on.png",
+  "prison_wagon": "props/overhead-v2/prison_wagon.png",
+  "prison_wagon_broken": "props/overhead-v2/prison_wagon_broken.png",
+  "dispatch_satchel": "props/overhead-v2/dispatch_satchel.png",
+  "wagon_wheel": "props/overhead-v2/wagon_wheel.png",
+  "marked_farm_chart": "props/overhead-v2/marked_farm_chart.png",
+  "spike_trap": "props/overhead-v2/spike_trap.png",
+  "spike_trap_spent": "props/overhead-v2/spike_trap_spent.png",
+  "iron_jaw_trap": "props/overhead-v2/iron_jaw_trap.png",
+  "iron_jaw_trap_spent": "props/overhead-v2/iron_jaw_trap_spent.png",
+  "wooden_handcart": "props/overhead-v2/wooden_handcart.png",
+  "campfire_cold": "props/overhead-v2/campfire_cold.png",
+  "wooden_table": "props/overhead-v2/wooden_table.png"
 }
