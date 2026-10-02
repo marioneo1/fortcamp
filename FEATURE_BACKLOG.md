@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## Completed October 2: Connection geometry from all eight user snips
+
+Replaced unreliable whole corner/T/cross silhouette placement with exact clipped matching straight-wall assembly; preserved painted thickness/proportions, rotation, inward corners and gameplay. Fixed directional short-end attachment and separately calibrated damaged corners without filling their broken center. Enlarged review tool now covers six connection types in all rotations. Canonical reference: docs/design/WALL_BOUNDARIES.md. Validation: 109 frontend tests, build, seven targeted backend tests, four-material enlarged browser checks and all 16 Battle Lab layouts pass. No new art generation or production changes. Remaining: live subjective review, future structural styles and functional stairs.
+
 ## Completed October 2: New rough stone and complete material test layouts
 
 Regenerated rough-stone structures as a continuous-masonry v3 kit, preserved legacy packs, and aligned timber breaches by surviving beam ends rather than rubble center. Short supporting pieces retain appropriate scale. Added four distinct Battle Lab layouts per material (16 total), covering all 16 parts across each material's four layouts, with exact piece lists in the toolbar. Source filter: Building material tests. Canonical instructions: docs/design/BATTLE_LAB.md, BUILDING_TEMPLATES.md and WALL_BOUNDARIES.md. Validation: 325 backend tests, 107 frontend tests, build and all 16 layout browser checks pass; 99-preview art audit finds no missing files across 3,465 references. Remaining: subjective review of other material packs and actual stair/floor transitions. Production and saves untouched.

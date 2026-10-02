@@ -45,10 +45,21 @@ def main():
         if not horizontal or not vertical:raise ValueError(f'{family}: incomplete corner')
         cy=sum(horizontal)/len(horizontal)/384;cx=sum(vertical)/len(vertical)/384
         geometry[family]={'join_offset':round(((cx-.5)+(.5-cy))/2*1.25,4)}
+        wall_bounds=sprites['wall'].getchannel('A').getbbox()
+        geometry[family]['wall_half_thickness']=round((wall_bounds[3]-wall_bounds[1])/384*1.25/2,4)
         # The generated corner arms need independent alignment, not one averaged
         # shift. Preserve aspect ratio; the renderer sleeves any short ends.
         geometry[family]['corner_offset']=[round(geometry[family]['join_offset']-(cx-.5)*1.25,4),
             round(-geometry[family]['join_offset']-(cy-.5)*1.25,4)]
+        broken=sprites['corner_broken'].getchannel('A')
+        rows=[y for x in range(40,110) for y in range(192) if broken.getpixel((x,y))>100]
+        columns=[x for y in range(260,335) for x in range(192,384) if broken.getpixel((x,y))>100]
+        if not rows or not columns:raise ValueError(f'{family}: missing damaged corner arms')
+        geometry[family]['broken_corner_offset']=[
+            round(geometry[family]['join_offset']-(sum(columns)/len(columns)/384-.5)*1.25,4),
+            round(-geometry[family]['join_offset']-(sum(rows)/len(rows)/384-.5)*1.25,4)]
+        end_bounds=sprites['end'].getchannel('A').getbbox()
+        geometry[family]['end_offset']=[round(.5-(end_bounds[2]/384-.5)*1.25,4),0]
         # Rubble enlarges a breach's lower bounds. Align its surviving beam,
         # measured at the two ends, rather than its whole silhouette's center.
         breach=sprites['breach'].getchannel('A')

@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Repair joins using actual screenshot evidence
+
+Reviewed all eight snips in question: rough-stone general/corner alignment, polished-stone corner/T/end/damaged joins and timber/metal T/end/damaged joins. Generated whole silhouettes and short sleeves still failed to establish reliable attachment lengths. Changed intact corners/Ts/crosses to CSS assembly from clipped matching painted straight-wall textures, preserving thickness/proportions. Added directional short-end anchoring, separate damaged-corner calibration and surviving-arm extensions without replacing rubble. Kept old source/runtime art, boundaries, IDs, targeting, destruction and live saves.
+
+Expanded isolated comparison to six types and quarter-turn selection; refreshed all material test screenshots. 109 frontend tests, build, seven targeted backend tests, enlarged four-material checks and all 16 Battle Lab layout checks passed. Previous full backend baseline: 325. Production unchanged. Subjective live approval remains for the user.
+
 ## 2026-10-02: Replace rough stone and expose all material parts
 
 User rejected the visible repeated stone caps in the earlier repair. Generated a fresh 16-piece rough-fieldstone atlas using built-in image generation, with continuous overhead masonry and no oversized cap blocks; installed as v3 while retaining v2 originals. Timber broken-wall placement now uses surviving beam alignment. Common reference scale prevents small supporting pieces from being inflated; shared geometry remains reproducible.

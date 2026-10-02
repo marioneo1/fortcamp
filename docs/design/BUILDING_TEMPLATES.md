@@ -1,5 +1,9 @@
 # Reusable building templates — implemented in dev
 
+## Current connection renderer (October 2)
+
+Intact corner/T/cross artwork is now assembled from clipped matching straight-wall textures, with exact edge/center anchors and quarter-turn rotation. This supersedes the whole generated silhouette plus sleeve repair below. Short ends attach to their neighboring wall; damaged corners have independent alignment and retain their broken center. Original generated packs remain available. Canonical rules and validation: [Wall boundaries](WALL_BOUNDARIES.md). Generation prompts alone cannot enforce exact attachment geometry; active rendering supplies that contract without stretching images.
+
 ## Current stone replacement and material tests (October 2)
 
 Rough fieldstone now uses a newly generated 16-piece atlas in `structures/building-v3`; oversized repeated end caps were replaced by continuous masonry. Timber, polished limestone and iron remain in `structures/building-v2`. Original packs and images are preserved. The exact new prompt/source are `staging-terrain/building-toolset-v3/fieldstone_PROMPT.md` and `fieldstone.png`.

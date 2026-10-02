@@ -1,9 +1,18 @@
 {
   "timber": {
     "join_offset": 0.3965,
+    "wall_half_thickness": 0.096,
     "corner_offset": [
       -0.0165,
       -0.0165
+    ],
+    "broken_corner_offset": [
+      0.0441,
+      0.0018
+    ],
+    "end_offset": [
+      0.1354,
+      0
     ],
     "breach_offset": [
       0,
@@ -16,9 +25,18 @@
   },
   "fieldstone": {
     "join_offset": 0.3326,
+    "wall_half_thickness": 0.1139,
     "corner_offset": [
       -0.0348,
       -0.0348
+    ],
+    "broken_corner_offset": [
+      0.0144,
+      0.0125
+    ],
+    "end_offset": [
+      0.1973,
+      0
     ],
     "breach_offset": [
       0,
@@ -31,9 +49,18 @@
   },
   "limestone": {
     "join_offset": 0.3693,
+    "wall_half_thickness": 0.1253,
     "corner_offset": [
       -0.0477,
       -0.0478
+    ],
+    "broken_corner_offset": [
+      -0.0332,
+      -0.0423
+    ],
+    "end_offset": [
+      0.2396,
+      0
     ],
     "breach_offset": [
       0,
@@ -46,9 +73,18 @@
   },
   "iron": {
     "join_offset": 0.3843,
+    "wall_half_thickness": 0.1123,
     "corner_offset": [
       0.021,
       0.0209
+    ],
+    "broken_corner_offset": [
+      0.0387,
+      0.0228
+    ],
+    "end_offset": [
+      0.194,
+      0
     ],
     "breach_offset": [
       0,

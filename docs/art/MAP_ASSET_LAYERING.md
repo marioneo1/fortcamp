@@ -1,5 +1,11 @@
 # Map Asset Layering
 
+## October 2: Exact connections from existing painted textures
+
+The renderer now builds intact corners, perimeter/centered Ts and crosses from clipped straight-wall artwork in the same material. Their original PNGs remain preserved, but no longer determine connection lengths or thickness. This is CSS texture assembly, not raster editing or new image generation. Each piece keeps its existing terrain ID, health, collision and targets. Small end walls have measured directional attachment offsets. Damaged corners retain original broken artwork and get separately calibrated surviving arms. All quarter turns and inward-corner translations are supported.
+
+`tools/build_wall_join_preview.py` now shows corner, perimeter T, centered T, cross, short end and broken corner, with a rotation selector and old/new toggle. Browser QA checks real CSS clipping/hidden source artwork and refreshes the enlarged four-material screenshots. Full map screenshots remain in building-toolset-v3. Future generated parts should use equal wall thickness and specified end centerlines; generated art still needs deterministic placement/connection validation. See docs/design/WALL_BOUNDARIES.md for current implementation and limitations.
+
 ## October 2: Rough-stone v3 and material review maps
 
 Current selection: rough fieldstone uses `structures/building-v3`; timber, polished limestone and iron use `structures/building-v2`. Built-in image generation made a new rough-stone atlas with continuous masonry instead of oversized repeat caps. Source and exact prompt: `staging-terrain/building-toolset-v3/fieldstone.png` and `fieldstone_PROMPT.md`. Original source packs and runtime files are retained. Generated media are excluded from Git and require separate backup.

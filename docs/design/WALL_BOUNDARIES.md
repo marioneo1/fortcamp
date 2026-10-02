@@ -1,5 +1,13 @@
 # Wall boundaries — implemented in dev
 
+## October 2: Position-aware painted wall connections
+
+The eight new user snips exposed that calibrated whole-image offsets and small sleeves did not reliably join unequal generated corner arms. Active rendering now assembles intact corners, perimeter Ts, centered Ts and crosses from clipped sections of the material's existing straight-wall texture. Length is clipped; thickness and image aspect ratio remain unchanged. Original join PNGs remain preserved but their main artwork is hidden for these assembled parts. The underlying terrain object, targeting, health and boundaries are unchanged.
+
+Corners follow both rotated edge centerlines. Perimeter Ts follow the outside edge and meet a centered divider; centered Ts/crosses use the tile center. Short ends attach toward the neighboring segment (right before rotation), using a measured end offset. Damaged corners keep their original broken center, receive independent alignment and extend only the surviving outer arms. Their debris is not painted over. Existing inward-corner translation, destruction cleanup and breach calibration remain intact. This fixes presentation without regenerating maps or saves.
+
+Installer metadata now includes wall thickness, terminal-end alignment and damaged-corner alignment. The enlarged comparison tool covers six connection types and all four rotations for each material; Battle Lab still exposes all 16 full layouts. Validation: 109 frontend tests, frontend build, seven targeted backend boundary/showcase tests, enlarged four-material browser checks and the 16-layout Battle Lab browser checks pass. Full backend baseline remains the earlier 325 tests; this pass changes no combat rules. Production untouched.
+
 ## October 2: Replacement stone and broken-wall alignment
 
 Rough stone now selects a newly generated continuous-masonry v3 pack to remove the repeated oversized caps visible in the prior repair. Old source/runtime images are preserved. Timber's broken wall aligns using the surviving beam ends; rubble below no longer shifts the wall center. The same calibration handles rotation and a destroyed wall's selected breach sprite, in preparation and active battle. Physics and saved map geometry are unchanged.
