@@ -1,12 +1,42 @@
 import json
 import tempfile
 import unittest
+from contextlib import closing
 from pathlib import Path
 from unittest.mock import patch
 from tools.run_profile import profile_config, conflicting_application
-from tools.prepare_release_copy import release_paths, release_env_source
+from tools.prepare_release_copy import release_paths, release_env_source, production_destination
 
 class RunProfileTests(unittest.TestCase):
+    def test_fixed_prod_preserves_credentials_and_restores_failed_update(self):
+        import sqlite3
+        with tempfile.TemporaryDirectory() as d:
+            parent=Path(d);prod=parent/'fortcamp-prod';prod.mkdir();dev=parent/'fortcamp-dev';dev.mkdir()
+            data=parent/'fortcamp-release-data';data.mkdir()
+            (prod/'.fortcamp-release.json').write_text('{}');(prod/'.env').write_text('DISCORD_CLIENT_ID=production-only\n')
+            with closing(sqlite3.connect(data/'fortcamp.db')) as db:db.execute('CREATE TABLE example(value TEXT)');db.execute("INSERT INTO example VALUES('preserved')");db.commit()
+            with patch('tools.prepare_release_copy.ROOT',dev):
+                self.assertEqual(release_env_source(parent),prod/'.env')
+                with self.assertRaisesRegex(RuntimeError,'build failed'):
+                    with production_destination(prod,data,prod/'.env') as source:
+                        self.assertEqual(source.read_text(),'DISCORD_CLIENT_ID=production-only\n')
+                        self.assertFalse(prod.exists());prod.mkdir();(prod/'partial').write_text('failed')
+                        raise RuntimeError('build failed')
+            self.assertTrue((prod/'.fortcamp-release.json').exists())
+            self.assertEqual((prod/'.env').read_text(),'DISCORD_CLIENT_ID=production-only\n')
+            self.assertEqual(len(list((data/'backups').glob('*.db'))),1)
+            with closing(sqlite3.connect(data/'fortcamp.db')) as db:self.assertEqual(db.execute('SELECT value FROM example').fetchone()[0],'preserved')
+
+    def test_prod_alias_is_safe_and_dev_cannot_launch_inside_prod(self):
+        with tempfile.TemporaryDirectory() as d:
+            parent=Path(d);prod=parent/'fortcamp-prod';prod.mkdir();data=parent/'fortcamp-release-data'
+            (prod/'.fortcamp-release.json').write_text(json.dumps({'runtime_data':str(data)}))
+            with patch('tools.run_profile.ROOT',prod):
+                env,_,ports=profile_config('prod')
+                self.assertEqual(ports,[5173]);self.assertEqual(env['GAME_DEBUG_MODE'],'false')
+                self.assertEqual(env['DEV_BYPASS_AUTH'],'false')
+                with self.assertRaises(SystemExit):profile_config('dev')
+
     def test_new_releases_preserve_production_env_instead_of_copying_dev(self):
         with tempfile.TemporaryDirectory() as d:
             parent=Path(d);dev=parent/'alpha';dev.mkdir();old=parent/'fortcamp-release-1.0.0';old.mkdir()

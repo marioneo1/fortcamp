@@ -345,3 +345,7 @@ Reorganized Base into five task sections and moved prisoners into their own Base
 Reduced natural regional event candidates from 30% to 12%, with a quiet-board check preventing consecutive natural events. Added poor starter equipment for selected combat/magic/support perks, with creation preview and unchanged existing saves.
 
 Added a persistent four-contact player-specific mercenary board to the private contract planner. Hires fill required and bodyguard slots, charge on acceptance, impose bounded roll penalties, build trust/discounts, and unlock rank-priced permanent service. Betrayal starts a separate playable road encounter and resumes the original contract when survived. Selective outdoor maps can very rarely reveal a fallen contact or a friendly/hostile arrival. Hostile arrivals fight both sides and must be stopped for victory; deaths remove known contacts immediately. See ../design/MERCENARIES.md for implemented mechanics and limitations. Production remains unchanged.
+
+## October 2 - fixed dev/prod deployment
+
+Renamed the editable workspace to `fortcamp-dev`, prepared the tested production commit in `fortcamp-prod`, and preserved the shared production database, uploads and credentials. Added a fixed-folder production updater with a pre-update SQLite backup, archived previous copies, rollback on build failure and refusal to replace a running host. Debug and authentication bypass remain off in production. See ../FRIEND_TRIAL.md for current paths, launchers and server registration instructions.

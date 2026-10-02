@@ -23,6 +23,9 @@ def conflicting_application(profile,env):
         return other.get('discord_client_id')==app_id and not other.get('dev_bypass_auth',True)
     except (OSError,ValueError):return False
 def profile_config(profile):
+    if profile=='prod':profile='release'
+    if profile in {'dev','dev-discord'} and (ROOT/'.fortcamp-release.json').exists():
+        raise SystemExit('This is the production copy. Use run_prod_windows.bat here; develop in fortcamp-dev.')
     env=os.environ.copy()
     public_config=dotenv_values(ROOT/'.env')
     save_profile='dev' if profile=='dev-discord' else profile
@@ -52,9 +55,11 @@ def profile_config(profile):
     return env,ROOT,[8001,5174]
 
 def main():
-    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('profile',choices=['stable','release','dev','dev-discord'])
-    args=parser.parse_args();env,cwd,ports=profile_config(args.profile)
-    conflict_message='Dev and release cannot run Discord bots using the same application. Create a separate Discord dev application and put its client ID, secret and bot token in alpha .env. Keep the release credentials in its own .env.'
+    parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('profile',choices=['stable','release','prod','dev','dev-discord'])
+    args=parser.parse_args()
+    if args.profile=='prod':args.profile='release'
+    env,cwd,ports=profile_config(args.profile)
+    conflict_message='Dev and production cannot run Discord bots using the same application. Use a separate Discord dev application in fortcamp-dev .env. Keep production credentials in fortcamp-prod .env.'
     if conflicting_application(args.profile,env):raise SystemExit(conflict_message)
     if args.profile=='release':
         info=json.loads((ROOT/'.fortcamp-release.json').read_text())
@@ -70,7 +75,7 @@ def main():
         commands[0].append('--reload')
         commands.append(['cmd','/c','npm.cmd','--prefix','frontend','run','dev','--','--port',str(ports[-1])])
     if args.profile=='dev-discord':
-        print('Discord development: dev.fortcampgame.fyi -> port 5174, with real Discord login and DEV saves. Use your dev application credentials in alpha .env; keep Cloudflare running.',flush=True)
+        print('Discord development: dev.fortcampgame.fyi -> port 5174, with real Discord login and DEV saves. Use your dev application credentials in fortcamp-dev .env; keep Cloudflare running.',flush=True)
     print(f'{args.profile.upper()}: http://127.0.0.1:{ports[-1]} | separate {args.profile} save | Ctrl+C to stop this session',flush=True)
     children=[]
     try:

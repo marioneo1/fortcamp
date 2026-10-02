@@ -36,6 +36,7 @@ data/champion_portraits/**/*.webp
 frontend/node_modules/
 # Generated only in prepared release copies; alpha has no release launch shortcut.
 /run_release_windows.bat
+/run_prod_windows.bat
 
 # Rebuilt procedural combat textures; sources live in the build tool.
 docs/art/effekseer/Texture/
