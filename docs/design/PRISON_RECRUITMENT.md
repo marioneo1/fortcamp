@@ -4,7 +4,7 @@ Implemented October 1, 2026 in alpha/dev. This supersedes the first-batch propos
 
 ## Player flow
 
-Open Roster → Prisoners → Recruitment. Talk reveals persistent personal terms. Either fulfill a requested payment/item, add an allegiance quest to Private Contracts, or use Warden negotiation where the ordinary recruitment route is available. Fulfilled terms unlock Offer recruitment; conversion is explicit rather than silently adding someone after a quest.
+Open Base → Prisoners → Recruitment (or use the Prisoners shortcut in Roster). Talk reveals persistent personal terms. Either fulfill a requested payment/item, add an allegiance quest to Private Contracts, or use Warden negotiation where the ordinary recruitment route is available. Fulfilled terms unlock Offer recruitment; conversion is explicit rather than silently adding someone after a quest.
 
 Each captive receives a fixed route and prospective recruit profile at capture. Existing records receive a stable authored profile when normalized because old saves contain no underlying NPC attributes. These profiles do not infer attributes from encounter HP or damage. Identity, portrait and terms remain stable; an existing authored recruitable snapshot can supply real attributes/perks. Generic conversion refuses unique Champions/Celestials, whose acquisition needs dedicated ownership enforcement. Creature taming remains separate and unimplemented.
 
@@ -52,3 +52,7 @@ Backend tests cover stable migration/swaps, shared warden cooldown, resistance v
 Prisoner cards separate Conversation & terms from Recruit profile and remember the selected tab and expansion across refreshes. Warden negotiation has a resistance meter and explains its shared cooldown; custody/sale actions sit below recruitment. Agreement fulfillment, prisoner sales and contract abandonment use the shared in-game confirmation dialog instead of browser confirmation prompts. Payment confirmations show the exact resource/item and whether a further personal task is required. Cancel, Escape and backdrop dismissal do not submit an action. Duplicate prisoner requests are blocked while an action is pending.
 
 Verified with production build, frontend tests and the actual frontend browser fixture: conversation, payment cancellation, profile preservation, sale cancellation by Escape, payment and recruitment. Browser fixture uses simulated API responses; no live prisoner data changed.
+
+## Dedicated prisoner workspace
+
+Prisoners now live in Base / Prisoners, with a direct Roster shortcut, capacity summary, holding filter and name/race search. They are no longer below the character detail screen. Manage prison facilities opens the Prison Cell inspector for warden assignment. See CAMP_INTERFACE.md for the complete base/roster navigation.

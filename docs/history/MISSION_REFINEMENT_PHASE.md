@@ -336,3 +336,7 @@ Implemented fixed capture/migration profiles, eight personal requests, warden IN
 ## October 1, 2026 - Prisoner UI standardization
 
 Agreement fulfillment and sales now use a themed in-game confirmation with exact costs and consequences. Prisoner cards have remembered conversation/profile tabs, readable terms, a warden resistance meter and separate custody actions. The shared confirmation also covers abandoning a reserved contract. Frontend build and 95 tests passed; browser fixture verifies cancellation, recruitment and tab preservation without altering live saves.
+
+## October 1, 2026 - Base and inventory workspace pass
+
+Reorganized Base into five task sections and moved prisoners into their own Base workspace with a Roster shortcut. Settlement has a facility browser, construction sidebar and explicit staffing controls. Development displays separate expansion, allowance and blueprint cards. Roster now separates Characters, Inventory and Collections. Non-wearable manuals/materials no longer enter Equipment; Inventory supports confirmed quantity sales of unequipped instances with server prices and replay/ownership checks. Production trial.2 remains pinned. See ../design/CAMP_INTERFACE.md for rules and verification.

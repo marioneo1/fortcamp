@@ -100,11 +100,13 @@ def new_game(character: dict[str, Any]) -> dict[str, Any]:
 
 
 def public_content() -> dict[str, Any]:
+    from .inventory import sale_price
     return {
         "economy": public_economy({}),
         "personalities": {key:{"name":value[0],"description":value[1]} for key,value in PERSONALITIES.items()},
         "buildings": BUILDINGS,
         "items": ITEMS,
+        "sale_prices": {iid:sale_price(iid) for iid in ITEMS},
         "slots": EQUIPMENT_SLOTS,
         "perk_tracks": PERK_TRACKS,
         "proficiency_tracks": PERK_TRACKS,

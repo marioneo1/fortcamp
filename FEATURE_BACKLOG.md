@@ -128,3 +128,9 @@ Stable capture terms and recruit profiles; eight initial concerns; shared INT-ba
 - Prepare an independent production clone from current tested main, preserving production credentials, database and media; force debug/auth bypass off in release env and launcher.
 - Alpha and production still share a Discord application ID: simultaneous local dev is supported; concurrent Discord dev requires separate application credentials.
 - Host startup and friend-server installation remain operator steps documented in docs/FRIEND_TRIAL.md.
+
+### Completed October 1: camp, roster and inventory navigation (dev only)
+- Base task sections: Settlement, Supplies, Development, Kitchen and Prisoners; facility list/inspector and construction sidebar; explicit staffing controls alongside drag/drop.
+- Prisoners have their own Base workspace with Roster shortcut, search and secure/stockade filters. Collections are a separate Roster view.
+- Party Inventory separates manuals/materials from wearable equipment and allows confirmed quantity sales of unequipped copies; server prevents equipped/duplicate/missing sales and publishes resale quotes.
+- See docs/design/CAMP_INTERFACE.md. Existing production trial.2 is unchanged; further sale-price tuning, buyback and material use remain future work.

@@ -27,3 +27,11 @@ test('hide-equipped preference defaults on and remembers opt-out per player',()=
  assert.equal(readHideEquipped(storage,'player-a'),false);assert.equal(readHideEquipped(storage,'player-b'),true);
  assert.equal(readHideEquipped({getItem(){throw Error('blocked')}},'a'),true);
 });
+
+test('equipment selection excludes manuals and materials while inventory retains them',()=>{
+ const content={slots:['weapon'],items:{sword:{name:'Sword',slot:'weapon'},manual:{name:'Training Manual',slot:null},ash:{name:'Grave Ash',slot:null}}};
+ const state={characters:[],inventory:[{instance_id:'s',item_id:'sword'},{instance_id:'m',item_id:'manual'},{instance_id:'a',item_id:'ash'}]};
+ const filter={query:'',equipmentOnly:true};
+ assert.deepEqual(inventoryGroups(state,content,null,filter).map(g=>g.id),['sword']);
+ filter.equipmentOnly=false;assert.equal(inventoryGroups(state,content,null,filter).length,3);
+});

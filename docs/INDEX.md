@@ -1,5 +1,6 @@
 # Fortcamp documentation map
 
+- [Camp and roster UI](design/CAMP_INTERFACE.md): base sections, inventory, prisoner navigation and item selling.
 - [Relationships](design/CHARACTER_RELATIONSHIPS.md): loyalty, personality, records, conversations and staged roadmap.
 - [Prison recruitment proposal](design/PRISON_RECRUITMENT_PROPOSAL.md): original warden, conversation and boss pacing proposals; see the implemented reference below.
 - [Prison recruitment](design/PRISON_RECRUITMENT.md): implemented first pass; the proposal above retains deferred ideas.

@@ -51,6 +51,7 @@ export function inventoryGroups(state,content,character,filter) {
   const groups=new Map();
   for(const instance of state.inventory||[]){
     const item=content.items[instance.item_id];if(!item)continue;
+    if(filter.equipmentOnly&&!(content.slots||[]).includes(item.slot))continue;
     if(filter.hideEquipped&&owners.has(instance.instance_id))continue;
     if(filter.slot&&item.slot!==filter.slot)continue;
     if(filter.rarity&&item.rarity!==filter.rarity)continue;
@@ -64,16 +65,16 @@ export function inventoryGroups(state,content,character,filter) {
 }
 
 export function mountEquipmentBrowser(panel,{state,content,character,onEquip,onError,editable,preferenceKey='fortcamp:hide-equipped'}) {
-  const f=filters.get(character.id)||{query:'',slot:'',rarity:'',sort:'rarity',page:0};filters.set(character.id,f);
+  const f=filters.get(character.id)||{query:'',slot:'',rarity:'',sort:'rarity',page:0};f.equipmentOnly=true;filters.set(character.id,f);
   let storage;try{storage=globalThis.localStorage}catch{}
   f.hideEquipped=readHideEquipped(storage,preferenceKey);
   f.hideDetails=readHideDetails(storage,preferenceKey+':details');
   let pending=false;
   const wearables=new Set(content.slots);
-  panel.innerHTML=`<div class="armory-heading"><h3>Equipment & Inventory</h3><span>${state.inventory.length} items · duplicate gear is stacked</span></div>
+  panel.innerHTML=`<div class="armory-heading"><h3>Equipment</h3><span>${state.inventory.filter(i=>wearables.has(content.items[i.item_id]?.slot)).length} gear pieces · duplicate gear is stacked</span></div>
     <div class="armory-equipped"></div><div class="armory-filters">
-    <input type="search" aria-label="Search inventory" placeholder="Find gear, abilities or elements…" value="${escape(f.query)}">
-    <select aria-label="Equipment slot" data-filter="slot"><option value="">All items</option>${content.slots.map(s=>`<option value="${s}" ${f.slot===s?'selected':''}>${label(s)}</option>`).join('')}</select>
+    <input type="search" aria-label="Search equipment" placeholder="Find gear, abilities or elements…" value="${escape(f.query)}">
+    <select aria-label="Equipment slot" data-filter="slot"><option value="">All equipment</option>${content.slots.map(s=>`<option value="${s}" ${f.slot===s?'selected':''}>${label(s)}</option>`).join('')}</select>
     <select aria-label="Item rarity" data-filter="rarity"><option value="">All rarities</option>${ranks.map(r=>`<option value="${r}" ${f.rarity===r?'selected':''}>${label(r)}</option>`).join('')}</select>
     <select aria-label="Sort inventory" data-filter="sort"><option value="rarity" ${f.sort==='rarity'?'selected':''}>Rarity first</option><option value="name" ${f.sort==='name'?'selected':''}>Name</option></select></div>
     <div class="armory-display-options"><label class="armory-hide-equipped"><input type="checkbox" data-hide-equipped ${f.hideEquipped?'checked':''}> Hide equipped gear</label><label class="armory-hide-equipped"><input type="checkbox" data-hide-details ${f.hideDetails?'checked':''}> Hide spare gear details</label></div>

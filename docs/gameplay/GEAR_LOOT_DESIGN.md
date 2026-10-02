@@ -68,3 +68,7 @@ Spare gear stats, abilities and perks start expanded. Hide gear details is separ
 Contract summaries conceal undisclosed exclusive item names and drop percentages, replacing duplicate spoilers with equipment discovery hints. An item explicitly named in the description/objective, or authored in disclosed_rewards, stays named as a possible recovery. Paid rewards and ordinary reward categories remain visible; no actual loot rolls were changed. All three briefing views use the same server-filtered preview.
 
 Equipped gear effects are now always shown directly in each filled slot. They cannot be collapsed or hidden. The saved Hide spare gear details setting applies only to inventory cards. Hover summaries remain available on equipped names.
+
+## Inventory UI and resale (October 1, 2026, dev)
+
+Character Equipment excludes non-wearable items; party Inventory has all gear, manuals and materials with search/categories/rarity and stacked duplicates. Only unequipped instances can be sold, after quantity/total-gold confirmation. Backend rarity prices and faction purchase-price caps are described in ../design/CAMP_INTERFACE.md. No buyback or automatic material-use action is implemented.

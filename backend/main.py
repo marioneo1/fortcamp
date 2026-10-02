@@ -451,19 +451,39 @@ async def assign(req: AssignRequest, identity: IdentityDep):
         await session.close()
 
 
+class SellItemsRequest(BaseModel):
+    instance_ids: list[str] = Field(min_length=1, max_length=9999)
+
+@app.post('/api/inventory/sell')
+async def sell_inventory(req: SellItemsRequest,identity: IdentityDep):
+    from .inventory import sell_items
+    from .services import _player_locks
+    async with _player_locks.setdefault((identity.guild_id,identity.user_id),asyncio.Lock()):
+        session,row=await locked_player(identity)
+        try:
+            changed=deepcopy(row.state)
+            sale=sell_items(changed,req.instance_ids)
+            row.state=changed;row.updated_at=int(time.time());await session.commit()
+            return {'state':changed,'sale':sale}
+        except ValueError as exc:
+            await session.rollback();raise HTTPException(400,str(exc))
+        finally:await session.close()
+
 @app.post("/api/equip")
 async def equip(req: EquipRequest, identity: IdentityDep):
-    session, row = await locked_player(identity)
-    try:
-        state = deepcopy(row.state)
-        equip_item(state, req.character_id, req.instance_id, req.slot)
-        row.state = state; row.updated_at = int(time.time())
-        await session.commit()
-        return {"state": state}
-    except ValueError as exc:
-        await session.rollback(); raise HTTPException(400, str(exc))
-    finally:
-        await session.close()
+    from .services import _player_locks
+    async with _player_locks.setdefault((identity.guild_id,identity.user_id),asyncio.Lock()):
+        session, row = await locked_player(identity)
+        try:
+            state = deepcopy(row.state)
+            equip_item(state, req.character_id, req.instance_id, req.slot)
+            row.state = state; row.updated_at = int(time.time())
+            await session.commit()
+            return {"state": state}
+        except ValueError as exc:
+            await session.rollback(); raise HTTPException(400, str(exc))
+        finally:
+            await session.close()
 
 
 class RelationshipRequest(BaseModel):
