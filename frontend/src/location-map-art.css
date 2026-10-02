@@ -13,7 +13,6 @@
 .battlefield[class*="theme-location-"] .battle-terrain .terrain-hp{opacity:0;transition:opacity .12s ease}
 .battlefield[class*="theme-location-"] .battle-terrain:hover .terrain-hp,.battlefield[class*="theme-location-"] .battle-terrain.attack-target .terrain-hp{opacity:1}
 
-.battlefield.terrain-style-custom-painted .multi-cell-asset.has-prop-art:before{left:calc(50% + var(--asset-offset-x,0%));top:calc(50% + var(--asset-offset-y,0%))}
 
 .battlefield.terrain-style-custom-painted .ground-wood_bridge{background-image:url('/assets/combat-terrain/bridge-v1/wood_bridge.png')!important}
 .battlefield.terrain-style-custom-painted .ground-wood_bridge_damaged{background-image:url('/assets/combat-terrain/bridge-v1/wood_bridge_damaged.png')!important}

@@ -1,5 +1,6 @@
 """Ephemeral, owner-scoped battle previews. Never creates missions or writes saves."""
 from copy import deepcopy
+from functools import lru_cache
 from time import monotonic
 from uuid import uuid4
 
@@ -15,6 +16,8 @@ from .mission_decisions import setup_encounter
 from .models import PlayerState
 from .settings import settings
 from .tactical_contracts import TACTICAL_CONTRACTS
+from .location_maps import MISSION_LOCATIONS, location_blueprint
+from .location_templates import BUILDING_PLANS
 
 router = APIRouter(prefix='/api/debug/battle-lab')
 _sessions = {}
@@ -32,6 +35,38 @@ def authorize(identity):
 
 def supported(encounter):
     return encounter in SUPPORTED or (encounter.startswith('contract:') and encounter[9:] in TACTICAL_CONTRACTS)
+
+
+LAYOUT_LABELS = {
+    'enclosed_repair_yard':'Enclosed repair yard',
+    'workshops_across_courtyard':'Two workshops across a courtyard',
+    'forge_house_and_open_bays':'Forge house with open work bays',
+    'armory_north_south_stores':'North and south stores · open courtyard',
+    'armory_east_west_stores':'East and west stores · open courtyard',
+    'shed_west_door_south_breach':'Shed · southern breach',
+    'shed_west_door_north_breach':'Shed · northern breach',
+}
+
+
+@lru_cache(maxsize=128)
+def layout_presets(encounter):
+    """Find repeatable seeds using the actual map selector, per encounter, not mission."""
+    mid=encounter.removeprefix('contract:')
+    location=MISSION_LOCATIONS.get(mid) if encounter.startswith('contract:') else None
+    if not location:return []
+    expected=len(BUILDING_PLANS.get(location,[None,None]));found={}
+    for index in range(100):
+        seed=f'layout-{index}'
+        board=location_blueprint(location,seed)
+        variant=board['map_variation'];ident=board['template_id']
+        if variant not in found:
+            label=LAYOUT_LABELS.get(ident,ident.replace('_',' ').title())
+            if location in {'broken_creek_bridge','toll_bridge'}:
+                family='Stone' if '_stone_' in ident else 'Wood'
+                label=f'{family} bridge · {"upper" if ident.endswith("_4") else "lower"} crossing'
+            found[variant]={'id':ident,'label':label,'seed':seed}
+        if len(found)==expected:break
+    return [found[key] for key in sorted(found)]
 
 
 def catalogue():
@@ -58,6 +93,8 @@ def catalogue():
                                      'encounter_id': encounter, 'transition': deepcopy(transition)})
         if not variants:
             continue
+        for variant in variants:
+            variant['layout_presets']=deepcopy(layout_presets(variant['encounter_id']))
         event = mission.get('event') or 'general'
         source = MISSION_EVENTS.get(event, {}).get('name', event.replace('_', ' ').title())
         if mission.get('chain_only') or mission.get('trigger_only'):

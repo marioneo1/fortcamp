@@ -38,10 +38,23 @@ await evaluate("{const q=document.querySelector('[data-lab-query]');q.value='hed
 assert.ok(await evaluate('Boolean(document.querySelector("#start-defense"))'));
 assert.ok(await evaluate('Boolean(document.querySelector("[data-lab-return]"))'));
 await evaluate("document.querySelector('[data-lab-return]').click()");await wait();
+await evaluate("{const q=document.querySelector('[data-lab-query]');q.value='intruders at the workshop';q.dispatchEvent(new Event('input'));document.querySelector('[data-lab-mission]').click();}");
+assert.equal(await evaluate("document.querySelectorAll('[data-lab-layout] option').length"),4);
+const presets=await evaluate("Array.from(document.querySelectorAll('[data-lab-layout] option')).slice(1).map(o=>({seed:o.value,label:o.textContent}))");
+for(const preset of presets){
+ await evaluate(`{const layout=document.querySelector('[data-lab-layout]');layout.value=${JSON.stringify(preset.seed)};layout.dispatchEvent(new Event('change'));}`);
+ assert.equal(await evaluate("document.querySelector('[data-lab-seed]').value"),preset.seed);
+ await evaluate("document.querySelector('[data-lab-start]').click()");await wait();
+ assert.equal(await evaluate("window.labRequests.filter(r=>r.body?.mission_id).at(-1).body.seed"),preset.seed);
+ await evaluate("document.querySelector('[data-lab-return]').click()");await wait();
+ assert.equal(await evaluate("document.querySelector('[data-lab-layout]').value"),preset.seed);
+}
+await evaluate("document.querySelector('[data-lab-new-seed]').click()");
+assert.equal(await evaluate("document.querySelector('[data-lab-layout]').value"),'');
 await call('Emulation.setDeviceMetricsOverride',{width:430,height:900,deviceScaleFactor:1,mobile:false});await wait();
 assert.ok(await evaluate('document.querySelector(".battle-lab").getBoundingClientRect().right<=430'));
 assert.ok(await evaluate('document.querySelector(".lab-workspace").scrollHeight>document.querySelector(".lab-workspace").clientHeight'));
 await writeFile('staging-ui/battle-lab/mobile.png',Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
 assert.deepEqual(errors,[]);
-console.log('PASS: 73 missions, filters, authored approach/outcome selection, test launch/restart/return, defense preparation, doubled wagon art and mobile layout');
-await call('Browser.close');ws.close();
+console.log('PASS: 73 missions, filters, authored approach/outcome selection, test launch/restart/return, named layout seeds and Custom/New seed behavior, defense preparation, doubled wagon art and mobile layout');
+await Promise.race([call('Browser.close'),new Promise(r=>setTimeout(r,1000))]);ws.close();

@@ -55,6 +55,22 @@ class BattleLabTests(unittest.TestCase):
         self.assertEqual(preview['variant']['encounter_id'], 'contract:goblin_chieftain')
         self.assertTrue(any(u.get('boss') for u in preview['battle']['units'].values()))
 
+    def test_named_layout_seeds_launch_each_actual_template(self):
+        missions=lab.catalogue()
+        for mid,count in [('tool_shed',2),('workshop_intruders',3),('goblin_armory',2),('goblin_bridge',2)]:
+            mission=next(m for m in missions if m['id']==mid)
+            direct=mission['variants'][0]
+            presets=direct['layout_presets']
+            self.assertEqual(len(presets),count)
+            for preset in presets:
+                preview=self.start(mid,direct['id'],seed=preset['seed'])
+                self.assertEqual(preview['battle']['template_id'],preset['id'])
+                self.assertEqual(preview['seed'],preset['seed'])
+        # A story complication must describe its encounter's layouts, not the parent map.
+        investigation=next(m for m in missions if m['id']=='goblin_smoke_signals')
+        for variant in investigation['variants']:
+            self.assertEqual(variant['layout_presets'],lab.layout_presets(variant['encounter_id']))
+
     def test_save_and_roster_are_unchanged_and_seed_is_repeatable(self):
         self.state['characters'][0]['status'] = 'mission'
         snapshot = deepcopy(self.state)

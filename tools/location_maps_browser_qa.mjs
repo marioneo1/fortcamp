@@ -31,6 +31,8 @@ for(const [mid,material,prop] of [
   assert.ok(water.includes('water_deep.png'));
   assert.equal(await evaluate("document.querySelectorAll('.battle-cell.ground-deep_river:not(.void-tile)').length"),0);
  }
+ const offsets=await evaluate("Array.from(document.querySelectorAll('.battle-terrain.multi-cell-asset')).filter(e=>parseFloat(e.style.getPropertyValue('--asset-offset-x'))).map(e=>({actual:parseFloat(getComputedStyle(e,'::before').left)/e.clientWidth,expected:.5+parseFloat(e.style.getPropertyValue('--asset-offset-x'))/100}))");
+ for(const offset of offsets)assert.ok(Math.abs(offset.actual-offset.expected)<.02,JSON.stringify(offset));
  await writeFile('staging-terrain/location-props-v1/'+mid+'-in-game.png',Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
 }
 assert.deepEqual(errors,[]);console.log('PASS: seven authored locations and all new workshop/armory layouts, actual terrain textures, deep-water boundaries, bridge floors and every assigned sprite loads');

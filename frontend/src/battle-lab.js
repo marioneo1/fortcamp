@@ -35,7 +35,8 @@ export function createBattleLab({api, onStart, onError}) {
     find('.lab-details').innerHTML=`<div class="lab-title"><span class="lab-rank large">${escape(mission.rank)}</span><div><span class="eyebrow">${escape(title(mission.form))}</span><h3>${escape(mission.name)}</h3><p>${escape(mission.source)}${mission.faction?` · ${escape(title(mission.faction))}`:''}</p></div></div><p class="lab-description">${escape(mission.description)}</p>${mission.follows?.length?`<p class="lab-hint">Follow-up from: ${escape(mission.follows.join(", "))}</p>`:""}
       <div class="lab-settings"><label>Approach<select data-lab-approach>${groups.map(g=>{const [node,label]=g.split('|||');return `<option value="${escape(g)}" ${g===`${selected.node}|||${selected.label}`?'selected':''}>${escape(node)} · ${escape(label)}</option>`}).join('')}</select></label><label>Force roll outcome<select data-lab-outcome></select></label></div>
       <div class="lab-approach-help"></div><div class="lab-encounter"></div>
-      <div class="lab-seed"><label>Generation seed<input data-lab-seed maxlength="100" value="${escape(request?.seed||'battle-test-1')}"></label><button data-lab-new-seed>New seed</button></div><small class="lab-hint">Keep the seed to repeat the same map, enemies, and names. Approach rolls are forced for testing.</small>
+      <label class="lab-layout" hidden>Map layout<select data-lab-layout></select></label>
+      <div class="lab-seed"><label>Generation seed<input data-lab-seed maxlength="100" value="${escape(request?.seed||'battle-test-1')}"></label><button data-lab-new-seed>New seed</button></div><small class="lab-hint">Choose a named layout to fill its repeatable seed, or enter your own. Keep the seed to repeat the map, enemies, and names.</small>
       <fieldset class="lab-party"><legend>Test party · Choose up to 4</legend><p>Copies of your roster with their current stats and equipment. Busy characters can be tested too.</p>${data.characters.map(c=>`<label class="lab-character"><input type="checkbox" data-lab-character="${escape(c.id)}" ${(request?.party_ids||[data.characters[0]?.id]).includes(c.id)?'checked':''}>${c.portrait?`<img src="${escape(c.portrait)}" alt="">`:'<span class="lab-face">◇</span>'}<span><b>${escape(c.name)}</b><small>${escape(c.race)} · ${escape(title(c.status))}</small></span></label>`).join('')||'<p>A temporary starter character will be used.</p>'}</fieldset>
       <label class="lab-helper"><input data-lab-helper type="checkbox" ${request?.add_helper===false?'':'checked'}>Add a temporary companion if testing solo</label><div class="lab-error" role="alert"></div>`;
     find('.lab-footer small').textContent=`${mission.rank} Rank · ${mission.name}`;
@@ -53,10 +54,16 @@ export function createBattleLab({api, onStart, onError}) {
       const v=mission.variants.find(v=>v.id===variantId);
       find('.lab-approach-help').textContent=v.description+(v.requires?' The lab bypasses the training requirement.':'');
       find('.lab-encounter').innerHTML=`<b>Encounter</b> ${escape(v.encounter_id)}${v.transition.boss?' · Stronger commander':''}${v.transition.setup?` · ${escape(title(v.transition.setup))}`:''}`;
+      const presets=v.layout_presets||[],layout=find('[data-lab-layout]'),seed=find('[data-lab-seed]');
+      find('.lab-layout').hidden=!presets.length;
+      layout.innerHTML='<option value="">Custom / random seed</option>'+presets.map(p=>`<option value="${escape(p.seed)}">${escape(p.label)} · ${escape(p.seed)}</option>`).join('');
+      layout.value=presets.some(p=>p.seed===seed.value)?seed.value:'';
+      layout.onchange=()=>{if(layout.value)seed.value=layout.value};
+      seed.oninput=()=>{layout.value=presets.some(p=>p.seed===seed.value)?seed.value:''};
     };
     find('[data-lab-approach]').onchange=updateOutcomes;
     find('[data-lab-outcome]').onchange=updateDescription;updateOutcomes();
-    find('[data-lab-new-seed]').onclick=()=>{find('[data-lab-seed]').value=`test-${Date.now().toString(36)}`};
+    find('[data-lab-new-seed]').onclick=()=>{find('[data-lab-seed]').value=`test-${Date.now().toString(36)}`;find('[data-lab-layout]').value=''};
     const partyInputs=[...dialog.querySelectorAll('[data-lab-character]')];
     const updateParty=()=>{const full=partyInputs.filter(i=>i.checked).length>=4;partyInputs.forEach(i=>i.disabled=full&&!i.checked)};
     partyInputs.forEach(i=>i.onchange=updateParty);updateParty();

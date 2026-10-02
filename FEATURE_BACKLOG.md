@@ -206,3 +206,8 @@ Implemented one authenticated dev launcher for both website and Discord Activity
 # October 2 follow-up — authored building plans (dev)
 
 Implemented door-aware pursuit and panic escape; one-third lantern artwork; perimeter wall/door/broken-wall edge alignment; three workshop plans, two mirrored shed plans, two connected-house armory plans and two bridge positions with wood/stone decking. Preserved original map snapshots and separate terrain/prop packs. Rules and validation: docs/design/AUTHORED_BATTLE_LOCATIONS.md. Chapel/bell art is prepared; chapel/bell maps, further fortified/tunnel/training layouts and balance playtesting remain pending. Production unchanged.
+# October 2 — visible wall alignment and Battle Lab layout presets
+
+Fixed global CSS overriding perimeter offsets; browser QA now checks actual sprite placement. Battle Lab has named layouts and verified seeds per selected encounter, retains launched choices and shows the template in the battle toolbar. Custom seeds still work.
+
+Proposed, awaiting user direction: replace overlapping corpse/unconscious tokens on a tile with one small body marker and a count badge. Clicking opens a per-body name/state/action list; living occupants stay prominent. Do not confuse this proposal with implemented rendering.

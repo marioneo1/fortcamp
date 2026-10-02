@@ -18,10 +18,13 @@ identity = Identity(guild_id='preview', user_id='tester', display_name='Tester',
 missions = lab.catalogue()
 views = {}
 with patch.object(lab, 'settings', SimpleNamespace(environment='dev', game_debug_mode=True, dev_bypass_auth=True)):
-    for mid in ['goblin_warcamp', 'goblin_captive_cart', 'goblin_smoke_signals', 'hedgerow_watch_defense']:
+    for mid in ['goblin_warcamp', 'goblin_captive_cart', 'goblin_smoke_signals', 'hedgerow_watch_defense','tool_shed','workshop_intruders','goblin_armory']:
         for variant in next(m for m in missions if m['id'] == mid)['variants']:
             views[mid + '|' + variant['id']] = lab.start_session(
                 identity, lab.StartRequest(mission_id=mid, variant_id=variant['id']), state)
+            for preset in variant.get('layout_presets',[]):
+                views[mid+'|'+variant['id']+'|'+preset['seed']]=lab.start_session(
+                    identity,lab.StartRequest(mission_id=mid,variant_id=variant['id'],seed=preset['seed']),state)
 source = (ROOT / 'staging-ui/equipment-icons-v1/battle-preview.js').read_text(encoding='utf-8')
 source += '\nconst labFixture=' + json.dumps({'catalogue': {'missions': missions, 'characters': state['characters']},
                                              'views': views}, ensure_ascii=True) + ';\n' + '''
@@ -32,7 +35,7 @@ window.fetch=(url,options={})=>{
   window.labRequests.push({url,body:options.body?JSON.parse(options.body):null});
   if(!options.method)return Promise.resolve(new Response(JSON.stringify(labFixture.catalogue)));
   const body=JSON.parse(options.body||'{}');
-  const view=structuredClone(labFixture.views[body.mission_id+'|'+body.variant_id]);
+  const view=structuredClone(labFixture.views[body.mission_id+'|'+body.variant_id+'|'+body.seed]||labFixture.views[body.mission_id+'|'+body.variant_id]);
   if(!view)return Promise.reject(Error('Unsupported preview request'));
   view.seed=body.seed;return Promise.resolve(new Response(JSON.stringify(view)));
  }
