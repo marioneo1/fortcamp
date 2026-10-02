@@ -1,5 +1,9 @@
 # Map Asset Layering
 
+## Current building library: material-specific kits (October 2)
+
+The active library is structures/building-v2: four 16-piece atlases, generated separately for timber, rough fieldstone, polished limestone and iron. Each material includes its own matching walls, corners, T/cross joins, door/gate state pairs and supporting pieces. Sources, exact prompts and extraction report: staging-terrain/building-toolset-v2. Install with tools/install_material_building_toolsets.py; complete alpha silhouettes preserve proportions and paired gate anchors. Geometry includes per-material corner offsets and perimeter-T offsets. Existing libraries are preserved as legacy. New building collision follows docs/design/WALL_BOUNDARIES.md; other props/furniture and terrain packs remain separate.
+
 ## October 2: Mission evidence, prison wagon and coverage audit
 
 Added a fourth expansion pack with 12 sprites: intact/wrecked prison wagon, dispatch satchel, wagon wheel, marked farm chart, armed/spent spike traps, armed/spent iron-jaw traps, handcart, cold campfire and wooden table. The registry now installs 55 sprites. This supersedes the earlier 43-sprite count below. Exact built-in image_gen prompt/source are preserved in staging-terrain/overhead-props-v2/mission_objects_PROMPT.md and mission_objects_12.png. Reference roles and extraction method remain as documented below.

@@ -1,14 +1,30 @@
 {
   "timber": {
-    "join_offset": 0.3603
+    "join_offset": 0.3965,
+    "junction_offset": [
+      0.0072,
+      -0.0759
+    ]
   },
   "fieldstone": {
-    "join_offset": 0.3496
+    "join_offset": 0.3608,
+    "junction_offset": [
+      0.0034,
+      0.0113
+    ]
   },
   "limestone": {
-    "join_offset": 0.3427
+    "join_offset": 0.3693,
+    "junction_offset": [
+      -0.0032,
+      -0.071
+    ]
   },
   "iron": {
-    "join_offset": 0.3406
+    "join_offset": 0.3843,
+    "junction_offset": [
+      0.0043,
+      -0.0252
+    ]
   }
 }

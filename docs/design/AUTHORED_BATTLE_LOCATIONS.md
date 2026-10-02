@@ -1,5 +1,9 @@
 # Authored battle locations
 
+## Current wall rules and art (October 2)
+
+New building/enclosure perimeters now block crossing edges while leaving interior floor tiles usable. Centered dividers still occupy their tile; actual T-junctions connect them to the outer shell. Doors, attacks, enemy pursuit and escape use the same boundaries. Four complete material-specific structure packs supersede the mixed-material art below; original sources remain legacy. See WALL_BOUNDARIES.md and BUILDING_TEMPLATES.md. Existing saved maps are not regenerated.
+
 ## Current: coordinated building toolset and eight reusable plans
 
 Shed and workshop selection now uses four distinct building footprints each, assembled independently of the map. This supersedes the flipped shed and three earlier workshop choices below. Matching fieldstone straight/corner art replaces the mixed libraries. Small doors and gates have coordinated overhead state pairs. See BUILDING_TEMPLATES.md for the eight plans, 40-part structural toolset, source prompts, calibrated joins, installation and validation. The old layouts are preserved in `docs/maps/archive/building_locations_v2.json`.

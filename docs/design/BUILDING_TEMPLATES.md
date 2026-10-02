@@ -21,21 +21,16 @@ These eight footprints are distinct even under reflection and rotation. Flipping
 
 ## Coordinated structural art
 
-Runtime library: `frontend/public/assets/combat-terrain/structures/building-v1`. Four material families: timber, rough fieldstone, dressed limestone for castles/chapels, and iron prison/security structures. Each has straight wall, corner, junction, terminal wall, breach, small door closed/open, gate closed/open and stairs: 40 pieces total.
+Current runtime library: `frontend/public/assets/combat-terrain/structures/building-v2`. Four separate material atlases now contain 16 parts each: timber, rough fieldstone, polished limestone and iron. Walls, junctions, doors and gates for each material were generated together. Exact prompts/source sheets and extraction report are in `staging-terrain/building-toolset-v2`; old mixed-material `building-toolset-v1` sources and runtime files are preserved as legacy.
 
-Sources and complete prompts: `staging-terrain/building-toolset-v1`:
+Install with `.venv\Scripts\python.exe tools\install_material_building_toolsets.py`. Complete silhouettes are recovered without stretching; open/closed doors share anchors and scale. `backend/building_art_geometry.json` calibrates corners and T-junctions. The old installer delegates to these packs when available. Generated media remain local and need separate backup.
 
-- `rustic_structures_20.png` and `RUSTIC_PROMPT.md`: matching timber and fieldstone parts.
-- `civic_structures_20.png` and `CIVIC_PROMPT.md`: matching dressed stone and iron parts.
-- `overhead_doors_gates_16.png` and `DOORS_PROMPT.md`: replacement paired doors/gates viewed from above. Frontal door drafts in the two initial sheets are not installed.
-- `extraction.json`: source ownership, recovered bounds and shared door anchors.
+## Wall occupancy and divider joins
 
-Built-in image generation was used. These packs contain structures only; terrain textures and furniture props remain separate. Fieldstone walls and corners now come from the same sheet. Door/gate leaves use a separate coordinated overhead sheet to avoid the frontal doors in the draft. Stairs, junction/end pieces and castle/prison families are prepared tools; this pass does not add dungeon floors or stair interactions.
-
-Install with `.venv\Scripts\python.exe tools\install_building_toolset.py`. The installer groups connected silhouettes by cell ownership and recovers complete bounds, including details extending beyond a nominal cell. It preserves aspect ratio and keeps paired door-post anchors/scale stable. Corner-arm measurements produce `backend/building_art_geometry.json`; walls and breaches use those family offsets so they meet the corners. Stable old sprite IDs point to the new matching families. Older pack installers preserve these overrides rather than reverting them. Source art is excluded from the public code repository and must remain locally available for reinstalling.
+New perimeter walls and corners leave their interior floor tile walkable and block crossing their outside edges. Centered dividers occupy the whole tile. The divided tool house and repair hall use T-junctions to connect their dividers to the shell. Gates, enemy routing and attack sight lines obey the same boundaries. Legacy saved geometry keeps its old collision behavior. See [Wall boundaries](WALL_BOUNDARIES.md) for exact rules and validation.
 
 ## Validation and remaining work
 
-318 backend tests and 103 frontend tests pass; frontend build passes. Forty seeds per location validate clear, unique spawns and routes through doors to exits. Building tests cover all outer wall cells, intended openings, four unique footprints, independent instances and rotation of shell/furniture/spawns. Browser previews cover all eight plans plus other authored locations, actual sprite files and applied offsets. Coverage audit: 83 encounters, 2,169 references, no missing art.
+323 backend tests and 103 frontend tests pass; frontend build and browser checks pass. Forty seeds per location validate clear, unique spawns and actual movement routes through opened doors to exits. Building tests cover shell coverage, T connections, four distinct footprints per mission, independent instances and rotation. Art coverage: 83 encounters, 2,169 references, no missing files.
 
-Further work: more map-level settings using these building pieces; chapel/fort/prison-specific plans and stair destinations; richer courtyard dressing and map-by-map player balance review. Production and player saves were not modified.
+Further work: more map settings using these pieces; chapel/fort/prison-specific plans and stair destinations; richer courtyard dressing and player balance review. Production and live saves were not modified.

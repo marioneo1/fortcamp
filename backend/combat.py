@@ -10,6 +10,7 @@ from .battle_maps import compile_battle_map, compile_generated_battle_map, occup
 from .content import ITEMS, RECRUIT_PROFILES, MISSION_TEMPLATES
 from .tactical_contracts import TACTICAL_CONTRACTS
 from .location_maps import MISSION_LOCATIONS
+from .wall_boundaries import crossed_walls, can_operate_gate
 from .portraits import choose_pool_portrait, portrait_pool_key
 from .races import race_gameplay
 from .perk_effects import modifiers
@@ -816,7 +817,7 @@ def _blocked(
     if x < 0 or y < 0 or x >= battle["width"] or y >= battle["height"]:
         return True
     if any(
-        tile.get("blocking") and not tile.get("destroyed")
+        tile.get("blocking") and not tile.get("destroyed") and not tile.get('edge_wall')
         and not (tile.get("requires_flying") and movement_type == "flying")
         for tile in _terrain_at(battle, x, y)
     ):
@@ -862,6 +863,8 @@ def _can_step(battle: dict, x: int, y: int, nx: int, ny: int, unit: dict) -> boo
         return False
     if _blocked(battle, nx, ny, unit["id"], unit.get("movement_type")):
         return False
+    if crossed_walls(battle, (x, y), (nx, ny)):
+        return False
     if unit.get("movement_type") == "flying":
         return True
     return abs(_tile_height(battle, nx, ny) - _tile_height(battle, x, y)) <= 2
@@ -894,6 +897,8 @@ def _distance(a: dict, b: dict) -> int:
 def _line_of_sight(battle: dict, attacker: dict, target: dict) -> bool:
     """Bresenham trace; blocking terrain stops ranged attacks."""
     x0, y0, x1, y1 = attacker["x"], attacker["y"], target["x"], target["y"]
+    if any(wall.get('id') != target.get('id') for wall in crossed_walls(battle, (x0, y0), (x1, y1), sight=True)):
+        return False
     dx, dy = abs(x1 - x0), -abs(y1 - y0)
     sx, sy = (1 if x0 < x1 else -1), (1 if y0 < y1 else -1)
     error = dx + dy
@@ -906,7 +911,7 @@ def _line_of_sight(battle: dict, attacker: dict, target: dict) -> bool:
             error += dx; y += sy
         if (x, y) == (x1, y1):
             return True
-        if any(tile.get("blocks_sight", tile.get("blocking", False)) and not tile.get("destroyed") for tile in _terrain_at(battle, x, y)):
+        if any(tile.get("blocks_sight", tile.get("blocking", False)) and not tile.get("destroyed") and not tile.get('edge_wall') for tile in _terrain_at(battle, x, y)):
             return False
         if _tile_height(battle, x, y) >= max(_tile_height(battle, attacker["x"], attacker["y"]), _tile_height(battle, target["x"], target["y"])) + 2:
             return False
@@ -956,7 +961,9 @@ def _attack_hits(battle: dict, attacker: dict, target: dict, rule: str) -> tuple
 
 def _can_attack(battle: dict, attacker: dict, target: dict, attack_range: int | None = None) -> bool:
     reach = int(attack_range if attack_range is not None else attacker["attack_range"])
-    return _distance(attacker, target) <= reach and (reach == 1 or _line_of_sight(battle, attacker, target))
+    return (_distance(attacker, target) <= reach
+            and not any(wall.get('id') != target.get('id') for wall in crossed_walls(battle, (attacker['x'], attacker['y']), (target['x'], target['y']), sight=True))
+            and (reach == 1 or _line_of_sight(battle, attacker, target)))
 
 
 def _reachable(battle: dict, unit: dict, limit: int) -> dict[tuple[int, int], int]:
@@ -1628,6 +1635,7 @@ def _route_with_gates(battle, unit, goals):
     if not goals:return [],{},{}
     gates = {cell: tile for tile in battle.get('terrain', [])
              if tile.get('kind') == 'gate' and not tile.get('destroyed') and tile.get('state') != 'opened'
+             and not tile.get('edge_wall')
              for cell in occupied_tiles(tile)}
     planning = {**battle, 'terrain': [{**t, 'blocking':False} if t.get('kind') == 'gate' and not t.get('destroyed') else t
                                      for t in battle.get('terrain', [])]}
@@ -1638,20 +1646,30 @@ def _route_with_gates(battle, unit, goals):
         if cell in goals:goal=cell;break
         for nx,ny in ((x+1,y),(x-1,y),(x,y+1),(x,y-1)):
             if not _can_step(planning,x,y,nx,ny,unit):continue
-            candidate=cost+_step_cost(planning,x,y,nx,ny,unit)+(max(1,_movement_limit(unit)) if (nx,ny) in gates else 0)
+            crossing = any(t.get('kind') == 'gate' for t in crossed_walls(battle, (x,y), (nx,ny)))
+            candidate=cost+_step_cost(planning,x,y,nx,ny,unit)+(max(1,_movement_limit(unit)) if (nx,ny) in gates or crossing else 0)
             if candidate>=costs.get((nx,ny),10**9):continue
             costs[(nx,ny)]=candidate;parents[(nx,ny)]=cell;heapq.heappush(queue,(candidate,nx,ny))
     if goal is None:return [],costs,gates
     path=[]
     while goal!=start:path.append(goal);goal=parents[goal]
-    return list(reversed(path)),costs,gates
+    path=list(reversed(path))
+    previous=start; route_gates={}
+    for cell in path:
+        doors=[t for t in crossed_walls(battle, previous, cell) if t.get('kind')=='gate']
+        if cell in gates:route_gates[cell]=gates[cell]
+        elif doors:route_gates[cell]=doors[0]
+        previous=cell
+    return path,costs,route_gates
 
 
 def _pursuit_goals(battle, unit, target):
     gate_cells={cell for t in battle.get('terrain',[]) if t.get('kind')=='gate' and not t.get('destroyed') for cell in occupied_tiles(t)}
     return {(target['x']+dx,target['y']+dy) for dx,dy in ((1,0),(-1,0),(0,1),(0,-1))
-            if not _blocked(battle,target['x']+dx,target['y']+dy,unit['id'],unit.get('movement_type'))
-            or (target['x']+dx,target['y']+dy) in gate_cells}
+            if (not _blocked(battle,target['x']+dx,target['y']+dy,unit['id'],unit.get('movement_type'))
+                or (target['x']+dx,target['y']+dy) in gate_cells)
+            and not any(t.get('kind') != 'gate' for t in crossed_walls(battle,
+                         (target['x']+dx,target['y']+dy),(target['x'],target['y']),sight=True))}
 
 
 def _move_toward(battle: dict, unit: dict, target: dict) -> None:
@@ -2095,7 +2113,7 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
 def _auto_open_gate(battle, unit, target):
     if _can_attack(battle,unit,target):return False
     if not any(t.get('kind')=='gate' and not t.get('destroyed') and t.get('state')!='opened'
-               and _distance_to_entity(unit,t)==1 for t in battle.get('terrain',[])):
+               and can_operate_gate(unit,t) for t in battle.get('terrain',[])):
         return False
     path,_,gates=_route_with_gates(battle,unit,_pursuit_goals(battle,unit,target))
     if path and path[0] in gates:
@@ -2107,10 +2125,10 @@ def _auto_open_gate(battle, unit, target):
 def _interact(battle: dict, unit: dict, object_id: str) -> None:
     gate = next((t for t in battle.get('terrain', []) if t.get('id') == object_id and t.get('kind') == 'gate' and not t.get('destroyed')), None)
     if gate:
-        if _distance_to_entity(unit, gate) != 1:
+        if not can_operate_gate(unit, gate):
             raise ValueError('Move next to the gate before operating it')
         closing = gate.get('state') == 'opened'
-        if closing and any(u.get('conscious', True) and not u.get('extracted') and not u.get('carried_by')
+        if closing and not gate.get('edge_wall') and any(u.get('conscious', True) and not u.get('extracted') and not u.get('carried_by')
                            and (u['x'], u['y']) in occupied_tiles(gate) for u in battle['units'].values()):
             raise ValueError('Someone is standing in the gate')
         gate.update(state='closed' if closing else 'opened', blocking=closing, blocks_sight=closing,
@@ -2305,7 +2323,7 @@ def _context_actions(battle: dict, unit: dict) -> list[dict]:
     actions: list[dict] = []
     if not unit.get("acted"):
         for gate in battle.get('terrain', []):
-            if gate.get('kind') != 'gate' or gate.get('destroyed') or _distance_to_entity(unit, gate) != 1:
+            if gate.get('kind') != 'gate' or gate.get('destroyed') or not can_operate_gate(unit, gate):
                 continue
             verb = 'Close' if gate.get('state') == 'opened' else 'Open'
             actions.append({'id': f"gate:{gate['id']}", 'label': f"{verb} {gate['name']}", 'target': gate['name'],
@@ -2785,7 +2803,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             raise ValueError("This unit already used its action")
         object_id = str(command.get("target_id", ""))
         obj = battle["objects"].get(object_id) or next((t for t in battle.get('terrain', []) if t.get('id') == object_id and t.get('kind') == 'gate'), None)
-        if not obj or _distance_to_entity(unit, obj) != 1:
+        if not obj or (not can_operate_gate(unit, obj) if obj.get('kind') == 'gate' else _distance_to_entity(unit, obj) != 1):
             raise ValueError("Move next to that object before interacting")
         _commit_player_movement(battle, unit)
         _interact(battle, unit, object_id)

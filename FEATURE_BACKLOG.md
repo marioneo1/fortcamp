@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## Completed October 2: Wall boundaries and material-specific building kits
+
+Implemented in dev: walkable interior floor beside edge walls/corners, blocked crossing/sight, full-tile centered dividers, real divider-to-shell T joins and boundary-aware gate/pursuit/escape behavior. Generated four complete 16-piece atlases, one per material, with matching walls, doors and gates; installed versioned art and preserved legacy sources/IDs. Canonical references: docs/design/WALL_BOUNDARIES.md and BUILDING_TEMPLATES.md. Validation: 323 backend tests, 103 frontend tests, build/browser checks and 83-encounter art audit pass. Remaining: more material-specific buildings, stair interactions and live balance/visual review. Production untouched.
+
 ## Completed October 2: First authored-location pass
 
 Six maps rebuilt around their quests: Locked Tool Shed, Intruders at the Workshop, Bone Collectors, Bone Patrol, Timber Across the Creek and Narrow Bridge Gang. Added reusable enclosure/work-bay/grave-row/river-crossing pieces, two seeded dressing variants, working attackable gates and separate twelve-prop/eight-structure art packs; reused existing terrain. Original generic layouts and assets preserved. Reference: docs/design/AUTHORED_BATTLE_LOCATIONS.md. Validation: 314 backend tests, browser checks of six maps, 65-map art coverage audit and frontend build/tests passed. Remaining: chapel/gatehouse, toll ford/watch dispute, fortified command/blockade, tunnels/armory, submerged bell, cache and reclaimed training yard. Subjective visual approval and map balance follow-up remain open. Production untouched.

@@ -37,5 +37,10 @@ for(const [mid,material,prop] of [
  for(const offset of offsets)assert.ok(Math.abs(offset.actual-offset.expected)<.02,JSON.stringify(offset));
  await writeFile('staging-terrain/location-props-v1/'+mid+'-in-game.png',Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
 }
-assert.deepEqual(errors,[]);console.log('PASS: seven authored locations and all new workshop/armory layouts, actual terrain textures, deep-water boundaries, bridge floors and every assigned sprite loads');
+const edge=await evaluate('window.propEdgeWalk()');
+assert.ok(await evaluate(`document.querySelector('[data-battle-cell="${edge.x},${edge.y}"]').classList.contains('reachable')`));
+await evaluate(`document.querySelector('[data-battle-terrain="${edge.id}"]').click()`);
+await new Promise(r=>setTimeout(r,120));
+assert.deepEqual(await evaluate('window.gearCommands.at(-1)'),{action:'move',x:edge.x,y:edge.y});
+assert.deepEqual(errors,[]);console.log('PASS: authored layouts, sprite loading/offsets and clicking a wall interior sends Move');
 await Promise.race([call('Browser.close'),new Promise(r=>setTimeout(r,1000))]);ws.close();

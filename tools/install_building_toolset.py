@@ -38,6 +38,11 @@ def centered(image,scale=None,anchor_y=None):
     return canvas
 
 def main():
+    # Prefer the complete material packs; this old entry point must not revert
+    # the active registry to the earlier mixed-material draft.
+    if all((ROOT/'staging-terrain/building-toolset-v2'/f'{f}.png').exists() for f in FAMILIES):
+        from install_material_building_toolsets import main as install_current
+        return install_current()
     sprites={};report=[]
     for file,families in [('rustic_structures_20.png',FAMILIES[:2]),('civic_structures_20.png',FAMILIES[2:])]:
         image=Image.open(SOURCE/file).convert('RGBA')

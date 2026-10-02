@@ -6,7 +6,7 @@ from backend.location_maps import MISSION_LOCATIONS, location_blueprint, place_b
 from backend.building_templates import BUILDINGS, footprint, shell
 from backend.location_templates import BUILDING_PLANS
 from backend.battle_maps import compile_generated_battle_map, validate_battle_map, occupied_tiles
-from backend.combat import create_contract_battle, _interact, _blocked, battle_view, _damage_terrain, _move_toward, _auto_open_gate, _flee_turn
+from backend.combat import create_contract_battle, _interact, _blocked, _can_step, battle_view, _damage_terrain, _move_toward, _auto_open_gate, _flee_turn
 from backend.game import new_game
 
 
@@ -21,19 +21,22 @@ class LocationMapTests(unittest.TestCase):
                 self.assertEqual(validate_battle_map(location,blueprint),[])
                 variants.add(blueprint['map_variation'])
                 blocked = {(v['x'],v['y']) for v in blueprint['void_tiles']}
-                blocked |= {p for t in blueprint['terrain'] if t.get('blocking') for p in occupied_tiles(t)}
+                blocked |= {p for t in blueprint['terrain'] if t.get('blocking') and not t.get('edge_wall') for p in occupied_tiles(t)}
                 spawns = [p for group in blueprint['spawn_zones'].values() for p in group]
                 self.assertEqual(len({(p['x'],p['y']) for p in spawns}),len(spawns))
                 self.assertTrue(all((p['x'],p['y']) not in blocked for p in spawns),location)
                 # With gates opened, every spawn connects to its advertised exit.
                 blocked -= {p for t in blueprint['terrain'] if t['kind']=='gate' for p in occupied_tiles(t)}
+                walking={**deepcopy(blueprint),'units':{}}
+                for t in walking['terrain']:
+                    if t['kind']=='gate':t['blocking']=False
                 exits = {(p['x'],p['y']) for p in blueprint['extraction']['tiles']+blueprint['enemy_extraction']['tiles']}
                 for spawn in spawns:
                     seen={(spawn['x'],spawn['y'])};queue=deque(seen)
                     while queue:
                         x,y=queue.popleft()
                         for p in ((x-1,y),(x+1,y),(x,y-1),(x,y+1)):
-                            if 0<=p[0]<blueprint['width'] and 0<=p[1]<blueprint['height'] and p not in blocked|seen:
+                            if p not in blocked|seen and _can_step(walking,x,y,*p,{'id':'walker'}):
                                 seen.add(p);queue.append(p)
                     self.assertTrue(seen&exits,(location,spawn))
             self.assertEqual(variants,set(range(1,len(BUILDING_PLANS.get(location,[None,None]))+1)),location)
@@ -134,6 +137,8 @@ class LocationMapTests(unittest.TestCase):
         player=battle['units']['player']
         battle['turn_order']=['player',*[uid for uid in battle['turn_order'] if uid!='player']];battle['turn_index']=0
         gate=next(t for t in battle['terrain'] if t['kind']=='gate')
+        # Old saves and centered internal doors retain full-tile occupancy.
+        gate.pop('edge_wall',None);gate.pop('wall_edges',None)
         gx,gy=gate['x'],gate['y'];player.update(x=gx-1,y=gy)
         self.assertTrue(_blocked(battle,gx,gy,'player'))
         self.assertTrue(any(a['command']['target_id']==gate['id'] for a in battle_view(battle)['context_actions']))

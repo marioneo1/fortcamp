@@ -1,5 +1,9 @@
 # Battle Lab — implemented development tool
 
+## Current building preview rules (October 2)
+
+Restart a test battle to see new edge-wall collision and material-specific building art. The divided tool house and partitioned repair hall now have actual T-junctions. Interior edge/corner floor tiles are walkable; centered dividers remain blocking. Existing saves are not regenerated. Rules and source packs: WALL_BOUNDARIES.md and BUILDING_TEMPLATES.md.
+
 Open **Mission Board → debug controls → Open Battle Lab** in the dev game. Restart the dev launcher once after backend changes, then refresh the browser/Discord Activity. `GAME_DEBUG_MODE` must be enabled. Production/release/stable profiles explicitly reject the lab even if debug is accidentally enabled. Server admins can use it; local auth bypass follows the existing debug policy.
 
 The lab replaces the three separate quick-test buttons with one searchable workspace. Currently 73 mission templates expose supported battle encounters; the list is derived from current content, not maintained separately. Search name, faction or mission type and filter by rank or source. Each entry shows its rank, description, regional pool or private follow-up source, faction when provided, and known preceding contracts. The encounter identifier makes it clear when a failed investigation loads a different battlefield.

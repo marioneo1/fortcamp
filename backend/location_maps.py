@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 from .location_templates import BUILDING_PLANS
 from .building_templates import BUILDINGS, footprint, shell
+from .wall_boundaries import SIDES
 
 ART_GEOMETRY=json.loads(Path(__file__).with_name('building_art_geometry.json').read_text())
 
@@ -51,6 +52,8 @@ def enclosure(ident, rect, doorway, wood=False):
                for xx, yy in sorted(edge) if (xx, yy) != doorway]
     corners={(x,y):270,(x+w-1,y):0,(x+w-1,y+h-1):90,(x,y+h-1):180}
     for segment in terrain:
+        segment.update(edge_wall=True,wall_edges=[side for side,active in [('north',segment['y']==y),
+                        ('east',segment['x']==x+w-1),('south',segment['y']==y+h-1),('west',segment['x']==x)] if active])
         if (segment['x'],segment['y']) in corners:
             segment.update(sprite=f'structure:{family}_corner',
                            rotation=corners[(segment['x'],segment['y'])])
@@ -65,6 +68,8 @@ def enclosure(ident, rect, doorway, wood=False):
                     'blocking': True, 'blocks_sight': True, 'destructible': True, 'hp': 12, 'max_hp': 12,
                     'armor': 1, 'destroyed_kind': 'rubble', 'destroyed_movement_cost': 2})
     terrain[-1]['art_scale']=1.25
+    terrain[-1].update(edge_wall=True,wall_edges=[side for side,active in [('north',dy==y),
+                         ('east',dx==x+w-1),('south',dy==y+h-1),('west',dx==x)] if active])
     terrain[-1]['art_offset'] = [(-offset if dx==x else offset) if dx in (x,x+w-1) else 0,
                                 (-offset if dy==y else offset) if dy in (y,y+h-1) else 0]
     return terrain
@@ -138,6 +143,9 @@ def place_building(template_id, anchor, ident, rotation=0):
         elif rotation==180:x,y=-x,-y
         elif rotation==270:x,y=y,-x
         return [x,y]
+    def edges(sides):
+        order=list(SIDES)
+        return [order[(order.index(side)+rotation//90)%4] for side in sides]
     family=template['family'];factor=ART_GEOMETRY[family]['join_offset']/.3125
     terrain=[];decorations=[];paint=[]
     for rect in template.get('yard',[]):
@@ -149,6 +157,11 @@ def place_building(template_id, anchor, ident, rotation=0):
         xx,yy=position(x,y)
         entry=wall(xx,yy,f'{ident}_wall_{x}_{y}',family=='timber',rotation=(piece['rotation']+rotation)%360,family=family)
         entry.update(sprite=f"structure:{family}_{piece['piece']}",art_offset=shifted([v*factor for v in piece['offset']]))
+        if piece['piece']=='edge_junction':
+            ox,oy=ART_GEOMETRY[family].get('junction_offset',[0,0])
+            for _ in range(piece['rotation']//90):ox,oy=-oy,ox
+            entry['art_offset']=shifted([ox,oy])
+        entry.update(edge_wall=not piece.get('centered',False),wall_edges=edges(piece['edges']))
         terrain.append(entry)
     for x,y in template.get('partitions',[]):
         xx,yy=position(x,y)
@@ -164,6 +177,8 @@ def place_building(template_id, anchor, ident, rotation=0):
         gate.update(name='Store Door' if type_=='door' else 'Workshop Gate',kind='gate',state='closed',
                     sprite=prefix+'_closed',closed_sprite=prefix+'_closed',open_sprite=prefix+'_open',
                     rotation=(turn+rotation)%360,art_offset=shifted(offset),hp=12,max_hp=12,armor=1)
+        if (x,y) in boundary:
+            gate.update(edge_wall=True,wall_edges=edges(boundary[(x,y)]['edges']))
         terrain.append(gate)
     for x,y in template.get('breaches',[]):
         entry=next(t for t in terrain if (t['x'],t['y'])==position(x,y))

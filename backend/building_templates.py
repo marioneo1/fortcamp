@@ -96,4 +96,15 @@ def shell(template):
                 if (x+dx,y+dy) not in cells:
                     result[(x,y)]={'piece':'corner','rotation':rotation,'offset':[dx*.625,dy*.625],'inner':True}
                     break
+    for (x,y),piece in result.items():
+        piece['edges']=[side for side,(dx,dy) in cardinal.items() if (x+dx,y+dy) not in cells]
+    # A centered room divider meets the perimeter with a real T, not a gap.
+    dividers=set(template.get('partitions', []))
+    dividers.update((x,y) for x,y,_ in template.get('internal_doors', []))
+    for (x,y),piece in result.items():
+        if len(piece['edges']) != 1:continue
+        side=piece['edges'][0];dx,dy=cardinal[side]
+        if (x-dx,y-dy) in dividers:
+            piece.update(piece='edge_junction',rotation={'north':0,'east':90,'south':180,'west':270}[side],
+                         offset=[0,0],centered=True)
     return result

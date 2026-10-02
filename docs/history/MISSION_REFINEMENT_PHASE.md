@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Edge walls, T-junctions and four complete material atlases
+
+Replaced full-tile collision for newly authored perimeter walls with bidirectional edge boundaries. Corners keep usable interior floors; centered dividers still occupy their tiles. Both divided buildings now connect their partitions to the shell with T pieces. Movement, melee/ranged sight, gate use, enemy pursuit and panic routes agree on boundaries; existing saved battles retain legacy collision. Direct wall-floor clicks move while body context menus remain available.
+
+Built-in image generation produced separate timber, rough stone, polished stone and metal packs, 16 structures each. Sources/prompts/extraction are preserved in staging-terrain/building-toolset-v2; complete silhouettes are fit proportionally, open/closed posts stay anchored, and corner/T offsets are calibrated per material. Old installers preserve/delegate current art. 323 backend tests and 103 frontend tests, build and actual-browser layout/edge-floor checks pass; 83 encounters / 2,169 art references have no missing files. No production or live-save changes.
+
 ## 2026-10-02: Mission evidence art and encounter-wide coverage
 
 Generated a twelve-sprite mission-object atlas in the approved overhead style using built-in image_gen. Preserved source/prompt and recovered complete isolated silhouettes; installed selection grows to 55. Added missing satchel/wheel/chart images, dedicated prison wagon/wreck art, distinct armed/spent trap states and stone-wall fallback. Shared frontend art resolution covers existing saved missions and preparation/live battle, while new mission data explicitly assigns evidence/wagon sprites.
