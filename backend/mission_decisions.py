@@ -48,7 +48,7 @@ def advance_scene(state,template,analysis,seed,node_id,revision,choice_id):
     if not check['allowed']:raise ValueError('This approach needs an Engineer or Constructor training in the assigned party')
     rng=random.Random(f'{seed}:scene:{current}:{revision}:{choice_id}')
     die=rng.randint(1,20) if choice.get('stat') else None
-    outcome=classify(die,die+check['bonus'],check['difficulty'],template.get('rank','E'),bool(analysis.get('critical_success_available',not template.get('critical_any'))),rng.randint(1,100)) if die else 'success'
+    outcome=classify(die,die+check['bonus'],check['difficulty'],template.get('rank','E'),bool(analysis.get('critical_success_available',not template.get('critical_any'))),rng.randint(1,10000)/100) if die else 'success'
     transition=deepcopy(choice['success' if outcome=='critical_success' else outcome])
     scene['history'].append({'choice':choice['label'],'outcome':outcome,'die':die,'total':die+check['bonus'] if die else None,'difficulty':check['difficulty'] if die else None,'lead':check['lead'],'text':transition.get('text','')})
     if transition.get('bonus') and transition['bonus'] not in scene['bonus_keys']:scene['bonus_keys'].append(transition['bonus'])

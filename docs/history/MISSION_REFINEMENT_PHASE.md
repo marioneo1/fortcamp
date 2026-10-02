@@ -302,3 +302,8 @@ Validation: 208 backend tests, 87 frontend tests and production build pass. New 
 ## October 1: rare critical outcomes with veteran progression
 
 Removed automatic critical success from high totals and natural twenties. Rolled missions and dialogue use independent bounded confirmation with increasing chances for developed teams revisiting easy ranks. Authored criteria remain required. Scene finales use one confirmation rather than accumulating critical opportunities across nodes. Combat bonus objectives remain earned; normal rewards and independent exclusive loot rolls are preserved. See `docs/gameplay/CRITICAL_SUCCESS_BALANCE.md`.
+
+
+## October 1: critical soft caps and diminishing returns
+
+Replaced the previous hard critical ceilings with soft caps. Extreme E/D/C stat advantages can reach genuine 100%, including an explicit natural-one mastery exception. C requires vastly more advantage. Pure-stat B remains below 50%, A below 10%, S at most 5%; rare A/S reach their useful soft caps sooner. Added precise percentile confirmation and readable two-decimal UI odds. Criteria and independent loot rolls remain unchanged; future special limit-breaking effects remain a separate design pass. See `docs/gameplay/CRITICAL_SUCCESS_BALANCE.md` for curves and achievable-vs-long-term limits.

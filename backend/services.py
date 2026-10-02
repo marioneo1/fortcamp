@@ -628,7 +628,7 @@ async def choose_decision_instance(session: AsyncSession, guild_id: str, user_id
             if finish=='success':
                 from .outcome_balance import scene_critical_chance
                 chance=scene_critical_chance(scene['history'],template.get('rank','E'),analysis.get('critical_success_available',not template.get('critical_any')))
-                if random.Random(f'{mission.id}:scene-finale').randint(1,100)<=chance:finish='critical_success'
+                if random.Random(f'{mission.id}:scene-finale').randint(1,10000)/100<=chance:finish='critical_success'
             result=resolve_mission(state,scene_reward_template(template,analysis),party_ids,analysis,seed=mission.id,forced_outcome=finish)
             result['debug_forced']=False
             result['resolution_source']='scene'

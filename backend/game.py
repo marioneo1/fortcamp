@@ -19,7 +19,7 @@ from .mission_loot import roll_item_pool
 from .economy import initialize as initialize_economy, settle as settle_economy, public_economy, earn_relationship, practice
 from .races import RACE_CATALOG, RACE_FAMILIES, RACE_GAMEPLAY, REGIONAL_RECRUIT_TABLES, race_families, race_mission_bonus
 
-from .outcome_balance import CRITICAL_CAPS, classify_roll, outcome_probabilities
+from .outcome_balance import CRITICAL_SOFT_CAPS, CRITICAL_STAT_LIMITS, classify_roll, outcome_probabilities
 
 GRID_W = 12
 GRID_H = 8
@@ -649,7 +649,8 @@ def analyze_mission(
         "secret_event_possible": bool(secret_event_ids),
         "eligible_secret_event_ids": secret_event_ids,
         "critical_threshold": crit_threshold,
-        "critical_chance_cap": CRITICAL_CAPS.get(mission.get("rank", "E"), 20),
+        "critical_soft_cap": CRITICAL_SOFT_CAPS.get(mission.get("rank", "E"), 20),
+        "critical_stat_limit": CRITICAL_STAT_LIMITS.get(mission.get("rank", "E"), 100),
         "probabilities": probabilities,
     }
 
@@ -1251,7 +1252,7 @@ def resolve_mission(state: dict, mission: dict, party_ids: list[str], analysis: 
     else:
         die = rng.randint(1, 20)
         total = die + bonus
-        critical_roll = rng.randint(1, 100)
+        critical_roll = rng.randint(1, 10000) / 100
         outcome = _classify_roll(die, total, difficulty, crit_threshold, critical_success_available, mission.get("rank", "E"), critical_roll)
 
     party = [find_char(state, cid) for cid in party_ids]
