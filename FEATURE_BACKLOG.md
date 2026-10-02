@@ -119,3 +119,7 @@ Implemented smooth pointer-anchored map wheel zoom, retaining modified-wheel scr
 ## Completed: first playable prisoner allegiance loop (2026-10-01)
 
 Stable capture terms and recruit profiles; eight initial concerns; shared INT-based warden negotiation; story-backed gold/wood/medicine/item sinks; 24 owner-only tactical allegiance templates; explicit one-time recruit conversion and starting loyalty. B/A/S officers with payments also require proof. Roster prisoner conversations and Private Contracts now connect. See docs/design/PRISON_RECRUITMENT.md for live rules, migration and limitations. Temporary faction politics, deeper authored chains, security incidents and personal loyalty follow-ups remain pending.
+
+### Completed October 1: prisoner UI standardization
+- Replaced native browser confirmations with a shared in-game dialog for agreement payments, prisoner sales and contract abandonment.
+- Organized prisoner cards into conversation/terms, recruit profile, warden resistance, and separate custody actions. Payment costs and follow-up requirements are explicit; tabs remain selected across refreshes.

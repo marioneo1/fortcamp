@@ -332,3 +332,7 @@ Added fine exponential wheel zoom centered on the pointer without a battle reren
 ## Prisoner allegiance first pass
 
 Implemented fixed capture/migration profiles, eight personal requests, warden INT sessions shared across prisoners, once-only payment and recruitment, owner-only allegiance missions with linked success credit, and prisoner conversation UI. Initial boss pacing distinguishes negotiation from agreements and adds proof after payment for B/A/S bosses. Legacy NPC records use authored baselines because no original attribute snapshots exist. Rescue templates scale enemy strength but reuse the wagon map; temporary factions and deeper individual loyalty missions remain deferred. Validation: 235 backend tests, 95 frontend tests, production build and isolated browser conversation/payment/recruitment checks. No release saves changed.
+
+## October 1, 2026 - Prisoner UI standardization
+
+Agreement fulfillment and sales now use a themed in-game confirmation with exact costs and consequences. Prisoner cards have remembered conversation/profile tabs, readable terms, a warden resistance meter and separate custody actions. The shared confirmation also covers abandoning a reserved contract. Frontend build and 95 tests passed; browser fixture verifies cancellation, recruitment and tab preservation without altering live saves.
