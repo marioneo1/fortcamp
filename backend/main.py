@@ -370,14 +370,15 @@ async def locked_player(identity) -> tuple[Any, Any]:
 
 
 @app.get('/api/mercenaries')
-async def mercenary_market(identity: IdentityDep):
+async def mercenary_market(identity: IdentityDep, rank: str = "E"):
+    if rank not in set("EDCBAS"): raise HTTPException(422, "Choose a valid contract rank")
     from .mercenaries import market
     from .services import _player_locks
     async with _player_locks.setdefault((identity.guild_id,identity.user_id),asyncio.Lock()):
         session,row=await locked_player(identity)
         try:
             changed=deepcopy(row.state)
-            offers=market(changed,f'{identity.guild_id}:{identity.user_id}')
+            offers=market(changed,f'{identity.guild_id}:{identity.user_id}',rank)
             row.state=changed
             await session.commit()
             return {'offers':offers,'state':changed}

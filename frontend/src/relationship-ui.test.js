@@ -10,3 +10,12 @@ test('career rate ignores pending missions and does not invent historic damage',
 test('blood categories use appropriate nonhuman particles',()=>{
  assert.equal(bloodKind('Human'),'blood');assert.equal(bloodKind('Slimefolk'),'slime');assert.equal(bloodKind('Automaton'),'sparks');assert.equal(bloodKind('Undead'),'dust');
 });
+
+import {conversationHistory,rememberConversation} from './relationship-ui.js';
+test('conversation history stays bounded, character-specific and protects stored entries',()=>{
+ for(let i=0;i<12;i++)rememberConversation('test-history',{prompt:'Topic',text:'Reply '+i});
+ const history=conversationHistory('test-history');
+ assert.equal(history.length,8);assert.equal(history[0].text,'Reply 4');
+ history[0].text='Changed';assert.equal(conversationHistory('test-history')[0].text,'Reply 4');
+ assert.deepEqual(conversationHistory('someone-else'),[]);
+});

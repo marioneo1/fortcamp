@@ -5,21 +5,28 @@ import uuid
 from copy import deepcopy
 
 RANKS = 'EDCBAS'
-FEES = (6, 9, 16, 28, 48, 80)
+FEES = (10, 16, 28, 48, 80, 130)
+CONTRACT_MULTIPLIERS = (1, 1.5, 2.2, 3.2, 4.5, 6.5)
 BUYOUTS = (100, 180, 360, 750, 1600, 3200)
 RELATION_REQUIRED = 30
 MARKET_SIZE = 4
 
 
-def quote(offer):
+def contract_rank(mission):
+    from .content import MISSION_TEMPLATES
+    return MISSION_TEMPLATES.get(getattr(mission,"template_id",None),{}).get("rank", "E")
+
+
+def quote(offer, quest_rank="E"):
+    if quest_rank not in set(RANKS): raise ValueError("Choose a valid contract rank")
     tier = RANKS.index(offer['rank'])
     relation = int(offer.get('relationship', 0))
-    return {'fee': max(3, round(FEES[tier] * (1 - min(40, relation) / 200))),
+    return {'fee': max(3, round(FEES[tier] * CONTRACT_MULTIPLIERS[RANKS.index(quest_rank)] * (1 - min(40, max(0,relation)) / 200))),
             'betrayal_chance': max(0, round((6 + tier * 2) * (1 - relation / 100), 2)),
             'buyout': BUYOUTS[tier], 'relationship_required': RELATION_REQUIRED}
 
 
-def market(state, seed):
+def market(state, seed, quest_rank="E"):
     from .game import _make_generic, mission_rank
     from .relationships import ensure_character
     offers = state.setdefault('mercenaries', [])
@@ -43,7 +50,7 @@ def market(state, seed):
         offers.append({'id':c['id'], 'character':c, 'rank':RANKS[tier], 'weapon':weapon,
                        'relationship':0, 'busy_mission_id':None, 'recovering_until':0})
     state['mercenary_serial'] = serial
-    return [{'id':o['id'], 'rank':o['rank'], 'relationship':o['relationship'], **quote(o),
+    return [{'id':o['id'], 'rank':o['rank'], 'relationship':o['relationship'], **quote(o, quest_rank),
              'available':not o.get('busy_mission_id') and o.get('recovering_until', 0) <= time.time(),
              'recovering_until':o.get('recovering_until', 0),
              'character':{**deepcopy(o['character']), 'temporary_mercenary':True, 'mercenary_weapon':o['weapon']}}
@@ -75,7 +82,7 @@ def prepare(state, mission, ids, party_ids, guards=None, roles=None, spend=False
         if not o or o.get('busy_mission_id') or o.get('recovering_until', 0) > time.time():
             raise ValueError('A selected mercenary is unavailable. Reopen the hiring board.')
         chosen.append(o)
-    fee = sum(quote(o)['fee'] for o in chosen)
+    fee = sum(quote(o,contract_rank(mission))['fee'] for o in chosen)
     if state['resources'].get('gold', 0) < fee:
         raise ValueError(f'You need {fee} gold to hire this group')
     for o in chosen:

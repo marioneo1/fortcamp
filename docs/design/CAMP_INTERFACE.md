@@ -1,5 +1,9 @@
 # Camp and roster workspaces
 
+## October 2 usability refinement
+
+Base / Prisoners now uses a compact list and detail workspace rather than a long set of expanded cards. Conversation uses a portrait sidebar and topic/transcript layout, retaining session state during refreshes. Starter equipment is accessible near the top of Trade in an always-available drawer. Responsive browser checks cover conversation, prisoners and trade at 1440, 800 and 430 pixels. These changes are dev only; production is not deployed by this pass.
+
 Implemented October 1, 2026 in alpha/dev. Production trial.2 remains pinned to its prepared source and is not updated by this pass.
 
 ## Navigation

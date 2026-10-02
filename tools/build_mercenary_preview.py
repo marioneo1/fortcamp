@@ -14,7 +14,7 @@ from backend.combat import create_goblin_warcamp_battle,battle_view
 subprocess.run([sys.executable,str(ROOT/'tools/build_relationship_combat_preview.py')],check=True)
 state=normalize_state(new_game({'name':'Test Captain','traits':['guard']}))
 state['resources']['gold']=100;state['mission_rank']='D'
-offers=market(state,'mercenary-preview')
+offers=market(state,'mercenary-preview','D')
 mission={'id':'hiring-preview','name':'The road to Lareth','description':'Escort a wagon past a raider checkpoint.','rank':'D','stat':'combat','difficulty':14,'party_size':2,'bodyguard_slots':1,'status':'reserved'}
 battle=create_goblin_warcamp_battle(state,['player'],'mercenary-ui',defer_start=True)
 decorate_battle(state,{},battle,'mercenary-ui',force='hostile')
@@ -24,8 +24,8 @@ source+='\nconst mercenaryFixture='+payload+';\n'+"""
 const oldMercFetch=window.fetch;
 window.mercenaryRequests=[];
 window.fetch=(url,options)=>{
- if(String(url).endsWith('/api/mercenaries'))return Promise.resolve(new Response(JSON.stringify({offers:mercenaryFixture.offers,state:mercenaryFixture.state}),{status:200}));
- if(String(url).endsWith('/analysis')){const request=JSON.parse(options.body);window.mercenaryRequests.push(request);return Promise.resolve(new Response(JSON.stringify({analysis:{probabilities:{critical_failure:5,failure:25,success:65,critical_success:5},claimable:true,roles:[],requirements:[],critical_success_available:true,mercenary_fee:(request.mercenary_ids?.length||0)*6,mercenary_penalty:-(request.mercenary_ids?.length||0)}}),{status:200}))}
+ if(String(url).includes('/api/mercenaries'))return Promise.resolve(new Response(JSON.stringify({offers:mercenaryFixture.offers,state:mercenaryFixture.state}),{status:200}));
+ if(String(url).endsWith('/analysis')){const request=JSON.parse(options.body);window.mercenaryRequests.push(request);return Promise.resolve(new Response(JSON.stringify({analysis:{probabilities:{critical_failure:5,failure:25,success:65,critical_success:5},claimable:true,roles:[],requirements:[],critical_success_available:true,mercenary_fee:(request.mercenary_ids?.length||0 )*15,mercenary_penalty:-(request.mercenary_ids?.length||0)}}),{status:200}))}
  return oldMercFetch(url,options);
 };
 window.mercenaryPlanner=async()=>{state=structuredClone(mercenaryFixture.state);content=mercenaryFixture.content;await openMission(mercenaryFixture.mission)};

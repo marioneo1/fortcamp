@@ -9,14 +9,16 @@ Names, portraits, equipment, rank, personality, and trust persist in the player'
 
 ## Price and progression
 
-| Rank | Initial contract fee | Permanent service | Initial betrayal chance |
+| Contact rank | Base fee on E contract | Permanent service | Initial betrayal chance |
 | --- | ---: | ---: | ---: |
-| E | 6 gold | 100 gold | 6% |
-| D | 9 gold | 180 gold | 8% |
-| C | 16 gold | 360 gold | 10% |
-| B | 28 gold | 750 gold | 12% |
-| A | 48 gold | 1,600 gold | 14% |
-| S | 80 gold | 3,200 gold | 16% |
+| E | 10 gold | 100 gold | 6% |
+| D | 16 gold | 180 gold | 8% |
+| C | 28 gold | 360 gold | 10% |
+| B | 48 gold | 750 gold | 12% |
+| A | 80 gold | 1,600 gold | 14% |
+| S | 130 gold | 3,200 gold | 16% |
+
+Hiring fees also scale with the accepted contract rank: E x1, D x1.5, C x2.2, B x3.2, A x4.5 and S x6.5. Apply the existing trust discount, then round to whole gold. An E contact therefore costs 10/15/22/32/45/65 gold across E through S contracts before trust. Browsing a different rank changes quotes without rerolling contacts. Preview and acceptance use the same calculation; the server reads the actual mission template rank at acceptance, independently of the browser quote. Existing permanent-service prices and betrayal rules are unchanged. Current planner browser QA verifies rank-priced hires and bodyguards.
 
 Successful/critical-success contracts give +2 trust; failed contracts give +1 for loyal surviving hires. Turncoats gain none. Permanent recruitment requires 30 trust, an available contact, and the buyout fee. That is approximately fifteen successful contracts with the same contact. Recruitment keeps the identity and weapon, and starts loyalty at 75 plus half trust, capped at 95. Ordinary character relationships then apply.
 

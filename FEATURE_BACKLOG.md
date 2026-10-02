@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## Completed October 2: vendor, hire pricing and social workspaces
+
+Implemented: always-available starter gear for gold; contact-grade hiring fees multiplied by actual contract rank; compact prisoner selection/details with warden readiness and explicit full-cell swaps; portrait-based conversation workspace with eight session exchanges, readable topics, meal quantities/preferences/cooldown and duplicate-click protection. Canonical rules: docs/design/FACTIONS_AND_ROTATING_TRADE.md, MERCENARIES.md, PRISON_RECRUITMENT.md and CHARACTER_RELATIONSHIPS.md. Validation: 301 backend tests, 101 frontend tests, production build and isolated mercenary/social/trade browser checks passed. No production deployment. Remaining: real multiplayer price feedback, more authored conversation/Champion voices, and persistent conversation history if later requested. Current dialogue remains curated, not an LLM service.
+
 Use this file for pending work and GAMEPLAY_VISION.md for standing design rules. Update statuses when implementing a feature; record validation in docs/history/MISSION_REFINEMENT_PHASE.md. Requests here do not authorize paid generation or publication beyond the user's current instructions.
 
 ## October 2 ? capture weapons and starter roles

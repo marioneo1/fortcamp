@@ -44,7 +44,7 @@ class MercenaryTests(unittest.TestCase):
         state=self.state();mid=state['mercenaries'][0]['id'];state['_mercenary_owner']='owner'
         mission=SimpleNamespace(id='job',claimed_by_user_id='owner')
         prepare(state,mission,[mid],['player',mid],spend=True)
-        self.assertEqual(state['resources']['gold'],4994)
+        self.assertEqual(state['resources']['gold'],4990)
         c=next(c for c in state['characters'] if c['id']==mid)
         self.assertTrue(c['temporary_mercenary'])
         self.assertTrue(any(i.get('mercenary_gear') for i in state['inventory']))
@@ -60,7 +60,7 @@ class MercenaryTests(unittest.TestCase):
         state=self.state();state['_mercenary_owner']='owner';mid=state['mercenaries'][0]['id']
         mission=SimpleNamespace(id='chain',claimed_by_user_id=None,analysis={'chain_owner_user_id':'owner'})
         prepare(state,mission,[mid],['player',mid],spend=True)
-        self.assertEqual(state['resources']['gold'],4994)
+        self.assertEqual(state['resources']['gold'],4990)
 
     def test_trust_discount_buyout_and_no_recruitment_without_relationship(self):
         state=self.state();o=state['mercenaries'][0];initial=quote(o)
@@ -183,7 +183,7 @@ class MercenaryContractTests(unittest.IsolatedAsyncioTestCase):
                         self.assertEqual(resumed['resume_status'],form)
                         self.assertEqual(started.status,form)
                         self.assertIsNone(started.result)
-                        self.assertEqual(row.state['resources']['gold'],94)
+                        self.assertEqual(row.state['resources']['gold'],85)
                         if form=='battle':
                             self.assertEqual(started.analysis['battle']['encounter_id'],'contract:highway_ambush')
                             self.assertNotIn(mid,started.analysis['battle']['units'])
@@ -211,11 +211,11 @@ class MercenaryContractTests(unittest.IsolatedAsyncioTestCase):
                         mission=MissionInstance(id='hiring-test',guild_id='hiring',template_id='hiring-fixture',pool_slot=0,position=0,spawned_at=now,expires_at=now+3600,duration_seconds=1,status='reserved',claimed_by_user_id='owner',analysis={})
                         session.add_all([row,mission]);await session.flush()
                         preview=await analyze_instance(session,'hiring','owner',mission.id,['player',mid],mercenary_ids=[mid])
-                        self.assertTrue(preview['claimable']);self.assertEqual(preview['mercenary_fee'],6)
+                        self.assertTrue(preview['claimable']);self.assertEqual(preview['mercenary_fee'],15)
                         self.assertEqual(len(row.state['characters']),1)
                         with patch('backend.mercenaries.betrayal',return_value=[mid] if turncoat else []):
                             started=await claim_instance(session,'hiring','owner','Owner',mission.id,['player',mid],mercenary_ids=[mid])
-                        self.assertEqual(row.state['resources']['gold'],94)
+                        self.assertEqual(row.state['resources']['gold'],85)
                         if turncoat:
                             b=started.analysis['battle'];b['status']='complete';b['outcome']='failure';b['units']['player'].update(extracted=True,alive=False)
                             resumed=await _finish_battle(session,started,row,b)

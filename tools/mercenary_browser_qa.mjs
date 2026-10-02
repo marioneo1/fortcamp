@@ -22,7 +22,7 @@ await evaluate("document.querySelector('[data-hire]').click()");await new Promis
 assert.equal(await evaluate("document.querySelectorAll('dialog.mercenary-market').length"),0);
 assert.equal(await evaluate('window.mercenaryRequests.at(-1).mercenary_ids.length'),1);
 assert.equal(await evaluate('window.mercenaryRequests.at(-1).party_ids.length'),2);
-assert.match(await evaluate("document.querySelector('[data-hire-info]').textContent"),/6 gold/);
+assert.match(await evaluate("document.querySelector('[data-hire-info]').textContent"),/15 gold/);
 await evaluate('window.mercenaryRefresh()');await new Promise(r=>setTimeout(r,100));
 assert.equal(await evaluate('window.mercenaryRequests.at(-1).mercenary_ids.length'),1);
 await evaluate("document.querySelector('[data-hire-mercenaries]').click()");await new Promise(r=>setTimeout(r,100));

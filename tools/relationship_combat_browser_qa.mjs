@@ -16,5 +16,5 @@ console.log('native during',await evaluate('window.nativeDiagnostics()'));
 const image=await call('Page.captureScreenshot',{format:'png'});const {writeFile}=await import('node:fs/promises');await writeFile('staging-ui/combat-relationships/native-effects.png',Buffer.from(image.data,'base64'));
 await new Promise(r=>setTimeout(r,1000));const idle=await evaluate('window.nativeDiagnostics()');assert.equal(idle.pending,0);assert.equal(idle.active,0);assert.equal(idle.played,2);console.log('native idle',idle);
 await evaluate('window.relationshipPreview()');const visible=await evaluate("!document.querySelector('[data-roster-panel=conversation]').classList.contains('hidden')");assert.equal(visible,true);console.log('conversation pane visible',visible);
-await evaluate("document.querySelector('[data-talk=food]').click()");await new Promise(r=>setTimeout(r,300));console.log('food',await evaluate("document.querySelector('.relationship-reply').textContent"));
+await evaluate("document.querySelector('[data-talk=food]').click()");await new Promise(r=>setTimeout(r,300));console.log('food',await evaluate("document.querySelector('.conversation-speech p').textContent"));
 assert.deepEqual(errors,[]);console.log('runtime errors',errors);await call('Browser.close');ws.close();

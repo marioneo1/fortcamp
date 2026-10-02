@@ -62,6 +62,8 @@ window.qolContract=()=>openMission({id:'preview-contract',name:'A guild contract
 window.qolVictory=()=>{window.qolVictoryState={...structuredClone(relationshipFixture.before),battle_won:true,decision_pending:true,victory_title:'The chieftain has fallen.',victory_description:'The remaining goblins are fleeing. Leave now or pursue optional objectives.'};$('#mission-modal').classList.remove('hidden');renderBattle(window.qolVictoryState)};
 window.workspacePreview=()=>{activeBattleView=null;$('#mission-modal').classList.add('hidden');state=structuredClone(relationshipFixture.base_state);baseView='settlement';workshopView='facilities';rosterView='characters';selectedBuildingId=null;renderRoster();renderBase();$('.tabs button[data-tab="base"]').click()};
 window.workspaceRefresh=()=>{renderRoster();renderBase()};
+window.socialConversationRefresh=()=>renderRoster();
+window.socialStockadePreview=()=>{for(let i=1;i<4;i++){const p=structuredClone(state.prisoners[0]);p.id='cell-'+i;p.name='Cell captive '+i;state.prisoners.push(p)}const p=structuredClone(state.prisoners[0]);p.id='stockade-preview';p.name='Waiting captive';p.holding='temporary_stockade';p.stockade_expires_at=Math.floor(Date.now()/1000)+300;state.prisoners.push(p);renderPrisoners()};
 window.prisonPreview=()=>{$('#mission-modal').classList.add('hidden');state=structuredClone(relationshipFixture.prison_state);activeBattleView=null;baseView='prison';renderBase();$('.tabs button[data-tab="base"]').click()};
 """
 folder=ROOT/'staging-ui/combat-relationships';folder.mkdir(parents=True,exist_ok=True)

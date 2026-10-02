@@ -1,5 +1,9 @@
 # Factions, rotating trade and personal consequences
 
+## October 2 starter equipment
+
+Camp stock always includes Rusty Knife (4 gold), Chipped Sword (6), Splintered Shield (5), Frayed Bow (6), Cracked Wand (6), Frayed Capture Net (6), Worn Mallet (4), Knotted Staff (4), Worn Jacket (5) and Work Boots (4). This stock is independent of merchant visits and has no daily purchase limit. Purchases create separate unequipped inventory copies. Prices exceed their common resale value (3 gold), preventing a purchase/resale profit loop. The starter-equipment drawer sits near the top of Trade; unaffordable purchase buttons are disabled. Existing merchant rotations, rare stock and relationship gates are unchanged.
+
 Implemented in dev, October 2, 2026. Runtime sources: `backend/economy.py`, `backend/faction_contracts.py`, `backend/mission_branches.py` and the mission services. No production deployment in this pass.
 
 ## Trade

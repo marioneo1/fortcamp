@@ -15,6 +15,9 @@ await evaluate('window.factionTradePreview()');
 for(let i=0;i<50;i++){if(await evaluate('Boolean(document.querySelector("#camp-trade-dialog")?.open)'))break;await new Promise(r=>setTimeout(r,100))}
 assert.equal(await evaluate('document.querySelectorAll(".trade-rotation .trade-offer").length'),4);
 assert.equal(await evaluate('document.querySelectorAll(".faction-contact").length'),3);
+assert.equal(await evaluate('document.querySelectorAll(".trade-starters [data-offer]").length'),10);
+await evaluate('document.querySelector(".trade-starters").open=true');
+assert.equal(await evaluate(`document.querySelector('[data-offer="camp:frayed_capture_net"]').textContent.includes('6 gold')`),true);
 for(const width of [1440,800,430]){
  await call('Emulation.setDeviceMetricsOverride',{width,height:1000,deviceScaleFactor:1,mobile:false});
  assert.equal(await evaluate('(()=>{const d=document.querySelector("#camp-trade-dialog");return d.scrollWidth<=d.clientWidth+1})()'),true);

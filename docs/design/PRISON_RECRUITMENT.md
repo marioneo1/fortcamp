@@ -1,5 +1,9 @@
 # Prison recruitment: first playable pass
 
+## October 2 prison workspace
+
+Prisoners use a selectable list beside one detail panel, with capacity, secure-cell and stockade counts. Name/race search and custody filters remain available; selection survives polling. Conversation and terms open on selection, while holding and sale actions have a separate collapsible area. The panel identifies the assigned available warden and shows negotiation readiness from the existing cooldown; negotiations are disabled when unavailable. Securing a prisoner with full cells requires explicitly choosing someone to swap out. Stockade warnings and remaining time remain per prisoner; UI changes do not reset timers or change agreement costs, recruitment rules or sale values. Narrow screens stack list and details.
+
 Implemented October 1, 2026 in alpha/dev. This supersedes the first-batch proposals in PRISON_RECRUITMENT_PROPOSAL.md; broader faction/security ideas remain proposals.
 
 ## Player flow

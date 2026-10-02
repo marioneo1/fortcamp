@@ -2,13 +2,14 @@ const seenMercenaryNotices=new Set();
 import {openMercenaryMarket} from './mercenary-ui.js';
 import {mountInventoryBrowser} from './inventory-ui.js';
 import {confirmAction} from './confirmation-ui.js';
-import {prisonerRecruitmentMarkup,rememberPrisonReply,bindPrisonCards,prisonerConfirmation,pendingPrisonActions} from './prison-ui.js';
+import {prisonWorkspaceMarkup,rememberPrisonReply,bindPrisonCards,prisonerConfirmation,pendingPrisonActions} from './prison-ui.js';
 import {victoryMarkup} from './battle-victory-ui.js';
 import {attributeHelp,attributeTotalHelp,mountHoverHelp} from './roster-help.js';
 import {sizeBattleMap,bindMapWheel} from './battle-camera.js';
 import {mountRelationships,mountServiceRecord} from './relationship-ui.js';
 import {createCombatEffects} from './combat-effects.js';
 import './combat-effects.css';
+import './social-ui.css';
 const combatEffects=createCombatEffects();
 import {patchLiveHTML,captureMovingPositions,restartWalking,trackBattleAnimation} from './live-dom.js';
 import {createLatestMovement} from './latest-movement.js';
@@ -86,6 +87,7 @@ let missionMutationVersion=0,dynamicRefreshAgain=false;
 let baseBlueprintQuery='';
 let baseView='settlement',workshopView='facilities',rosterView='characters';
 const prisonFilters={query:'',holding:''};
+let selectedPrisonerId=null;
 let missionPlanner=null,analysisSequence=0;
 const missionFilters={query:'',rank:'',form:'',available:true,sort:'shortest'};
 let missionClaimPending=false,activeDecisionMission=null;
@@ -481,7 +483,7 @@ async function openMission(m){
   missionPlanner=mountMissionPlanner($('#mission-detail'),m,state.characters,{
     esc,title,portrait:c=>portraitHTML(c,true),metrics:combatMetrics,rating:effectiveStat,
     statLabel:content.perk_tracks?.[m.stat]?.name||title(m.stat),debug:debugEnabled(),
-    onHire:()=>openMercenaryMarket({api:rawApi,esc,selectedIds:currentMissionSelection().mercenary_ids||[],portrait:c=>portraitHTML(c,true),
+    onHire:()=>openMercenaryMarket({api:rawApi,esc,questRank:m.rank,selectedIds:currentMissionSelection().mercenary_ids||[],portrait:c=>portraitHTML(c,true),
       onSelect:c=>missionPlanner.addMercenary(c),onError:toast,
       onRecruit:next=>{state=next;missionPlanner.refresh(state.characters);renderResources();renderRoster()}}),
     onChange:updateAnalysis,onClaimDebug:(outcome,selection)=>debugCompleteMission(m.id,outcome,selection)
@@ -1038,15 +1040,21 @@ function effectiveStat(c,stat){const track=stat==='cooking'?'alchemy':stat,d=con
 function renderPrisoners(){
  if(!state||!content)return;
   const prisoners=state.prisoners||[];
-  const prisonCapacity=state.buildings.filter(b=>b.type==='prison_cell').reduce((sum,b)=>sum+(content.buildings[b.type]?.cells||0),0),securedPrisoners=prisoners.filter(p=>p.holding==='prison_cell'),stockadePrisoners=prisoners.filter(p=>p.holding==='temporary_stockade'),prisonFull=securedPrisoners.length>=prisonCapacity;
+  const prisonCapacity=state.buildings.filter(b=>b.type==='prison_cell').reduce((sum,b)=>sum+(content.buildings[b.type]?.cells||0),0);
   const visible=prisoners.filter(p=>(!prisonFilters.holding||p.holding===prisonFilters.holding)&&`${p.name} ${p.race}`.toLowerCase().includes(prisonFilters.query));
-  const prisonerCollection=`<section class="champion-collection prisoner-collection"><header class="prison-capacity"><b>${securedPrisoners.length}/${prisonCapacity} secured</b><span>${stockadePrisoners.length} in stockade</span></header><div class="prison-summary"><b>${securedPrisoners.length} secured · ${Math.max(0,prisonCapacity-securedPrisoners.length)} open cells</b><small>Each prisoner has one hour of total stockade time. Securing them pauses the remaining time; later swaps resume it.</small></div><div class="champion-catalog">${visible.length?visible.map(p=>{const inStockade=p.holding==='temporary_stockade',remaining=inStockade?Math.max(0,(p.stockade_expires_at||0)-Math.floor(Date.now()/1000)):(p.stockade_remaining_seconds??3600),swapOptions=securedPrisoners.filter(other=>other.id!==p.id).map(other=>`<option value="${other.id}">${esc(other.name)}</option>`).join('');return `<div class="prisoner-entry ${inStockade?'stockade':''}">${portraitHTML(p,true,true)}<div class="prisoner-info"><b>${esc(p.name)}</b><span>${esc(p.race)} · ${p.boss?'Priority captive':'Prisoner'} · ${p.sale_value??8} gold</span><small>${inStockade?`Temporary stockade · removed in ${fmtDuration(remaining)}`:`Secured in Prison Cell${p.stockade_remaining_seconds!=null?` · ${fmtDuration(remaining)} stockade time saved`:''}`}</small>${prisonerRecruitmentMarkup(p,esc,content.items)}<div class="prisoner-actions">${inStockade&&prisonCapacity?`${prisonFull?`<select data-prisoner-swap="${p.id}">${swapOptions}</select>`:''}<button data-prisoner-action="secure" data-prisoner-id="${p.id}" ${prisonFull&&!swapOptions?'disabled':''}>${prisonFull?'Swap into cell':'Secure'}</button>`:!inStockade?`<button data-prisoner-action="stockade" data-prisoner-id="${p.id}">Move to stockade</button>`:''}<button class="danger" data-prisoner-action="sell" data-prisoner-id="${p.id}">Sell · ${p.sale_value??8}g</button></div></div></div>`}).join(''):`<p class="muted small">${prisoners.length?'No prisoners match these filters.':'No prisoners yet. Captured characters will appear here; a Prison Cell holds four securely.'}</p>`}</div></section>`;
+  if(!visible.some(p=>p.id===selectedPrisonerId)){
+    selectedPrisonerId=visible[0]?.id||null;
+    if(selectedPrisonerId)rememberPrisonReply(selectedPrisonerId,null);
+  }
+  const prisonerCollection=prisonWorkspaceMarkup(visible,{state,selectedId:selectedPrisonerId,capacity:prisonCapacity,esc,portrait:(p,large)=>portraitHTML(p,!large,true),format:fmtDuration,items:content.items});
  patchLiveHTML($('#base-prisoners'),prisonerCollection);
  $('#prison-search').oninput=event=>{prisonFilters.query=event.target.value.toLowerCase();renderPrisoners()};
  $('#prison-filter').onchange=event=>{prisonFilters.holding=event.target.value;renderPrisoners()};
  document.querySelectorAll('[data-prison-count]').forEach(n=>n.textContent=prisoners.length);
  $('#prison-manage-facility').onclick=()=>{selectedBuildingId=state.buildings.find(b=>b.type==='prison_cell')?.id||null;workshopView=selectedBuildingId?'facilities':'construction';baseView='settlement';renderBase()};
   bindPrisonCards($('#base-prisoners'));
+  $('#base-prisoners').querySelectorAll('[data-prison-select]').forEach(button=>button.onclick=()=>{selectedPrisonerId=button.dataset.prisonSelect;rememberPrisonReply(selectedPrisonerId,null);renderPrisoners()});
+  $('#base-prisoners').querySelectorAll('[data-prisoner-swap]').forEach(select=>select.onchange=()=>{const button=$('#base-prisoners').querySelector(`[data-prisoner-action="secure"][data-prisoner-id="${CSS.escape(select.dataset.prisonerSwap)}"]`);if(button)button.disabled=!select.value});
   [...$('#base-prisoners').querySelectorAll('[data-prisoner-action]')].forEach(button=>button.onclick=async event=>{event.stopPropagation();const action=button.dataset.prisonerAction,id=button.dataset.prisonerId,prisoner=prisoners.find(p=>p.id===id);if(pendingPrisonActions.has(id))return;pendingPrisonActions.add(id);try{if(['fulfill','sell'].includes(action)&&!await confirmAction(prisonerConfirmation(prisoner,action,content.items)))return;const swapId=action==='secure'?document.querySelector(`[data-prisoner-swap="${CSS.escape(id)}"]`)?.value||null:null;try{const data=await rawApi(`/api/prisoners/${encodeURIComponent(id)}/action`,{method:'POST',body:JSON.stringify({action,swap_prisoner_id:swapId})});state=data.state;rememberPrisonReply(id,data.result.text);if(action==='quest'){await refreshDynamic(true);if(data.result.mission?.status==='battle')await openBattle(data.result.mission.id);else if(data.result.mission?.status==='decision')await openDecision(data.result.mission.id);else if(data.result.mission)await openMission(data.result.mission);}toast(data.result.text||(action==='sell'?`${data.result.name} sold for ${data.result.gold} gold`:action==='secure'?'Prisoner secured':'Prisoner moved to stockade'));renderResources();renderRoster();renderBase()}catch(e){toast(e.message)}}finally{pendingPrisonActions.delete(id);renderPrisoners()}});
 }
 function renderCollections(){
@@ -1098,7 +1106,7 @@ function renderRoster(){
   const switchTab=tab=>{rosterDetailTab=tab;Object.entries(panels).forEach(([key,panel])=>panel.classList.toggle('hidden',key!==tab));tabs.querySelectorAll('button').forEach(button=>button.classList.toggle('active',button.dataset.rosterTab===tab))};
   mountEquipmentBrowser(panels.equipment,{state,content,character:c,preferenceKey:`fortcamp:hide-equipped:${identity.guild_id}:${identity.user_id}`,editable:equipmentEditable,onError:e=>toast(e.message),onEquip:async(slot,instance_id)=>{const data=await rawApi('/api/equip',{method:'POST',body:JSON.stringify({character_id:c.id,slot,instance_id})});state=data.state;renderRoster();renderMissions()}});
   mountServiceRecord(panels.record,c);
-  mountRelationships(panels.conversation,{character:c,state,content,onError:e=>toast(e.message),onAction:async payload=>{const data=await rawApi(`/api/characters/${encodeURIComponent(c.id)}/conversation`,{method:'POST',body:JSON.stringify(payload)});state=data.state;return data}});
+  mountRelationships(panels.conversation,{character:c,state,content,portrait:unit=>portraitHTML(unit,false,true),onError:e=>toast(e.message),onAction:async payload=>{const data=await rawApi(`/api/characters/${encodeURIComponent(c.id)}/conversation`,{method:'POST',body:JSON.stringify(payload)});state=data.state;return data}});
   tabs.querySelectorAll('button').forEach(button=>button.onclick=()=>switchTab(button.dataset.rosterTab));switchTab(rosterDetailTab);
   detail.querySelector('.char-head').insertAdjacentHTML('afterend',`<div class="roster-status-bar">${esc(characterStatus(c))} · ${esc(c.specialty||'No specialty')} ${c.is_player?'· Your character':''}</div>`);
   const racialProfile=content.races?.[c.race]?.gameplay;

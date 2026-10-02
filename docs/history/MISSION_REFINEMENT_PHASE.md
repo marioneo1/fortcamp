@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Starter vendor, contract-priced hires and social UI
+
+Added ten always-available starter gear offers at 4-6 gold with server-side purchases, distinct unequipped copies and prices above resale value. Raised contact-grade base fees and added contract-rank multipliers; planner quotes, analysis and acceptance agree, while browsing preserves contacts. Redesigned prison as list/detail with visible capacity, assigned warden/readiness, stockade warnings and explicit full-cell swaps. Redesigned Conversation with portrait, loyalty, transcript, topic explanations and meal drawer. Retained reading position, topic/drawer selection and bounded session history through polling; guarded duplicate clicks and late responses.
+
+Validation: all 301 backend tests and 101 frontend tests passed; frontend production build passed. Isolated real-browser checks covered rank-priced multiple hires/bodyguards, conversation state and duplicate-click protection, prisoner selection/swap controls, ten starter offers and responsive layouts at 1440/800/430 pixels. Fixtures and screenshot previews are development tools, not launchers. No player databases, credentials or production files changed. Further dialogue authorship, persistent transcripts and multiplayer economy tuning remain separate work.
+
 ## 2026-09-30: Continuous fire and soft wood crackle
 
 Changed all authored flame layers to infinite emission with finite particle lifetimes, removing the all-out gaps between bursts. The controller no longer schedules delayed restarts. Generated and installed one 24-second wood-fire loop: subdued dry crackles and embers, without roaring flames. It fades with board visibility and uses the existing Master/Ambient channels; occasional goblin ambience remains separate. Added targeted generation support without replacing preserved originals, and documented the source, processing and playback in docs/audio/WOOD_FIRE_AMBIENCE.md.

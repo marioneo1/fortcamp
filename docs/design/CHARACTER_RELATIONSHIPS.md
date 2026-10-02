@@ -1,5 +1,9 @@
 # Character relationships: foundation and staged design
 
+## October 2 conversation workspace
+
+Conversation now has a portrait/personality sidebar, loyalty meter and independent-action chance, a scrollable dialogue area, and four topic buttons with brief explanations. Keep up to eight exchanges per character for this browser session; this is not persistent chat history or an AI dialogue service. Polling preserves the reading position, last chosen topic and meal drawer. Rapid repeated clicks issue only one pending request. A late reply cannot switch the screen back to a previously selected companion. The meal drawer shows prepared quantities, discovered preferences and the next gift time; unavailable meals, cooldowns and away characters disable the relevant actions. Service Record remains in its own tab. Existing authored responses, tastes, loyalty gains and gift rules are unchanged.
+
 ## Implemented
 
 Non-player loyalty and personality persist. Missing loyalty defaults to 80; explicit loyalty is preserved and clamped 0..100. The player avatar is always 100 and never disobeys. Generic personalities derive from stable identity, not race or portrait. Champion defaults live in CHAMPION_PERSONALITIES; personality_override supports authored name, description, behavior and dialogue voice independently of the default trope. Race does not prescribe personality.
