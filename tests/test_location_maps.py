@@ -3,8 +3,9 @@ from collections import deque
 from copy import deepcopy
 
 from backend.location_maps import MISSION_LOCATIONS, location_blueprint
+from backend.location_templates import BUILDING_PLANS
 from backend.battle_maps import compile_generated_battle_map, validate_battle_map, occupied_tiles
-from backend.combat import create_contract_battle, _interact, _blocked, battle_view, _damage_terrain
+from backend.combat import create_contract_battle, _interact, _blocked, battle_view, _damage_terrain, _move_toward, _auto_open_gate, _flee_turn
 from backend.game import new_game
 
 
@@ -12,7 +13,7 @@ class LocationMapTests(unittest.TestCase):
     def test_all_variants_have_clear_spawns_and_reachable_exits(self):
         for location in set(MISSION_LOCATIONS.values()):
             variants = set()
-            for index in range(12):
+            for index in range(40):
                 seed = f'layout-{index}'
                 blueprint = location_blueprint(location,seed)
                 self.assertEqual(blueprint,location_blueprint(location,seed))
@@ -34,21 +35,61 @@ class LocationMapTests(unittest.TestCase):
                             if 0<=p[0]<blueprint['width'] and 0<=p[1]<blueprint['height'] and p not in blocked|seen:
                                 seen.add(p);queue.append(p)
                     self.assertTrue(seen&exits,(location,spawn))
-            self.assertEqual(variants,{1,2},location)
+            self.assertEqual(variants,set(range(1,len(BUILDING_PLANS.get(location,[None,None]))+1)),location)
 
     def test_river_is_continuous_and_bridge_is_walkable_floor(self):
         board=compile_generated_battle_map('location_broken_creek_bridge','bridge')
         materials={(t['x'],t['y']):t['material'] for t in board['ground_tiles']}
         water={(t['x'],t['y']) for t in board['void_tiles']}
         self.assertEqual({p for p,m in materials.items() if m=='deep_river'},water)
-        self.assertEqual(len([m for m in materials.values() if m=='bridge_deck']),5)
-        self.assertEqual(materials[(7,4)],'deep_river')
-        self.assertEqual(materials[(7,5)],'bridge_deck')
+        decks={p for p,m in materials.items() if m.startswith('wood_bridge')}
+        self.assertEqual(len(decks),5)
+        upper=min(y for x,y in decks)
+        self.assertEqual(materials[(7,upper)],'deep_river')
+        self.assertEqual(materials[(7,upper+1)],'wood_bridge_damaged')
         self.assertFalse(any(t.get('sprite')=='bridge' for t in board['terrain']))
         battle=create_contract_battle(new_game({'name':'Tester'}),['player'],'bridge','timber_creek',True)
-        self.assertTrue(_blocked(battle,7,4,'player'))
-        self.assertFalse(_blocked(battle,7,4,'player','flying'))
-        self.assertFalse(_blocked(battle,7,5,'player'))
+        self.assertTrue(_blocked(battle,7,upper,'player'))
+        self.assertFalse(_blocked(battle,7,upper,'player','flying'))
+        self.assertFalse(_blocked(battle,7,upper+1,'player'))
+
+    def test_enemy_plans_for_a_door_but_can_prefer_a_short_breach(self):
+        battle=create_contract_battle(new_game({'name':'Tester'}),['player'],'gate','tool_shed',True)
+        enemy=battle['units']['contract_enemy_0'];target=battle['units']['player']
+        for unit in battle['units'].values():unit['extracted']=True
+        enemy.update(x=5,y=4,extracted=False,move=4,movement=4,attack_range=1)
+        target.update(x=2,y=4,extracted=False)
+        battle['terrain']=[{'id':f'wall_{y}','kind':'wall','x':4,'y':y,'blocking':True,'blocks_sight':True}
+                           for y in range(11) if y not in (4,10)]
+        gate={'id':'test_gate','kind':'gate','name':'Door','x':4,'y':4,'state':'closed',
+              'blocking':True,'blocks_sight':True,'open_sprite':'open','closed_sprite':'closed'}
+        battle['terrain'].append(gate);battle['void_tiles']=[]
+        self.assertTrue(_auto_open_gate(battle,enemy,target))
+        self.assertEqual(gate['state'],'opened');self.assertTrue(enemy['acted'])
+        gate.update(state='closed',blocking=True,blocks_sight=True)
+        enemy.update(x=7,y=4,acted=False,moved=False)
+        _move_toward(battle,enemy,target)
+        self.assertEqual((enemy['x'],enemy['y']),(5,4))
+        self.assertEqual(gate['state'],'closed') # cannot walk through a shut door
+        battle['enemy_extraction']={'name':'Road','tiles':[{'x':0,'y':4}]}
+        _flee_turn(battle,enemy)
+        self.assertEqual(gate['state'],'opened') # panicked units can escape an enclosed room too
+        gate.update(state='closed',blocking=True,blocks_sight=True)
+        battle['terrain']=[t for t in battle['terrain'] if t['id']!='wall_5']
+        self.assertFalse(_auto_open_gate(battle,enemy,target))
+        _move_toward(battle,enemy,target)
+        self.assertEqual(gate['state'],'closed')
+        self.assertLess(enemy['x'],4) # nearby breach is cheaper than an opening action
+
+    def test_templates_change_geometry_and_offsets_survive_destruction(self):
+        layouts={location_blueprint('repair_yard',f'layout-{i}')['template_id'] for i in range(40)}
+        self.assertEqual(len(layouts),3)
+        battle=create_contract_battle(new_game({'name':'Tester'}),['player'],'offset','tool_shed',True)
+        segment=next(t for t in battle['terrain'] if t.get('art_offset'))
+        offset=segment['art_offset'][:]
+        player=battle['units']['player'];player['attack']=100
+        _damage_terrain(battle,player,segment['id'])
+        self.assertEqual(segment['art_offset'],offset)
 
     def test_enclosure_is_closed_except_door_and_shed_collapse(self):
         for location,prefix in [('tool_shed','shed'),('repair_yard','yard')]:

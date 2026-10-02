@@ -1,6 +1,7 @@
 """Authored location pieces; variation changes dressing, never the place's identity."""
 from copy import deepcopy
 import random
+from .location_templates import BUILDING_PLANS
 
 MATERIALS = {
     'shed_floor': {'name': 'Weathered Shed Boards', 'movement_cost': 1, 'description': 'A worn wooden interior.'},
@@ -11,11 +12,17 @@ MATERIALS = {
     'bridge_deck': {'name': 'Bridge Deck', 'movement_cost': 1, 'description': 'Surviving planks form a crossing over deep water.'},
     'deep_river': {'name': 'Deep River', 'movement_cost': 1, 'description': 'Impassable on foot. Use the bridge; flying units can cross.'},
 }
+for _material in ['wood_bridge','wood_bridge_damaged','wood_bridge_top','wood_bridge_bottom',
+                  'stone_bridge','stone_bridge_damaged','stone_bridge_top','stone_bridge_bottom',
+                  'chapel_moss','chapel_cracked','toll_cobbles','smithy_cobbles']:
+    MATERIALS[_material]={'name':_material.replace('_',' ').title(),'movement_cost':1,
+                          'description':'Solid, traversable bridge decking.' if 'bridge' in _material else 'Worn stone paving.'}
 
 MISSION_LOCATIONS = {
     'tool_shed': 'tool_shed', 'workshop_intruders': 'repair_yard',
     'undead_bone_collectors': 'graveyard', 'bone_patrol': 'cemetery_road',
     'timber_creek': 'broken_creek_bridge', 'goblin_bridge': 'toll_bridge',
+    'goblin_armory': 'open_armory',
 }
 
 
@@ -40,6 +47,9 @@ def enclosure(ident, rect, doorway, wood=False):
         if (segment['x'],segment['y']) in corners:
             segment.update(sprite='structure:shed_wall_corner' if wood else 'structure:cemetery_wall_corner',
                            rotation=corners[(segment['x'],segment['y'])])
+        else:
+            segment['art_offset'] = [(-.28 if segment['x']==x else .28) if segment['x'] in (x,x+w-1) else 0,
+                                     (-.28 if segment['y']==y else .28) if segment['y'] in (y,y+h-1) else 0]
     dx, dy = doorway
     prefix = 'structure:shed_door' if wood else 'structure:yard_gate'
     terrain.append({'id': f'{ident}_gate', 'name': 'Shed Door' if wood else 'Yard Gate', 'x': dx, 'y': dy,
@@ -47,12 +57,15 @@ def enclosure(ident, rect, doorway, wood=False):
                     'open_sprite': prefix+'_open', 'rotation': 90 if dx in (x,x+w-1) else 0,
                     'blocking': True, 'blocks_sight': True, 'destructible': True, 'hp': 12, 'max_hp': 12,
                     'armor': 1, 'destroyed_kind': 'rubble', 'destroyed_movement_cost': 2})
+    terrain[-1]['art_offset'] = [(-.28 if dx==x else .28) if dx in (x,x+w-1) else 0,
+                                (-.28 if dy==y else .28) if dy in (y,y+h-1) else 0]
     return terrain
 
 
 def prop(ident, name, sprite, x, y, blocking=True):
     if not blocking:
-        return {'id': ident, 'name': name, 'sprite': sprite, 'x': x, 'y': y}
+        return {'id': ident, 'name': name, 'sprite': sprite, 'x': x, 'y': y,
+                **({'art_scale': 1/3} if sprite=='camp_lantern' else {})}
     return {'id': ident, 'name': name, 'sprite': sprite, 'x': x, 'y': y, 'kind': 'furniture',
             'blocking': True, 'blocks_sight': False, 'destructible': True, 'hp': 10, 'max_hp': 10,
             'armor': 0, 'destroyed_kind': 'rubble', 'destroyed_movement_cost': 2}
@@ -79,14 +92,19 @@ def grave_plots(ident, x, y, rows=2):
     return terrain, decorations, paint
 
 
-def river_crossing(x, road_y, height, damaged=False):
+def river_crossing(x, road_y, height, damaged=False, family='wood'):
     """A continuous river strip with a ground-based bridge, not a bridge prop."""
     bridge = {(xx,yy) for xx in range(x,x+3) for yy in (road_y,road_y+1)}
     if damaged:
         bridge.remove((x+1,road_y))
     water = {(xx,yy) for xx in range(x,x+3) for yy in range(height)} - bridge
-    return ([{'material':'deep_river','rect':[x,0,3,height]},
-             {'material':'bridge_deck','tiles':[list(p) for p in sorted(bridge)]}],
+    paint=[{'material':'deep_river','rect':[x,0,3,height]}]
+    for row,suffix in [(road_y,'top'),(road_y+1,'bottom')]:
+        paint.append({'material':f'{family}_bridge_{suffix}',
+                      'tiles':[list(p) for p in sorted(bridge) if p[1]==row]})
+    if damaged:
+        paint.append({'material':f'{family}_bridge_damaged','tiles':[[x+1,road_y+1]]})
+    return (paint,
             [{'x':xx,'y':yy,'kind':'deep_water'} for xx,yy in sorted(water)])
 
 
@@ -94,7 +112,7 @@ def location_blueprint(location, seed):
     if location not in set(MISSION_LOCATIONS.values()):
         raise ValueError(f'Unknown authored location: {location}')
     rng = random.Random(f'location:{location}:{seed}')
-    variant = rng.randrange(2)
+    variant = rng.randrange(len(BUILDING_PLANS.get(location, [None,None])))
     width, height = 14, 11
     board = {'name': location, 'theme': f'location-{location}', 'width':width, 'height':height,
              'default_ground':'grass', 'paint':[], 'void_tiles':[], 'elevation':[],
@@ -104,6 +122,29 @@ def location_blueprint(location, seed):
              'spawn_zones':{'player':[{'x':x,'y':y} for x,y in ((1,5),(1,4),(1,6),(2,5))],
                             'enemy':[{'x':x,'y':y} for x,y in ((10,5),(9,4),(10,6),(11,3),(11,7),(9,6),(10,7),(11,5))]}}
     t, d, p = board['terrain'], board['decorations'], board['paint']
+    plan = BUILDING_PLANS.get(location, [None]*(variant+1))[variant]
+    board['template_id'] = plan['id'] if plan else f'{location}_{variant+1}'
+    if plan and not plan.get('legacy'):
+        board['theme']='location-workshop'
+        p.extend([{'material':'dirt','rect':[0,4,14,3]},
+                  {'material':'workshop_floor','rect':[7,0,6,11]}])
+        if plan.get('players'):
+            p.append({'material':'workshop_floor','rect':[2,1,11,8]})
+        for ident,rect,door in plan['rooms']:
+            t.extend(enclosure(ident,rect,door,wood=location=='open_armory'))
+            x,y,w,h=rect
+            p.append({'material':'shed_floor' if location=='open_armory' else 'smithy_cobbles',
+                      'rect':[x+1,y+1,w-2,h-2]})
+        t.extend(prop(f'bay_{index}',sprite.replace('_',' ').title(),sprite,x,y)
+                 for index,(sprite,x,y) in enumerate(plan['furniture']))
+        board['spawn_zones']['enemy']=[{'x':x,'y':y} for x,y in plan['enemies']]
+        if plan.get('players'):
+            board['spawn_zones']['player']=[{'x':x,'y':y} for x,y in plan['players']]
+            board['extraction']['tiles']=[{'x':x,'y':y} for x,y in plan['exit']]
+        board['enemy_extraction']=deepcopy(board['extraction'])
+        d.extend([prop('yard_light','Yard Lantern','camp_lantern',6,8,False),
+                  prop('yard_cart','Supply Handcart','wooden_handcart',12,5,False)])
+        return board
     if location in {'tool_shed','repair_yard'}:
         wood = location=='tool_shed'
         board['theme']='location-shed' if wood else 'location-workshop'
@@ -127,7 +168,18 @@ def location_blueprint(location, seed):
             # A collapsed roof section leaves one deliberate alternative entrance.
             t[:] = [entry for entry in t if entry['id']!='shed_wall_10_9']
             t.append({'id':'shed_collapse','name':'Collapsed Shed Wall','x':10,'y':9,'kind':'rubble',
-                      'sprite':'structure:shed_wall_broken','art_scale':1.25,'blocking':False,'movement_cost':2})
+                      'sprite':'structure:shed_wall_broken','art_scale':1.25,'art_offset':[0,.28],
+                      'blocking':False,'movement_cost':2})
+            if variant:
+                # Mirrored entrance/breach makes the alternative plan tactically different.
+                for entry in t+d:
+                    entry['y']=height-1-entry['y']
+                    if entry.get('art_offset'):entry['art_offset'][1]*=-1
+                    if entry.get('sprite','').endswith('_corner'):
+                        entry['rotation']={0:90,90:0,180:270,270:180}[entry['rotation']]
+                board['template_id']='shed_west_door_north_breach'
+            else:
+                board['template_id']='shed_west_door_south_breach'
     elif location in {'graveyard','cemetery_road'}:
         board['default_ground']='forest_dark'
         p.extend([{'material':'grave_earth','rect':[3,1,9,9]},
@@ -144,23 +196,30 @@ def location_blueprint(location, seed):
             p.append({'material':'dirt','rect':[0,5,14,1]})
         board['theme']='location-graveyard'
     else:
-        p.append({'material':'dirt','rect':[0,4,14,3]})
-        pp,void=river_crossing(6,4,height,location=='broken_creek_bridge');p.extend(pp);board['void_tiles']=void
+        road_y=4 if not variant else 6
+        family='stone' if variant and location=='toll_bridge' else 'wood'
+        board['template_id']=f'{location}_{family}_{road_y}'
+        p.append({'material':'toll_cobbles' if location=='toll_bridge' else 'dirt','rect':[0,road_y,14,2]})
+        pp,void=river_crossing(6,road_y,height,location=='broken_creek_bridge',family);p.extend(pp);board['void_tiles']=void
         # Solid abutments border the traversable planks; the bridge itself is floor.
-        t.extend(wall(x,y,f'bridge_abutment_{x}_{y}') for x in (5,9) for y in (3,7))
+        t.extend(wall(x,y,f'bridge_abutment_{x}_{y}') for x in (5,9) for y in (road_y-1,road_y+2))
         d.extend([prop('bank_pine','Riverbank Pine','pine_tree',3,1 if variant else 9,False),
                   prop('bank_rock','Riverbank Rock','rounded_boulder',10,9 if variant else 1,False),
-                  prop('bridge_light','Crossing Lantern','camp_lantern',5,4,False)])
+                  prop('bridge_light','Crossing Lantern','camp_lantern',5,road_y,False)])
         if location=='broken_creek_bridge':
             d.extend([prop('near_logs','Reachable Timber','cut_log_pile',3,7,False),
                       prop('far_planks','Timber Across the Creek','stacked_planks',11,8,False)])
             t.append(prop('repair_saw','Bridge Repair Sawhorse','carpenter_sawhorse',4,8))
         else:
-            for y in (1,2,8,9):
+            for y in range(height):
+                if y in (road_y,road_y+1):continue
                 barricade=wall(9,y,f'toll_barricade_{y}',wood=True,rotation=90)
                 barricade.update(name='Toll Barricade',sprite='structure:palisade_straight',
                                  destroyed_sprite='structure:palisade_breached')
                 t.append(barricade)
             d.append(prop('gang_goods','Collected Toll Goods','bound_barrels',12,8,False))
+            t.append(prop('toll_records','Toll Ledger Desk','toll_desk',12,2))
+        board['spawn_zones']['enemy']=[{'x':x,'y':y} for x,y in
+            ((10,road_y),(11,road_y),(12,road_y),(13,road_y),(10,road_y+1),(11,road_y+1),(12,road_y+1),(13,road_y+1))]
         board['theme']='location-river'
     return board

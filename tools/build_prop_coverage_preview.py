@@ -11,6 +11,7 @@ from backend.combat import (create_goblin_warcamp_battle, create_captive_cart_ba
                            create_smoke_signals_battle, create_frontier_watch_defense_battle,
                            create_contract_battle, battle_view)
 from backend.tactical_contracts import TACTICAL_CONTRACTS
+from backend.location_maps import MISSION_LOCATIONS
 
 subprocess.run([sys.executable,str(ROOT/'tools/build_gear_battle_preview.py')],check=True)
 state=new_game({'name':'Prop Preview'})
@@ -22,6 +23,14 @@ battles={
 }
 for mid in TACTICAL_CONTRACTS:
     battles[mid]=create_contract_battle(state,['player'],'prop-'+mid,mid,True)
+# Keep an actual-engine preview of every authored layout, not just one lucky seed.
+for mid in MISSION_LOCATIONS:
+    seen=set()
+    for index in range(40):
+        battle=create_contract_battle(state,['player'],f'layout-{index}',mid,True)
+        variant=battle['map_variation']
+        if variant not in seen:
+            battles[f'{mid}_v{variant}']=battle;seen.add(variant)
 # Include both states of prepared objects without changing a live encounter.
 battles['defense']['terrain'].extend([
     {'id':'audit_spikes','name':'Spike Trap','x':6,'y':4,'kind':'prepared_trap','sprite':'spike_trap','prepared_trap':True,'blocking':False},

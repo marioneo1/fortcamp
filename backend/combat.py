@@ -1623,48 +1623,52 @@ def _record_melee_animation(battle: dict, attacker: dict, target: dict, hit: boo
     })
 
 
+def _route_with_gates(battle, unit, goals):
+    """Compare walking detours with routes that spend an activation opening a door."""
+    if not goals:return [],{},{}
+    gates = {cell: tile for tile in battle.get('terrain', [])
+             if tile.get('kind') == 'gate' and not tile.get('destroyed') and tile.get('state') != 'opened'
+             for cell in occupied_tiles(tile)}
+    planning = {**battle, 'terrain': [{**t, 'blocking':False} if t.get('kind') == 'gate' and not t.get('destroyed') else t
+                                     for t in battle.get('terrain', [])]}
+    start=(unit['x'],unit['y']);queue=[(0,*start)];parents={start:None};costs={start:0};goal=None
+    while queue:
+        cost,x,y=heapq.heappop(queue);cell=(x,y)
+        if cost != costs[cell]:continue
+        if cell in goals:goal=cell;break
+        for nx,ny in ((x+1,y),(x-1,y),(x,y+1),(x,y-1)):
+            if not _can_step(planning,x,y,nx,ny,unit):continue
+            candidate=cost+_step_cost(planning,x,y,nx,ny,unit)+(max(1,_movement_limit(unit)) if (nx,ny) in gates else 0)
+            if candidate>=costs.get((nx,ny),10**9):continue
+            costs[(nx,ny)]=candidate;parents[(nx,ny)]=cell;heapq.heappush(queue,(candidate,nx,ny))
+    if goal is None:return [],costs,gates
+    path=[]
+    while goal!=start:path.append(goal);goal=parents[goal]
+    return list(reversed(path)),costs,gates
+
+
+def _pursuit_goals(battle, unit, target):
+    gate_cells={cell for t in battle.get('terrain',[]) if t.get('kind')=='gate' and not t.get('destroyed') for cell in occupied_tiles(t)}
+    return {(target['x']+dx,target['y']+dy) for dx,dy in ((1,0),(-1,0),(0,1),(0,-1))
+            if not _blocked(battle,target['x']+dx,target['y']+dy,unit['id'],unit.get('movement_type'))
+            or (target['x']+dx,target['y']+dy) in gate_cells}
+
+
 def _move_toward(battle: dict, unit: dict, target: dict) -> None:
     start = (unit["x"], unit["y"])
-    goals = {
-        (target["x"] + dx, target["y"] + dy)
-        for dx, dy in ((1, 0), (-1, 0), (0, 1), (0, -1))
-        if not _blocked(battle, target["x"] + dx, target["y"] + dy, unit["id"])
-    }
-    queue = [(0, start[0], start[1])]; parents = {start: None}; costs = {start: 0}; goal = None
-    while queue:
-        current_cost, x, y = heapq.heappop(queue)
-        cell = (x, y)
-        if current_cost != costs[cell]:
-            continue
-        if cell in goals:
-            goal = cell; break
-        neighbors = [(x + 1, y), (x - 1, y), (x, y + 1), (x, y - 1)]
-        neighbors.sort(key=lambda point: (abs(point[0] - target["x"]) + abs(point[1] - target["y"]), point))
-        for neighbor in neighbors:
-            if not _can_step(battle, x, y, neighbor[0], neighbor[1], unit):
-                continue
-            candidate_cost = current_cost + _step_cost(battle, x, y, neighbor[0], neighbor[1], unit)
-            if candidate_cost >= costs.get(neighbor, 10**9):
-                continue
-            costs[neighbor] = candidate_cost; parents[neighbor] = cell
-            heapq.heappush(queue, (candidate_cost, neighbor[0], neighbor[1]))
-    if goal is None:
-        return
-    path = []
-    while goal != start:
-        path.append(goal); goal = parents[goal]
-    path.reverse()
+    path, costs, gates = _route_with_gates(battle,unit,_pursuit_goals(battle,unit,target))
+    # Stop beside the first closed gate; the next activation can operate it.
+    first_gate=next((i for i,p in enumerate(path) if p in gates),len(path))
+    path=path[:first_gate]
     if path:
         reachable_path = [point for point in path if costs[point] <= _movement_limit(unit)]
         if reachable_path:
-            x, y = reachable_path[-1]
-            unit["exit_ready"] = False
-            unit["x"], unit["y"], unit["moved"] = x, y, True
-            _record_movement(battle, unit, start, reachable_path)
-            if unit.get("carrying") in battle["units"]:
-                carried = battle["units"][unit["carrying"]]
-                carried["x"], carried["y"] = x, y
-            _apply_tile_entry(battle, unit)
+            x,y=reachable_path[-1];unit['exit_ready']=False
+            unit['x'],unit['y'],unit['moved']=x,y,True
+            _record_movement(battle,unit,start,reachable_path)
+            if unit.get('carrying') in battle['units']:
+                carried=battle['units'][unit['carrying']];carried['x'],carried['y']=x,y
+            _apply_tile_entry(battle,unit)
 
 
 def _move_to_nearest_tile(battle: dict, unit: dict, destinations: list[dict]) -> None:
@@ -1757,6 +1761,14 @@ def _flee_turn(battle: dict, unit: dict) -> None:
     if (unit["x"], unit["y"]) in exits and unit.get("exit_ready"):
         _extract_unit(battle, unit, fled=unit["team"] == "enemy")
     else:
+        path,_,gates=_route_with_gates(battle,unit,exits)
+        gate_index=next((i for i,p in enumerate(path) if p in gates),None)
+        if gate_index==0:
+            _interact(battle,unit,gates[path[0]]['id'])
+            return
+        if gate_index is not None:
+            x,y=path[gate_index-1]
+            tiles=[{'x':x,'y':y}]
         _move_to_nearest_tile(battle, unit, tiles)
         if (unit["x"], unit["y"]) in exits:
             battle["log"].append(f"{unit['name']} reaches {extraction.get('name', 'an exit')} and prepares to withdraw.")
@@ -2081,11 +2093,14 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
 
 
 def _auto_open_gate(battle, unit, target):
-    for gate in battle.get('terrain', []):
-        if (gate.get('kind') == 'gate' and not gate.get('destroyed') and gate.get('state') != 'opened'
-                and _distance_to_entity(unit, gate) == 1 and _distance(gate, target) < _distance(unit, target)):
-            _interact(battle, unit, gate['id'])
-            return True
+    if _can_attack(battle,unit,target):return False
+    if not any(t.get('kind')=='gate' and not t.get('destroyed') and t.get('state')!='opened'
+               and _distance_to_entity(unit,t)==1 for t in battle.get('terrain',[])):
+        return False
+    path,_,gates=_route_with_gates(battle,unit,_pursuit_goals(battle,unit,target))
+    if path and path[0] in gates:
+        _interact(battle,unit,gates[path[0]]['id'])
+        return True
     return False
 
 

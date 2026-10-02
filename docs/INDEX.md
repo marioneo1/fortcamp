@@ -8,7 +8,7 @@
 - [Prison recruitment](design/PRISON_RECRUITMENT.md): implemented first pass; the proposal above retains deferred ideas.
 - [Combat](design/COMBAT_DESIGN.md): combat rules and outstanding mechanics.
 - [Battle Lab](design/BATTLE_LAB.md): dev-only mission/map picker, real approach outcomes, repeatable seeds and isolated test parties.
-- [Authored battle locations](design/AUTHORED_BATTLE_LOCATIONS.md): focused location redesigns, reusable map pieces, operable gates, art separation and remaining locations.
+- [Authored battle locations](design/AUTHORED_BATTLE_LOCATIONS.md): saved workshop/armory/shed plans, bridge variations, door-aware AI, wall alignment, separate art packs and remaining locations.
 - [Combat tools and rank pacing](gameplay/COMBAT_TOOLS_AND_PACING.md): treatment, condition rules, automatic ambush preparation and fixed enemy budgets.
 - [Factions and rotating trade](design/FACTIONS_AND_ROTATING_TRADE.md): saved merchant visits, private agreements, ordinary mission choices and personal story consequences.
 - [Critical outcomes](gameplay/CRITICAL_SUCCESS_BALANCE.md): current soft caps and stat curves.

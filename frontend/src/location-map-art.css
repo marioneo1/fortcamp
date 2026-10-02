@@ -12,3 +12,18 @@
 .ground-swatch.ground-shed_floor,.ground-swatch.ground-bridge_deck{background:#83603b}.ground-swatch.ground-workshop_floor{background:#777b70}.ground-swatch.ground-grave_earth{background:#443d32}.ground-swatch.ground-grave_path{background:#5e6658}.ground-swatch.ground-forest_dark{background:#3b5035}.ground-swatch.ground-deep_river{background:#124554}
 .battlefield[class*="theme-location-"] .battle-terrain .terrain-hp{opacity:0;transition:opacity .12s ease}
 .battlefield[class*="theme-location-"] .battle-terrain:hover .terrain-hp,.battlefield[class*="theme-location-"] .battle-terrain.attack-target .terrain-hp{opacity:1}
+
+.battlefield.terrain-style-custom-painted .multi-cell-asset.has-prop-art:before{left:calc(50% + var(--asset-offset-x,0%));top:calc(50% + var(--asset-offset-y,0%))}
+
+.battlefield.terrain-style-custom-painted .ground-wood_bridge{background-image:url('/assets/combat-terrain/bridge-v1/wood_bridge.png')!important}
+.battlefield.terrain-style-custom-painted .ground-wood_bridge_damaged{background-image:url('/assets/combat-terrain/bridge-v1/wood_bridge_damaged.png')!important}
+.battlefield.terrain-style-custom-painted .ground-wood_bridge_top{background-image:url('/assets/combat-terrain/bridge-v1/wood_bridge_top.png')!important}
+.battlefield.terrain-style-custom-painted .ground-wood_bridge_bottom{background-image:url('/assets/combat-terrain/bridge-v1/wood_bridge_bottom.png')!important}
+.battlefield.terrain-style-custom-painted .ground-stone_bridge{background-image:url('/assets/combat-terrain/bridge-v1/stone_bridge.png')!important}
+.battlefield.terrain-style-custom-painted .ground-stone_bridge_damaged{background-image:url('/assets/combat-terrain/bridge-v1/stone_bridge_damaged.png')!important}
+.battlefield.terrain-style-custom-painted .ground-stone_bridge_top{background-image:url('/assets/combat-terrain/bridge-v1/stone_bridge_top.png')!important}
+.battlefield.terrain-style-custom-painted .ground-stone_bridge_bottom{background-image:url('/assets/combat-terrain/bridge-v1/stone_bridge_bottom.png')!important}
+.battlefield.terrain-style-custom-painted .ground-chapel_moss{background-image:url('/assets/combat-terrain/bridge-v1/chapel_moss.png')!important}
+.battlefield.terrain-style-custom-painted .ground-chapel_cracked{background-image:url('/assets/combat-terrain/bridge-v1/chapel_cracked.png')!important}
+.battlefield.terrain-style-custom-painted .ground-toll_cobbles{background-image:url('/assets/combat-terrain/bridge-v1/toll_cobbles.png')!important}
+.battlefield.terrain-style-custom-painted .ground-smithy_cobbles{background-image:url('/assets/combat-terrain/bridge-v1/smithy_cobbles.png')!important}

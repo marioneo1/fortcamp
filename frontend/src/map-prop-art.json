@@ -73,5 +73,13 @@
   "structure:yard_gate_closed": "structures/location-v1/yard_gate_closed.png",
   "structure:yard_gate_open": "structures/location-v1/yard_gate_open.png",
   "structure:shed_wall_broken": "structures/location-v1/shed_wall_broken.png",
-  "structure:cemetery_wall_corner": "structures/location-v1/cemetery_wall_corner.png"
+  "structure:cemetery_wall_corner": "structures/location-v1/cemetery_wall_corner.png",
+  "weapon_rack": "props/armory-v1/weapon_rack.png",
+  "shield_rack": "props/armory-v1/shield_rack.png",
+  "armor_stand": "props/armory-v1/armor_stand.png",
+  "arrow_crate": "props/armory-v1/arrow_crate.png",
+  "chapel_altar": "props/armory-v1/chapel_altar.png",
+  "chapel_pew": "props/armory-v1/chapel_pew.png",
+  "fallen_church_bell": "props/armory-v1/fallen_church_bell.png",
+  "toll_desk": "props/armory-v1/toll_desk.png"
 }

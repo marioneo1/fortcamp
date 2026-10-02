@@ -398,3 +398,6 @@ Added the isolated in-game battle mission catalogue and approach/outcome tester 
 # October 2 — focused authored locations
 
 Rebuilt six mission maps using actual shed/repair-yard/cemetery/river-crossing settings. Added reusable pieces, deterministic dressing variants, operable/destroyable gates with AI support, a separate twelve-prop pack and eight-structure pack. Existing terrain reused and original generic layout snapshots preserved. Full backend suite: 314 tests; six-map browser previews and 65-map/1,044-reference art audit passed, plus frontend build/tests. Remaining locations and balance review recorded in docs/design/AUTHORED_BATTLE_LOCATIONS.md. No production deployment.
+# October 2 — building variants and door route planning
+
+Dev-only follow-up adds meaningful saved workshop/shed/connected-armory layouts, varying bridge positions and wood/stone deck art, one-third lantern scale and perimeter artwork offsets that survive destruction. Enemy pursuit compares gate actions with breaches; panic escape can open gates. Separate terrain and prop atlases installed; chapel/bell tools prepared without claiming their maps are finished. Original authored map snapshots retained. Validation: 316 backend and 103 frontend tests, build and actual-browser previews. Canonical scope: docs/design/AUTHORED_BATTLE_LOCATIONS.md.
