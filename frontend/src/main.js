@@ -555,7 +555,7 @@ function battleToken(unit,current,battle){
   const boss=unit.boss||unit.kind==='chieftain';
   const height=battle.elevation?.find(tile=>tile.x===unit.x&&tile.y===unit.y)?.height||0,preview=battle.attack_previews?.[unit.id]?.[selectedCombatAction];
   const accuracy=preview?` · ${preview.chance}% accuracy${preview.damage_bonus?` · +${preview.damage_bonus} height damage`:''}`:'';
-  const statuses=(unit.statuses||[]).map(status=>{const d=battle.status_definitions?.[status.id]||{name:title(status.id),icon:'•',description:'Status effect'},duration=status.turns??status.duration;return `<span class="status-icon" tabindex="0">${esc(d.icon)}<span class="status-tooltip"><b>${esc(d.name)}</b><small>${esc(d.description)}</small>${duration!=null?`<em>${duration} activation${duration===1?'':'s'} remaining</em>`:''}</span></span>`}).join('');
+  const statuses=(unit.statuses||[]).map(status=>{const d=battle.status_definitions?.[status.id]||{name:title(status.id),icon:'•',description:'Status effect'},duration=status.rounds??status.turns??status.duration,durationUnit=status.rounds!=null?'round':'activation';return `<span class="status-icon" tabindex="0">${esc(d.icon)}<span class="status-tooltip"><b>${esc(d.name)}</b><small>${esc(d.description)}</small>${duration!=null?`<em>${duration} ${durationUnit}${duration===1?'':'s'} remaining</em>`:''}</span></span>`}).join('');
   const condition=unit.condition||(!unit.alive?'dead':'active'),bodyLabel=condition==='unconscious'?'UNCONSCIOUS':condition==='dead'?'CORPSE':'';
   const throwTarget=(battle.throw_profile?.target_ids||[]).includes(unit.id);
   const targeting=['attack','subdue','skill','throw'].includes(selectedCombatAction)&&unit.team==='enemy',validTarget=selectedCombatAction==='throw'?throwTarget:!!preview;

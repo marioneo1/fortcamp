@@ -143,3 +143,10 @@ Follow-ups: real multiplayer balance/soak testing; broader racial/named mercenar
 ## October 2 production workflow
 
 Implemented fixed sibling `fortcamp-dev` and `fortcamp-prod` folders, a one-step `update_prod_windows.bat`, production-only launch guards, credential-preserving updates with database backups and failed-build rollback. `fortcamp-release-data` remains the production store for every installed server; registrations persist. Separate Discord dev application and actual multiplayer soak testing remain follow-ups. See docs/FRIEND_TRIAL.md.
+
+
+### October 2: ambush opening and goblin boss pacing ? implemented in dev
+- Successful scouting: every initial enemy sleeps for three rounds; first attack against any enemy wakes all, even on a miss. Positioning remains safe. Status hover shows the shared rule and rounds remaining.
+- Authored, roster-independent Goblin Warcamp chief and escort stats; stronger B-rank Redoubt commander. Existing saved battles retain their old values.
+- Deferred: coordinated automatic ambush preparation; wider rank-by-rank enemy tuning and live friend-server balance review.
+- Clarification: current World outcome rewards are personal save milestones. Laid the Empty Hearse to Rest records the finale but currently unlocks no further content and does not alter server events. Consider renaming this label Story milestone and adding authored consequences in a separate story pass.

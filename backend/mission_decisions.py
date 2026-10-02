@@ -66,6 +66,12 @@ def setup_encounter(battle,transition):
         favored='player' if setup=='ambush' else 'enemy'
         battle['turn_order'].sort(key=lambda uid:(battle['units'][uid]['team']!=favored,-battle['units'][uid]['initiative'],uid))
         battle['turn_index']=0
+        if setup == 'ambush':
+            battle['ambush_sleep_until_round'] = int(battle.get('round', 1)) + 3
+            for enemy in enemies:
+                enemy['statuses'] = [s for s in enemy.get('statuses', []) if s.get('id') != 'ambush_sleep']
+                enemy['statuses'].append({'id': 'ambush_sleep'})
+            battle['log'].append('The enemies are asleep. You have three rounds to position; attacking any enemy wakes them all.')
     if setup=='blockade':
         taken={(u['x'],u['y']) for u in battle['units'].values()} | {(t['x'],t['y']) for t in battle.get('terrain',[])}
         candidates=[(3,y) for y in (2,6)] if battle['width']>=12 else [(1,5),(3,5)]

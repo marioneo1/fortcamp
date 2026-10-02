@@ -349,3 +349,12 @@ Added a persistent four-contact player-specific mercenary board to the private c
 ## October 2 - fixed dev/prod deployment
 
 Renamed the editable workspace to `fortcamp-dev`, prepared the tested production commit in `fortcamp-prod`, and preserved the shared production database, uploads and credentials. Added a fixed-folder production updater with a pre-update SQLite backup, archived previous copies, rollback on build failure and refusal to replace a running host. Debug and authentication bypass remain off in production. See ../FRIEND_TRIAL.md for current paths, launchers and server registration instructions.
+
+
+## October 2, 2026 ? opening ambush and goblin boss difficulty
+
+Successful ambush approaches now create a three-round shared sleep window before enemy AI runs. Enemy-targeted attack attempts wake the group before accuracy resolution; thrown impacts share the alarm. Positioning and failed validation do not wake enemies. Status tooltips explain the rule and show remaining rounds. Warcamp chief: 72 HP, 3 armor, 12 attack; its escort is tougher as well. B-rank Redoubt chief: 112 HP, 4 armor, 17 attack. These are fixed encounter stats and apply to new battles only; production saves and already-running battles were not modified.
+
+Added behavior tests including a legal two-person ambush victory with ordinary equipment. Existing gear/objective tests now isolate skill targeting and use veteran fixtures for objective-routing checks rather than assuming the old boss is trivial. Release-builder filesystem tests mock the port probe so a running production server does not affect isolated test results. World-outcome clarification: the Empty Hearse flag is currently a personal story completion marker without additional gameplay consequences.
+
+Validation completed: 264 backend tests, 96 frontend tests, frontend production build and Git whitespace checks passed. Changes are in dev; no production deployment or save migration was performed.

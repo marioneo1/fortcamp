@@ -20,6 +20,7 @@ STATUS_DEFINITIONS = {
     "lifeline_spent":{"name":"Safeguard spent","icon":"◇","description":"This unit's once-per-battle survival safeguard has been used. The next lethal hit can defeat them."},
     "stun": {"name": "Stun", "icon": "✦", "description": "Cannot act during the next activation."},
     "sleep": {"name": "Sleep", "icon": "Zz", "description": "Cannot act. Taking direct damage wakes the unit."},
+    "ambush_sleep": {"name": "Sleeping camp", "icon": "Zz", "description": "Cannot move or act for the opening three rounds. Attacking any enemy wakes the whole camp, even if the attack misses."},
     "poison": {"name": "Poison", "icon": "☠", "description": "Takes damage at activation start; armor does not reduce it."},
     "bleed": {"name": "Bleed", "icon": "◆", "description": "Takes physical damage after moving or using a physical action."},
     "charm": {"name": "Charm", "icon": "♥", "description": "Treats the charmer's faction as friendly and former allies as hostile."},
@@ -370,6 +371,16 @@ def create_goblin_warcamp_battle(state: dict, party_ids: list[str], seed: str, d
         _enemy("gob_archer", archer_identity["name"], "archer", 6, 2, archer_identity),
         _enemy("gob_horn", horn_identity["name"], "horncaller", 6, 4, horn_identity),
     ]
+    # Authored D-rank boss encounter; fixed stats, never scaled to the player's roster.
+    warcamp_stats = {
+        "chieftain": (72, 3, 12), "raider": (28, 2, 8),
+        "archer": (24, 1, 7), "horncaller": (24, 1, 7),
+    }
+    for enemy in enemies:
+        hp, armor, attack = warcamp_stats[enemy["kind"]]
+        enemy.update(hp=hp, max_hp=hp, armor=armor, attack=attack)
+        if enemy["kind"] == "chieftain":
+            enemy.update(boss=True, move=4, strength=14)
     units.update({unit["id"]: unit for unit in enemies})
     order = sorted(units, key=lambda uid: (-(units[uid]["initiative"] + rng.random()), uid))
     battle = {
@@ -655,6 +666,11 @@ def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission
             "weapon":"Short Bow" if kind == "archer" else "Chapel Blade" if race == "Undead" else "Raider Spear",
             "corpse_item":"short_bow" if kind == "archer" else "rusty_knife",
             "corpse_item_chance":35 if index == 0 else 25})
+        if mission_id == "goblin_chieftain":
+            # The B-rank Redoubt is a trained warband, not a D-rank camp patrol.
+            hp = 112 if index == 0 else 40
+            unit.update(hp=hp, max_hp=hp, armor=4 if index == 0 else 2,
+                        attack=17 if index == 0 else 10)
         if spec.get('rookie'):
             unit.update(hp=10 if index==0 else 7,max_hp=10 if index==0 else 7,armor=0,attack=3,initiative=8+index,move=3)
         if spec.get('creature'):
@@ -871,6 +887,7 @@ def _attack_preview(battle: dict, attacker: dict, target: dict, rule: str) -> di
 
 
 def _attack_hits(battle: dict, attacker: dict, target: dict, rule: str) -> tuple[bool, dict, int]:
+    _wake_ambush(battle, target)
     preview = _attack_preview(battle, attacker, target, rule)
     counter = int(battle.get("roll_counter", 0))
     battle["roll_counter"] = counter + 1
@@ -1031,6 +1048,8 @@ def _current_unit(battle: dict) -> dict | None:
         if battle["turn_index"] >= len(order):
             battle["turn_index"] = 0
             battle["round"] += 1
+            if battle.get("ambush_sleep_until_round") and battle["round"] >= battle["ambush_sleep_until_round"]:
+                _wake_ambush(battle)
             for unit in _living(battle):
                 unit["moved"] = False; unit["acted"] = False; unit["guarding"] = False
                 healing=min(unit.get('perk_modifiers',{}).get('regeneration',0),unit['max_hp']-unit['hp'])
@@ -1083,10 +1102,22 @@ def _spawn_reinforcements(battle: dict) -> None:
     battle["log"].append("The alarm horn answers across the hills. Warhost reinforcements enter the camp.")
 
 
+def _wake_ambush(battle: dict, target: dict | None = None) -> None:
+    """Only the opening ambush sleep shares an alarm; ordinary Sleep is local."""
+    if not battle.get("ambush_sleep_until_round") or (target is not None and target.get("team") != "enemy"):
+        return
+    battle.pop("ambush_sleep_until_round", None)
+    for unit in battle["units"].values():
+        unit["statuses"] = [s for s in unit.get("statuses", []) if s.get("id") != "ambush_sleep"]
+    battle["log"].append("The attack wakes the whole camp." if target is not None else "The camp wakes. The ambush preparation window has ended.")
+
+
 def _deal_damage(
     battle: dict, attacker: dict, target: dict, bonus: int = 0, armor_pierce: int = 0,
     intent: str = "lethal", ability: dict | None = None,
 ) -> int:
+    if not attacker.get("status_tick"):
+        _wake_ambush(battle, target)
     if ability:
         attacker = {**attacker, "attack": ability.get("attack", attacker["attack"]),
                     "attack_elevation_rule": ability["elevation_rule"],
@@ -1621,6 +1652,10 @@ def _should_party_panic(battle: dict, unit: dict) -> bool:
 
 
 def _enemy_turn(battle: dict, unit: dict) -> None:
+    if any(s.get("id") == "ambush_sleep" for s in unit.get("statuses", [])):
+        battle["log"].append(f"{unit['name']} is still asleep.")
+        _finish_turn(battle)
+        return
     if unit.get("panicked"):
         _flee_turn(battle, unit)
         return
@@ -2069,6 +2104,10 @@ def _context_actions(battle: dict, unit: dict) -> list[dict]:
 def battle_view(battle: dict) -> dict:
     view = deepcopy(battle)
     current = _current_unit(view)
+    for unit in view["units"].values():
+        for status in unit.get("statuses", []):
+            if status.get("id") == "ambush_sleep":
+                status["rounds"] = max(0, int(view.get("ambush_sleep_until_round", view["round"])) - view["round"])
     view["current_unit_id"] = current["id"] if current else None
     if current and current["team"] == "player":
         reachable, parents = _movement_tree(view, current)

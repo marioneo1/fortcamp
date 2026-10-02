@@ -700,6 +700,9 @@ class TacticalCombatTests(unittest.TestCase):
 
     def test_objective_auto_battle_completes_both_optional_objectives(self):
         state, party_ids = self.battle_party()
+        # Test objective routing with veterans; encounter difficulty is tested separately.
+        for character in state['characters']:
+            character['attributes'].update(str=25, vit=25)
         battle = create_goblin_warcamp_battle(state, party_ids, "objective-battle")
 
         auto_resolve(battle, "objective")
@@ -1174,6 +1177,8 @@ class TacticalCombatTests(unittest.TestCase):
 
     def test_balanced_and_objective_tactics_make_different_tradeoffs(self):
         state, party_ids = self.battle_party()
+        for character in state['characters']:
+            character['attributes'].update(str=25, vit=25)
         balanced = create_goblin_warcamp_battle(state, party_ids, "same-seed")
         objective = deepcopy(balanced)
 

@@ -24,6 +24,10 @@ class GearExpansionTests(unittest.TestCase):
             battle, actor, enemy = self.battle('mercykeepers_maul')
             actor.update(x=2, y=2, attack=100)
             enemy.update(x=3, y=2, hp=2)
+            # Isolate the capture technique from boss-priority targeting.
+            battle['units']['gob_chief'].update(x=7, y=0)
+            battle['units']['gob_archer'].update(x=7, y=1)
+            battle['units']['gob_horn'].update(x=7, y=2)
             with patch('backend.combat._attack_hits', return_value=(True, {'damage_bonus': 0, 'chance': 100}, 1)):
                 if auto:
                     _player_auto_turn(battle, actor, 'aggressive')

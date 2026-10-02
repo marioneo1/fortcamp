@@ -15,7 +15,8 @@ class RunProfileTests(unittest.TestCase):
             data=parent/'fortcamp-release-data';data.mkdir()
             (prod/'.fortcamp-release.json').write_text('{}');(prod/'.env').write_text('DISCORD_CLIENT_ID=production-only\n')
             with closing(sqlite3.connect(data/'fortcamp.db')) as db:db.execute('CREATE TABLE example(value TEXT)');db.execute("INSERT INTO example VALUES('preserved')");db.commit()
-            with patch('tools.prepare_release_copy.ROOT',dev):
+            with patch('tools.prepare_release_copy.ROOT',dev), patch('tools.prepare_release_copy.socket.socket') as socket:
+                socket.return_value.__enter__.return_value.connect_ex.return_value = 1
                 self.assertEqual(release_env_source(parent),prod/'.env')
                 with self.assertRaisesRegex(RuntimeError,'build failed'):
                     with production_destination(prod,data,prod/'.env') as source:
