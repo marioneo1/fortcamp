@@ -291,3 +291,7 @@ Loyalty changes through consequential events, not repetitive gifts: surviving mi
 ## Map camera QoL (2026-10-01)
 
 Battles and defense preparation open in Fit map mode: preserve the map aspect ratio and choose the largest size that fits both the available width and remaining screen height. A narrower sidebar gives the field more room. Fit map responds to window resizing. Zoom buttons leave fit mode and enlarge or shrink the actual current map size; the 50% view button restores the old fixed tile scale. Larger zooms remain scrollable. Small windows stack the sidebar below the map. This changes presentation only, not tile movement or targeting.
+
+## Victory presentation follow-up (2026-10-01)
+
+Securing the primary objective displays a wide banner centered over the visible map viewport, without changing the map size or scrolling its content. Continue for optional objectives retains the existing pursuit action and minimizes the banner to an Objective secured bar. Finish operation reopens the completion choice; continuing again minimizes it locally without consuming an action. The bar follows the current battle?s victory state, including resumed pursuits. Camera controls have a separate heading row and four equally sized buttons, fixing the wrapped/stretched zoom-in control.

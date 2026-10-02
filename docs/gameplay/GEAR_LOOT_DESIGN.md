@@ -66,3 +66,5 @@ The equipment browser is under Roster → Equipment. It pages item types, stacks
 Spare gear stats, abilities and perks start expanded. Hide gear details is separate from Hide equipped gear and persists per player/server in browser storage. Equipped slots have Gear effects disclosures and a hover summary on the name. Attributes, CON and the mission DPS rating explain their actual formulas on hover or keyboard focus. Perk help uses a viewport-clamped panel rather than inheriting the rounded tag layout.
 
 Contract summaries conceal undisclosed exclusive item names and drop percentages, replacing duplicate spoilers with equipment discovery hints. An item explicitly named in the description/objective, or authored in disclosed_rewards, stays named as a possible recovery. Paid rewards and ordinary reward categories remain visible; no actual loot rolls were changed. All three briefing views use the same server-filtered preview.
+
+Equipped gear effects are now always shown directly in each filled slot. They cannot be collapsed or hidden. The saved Hide spare gear details setting applies only to inventory cards. Hover summaries remain available on equipped names.

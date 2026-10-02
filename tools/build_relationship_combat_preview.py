@@ -25,7 +25,7 @@ source=(ROOT/'staging-ui/equipment-icons-v1/battle-preview.js').read_text(encodi
 source+='\nconst relationshipFixture='+payload+';\n'+"""
 identity={guild_id:'fixture-guild',user_id:'fixture-user'};state=relationshipFixture.state;content=relationshipFixture.content;
 window.relationshipRequests=[];const previousFixtureFetch=window.fetch;
-window.fetch=(url,options)=>{if(String(url).endsWith('/conversation')){const request=JSON.parse(options.body);window.relationshipRequests.push(request);return Promise.resolve(new Response(JSON.stringify(relationshipFixture.replies[request.topic||'recent']),{status:200}))}return previousFixtureFetch(url,options)};
+window.fetch=(url,options)=>{if(window.qolVictoryState&&String(url).endsWith('/battle/command')){const request=JSON.parse(options.body);if(request.action==='continue_pursuit')window.qolVictoryState.decision_pending=false;return Promise.resolve(new Response(JSON.stringify({battle:window.qolVictoryState}),{status:200}))}if(String(url).endsWith('/conversation')){const request=JSON.parse(options.body);window.relationshipRequests.push(request);return Promise.resolve(new Response(JSON.stringify(relationshipFixture.replies[request.topic||'recent']),{status:200}))}return previousFixtureFetch(url,options)};
 window.relationshipPreview=()=>{combatEffects.pause();$('#mission-modal').classList.add('hidden');selectedCharacterId='companion';rosterDetailTab='conversation';renderRoster();$('.tabs button[data-tab="roster"]').click()};
 window.nativePreview=()=>{$('#mission-modal').classList.remove('hidden');renderBattle(structuredClone(relationshipFixture.before));};
 window.nativeCast=()=>{const next=structuredClone(relationshipFixture.after);renderBattle(next);animateBattleMovement(relationshipFixture.before,next)};
@@ -36,6 +36,7 @@ window.qolEquipment=()=>{window.relationshipPreview();
  rosterDetailTab='equipment';renderRoster();
 };
 window.qolContract=()=>openMission({id:'preview-contract',name:'A guild contract',rank:'E',status:'available',party_size:1,description:'Check the canal.',reward_preview:['Contract payment','Possible equipment discoveries']});
+window.qolVictory=()=>{window.qolVictoryState={...structuredClone(relationshipFixture.before),battle_won:true,decision_pending:true,victory_title:'The chieftain has fallen.',victory_description:'The remaining goblins are fleeing. Leave now or pursue optional objectives.'};$('#mission-modal').classList.remove('hidden');renderBattle(window.qolVictoryState)};
 """
 folder=ROOT/'staging-ui/combat-relationships';folder.mkdir(parents=True,exist_ok=True)
 (folder/'preview.js').write_text(source,encoding='utf-8')

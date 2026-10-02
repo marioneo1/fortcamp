@@ -104,3 +104,10 @@ Deferred: deeper debriefs and Champion voices, item/trinket gifts and crafter re
 - Fit map camera for combat and preparation; preserve proportions and manual scrolling at larger zooms.
 - Hidden unique rewards no longer advertised by name or numerical drop chance unless the briefing discloses them.
 - Validation: 226 backend tests, 94 frontend tests, production build; isolated real-browser checks for fit, zoom, gear preferences, tooltips, record placement and outside dismissal. No release/save changes.
+
+### Completed follow-up: equipped effects and victory banner
+
+- Equipped slot effects are permanently visible; spare-card detail preference remains separate.
+- Camera buttons share one row with equal widths.
+- Centered wide objective-secured banner minimizes after Continue for optional objectives and can be reopened through Finish operation.
+- Validation: 94 frontend tests, production build, isolated browser checks of camera layout at three sizes, always-visible equipped effects and victory minimize/reopen. Gameplay rules and release saves unchanged.

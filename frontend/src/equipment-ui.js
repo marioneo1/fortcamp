@@ -76,14 +76,14 @@ export function mountEquipmentBrowser(panel,{state,content,character,onEquip,onE
     <select aria-label="Equipment slot" data-filter="slot"><option value="">All items</option>${content.slots.map(s=>`<option value="${s}" ${f.slot===s?'selected':''}>${label(s)}</option>`).join('')}</select>
     <select aria-label="Item rarity" data-filter="rarity"><option value="">All rarities</option>${ranks.map(r=>`<option value="${r}" ${f.rarity===r?'selected':''}>${label(r)}</option>`).join('')}</select>
     <select aria-label="Sort inventory" data-filter="sort"><option value="rarity" ${f.sort==='rarity'?'selected':''}>Rarity first</option><option value="name" ${f.sort==='name'?'selected':''}>Name</option></select></div>
-    <div class="armory-display-options"><label class="armory-hide-equipped"><input type="checkbox" data-hide-equipped ${f.hideEquipped?'checked':''}> Hide equipped gear</label><label class="armory-hide-equipped"><input type="checkbox" data-hide-details ${f.hideDetails?'checked':''}> Hide gear details</label></div>
+    <div class="armory-display-options"><label class="armory-hide-equipped"><input type="checkbox" data-hide-equipped ${f.hideEquipped?'checked':''}> Hide equipped gear</label><label class="armory-hide-equipped"><input type="checkbox" data-hide-details ${f.hideDetails?'checked':''}> Hide spare gear details</label></div>
     <div class="armory-result-count" aria-live="polite"></div><div class="armory-grid"></div><div class="armory-pages"></div>`;
   const find=selector=>panel.querySelector(selector);
   const render=()=>{
     const locked=!editable(character);
     find('.armory-equipped').innerHTML=content.slots.map(slot=>{
       const inst=state.inventory.find(i=>i.instance_id===character.equipment?.[slot]),item=content.items[inst?.item_id];
-      return `<div class="armory-slot ${item?'filled':''}"><span>${label(slot)}</span>${item?`${icon(inst.item_id)}<b title="${escape(describeGear(item,content.standalone_perks).join('\n'))}" tabindex="0">${escape(item.name)}</b><details class="armory-equipped-details"><summary>Gear effects</summary><p>${describeGear(item,content.standalone_perks).map(escape).join('<br>')}</p></details><button data-remove="${slot}" ${locked||pending?'disabled':''}>Unequip</button>`:'<b>Empty</b>'}</div>`;
+      return `<div class="armory-slot ${item?'filled':''}"><span>${label(slot)}</span>${item?`${icon(inst.item_id)}<b title="${escape(describeGear(item,content.standalone_perks).join('\n'))}" tabindex="0">${escape(item.name)}</b><div class="armory-equipped-details"><p>${describeGear(item,content.standalone_perks).map(escape).join('<br>')}</p></div><button data-remove="${slot}" ${locked||pending?'disabled':''}>Unequip</button>`:'<b>Empty</b>'}</div>`;
     }).join('');
     const groups=inventoryGroups(state,content,character,f),pages=Math.max(1,Math.ceil(groups.length/18));f.page=Math.min(f.page,pages-1);
     find('.armory-result-count').textContent=`${groups.length} matching item types${locked?' · Equipment locked during a mission':''}`;

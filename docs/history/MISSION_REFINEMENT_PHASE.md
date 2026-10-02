@@ -320,3 +320,7 @@ Validation: 224 backend tests and 92 frontend tests passed; production build pas
 ## Contract and roster QoL pass (2026-10-01)
 
 Implemented outside-click contract dismissal, equipped gear effects, saved default-visible spare gear details, stat formula and readable perk help, separate Service Record tab, spoiler-aware server reward previews, and responsive Fit map with manual zoom. Browser fixtures use mocked APIs and no saves. Checked full maps at 1440?1000, 1280?720 and 800?700, plus actual detail preference, keyboard tooltips and backdrop dismissal. 226 backend/94 frontend tests and production build pass. Alpha/dev only; live Discord caching and release deployment were not exercised.
+
+### Victory and equipment presentation follow-up
+
+Fixed the camera grid cascade that wrapped zoom-in into a stretched row. Equipped effects now render directly instead of inside a disclosure. Objective completion uses a wide centered map overlay and a minimized finish bar during optional pursuit. Existing backend victory and extraction rules remain intact. 94 frontend tests and production build pass; mocked-API browser checks cover equal camera widths, visible equipped effects while spare details are hidden, centered banner and continue/reopen/minimize flow.
