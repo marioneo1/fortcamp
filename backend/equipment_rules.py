@@ -21,7 +21,9 @@ def equipped_skills(equipped,attribute,training,fallback=None,weapon=None):
         if not authored or authored['id'] in seen:continue
         seen.add(authored['id']);entry=dict(authored)
         entry.update(attack=5+attribute(entry['scaling'])//2+int(item.get('power',2))+training,
-                     element=item.get('element'),on_hit=item.get('on_hit'),source_name=item['name'])
+                     source_name=item['name'])
+        entry.setdefault('element', item.get('element'))
+        entry.setdefault('on_hit', item.get('on_hit'))
         found.append(entry)
     if fallback and fallback['id'] not in seen:found.append(dict(fallback))
     return found

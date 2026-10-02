@@ -686,6 +686,8 @@ def _start_scene_encounter(state: dict, mission: MissionInstance, analysis: dict
     analysis['battle']=battle
     analysis['scene_boss']=bool(transition.get('boss'))
     analysis['scene_template_id']=mission.template_id
+    if transition.get('after_battle'):
+        analysis['post_battle_node'] = transition['after_battle']
     mission.analysis=analysis
     mission.status='battle'
     mission.completes_at=None
@@ -712,6 +714,15 @@ async def choose_decision_instance(session: AsyncSession, guild_id: str, user_id
         if transition.get('battle'):
             _start_scene_encounter(state,mission,analysis,transition)
         elif transition.get('finish'):
+            if transition['finish'] == 'battle_outcome':
+                if not analysis.get('pending_battle_outcome'):
+                    raise ValueError('This agreement has no completed battle to hand over')
+                analysis['post_battle_resolved'] = True
+                mission.analysis = analysis
+                player.state = state
+                result = await _finish_battle(session, mission, player, analysis['battle'])
+                await session.flush()
+                return {'mission': mission_summary(mission), 'decision': None, 'result': result}
             party_ids=list(analysis.get('mission_party_ids') or analysis.get('party_ids') or mission.party_ids)
             finish=transition['finish']
             # More dialogue nodes must not multiply the chance of a critical mission finish.
@@ -837,6 +848,10 @@ async def get_battle_instance(
     battle = (mission.analysis or {}).get("battle")
     if not battle or mission.status not in {"battle", "completed"}:
         raise ValueError("This mission does not have an active tactical battle")
+    battle = deepcopy(battle)
+    player = await get_player(session, guild_id, user_id)
+    from .combat_supplies import sync_supplies
+    sync_supplies(battle, player.state)
     return battle_view(battle)
 
 
@@ -1236,6 +1251,16 @@ async def _finish_battle(
     state = normalize_state(deepcopy(player.state))
     analysis = dict(mission.analysis or {})
     tactical_outcome = battle.get("outcome", "failure")
+    if analysis.get('post_battle_node') and not analysis.get('post_battle_resolved') and not battle.get('mercenary_interlude') and tactical_outcome in {'success', 'critical_success'}:
+        analysis['pending_battle_outcome'] = tactical_outcome
+        analysis['scene']['node'] = analysis['post_battle_node']
+        analysis['scene']['revision'] += 1
+        analysis['battle'] = battle
+        mission.analysis = analysis
+        mission.status = 'decision'
+        mission.completes_at = None
+        await session.flush()
+        return {'scene_continuation': True, 'mission_id': mission.id}
     from .mercenaries import settle
     if battle.get('mercenary_interlude') and tactical_outcome != 'critical_failure':
         settle(state,analysis,tactical_outcome,battle,final=False)
@@ -1424,6 +1449,9 @@ async def _update_battle_instance(
     battle = deepcopy(metadata.get("battle"))
     if not battle:
         raise ValueError("Battle state is missing")
+    from .combat_supplies import sync_supplies
+    sync_supplies(battle, player.state)
+    supplies_before = set(battle.get('supplies_used', []))
     if resolve_all:
         view = auto_resolve(battle, auto or "balanced")
     elif auto:
@@ -1432,6 +1460,18 @@ async def _update_battle_instance(
         view = apply_player_command(battle, command)
     else:
         view = battle_view(battle)
+    spent = set(battle.get('supplies_used', [])) - supplies_before
+    if spent:
+        previous_state = deepcopy(player.state)
+        changed_state = deepcopy(previous_state)
+        changed_state['inventory'] = [i for i in changed_state['inventory'] if i['instance_id'] not in spent]
+        changed = await session.execute(update(PlayerState).where(
+            PlayerState.guild_id == guild_id, PlayerState.user_id == user_id,
+            PlayerState.state == previous_state,
+        ).values(state=changed_state).execution_options(synchronize_session=False))
+        if changed.rowcount != 1:
+            raise ValueError('Your inventory changed. Reopen the battle before using this supply.')
+        player.state = changed_state
     from .mercenaries import settle
     contacts={o['id']:o for o in player.state.get('mercenaries',[])}
     needs_contact_update=any(u.get('mercenary_id') in contacts and

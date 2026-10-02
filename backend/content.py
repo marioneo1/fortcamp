@@ -1292,5 +1292,12 @@ from .prison_recruitment import apply_prison_contracts
 apply_prison_contracts(MISSION_TEMPLATES)
 
 # Starter kits use existing icon art until a dedicated low-grade gear art pass.
+from .combat_supplies import apply_combat_content
+apply_combat_content(ITEMS, GENERAL_LOOT_TABLE)
+STANDALONE_PERKS['medic']['effect'] += ' Grants Field Care: one shared technique use per battle, range 1, heals 8 + half INT HP and removes Bleed. Physical care works while muted; does not revive.'
+from .faction_contracts import apply_faction_content
+apply_faction_content(MISSION_TEMPLATES, ITEMS)
+from .mission_branches import apply_branches
+apply_branches(MISSION_TEMPLATES)
 for _id,_art in {'chipped_sword':'knight_blade','splintered_shield':'ironcap_buckler','cracked_wand':'ember_staff','frayed_bow':'short_bow','worn_mallet':'warhammer','knotted_staff':'scrap_hatchet'}.items():
     ITEMS[_id]['icon']=f'/assets/catalogue/items/{_art}.png'

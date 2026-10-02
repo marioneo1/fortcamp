@@ -44,6 +44,8 @@ def initialize(state, now=None):
     state.setdefault('base_size',{'w':12,'h':8})
     state.setdefault('claim_upgrade',0)
     state.setdefault('factions',{key:0 for key in FACTIONS})
+    for key in FACTIONS:
+        state['factions'].setdefault(key, 0)
     state.setdefault('meals',{})
     state.setdefault('trade',{'seed':hashlib.sha256(str(state.get('created_at',now)).encode()).hexdigest()[:16],'visits':{}})
 
@@ -173,17 +175,43 @@ def trade_view(state,player_key,now=None):
     if visit['arrived']:visit.setdefault('expires_at',now+86400)
     live=[v for v in visits.values() if v.get('arrived') and v.get('expires_at',0)>now]
     merchant=live[0] if live else None
+    # A faction trader stays for 48 hours; each player has a stable rotation offset.
+    rotation_slot = now // (48 * 3600)
+    faction_ids = list(FACTIONS)
+    offset = int(hashlib.sha256(player_key.encode()).hexdigest()[:8], 16) % len(faction_ids)
+    active_faction = faction_ids[(rotation_slot + offset) % len(faction_ids)]
+    rotation_visits = state['trade'].setdefault('rotation_visits', {})
+    active_faction = rotation_visits.setdefault(str(rotation_slot), active_faction)
+    for old in list(rotation_visits):
+        if int(old) < rotation_slot - 3:
+            del rotation_visits[old]
+    next_faction = faction_ids[(rotation_slot + offset + 1) % len(faction_ids)]
+    from .faction_contracts import available_jobs
+    jobs = available_jobs(state)
     factions=[]
     for fid,definition in FACTIONS.items():
         relationship=state['factions'].get(fid,0)
         offers=[]
-        for index,iid in enumerate(definition['goods']):
+        for index,iid in enumerate(definition['goods'] if fid == active_faction else []):
             threshold=(0,15,35,65)[index]
-            offers.append({'id':f'faction:{day}:{fid}:{iid}','item':iid,'price':(12,30,65,120)[index],
-                'stock':max(0,1-state['trade'].get('purchases',{}).get(f'{day}:{fid}:{iid}',0)),
+            discount = .10 if relationship >= 45 else .05 if relationship >= 20 else 0
+            offers.append({'id':f'faction:{rotation_slot}:{fid}:{iid}','item':iid,'price':round((12,30,65,120)[index] * (1-discount)),
+                'stock':max(0,1-state['trade'].get('purchases',{}).get(f'{rotation_slot}:{fid}:{iid}',0)),
                 'required_relationship':threshold,'locked':relationship<threshold})
-        factions.append({'id':fid,'name':definition['name'],'relationship':relationship,'offers':offers})
-    return {'merchant':deepcopy(merchant),'factions':factions,'supplies':[{'resource':'food','price':2},{'resource':'medicine','price':6}]}
+        factions.append({'id':fid,'name':definition['name'],'relationship':relationship,'offers':offers,
+                         'visiting':fid == active_faction, 'contracts':[j for j in jobs if j['faction'] == fid]})
+    # Keep purchase history bounded without resetting current stock.
+    for old in list(state['trade'].get('purchases', {})):
+        try:
+            if int(old.split(':')[0]) < rotation_slot - 3:
+                del state['trade']['purchases'][old]
+        except ValueError:
+            continue
+    return {'merchant':deepcopy(merchant),'factions':factions,
+            'rotation':{'faction':active_faction,'ends_at':(rotation_slot+1)*48*3600,'next_name':FACTIONS[next_faction]['name']},
+            'camp_items':[{'id':f'camp:{iid}', 'item':iid, 'price':price, 'stock':999}
+                          for iid,price in [('field_dressing',8),('restorative_tonic',18),('cleansing_salts',14)]],
+            'supplies':[{'resource':'food','price':2},{'resource':'medicine','price':6}]}
 
 def purchase(state,player_key,offer_id,now=None):
     now=int(time.time()) if now is None else int(now)
@@ -192,7 +220,7 @@ def purchase(state,player_key,offer_id,now=None):
         resource=offer_id.split(':')[1];price={'food':2,'medicine':6}.get(resource)
         if not price:raise ValueError('Unknown supply')
         pay(state,{'gold':price});state['resources'][resource]+=1;return
-    offers=[o for f in view['factions'] for o in f['offers']]+(view['merchant']['offers'] if view['merchant'] else [])
+    offers=[o for f in view['factions'] for o in f['offers']]+(view['merchant']['offers'] if view['merchant'] else [])+view['camp_items']
     offer=next((o for o in offers if o['id']==offer_id),None)
     if not offer or offer.get('locked') or offer['stock']<1:raise ValueError('Offer is unavailable')
     pay(state,{'gold':offer['price']})
@@ -201,7 +229,7 @@ def purchase(state,player_key,offer_id,now=None):
         for visit in state['trade']['visits'].values():
             for original in visit.get('offers',[]):
                 if original['id']==offer_id:original['stock']-=1
-    else:
+    elif offer_id.startswith('faction:'):
         _,day,fid,iid=offer_id.split(':');state['trade'].setdefault('purchases',{})[f'{day}:{fid}:{iid}']=1
 
 def earn_relationship(state,mission,outcome):

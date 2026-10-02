@@ -93,3 +93,8 @@ type, resistances, weaknesses, mission aptitude, and form aptitude. These are st
 identities rather than cosmetic bonuses. Goblins, for example, have 70% base combat
 health, +2 movement, +15 evasion, and +4 initiative, along with scavenging and
 infiltration aptitude. Exact values remain balanceable without changing saved stats.
+
+
+## October 2 authored follow-up pass
+
+[Factions and rotating trade](FACTIONS_AND_ROTATING_TRADE.md) records nine faction invitations, five personal finale consequences, four ordinary investigation branches and three beginner battle handovers. Victorious encounters may return to an evidence choice before final payout. Failed optional recovery keeps the earned battle result. Private agreement requests open the party planner immediately; expired/failed attempts can be retried and fulfilled jobs cannot be farmed repeatedly. Wider handcrafted mission coverage remains ongoing.

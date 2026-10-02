@@ -22,7 +22,16 @@ export function describeGear(item, perks={}) {
   for(const [key,value] of Object.entries(item.bonuses||{}))lines.push(`${value>=0?'+':''}${value} ${label(key)} capability`);
   if(item.element)lines.push(`${label(item.element)} attacks: racial resistance −25%, weakness +25% damage. Nonlethal strikes ignore enchantments.`);
   if(item.combat_skill)lines.push(`Grants ${item.combat_skill.name}: ${item.combat_skill.description} Uses ${(item.combat_skill.scaling||item.weapon_scaling||'str').toUpperCase()}.`);
-  if(item.on_hit)lines.push(`${item.on_hit.chance}% ${label(item.on_hit.id)} chance on a successful lethal hit; ${item.on_hit.turns} activations. 4% maximum HP per activation (2–5 damage). Does not stack.`);
+  if(item.on_hit){
+    const effects={burn:'4% maximum HP at activation start (2–5 damage).',poison:'4% maximum HP at activation start (2–5 damage).',
+      bleed:'Moving or attacking physically causes one 2–4 damage tick at activation end.',stun:'Cannot act.',sleep:'Cannot act; direct damage wakes the target.',
+      freeze:'No movement; take 25% more direct damage. Fire removes it.',bind:'Cannot move.',slow:'Movement reduced by 2, minimum 1.',
+      paralyze:'30% chance to lose the activation; otherwise cannot move.',blind:'Ranged/magic accuracy −35 points; melee −15.',
+      mute:'Cannot cast spells or use magical basic attacks.',confuse:'35% chance to redirect an attack to another in-range unit.',
+      charm:'Temporarily attacks the charmer’s enemies.',berserk:'May attack either side; +3 damage and −10 accuracy.'};
+    lines.push(`${item.on_hit.chance}% ${label(item.on_hit.id)} chance on a successful lethal hit; ${item.on_hit.turns} activations. ${effects[item.on_hit.id]||''} Does not stack.`);
+    if(['stun','sleep','freeze','paralyze'].includes(item.on_hit.id))lines.push('Boss control lasts one activation, followed by one activation of recovery immunity.');
+  }
   const rules=item.combat_rules||{};
   if(rules.carry_strength)lines.push(`+${rules.carry_strength} effective STR for carrying only; strongest equipped bonus applies, capped at +6.`);
   if(rules.throw_range)lines.push(`+${rules.throw_range} tile of payload throw range; total range remains capped at 5.`);

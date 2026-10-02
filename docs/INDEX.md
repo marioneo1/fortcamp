@@ -6,6 +6,8 @@
 - [Prison recruitment proposal](design/PRISON_RECRUITMENT_PROPOSAL.md): original warden, conversation and boss pacing proposals; see the implemented reference below.
 - [Prison recruitment](design/PRISON_RECRUITMENT.md): implemented first pass; the proposal above retains deferred ideas.
 - [Combat](design/COMBAT_DESIGN.md): combat rules and outstanding mechanics.
+- [Combat tools and rank pacing](gameplay/COMBAT_TOOLS_AND_PACING.md): treatment, condition rules, automatic ambush preparation and fixed enemy budgets.
+- [Factions and rotating trade](design/FACTIONS_AND_ROTATING_TRADE.md): saved merchant visits, private agreements, ordinary mission choices and personal story consequences.
 - [Critical outcomes](gameplay/CRITICAL_SUCCESS_BALANCE.md): current soft caps and stat curves.
 - [Gear and loot](gameplay/GEAR_LOOT_DESIGN.md), [item audit](gameplay/ITEM_CATALOGUE_AUDIT.md): current equipment and discoveries.
 - [Resource progression](design/RESOURCE_PROGRESSION_PROPOSAL.md), [building audit](design/BUILDING_FUNCTIONAL_AUDIT.md), [buildings WIP](design/BUILDINGS_DESIGN_WIP.md): implemented effects versus proposals.

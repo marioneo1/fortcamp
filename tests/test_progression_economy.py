@@ -69,9 +69,10 @@ class EconomyTests(unittest.TestCase):
 
     def test_trade_checks_relationship_stock_and_duplicate_purchase(self):
         s=self.state();s['resources']['gold']=1000;key='guild:buyer';view=trade_view(s,key,2000)
-        locked=view['factions'][0]['offers'][-1]
+        visiting=next(f for f in view['factions'] if f['visiting'])
+        locked=visiting['offers'][-1]
         with self.assertRaises(ValueError):purchase(s,key,locked['id'],2000)
-        s['factions']['hedgerow']=100;purchase(s,key,locked['id'],2000)
+        s['factions'][visiting['id']]=100;purchase(s,key,locked['id'],2000)
         with self.assertRaises(ValueError):purchase(s,key,locked['id'],2000)
         self.assertEqual(sum(i['item_id']==locked['item'] for i in s['inventory']),1)
 

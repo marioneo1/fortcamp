@@ -1,6 +1,7 @@
 import {escapeHTML as esc,stableBoardHTML} from './mission-board-ui.js';
+import {tradeMarkup} from './trade-ui.js';
 const cost=value=>Object.entries(value||{}).map(([key,n])=>`${n} ${key==='scrap'?'salvage':key}`).join(' · ');
-export function renderCampEconomy(root,{state,content,api,onState,notify}){
+export function renderCampEconomy(root,{state,content,api,onState,notify,onContract}){
   if(!root||!content.economy)return;
   if(root.contains(document.activeElement)&&document.activeElement.matches('select,input'))return;
   const e=content.economy,level=state.expansion_level||0,next=e.expansions[level],claim=state.claim_upgrade||0;
@@ -24,18 +25,17 @@ export function renderCampEconomy(root,{state,content,api,onState,notify}){
   root.querySelectorAll('[data-cook]').forEach(b=>b.onclick=()=>act('cook',{meal:b.dataset.cook}));
   root.querySelectorAll('[data-eat]').forEach(b=>b.onclick=()=>act('eat',{meal:b.dataset.eat,character_id:root.querySelector('#camp-meal-character').value,track:root.querySelector('#camp-study-track').value}));
   root.querySelectorAll('[data-research]').forEach(b=>b.onclick=()=>act('research',{blueprint:b.dataset.research}));
-  root.querySelector('#camp-trade').onclick=()=>openTrade({api,onState,notify,content});
+  root.querySelector('#camp-trade').onclick=()=>openTrade({api,onState,notify,content,onContract});
 }
 async function openTrade(options){
   let dialog=document.querySelector('#camp-trade-dialog');
   if(!dialog){dialog=document.createElement('dialog');dialog.id='camp-trade-dialog';dialog.className='camp-trade-dialog';document.body.append(dialog);dialog.addEventListener('click',event=>{if(event.target===dialog)dialog.close()})}
   try{
     const result=await options.api('/api/trade');options.onState(result.state);
-    const t=result.trade,itemName=id=>options.content.items[id]?.name||id;
-    const offer=o=>`<article class="trade-offer"><b>${esc(itemName(o.item))}</b><p>${esc(options.content.items[o.item]?.description||'')}</p><small>${o.required_relationship!=null?`Relationship ${o.required_relationship} · `:''}${o.stock} available</small><button data-offer="${esc(o.id)}" ${o.locked||o.stock<1?'disabled':''}>${o.locked?'Build relationship':`Buy · ${o.price} gold`}</button></article>`;
-    dialog.innerHTML=`<button class="trade-close">Close</button><div class="eyebrow">PERSONAL TRADE</div><h2>Contacts and travelers</h2><p>Gold: ${result.state.resources.gold}. Offers are saved; reopening does not reroll stock.</p><h3>Camp supplies</h3>${t.supplies.map(s=>`<button data-offer="supplies:${s.resource}">Buy 1 ${s.resource} · ${s.price} gold</button>`).join('')}<h3>Visiting merchant</h3>${t.merchant?`<small>Available until ${esc(new Date(t.merchant.expires_at*1000).toLocaleString())}</small><div class="trade-offers">${t.merchant.offers.map(offer).join('')}</div>`:'<p>No merchant has visited you today. Faction contacts remain available.</p>'}${t.factions.map(f=>`<h3>${esc(f.name)} · relationship ${f.relationship}/100</h3><div class="trade-offers">${f.offers.map(offer).join('')}</div>`).join('')}`;
+    dialog.innerHTML=tradeMarkup(result.trade,result.state,options.content);
     dialog.querySelector('.trade-close').onclick=()=>dialog.close();
     dialog.querySelectorAll('[data-offer]').forEach(button=>button.onclick=async()=>{button.disabled=true;try{const purchased=await options.api('/api/trade',{method:'POST',body:JSON.stringify({offer_id:button.dataset.offer})});options.onState(purchased.state);options.notify('Purchased');await openTrade(options)}catch(error){options.notify(error.message);button.disabled=false}});
+    dialog.querySelectorAll('[data-faction-contract]').forEach(button=>button.onclick=async()=>{button.disabled=true;try{const data=await options.api(`/api/factions/contracts/${button.dataset.factionContract}`,{method:'POST'});options.onState(data.state);dialog.close();options.notify('Agreement added to Private Contracts');options.onContract?.(data.mission)}catch(error){options.notify(error.message);button.disabled=false}});
     if(!dialog.open)dialog.showModal();
   }catch(error){options.notify(error.message)}
 }

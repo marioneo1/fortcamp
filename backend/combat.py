@@ -13,6 +13,9 @@ from .portraits import choose_pool_portrait, portrait_pool_key
 from .races import race_gameplay
 from .perk_effects import modifiers
 from .equipment_rules import collect_rules,equipped_skills
+from .combat_pacing import enemy_budget
+from .combat_supplies import sync_supplies, remaining_uses
+from . import combat_conditions as conditions
 
 
 STATUS_DEFINITIONS = {
@@ -26,15 +29,15 @@ STATUS_DEFINITIONS = {
     "charm": {"name": "Charm", "icon": "♥", "description": "Treats the charmer's faction as friendly and former allies as hostile."},
     "confuse": {"name": "Confuse", "icon": "?", "description": "Offensive actions may redirect to another valid nearby target."},
     "berserk": {"name": "Berserk", "icon": "‼", "description": "Must attack if possible and treats every nearby unit as hostile."},
-    "freeze": {"name": "Freeze", "icon": "❄", "description": "Cannot move and takes increased impact damage; fire removes it."},
-    "burn": {"name": "Burn", "icon": "♨", "description": "Takes damage at activation start and may ignite flammable terrain."},
-    "blind": {"name": "Blind", "icon": "◉", "description": "Greatly reduces ranged accuracy and limits reaction range."},
+    "freeze": {"name": "Freeze", "icon": "❄", "description": "Cannot move. Direct hits deal 25% more damage; fire removes it."},
+    "burn": {"name": "Burn", "icon": "♨", "description": "Takes damage at activation start. Suppresses status Regeneration."},
+    "blind": {"name": "Blind", "icon": "◉", "description": "Attack accuracy loses 35 percentage points for ranged/magic attacks and 15 for melee."},
     "bind": {"name": "Bind", "icon": "⌁", "description": "Cannot move until the bind is broken, removed, or expires."},
-    "slow": {"name": "Slow", "icon": "◷", "description": "Reduces movement and delays the next initiative position."},
-    "paralyze": {"name": "Paralyze", "icon": "ϟ", "description": "May lose movement or the main action when the activation begins."},
-    "mute": {"name": "Mute", "icon": "◇", "description": "Cannot use spells or actions with a verbal component."},
-    "fear": {"name": "Fear", "icon": "!", "description": "Cannot willingly move closer to the source and suffers reduced accuracy against it."},
-    "vulnerable": {"name": "Vulnerable", "icon": "▽", "description": "The next damaging hit ignores part of the target's armor."},
+    "slow": {"name": "Slow", "icon": "◷", "description": "Reduces movement by 2, with a minimum of 1."},
+    "paralyze": {"name": "Paralyze", "icon": "ϟ", "description": "30% chance to miss the activation. Otherwise cannot move but can act."},
+    "mute": {"name": "Mute", "icon": "◇", "description": "Cannot use magical basic attacks or spells. Physical actions and supplies remain available."},
+    "fear": {"name": "Fear", "icon": "!", "description": "Cannot willingly move closer to the source. Attack accuracy is reduced by 15 percentage points."},
+    "vulnerable": {"name": "Vulnerable", "icon": "▽", "description": "The next direct damaging hit ignores 3 armor."},
     "regeneration": {"name": "Regeneration", "icon": "+", "description": "Restores health at activation start; fire can suppress it."},
     "panic": {"name": "Panic", "icon": "↯", "description": "Control is lost. The unit will run toward the nearest valid escape tile."},
 }
@@ -269,8 +272,8 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
     if granted_skill:
         special = deepcopy(granted_skill)
         special["attack"] = 5 + _effective_attribute(state, character, special["scaling"]) // 2 + int(skill_item.get("power", 2))
-        special["element"] = skill_item.get("element")
-        special["on_hit"] = deepcopy(skill_item.get("on_hit"))
+        special.setdefault("element", skill_item.get("element"))
+        special.setdefault("on_hit", deepcopy(skill_item.get("on_hit")))
     attack_range = int(weapon.get("attack_range", attack_range))
     vit = _effective_attribute(state, character, "vit")
     agi = _effective_attribute(state, character, "agi")
@@ -281,6 +284,12 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
         special["attack"] += combat_training
     skills=equipped_skills(equipped,lambda key:_effective_attribute(state,character,key),combat_training,
                            fallback=basic_special,weapon=weapon)
+    from .perk_effects import character_perks
+    if 'medic' in character_perks(state, character, ITEMS) or character.get('perks', {}).get('medicine', 'none') != 'none':
+        if not any(s['id'] == 'field_care' for s in skills):
+            skills.append({'id': 'field_care', 'name': 'Field Care', 'target': 'ally', 'effect': 'support',
+                           'range': 1, 'heal': 8, 'cleanses': ['bleed'], 'scaling': 'int',
+                           'elevation_rule': 'physical_care', 'description': 'One shared technique use per battle. Range 1: restore 8 + half INT HP and stop Bleed. Physical treatment works while muted; cannot revive.'})
     if skills:special=skills[0]
     rules=collect_rules(equipped)
     race = character.get("race", "Human")
@@ -299,7 +308,7 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
         "racial_resistances": sorted(set(racial["resistances"])|set(rules['resistances'])), "racial_weaknesses": list(racial["weaknesses"]),
         "gear_rules":rules,
         "race": race, "race_summary": racial["summary"],
-        "strength": strength, "weight": _race_weight(character.get("race", "human")),
+        "strength": strength, "intelligence": _effective_attribute(state, character, 'int'), "weight": _race_weight(character.get("race", "human")),
         "attack": 5 + scaling_value // 2 + int(weapon.get("power", 0)) + combat_training,
         "attack_elevation_rule": "ballistic" if ranged else "ignore" if magical else "melee",
         "nonlethal_capable": weapon_type in {"unarmed", "hammer", "club", "mace"} or "nonlethal" in weapon.get("tags", []) or rules.get('subdue_gloves',False),
@@ -654,10 +663,11 @@ def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission
         used_names.add(name)
         if race == "Hobgoblin":
             identity = {**choose_pool_portrait(portrait_pool_key(race,identity.get("gender","male"),"scout" if kind == "archer" else "fighter"),rng), "gender":identity.get("gender","male")}
-        hp = max(8,round(((23 if index == 0 else 14) + tier * (5 if index == 0 else 3))*float(racial["hp_multiplier"]))+int(racial["hp_bonus"]))
+        budget = enemy_budget(mission['rank'], index == 0, racial)
+        hp = budget['hp']
         unit = _enemy(uid,name,kind,tile["x"],tile["y"],identity)
         unit.update({"race":race,"boss":index == 0,"hp":hp,"max_hp":hp,
-            "armor":max(0,(2 if index == 0 else 0)+tier//2+int(racial["armor_bonus"])),"attack":(5 if index == 0 else 4)+tier,
+            "armor":budget['armor'],"attack":budget['attack'],
             "move":3+int(racial["move_bonus"])+(1 if spec.get("mounted") else 0),
             "initiative":14+int(racial["initiative_bonus"])+index,
             "evasion":int(racial["evasion"]),"movement_type":racial["movement_type"],
@@ -671,6 +681,16 @@ def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission
             hp = 112 if index == 0 else 40
             unit.update(hp=hp, max_hp=hp, armor=4 if index == 0 else 2,
                         attack=17 if index == 0 else 10)
+        rank_index = ['E', 'D', 'C', 'B', 'A', 'S'].index(mission['rank'])
+        if not spec.get('rookie') and not spec.get('creature'):
+            unit['corpse_gold'] = ((4 + rank_index * 3, 8 + rank_index * 5) if index == 0
+                                   else (rank_index, 2 + rank_index * 2))
+            if rank_index >= 2:
+                unit['on_hit'] = {'id': 'mute' if race == 'Undead' else 'blind' if kind == 'archer' else 'bleed',
+                                  'chance': 15 if index == 0 else 10, 'turns': 1 if index == 0 else 2}
+            if spec.get('caster') and index == count - 1:
+                unit.update(weapon='Static Discharge', attack_range=3, attack_elevation_rule='ignore',
+                            element='lightning', on_hit={'id':'paralyze','chance':12,'turns':1})
         if spec.get('rookie'):
             unit.update(hp=10 if index==0 else 7,max_hp=10 if index==0 else 7,armor=0,attack=3,initiative=8+index,move=3)
         if spec.get('creature'):
@@ -719,7 +739,9 @@ def _check_contract_end(battle: dict) -> None:
 
 def create_battle(state: dict, party_ids: list[str], seed: str, encounter_id: str, defer_start: bool = False) -> dict:
     if encounter_id.startswith("contract:"):
-        return create_contract_battle(state, party_ids, seed, encounter_id.split(":", 1)[1], defer_start=defer_start)
+        battle = create_contract_battle(state, party_ids, seed, encounter_id.split(":", 1)[1], defer_start=defer_start)
+        sync_supplies(battle, state)
+        return battle
     factories = {
         "goblin_warcamp": create_goblin_warcamp_battle,
         "goblin_captive_cart": create_captive_cart_battle,
@@ -728,7 +750,9 @@ def create_battle(state: dict, party_ids: list[str], seed: str, encounter_id: st
     }
     if encounter_id not in factories:
         raise ValueError(f"Tactical encounter {encounter_id!r} is not implemented")
-    return factories[encounter_id](state, party_ids, seed) if encounter_id == "frontier_watch_defense" else factories[encounter_id](state, party_ids, seed, defer_start=defer_start)
+    battle = factories[encounter_id](state, party_ids, seed) if encounter_id == "frontier_watch_defense" else factories[encounter_id](state, party_ids, seed, defer_start=defer_start)
+    sync_supplies(battle, state)
+    return battle
 
 
 def _combat_active(unit: dict) -> bool:
@@ -792,8 +816,10 @@ def _blocked(
 
 
 def _movement_limit(unit: dict) -> int:
+    if conditions.has(unit, 'freeze') or conditions.has(unit, 'bind') or unit.get('paralyzed_move'):
+        return 0
     penalty = int(unit.get("carried_payload_penalty", 2 if unit.get("carrying") else 0))
-    return max(1, int(unit["move"]) - penalty)
+    return max(1, int(unit["move"]) - penalty - (2 if conditions.has(unit, 'slow') else 0))
 
 
 def _carry_penalty(unit: dict, weight: int) -> int:
@@ -807,6 +833,10 @@ def _tile_height(battle: dict, x: int, y: int) -> int:
 
 
 def _can_step(battle: dict, x: int, y: int, nx: int, ny: int, unit: dict) -> bool:
+    fear = next((s for s in unit.get('statuses', []) if s.get('id') == 'fear'), None)
+    source = battle['units'].get(fear.get('source_id')) if fear else None
+    if source and abs(nx-source['x'])+abs(ny-source['y']) < abs(x-source['x'])+abs(y-source['y']):
+        return False
     if _blocked(battle, nx, ny, unit["id"], unit.get("movement_type")):
         return False
     if unit.get("movement_type") == "flying":
@@ -878,6 +908,12 @@ def _attack_preview(battle: dict, attacker: dict, target: dict, rule: str) -> di
     target_evasion = int(target.get("evasion", 0))
     evasion_factor = 1.0 if rule == "ballistic" else .3 if rule == "ignore" else .6
     evasion_penalty = round(target_evasion * evasion_factor)
+    if conditions.has(attacker, 'blind'):
+        accuracy -= 35 if rule in {'ballistic', 'ignore'} else 15
+    if conditions.has(attacker, 'fear'):
+        accuracy -= 15
+    if conditions.has(attacker, 'berserk'):
+        accuracy -= 10
     return {
         "chance": max(5, min(100, base + accuracy - evasion_penalty + attacker.get('perk_modifiers',{}).get('accuracy',0))), "damage_bonus": damage,
         "target_evasion": target_evasion, "evasion_penalty": evasion_penalty,
@@ -1068,6 +1104,7 @@ def _current_unit(battle: dict) -> dict | None:
             stamp = [battle["round"], battle["turn_index"]]
             if unit.get("status_activation") != stamp:
                 unit["status_activation"] = stamp
+                conditions.start_activation(battle, unit)
                 if unit.get("team")=="player":
                     facts=unit.setdefault("combat_record",{})
                     facts["combat_turns"]=facts.get("combat_turns",0)+1
@@ -1124,7 +1161,16 @@ def _deal_damage(
                     "element": ability.get("element", attacker.get("element")),
                     "on_hit": ability.get("on_hit", attacker.get("on_hit")),"weapon":ability.get('source_name',attacker.get('weapon',''))}
     armor = max(0, int(target.get("armor", 0)) - armor_pierce)
+    if conditions.has(target, 'vulnerable') and not attacker.get('status_tick'):
+        armor = max(0, armor - 3)
+        conditions.remove(target, 'vulnerable')
     damage = max(1, int(attacker["attack"]) + bonus - armor)
+    if conditions.has(attacker, 'berserk') and not attacker.get('status_tick'):
+        damage += 3
+    if conditions.has(target, 'freeze') and not attacker.get('status_tick'):
+        damage = max(1, round(damage * 1.25))
+        if attacker.get('element') == 'fire':
+            conditions.remove(target, 'freeze')
     if not attacker.get('status_tick'):
         rules=attacker.get('gear_rules',{})
         if target['hp']<=target.get('max_hp',target['hp'])*.5:damage+=rules.get('wounded_damage',0)
@@ -1172,9 +1218,8 @@ def _deal_damage(
         if sid in target.get("racial_weaknesses", []):
             proc_chance = min(95, proc_chance + 15)
         if not immune and roll <= proc_chance:
-            target["statuses"] = [s for s in target["statuses"] if s.get("id") != sid]
-            target["statuses"].append({"id": sid, "turns": int(proc["turns"]), "source_id": attacker.get("id"), "source_name": attacker.get("name"), "source_weapon": attacker.get("weapon")})
-            battle["log"].append(f"{target['name']} suffers {sid} for {proc['turns']} turns.")
+            if conditions.apply(target, sid, int(proc['turns']), attacker):
+                battle["log"].append(f"{target['name']} suffers {sid}.")
     if target["hp"] <= 0:
         target["conscious"] = False
         target["guarding"] = False
@@ -1232,6 +1277,16 @@ def _tick_gear_statuses(battle: dict, unit: dict) -> None:
         if not _combat_active(unit):
             _record_sound(battle, "unit_death")
             break
+
+
+def _tick_bleed(battle: dict, unit: dict) -> None:
+    status = next((s for s in unit.get('statuses', []) if s.get('id') == 'bleed'), None)
+    if not status or not _combat_active(unit) or not (unit.get('moved') or unit.get('physical_action')):
+        return
+    source = {'id': status.get('source_id'), 'name': status.get('source_name', 'Bleeding'),
+              'weapon': 'bleeding', 'attack': max(2, min(4, round(unit['max_hp'] * .04))), 'status_tick': True}
+    dealt = _deal_damage(battle, source, unit, armor_pierce=int(unit.get('armor', 0)))
+    battle['log'].append(f"{unit['name']} takes {dealt} bleeding damage after exertion.")
 
 
 def _victory_outcome(battle: dict) -> str:
@@ -1455,6 +1510,9 @@ def _finish_turn(battle: dict) -> None:
     index = int(battle.get("turn_index", 0))
     unit = battle["units"].get(order[index]) if index < len(order) else None
     if unit:
+        _tick_bleed(battle, unit)
+        conditions.finish_activation(unit)
+        unit.pop('physical_action', None)
         unit.pop("movement_origin", None)
         unit.pop("movement_path", None)
         if _combat_active(unit):
@@ -1485,6 +1543,8 @@ def _record_sound(battle: dict, cue: str, offset: int = 0, duration: int = 0) ->
 
 
 def _record_melee_animation(battle: dict, attacker: dict, target: dict, hit: bool, rule: str | None = None) -> None:
+    if (rule or attacker.get('attack_elevation_rule')) in {'melee', 'ballistic'}:
+        attacker['physical_action'] = True
     rule = rule or attacker.get("attack_elevation_rule", "melee")
     if rule != "melee":
         ranged = rule == "ballistic"
@@ -1656,8 +1716,16 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
         battle["log"].append(f"{unit['name']} is still asleep.")
         _finish_turn(battle)
         return
+    if unit.get('forced_skip'):
+        battle['log'].append(f"{unit['name']} cannot act this turn.")
+        _finish_turn(battle)
+        return
     if unit.get("panicked"):
         _flee_turn(battle, unit)
+        return
+    if conditions.has(unit, 'mute') and unit.get('attack_elevation_rule') == 'ignore':
+        _guard(battle, unit)
+        _finish_turn(battle)
         return
     if unit.get('mercenary_hostile_all'):
         targets = [u for u in _living(battle) if u['id']!=unit['id'] and u.get('team') in ('player','enemy')]
@@ -1670,6 +1738,7 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
         targets = _living(battle,'enemy')
     else:
         targets = _living(battle,'player') + [u for u in _living(battle,'enemy') if u.get('mercenary_hostile_all') and u['id']!=unit['id']]
+    targets = conditions.hostile_units(battle, unit, _living(battle))
     if not targets:
         _finish_turn(battle); return
     target = min(targets, key=lambda candidate: (_distance(unit, candidate), candidate["hp"]))
@@ -1678,6 +1747,7 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
         _move_toward(battle, unit, target)
         target = min(targets, key=lambda candidate: (_distance(unit, candidate), candidate["hp"]))
     if _can_attack(battle, unit, target):
+        target = conditions.confused_target(battle, unit, target, lambda u: _can_attack(battle, unit, u))
         hit, preview, roll = _attack_hits(battle, unit, target, unit["attack_elevation_rule"])
         if hit:
             damage = _deal_damage(battle, unit, target, preview["damage_bonus"])
@@ -1699,6 +1769,15 @@ def _advance_to_player(battle: dict) -> None:
         unit = _current_unit(battle)
         if not unit:
             return
+        if unit.get('forced_skip'):
+            battle['log'].append(f"{unit['name']} cannot act this turn.")
+            _finish_turn(battle)
+            safety += 1
+            continue
+        if unit['team'] == 'player' and (conditions.has(unit, 'charm') or conditions.has(unit, 'berserk')):
+            _enemy_turn(battle, unit)
+            safety += 1
+            continue
         if unit.get('mercenary_guest') and unit['team']=='player':
             _enemy_turn(battle,unit)
             safety += 1
@@ -1768,7 +1847,74 @@ def _guard(battle: dict,unit: dict) -> None:
         battle['log'].append(f"{unit['name']} recovers {heal} HP while guarding.")
 
 
+def _support_eligible(battle, actor, target, effect):
+    if not target or target.get('team') != actor.get('team') or not _combat_active(target):
+        return False
+    if _distance(actor, target) > int(effect.get('range', 1)) or not _line_of_sight(battle, actor, target):
+        return False
+    return ((effect.get('heal', 0) > 0 and target['hp'] < target['max_hp'])
+            or (effect.get('guard_ally') and not target.get('guarding'))
+            or any(s.get('id') in effect.get('cleanses', []) for s in target.get('statuses', [])))
+
+
+def _apply_support(battle, actor, target, effect):
+    if not _support_eligible(battle, actor, target, effect):
+        raise ValueError('Choose a conscious ally in range who needs healing or treatment')
+    _commit_player_movement(battle, actor)
+    healing = min(target['max_hp'] - target['hp'], int(effect.get('heal', 0)))
+    target['hp'] += healing
+    conditions.remove(target, *effect.get('cleanses', []))
+    if effect.get('guard_ally'):
+        target['guarding'] = True
+    if not (conditions.has(target, 'stun') or conditions.has(target, 'sleep') or conditions.has(target, 'paralyze')):
+        target.pop('forced_skip', None)
+    if not conditions.has(target, 'paralyze'):
+        target.pop('paralyzed_move', None)
+    actor['acted'] = True
+    battle['log'].append(f"{actor['name']} uses {effect['name']} on {target['name']}: {healing} HP restored" + (', harmful effects treated.' if effect.get('cleanses') else '.'))
+    _record_sound(battle, 'magic_cast' if effect.get('elevation_rule') == 'line_of_effect' else 'guard')
+
+
+def _support_effect(skill, actor):
+    effect = dict(skill)
+    if effect.get('heal'):
+        effect['heal'] += int(actor.get('intelligence', 4)) // 2
+    return effect
+
+
+def _auto_support(battle, unit):
+    if unit.get('special_used'):
+        return False
+    for skill in unit.get('skills', []):
+        if skill.get('target') != 'ally' or (conditions.has(unit, 'mute') and skill['elevation_rule'] == 'line_of_effect'):
+            continue
+        effect = _support_effect(skill, unit)
+        targets = [u for u in _living(battle, unit['team']) if _support_eligible(battle, unit, u, effect)
+                   and (u['hp'] <= u['max_hp'] * .65 or any(s['id'] in effect.get('cleanses', []) for s in u['statuses']))]
+        if targets:
+            target = min(targets, key=lambda u: u['hp'] / u['max_hp'])
+            _apply_support(battle, unit, target, effect)
+            unit['special_used'] = True
+            _finish_turn(battle)
+            return True
+    return False
+
+
 def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
+    if battle.get('ambush_sleep_until_round'):
+        target = next((u for u in _living(battle, 'enemy') if u.get('boss') or u.get('kind') == 'chieftain'), None)
+        if target:
+            # Reach an open firing/assault position rather than waking the camp from the entry.
+            destinations = [{'x': x, 'y': y} for x in range(battle['width']) for y in range(battle['height'])
+                            if not _blocked(battle, x, y, unit['id'], unit.get('movement_type'))
+                            and abs(x-target['x']) + abs(y-target['y']) <= (2 if unit['attack_range'] > 1 else 1)
+                            and _line_of_sight(battle, {**unit, 'x': x, 'y': y}, target)]
+            _move_to_nearest_tile(battle, unit, destinations)
+        _guard(battle, unit)
+        _finish_turn(battle)
+        return
+    if _auto_support(battle, unit):
+        return
     objective_runner = max(_living(battle, "player"), key=lambda candidate: (candidate["move"], candidate["initiative"], candidate["id"]))
     world_has_active_objects = any(obj["state"] in {"locked", "active"} for obj in battle["objects"].values())
     active_objects = [
@@ -1800,7 +1946,13 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
             battle["log"].append(f"{unit['name']} holds back from {chief_name} while the other objectives remain unfinished.")
             _finish_turn(battle)
             return
-    available_skills=(unit.get('skills') or ([unit['special']] if unit.get('special') else [])) if not unit.get('special_used') else []
+    available_skills=[s for s in (unit.get('skills') or ([unit['special']] if unit.get('special') else []))
+                      if s.get('target') != 'ally' and not (conditions.has(unit, 'mute') and s['elevation_rule'] in {'ignore', 'line_of_effect'})] if not unit.get('special_used') else []
+    if conditions.has(unit, 'mute') and unit['attack_elevation_rule'] == 'ignore' and not available_skills:
+        _guard(battle, unit)
+        unit['acted'] = True
+        _finish_turn(battle)
+        return
     auto_range = max([unit['attack_range']]+[s['range'] for s in available_skills])
     in_range = [candidate for candidate in targets if _can_attack(battle, unit, candidate, auto_range)]
     target_priority = lambda candidate: (
@@ -1837,6 +1989,7 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
         bonus = int(special.get("damage_bonus", 2)) if use_skill else 0
         rule = special["elevation_rule"] if use_skill else unit["attack_elevation_rule"]
         skill_nonlethal = use_skill and special.get("nonlethal", False)
+        target = conditions.confused_target(battle, unit, target, lambda u: _can_attack(battle, unit, u, special['range'] if use_skill else unit['attack_range']))
         hit, preview, roll = _attack_hits(battle, unit, target, rule)
         damage = _deal_damage(
             battle, unit, target, bonus + preview["damage_bonus"] - (1 if nonlethal else 0),
@@ -2109,6 +2262,9 @@ def battle_view(battle: dict) -> dict:
             if status.get("id") == "ambush_sleep":
                 status["rounds"] = max(0, int(view.get("ambush_sleep_until_round", view["round"])) - view["round"])
     view["current_unit_id"] = current["id"] if current else None
+    view['supply_uses_remaining'] = remaining_uses(view)
+    view['supply_targets'] = [u['id'] for u in _living(view, 'player') if current
+                             and _distance(current, u) <= 1 and _line_of_sight(view, current, u)]
     if current and current["team"] == "player":
         reachable, parents = _movement_tree(view, current)
         view["reachable"] = [
@@ -2138,9 +2294,9 @@ def battle_view(battle: dict) -> dict:
         view["attack_previews"] = {}
         skill = current.get('special')
         options = {
-            'attack': (current['attack_range'], current['attack_elevation_rule'], not current.get('acted')),
+            'attack': (current['attack_range'], current['attack_elevation_rule'], not current.get('acted') and not (conditions.has(current, 'mute') and current['attack_elevation_rule'] == 'ignore')),
             'subdue': (1, 'melee', not current.get('acted') and current.get('nonlethal_capable')),
-            'skill': (skill['range'], skill['elevation_rule'], not current.get('acted') and not current.get('special_used')) if skill else (0, 'melee', False),
+            'skill': (skill['range'], skill['elevation_rule'], skill.get('target') != 'ally' and not current.get('acted') and not current.get('special_used') and not (conditions.has(current, 'mute') and skill['elevation_rule'] in {'ignore', 'line_of_effect'})) if skill else (0, 'melee', False),
         }
         for target in _living(view, 'enemy'):
             previews = {}
@@ -2151,13 +2307,24 @@ def battle_view(battle: dict) -> dict:
         view['skill_previews']={}
         for choice in current.get('skills',[]):
             entries={}
+            if choice.get('target') == 'ally':
+                for target in _living(view, 'player'):
+                    view['attack_previews'].setdefault(target['id'], {})
+                    allowed = not current.get('acted') and not current.get('special_used') and not (conditions.has(current, 'mute') and choice['elevation_rule'] == 'line_of_effect')
+                    effect = _support_effect(choice, current)
+                    entries[target['id']] = {'chance': 100, 'support': True, 'heal': effect.get('heal', 0)} if allowed and _support_eligible(view, current, target, effect) else None
+                    if choice['id'] == (skill or {}).get('id'):
+                        view['attack_previews'][target['id']]['skill'] = entries[target['id']]
+                view['skill_previews'][choice['id']] = entries
+                continue
             for target in _living(view,'enemy'):
-                actor,approach=_attack_position(view,current,target,choice['range'],reachable,parents) if not current.get('acted') and not current.get('special_used') else (None,None)
+                allowed = not current.get('acted') and not current.get('special_used') and not (conditions.has(current, 'mute') and choice['elevation_rule'] in {'ignore', 'line_of_effect'})
+                actor,approach=_attack_position(view,current,target,choice['range'],reachable,parents) if allowed else (None,None)
                 entries[target['id']]={**_attack_preview(view,actor,target,choice['elevation_rule']),**(approach or {})} if actor else None
             view['skill_previews'][choice['id']]=entries
         view['terrain_attack_previews'] = {}
         for tile in view.get('terrain', []):
-            if not tile.get('destructible') or tile.get('destroyed') or current.get('acted'):
+            if not tile.get('destructible') or tile.get('destroyed') or current.get('acted') or (conditions.has(current, 'mute') and current['attack_elevation_rule'] == 'ignore'):
                 continue
             actor, approach = _attack_position(view, current, tile, current['attack_range'], reachable, parents)
             if actor:
@@ -2329,6 +2496,8 @@ def apply_player_command(battle: dict, command: dict) -> dict:
     unit = _current_unit(battle)
     if not unit or unit["team"] != "player":
         raise ValueError("It is not a player turn")
+    if unit.get('forced_skip'):
+        raise ValueError('This unit cannot act during this activation')
     if independence_check(battle,unit):
         _independent_turn(battle,unit)
         _advance_to_player(battle)
@@ -2352,6 +2521,24 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             carried["x"], carried["y"] = x, y
         unit["moved"] = (x, y) != (int(origin["x"]), int(origin["y"]))
         unit["movement_path"] = _movement_path(parents, reachable, (x, y))
+    elif action == 'use_item':
+        if unit.get('acted') or remaining_uses(battle) < 1:
+            raise ValueError('No supply action is available this battle')
+        supply = next((s for s in battle.get('supplies', []) if s['instance_id'] == command.get('item_id')), None)
+        if not supply:
+            raise ValueError('This supply is no longer available')
+        _apply_support(battle, unit, battle['units'].get(command.get('target_id')), {**supply, 'range': 1})
+        battle['supplies_used'].append(supply['instance_id'])
+        battle['supplies'].remove(supply)
+    elif action == 'skill' and next((s for s in unit.get('skills', []) if s['id'] == command.get('skill_id', (unit.get('special') or {}).get('id'))), {}).get('target') == 'ally':
+        if unit.get('acted') or unit.get('special_used'):
+            raise ValueError('This unit has already used its action or technique')
+        skill = next(s for s in unit['skills'] if s['id'] == command.get('skill_id', (unit.get('special') or {}).get('id')))
+        if conditions.has(unit, 'mute') and skill['elevation_rule'] == 'line_of_effect':
+            raise ValueError('Mute prevents this spell')
+        _apply_support(battle, unit, battle['units'].get(command.get('target_id')), _support_effect(skill, unit))
+        unit['special'] = skill
+        unit['special_used'] = True
     elif action in {"attack", "skill", "subdue"}:
         if unit.get("acted"):
             raise ValueError("This unit already used its action")
@@ -2367,6 +2554,8 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         if terrain_target:
             if action != "attack":
                 raise ValueError("Only a standard attack can target this terrain")
+            if conditions.has(unit, 'mute') and unit['attack_elevation_rule'] == 'ignore':
+                raise ValueError('Mute prevents this spell')
             _apply_attack_approach(battle, unit, terrain_target, unit["attack_range"], command)
             if not _can_attack(battle, unit, terrain_target):
                 raise ValueError("Terrain target is outside attack range")
@@ -2389,6 +2578,9 @@ def apply_player_command(battle: dict, command: dict) -> dict:
                 raise ValueError("Target is outside attack range")
             _commit_player_movement(battle, unit)
             rule = unit["special"]["elevation_rule"] if action == "skill" else "melee" if action == "subdue" else unit["attack_elevation_rule"]
+            if conditions.has(unit, 'mute') and rule in {'ignore', 'line_of_effect'}:
+                raise ValueError('Mute prevents this spell')
+            target = conditions.confused_target(battle, unit, target, lambda u: _can_attack(battle, unit, u, attack_range))
             hit, preview, roll = _attack_hits(battle, unit, target, rule)
             bonus = int(unit["special"].get("damage_bonus", 3)) if action == "skill" else -1 if action == "subdue" else 0
             pierce = int(unit["special"].get("armor_pierce", 2 if unit["special"]["id"] == "precision_shot" else 0)) if action == "skill" else 0
@@ -2487,7 +2679,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
 
     if action == "end_turn":
         _commit_player_movement(battle, unit)
-    if action == "end_turn" or action in {"attack", "skill", "subdue", "drop", "drop_object", "throw", "guard"}:
+    if action == "end_turn" or action in {"attack", "skill", "subdue", "drop", "drop_object", "throw", "guard", "use_item"}:
         _finish_turn(battle)
     _check_end(battle)
     _advance_to_player(battle)
@@ -2497,7 +2689,6 @@ def apply_player_command(battle: dict, command: dict) -> dict:
 
 
 def auto_step(battle: dict, tactic: str = "balanced") -> dict:
-    battle["animation_events"] = []
     battle["animation_events"] = []
     if battle.get("status") == "preparing":
         battle["status"] = "active"

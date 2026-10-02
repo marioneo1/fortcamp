@@ -1402,7 +1402,10 @@ class TacticalCombatDatabaseTests(unittest.IsolatedAsyncioTestCase):
             "perks": {"combat": "skilled"},
         })
         ally = _make_procedural("goblin_boss", random.Random(8))
-        ally["attributes"].update({"str": 9, "agi": 7, "vit": 9})
+        # Persistence/reward fixture; novice pacing has a separate strategy test.
+        state['characters'][0]['attributes'].update(str=24, vit=24, agi=18)
+        ally['attributes'].update(str=24, vit=24, agi=18)
+        ally.update(id='reward-test-ally', loyalty=100)
         ally["equipment"] = {}
         state["characters"].append(ally)
         state["mission_rank"] = "D"

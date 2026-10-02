@@ -148,5 +148,20 @@ Implemented fixed sibling `fortcamp-dev` and `fortcamp-prod` folders, a one-step
 ### October 2: ambush opening and goblin boss pacing ? implemented in dev
 - Successful scouting: every initial enemy sleeps for three rounds; first attack against any enemy wakes all, even on a miss. Positioning remains safe. Status hover shows the shared rule and rounds remaining.
 - Authored, roster-independent Goblin Warcamp chief and escort stats; stronger B-rank Redoubt commander. Existing saved battles retain their old values.
-- Deferred: coordinated automatic ambush preparation; wider rank-by-rank enemy tuning and live friend-server balance review.
-- Clarification: current World outcome rewards are personal save milestones. Laid the Empty Hearse to Rest records the finale but currently unlocks no further content and does not alter server events. Consider renaming this label Story milestone and adding authored consequences in a separate story pass.
+- Follow-up implemented below: quiet automatic opening positioning and generated-contract rank budgets. Coordinated formations and live friend-server balance review remain pending.
+- Superseded by the following pass: the Story milestone label and five personal faction consequences are now implemented. These flags still do not alter server events.
+
+
+## October 2: combat tools, authored branches and rotating faction trade ? dev
+
+- Implemented fixed E?S enemy budgets for generated contract battles, preserving special rookie fights and authored Warcamp/Redoubt stats. No player-roster scaling. C+ enemies add restrained status threats; auto-battle positions quietly during ambush preparation.
+- Implemented selectable ally healing/cleansing/Guard techniques, one shared technique use per character, three shared consumable uses per battle, three owned supplies and immediate durable inventory spending with stale-state rejection. Auto does not spend consumables. Status activation stamps prevent polling/repositioning from repeating effects; condition rules and boss control recovery are documented.
+- Implemented nine relationship-gated private faction agreements plus five earned finale consequences. A contact request immediately opens the planner. Private ownership, rank gates, active-copy deduplication and completed-job protection are authoritative.
+- Implemented four ordinary safe/risky investigation graphs and three beginner combat handovers. Winning a fight can return to an optional evidence choice; failed optional checks preserve victory, and final rewards/records/notices are issued only once at handover.
+- Implemented one rotating faction trader per camp, 48-hour saved visits and stock, relationship discounts, permanent basic/treatment supplies, and the separate player-specific roaming merchant. Adding additional factions remains a later content pass.
+- Implemented fourteen mission-exclusive agreement keepsakes with distinct support/defensive actions and independent drop rates. Existing loot exclusivity and low-rank discoveries remain. Initial icons reuse installed art; unique art is deferred rather than blocking play.
+- Renamed aftermath World outcome to Story milestone. Five existing flags now unlock personal faction work, not server-wide event changes.
+- Validation: 280 backend tests, 100 frontend tests, frontend production build; isolated actual-browser Trade and battle supply checks, responsive widths 1440/800/430, immediate planner opening, correct item command. Preview files are local only; tools never access game databases. Production was not deployed and player data was not wiped.
+- Remaining: multiplayer balance/soak testing, more factions and merchant goods, more authored branches/long arcs and lore-based Champion acquisition, more explicit sources for the full status catalogue, formation AI, dungeon floors/stealth, adventure injury/supply carryover, and optional dedicated keepsake art. Existing relationship/portrait/handbook backlog remains.
+
+Canonical references: docs/gameplay/COMBAT_TOOLS_AND_PACING.md and docs/design/FACTIONS_AND_ROTATING_TRADE.md. Local UI fixture: tools/build_faction_combat_preview.py; run with the existing tools/serve_board_preview.mjs and tools/faction_combat_browser_qa.mjs. These are developer QA tools, not new game launchers.

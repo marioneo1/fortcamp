@@ -3,7 +3,7 @@ export function attackCommand(action,targetId,preview){
 }
 export function nextCombatMode(action,nextMode,currentMode){
   if(nextMode)return nextMode;
-  return ['attack','subdue','skill','throw','end_turn','guard','leave'].includes(action)?'move':currentMode;
+  return ['attack','subdue','skill','throw','end_turn','guard','leave','use_item'].includes(action)?'move':currentMode;
 }
 export function approachDescription(preview){
   return preview?.move_to?`Move ${preview.movement_cost} movement point${preview.movement_cost===1?'':'s'} first · `:'';

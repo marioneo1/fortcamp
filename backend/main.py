@@ -259,6 +259,8 @@ class CombatCommandRequest(BaseModel):
     target_id: str | None = None
     move_to: CombatApproachPosition | None = None
     placement_id: str | None = None
+    skill_id: str | None = None
+    item_id: str | None = None
 
 
 class CombatAutoRequest(BaseModel):
@@ -413,22 +415,49 @@ async def camp_endpoint(req: CampActionRequest, identity: IdentityDep):
 
 @app.get('/api/trade')
 async def trade_endpoint(identity: IdentityDep):
-    session,row=await locked_player(identity)
-    try:
-        changed=deepcopy(row.state);offers=trade_view(changed,f'{identity.guild_id}:{identity.user_id}')
-        row.state=changed;await session.commit();return {'trade':offers,'state':changed}
-    finally:await session.close()
+    from .services import _player_locks
+    async with _player_locks.setdefault((identity.guild_id, identity.user_id), asyncio.Lock()):
+        session,row=await locked_player(identity)
+        try:
+            changed=deepcopy(row.state);offers=trade_view(changed,f'{identity.guild_id}:{identity.user_id}')
+            row.state=changed;await session.commit();return {'trade':offers,'state':changed}
+        finally:await session.close()
 
 
 @app.post('/api/trade')
 async def buy_endpoint(req: TradeRequest,identity: IdentityDep):
-    session,row=await locked_player(identity)
-    try:
-        changed=deepcopy(row.state);purchase(changed,f'{identity.guild_id}:{identity.user_id}',req.offer_id)
-        row.state=changed;await session.commit();return {'state':changed}
-    except ValueError as exc:
-        await session.rollback();raise HTTPException(400,str(exc))
-    finally:await session.close()
+    from .services import _player_locks
+    async with _player_locks.setdefault((identity.guild_id, identity.user_id), asyncio.Lock()):
+        session,row=await locked_player(identity)
+        try:
+            changed=deepcopy(row.state);purchase(changed,f'{identity.guild_id}:{identity.user_id}',req.offer_id)
+            row.state=changed;await session.commit();return {'state':changed}
+        except ValueError as exc:
+            await session.rollback();raise HTTPException(400,str(exc))
+        finally:await session.close()
+
+
+@app.post('/api/factions/contracts/{template_id}')
+async def faction_contract_endpoint(template_id: str, identity: IdentityDep):
+    from .services import _player_locks, spawn_private_contract, mission_summary
+    from .faction_contracts import validate_request
+    from .economy import FACTIONS
+    async with _player_locks.setdefault((identity.guild_id, identity.user_id), asyncio.Lock()):
+        session, row = await locked_player(identity)
+        try:
+            from .registration import require_registration
+            if not settings.dev_bypass_auth:
+                await require_registration(session, identity.guild_id, identity.user_id)
+            definition = validate_request(row.state, template_id)
+            contract = await spawn_private_contract(session, identity.guild_id, identity.user_id, template_id,
+                                                    FACTIONS[definition['faction']]['name'])
+            await session.commit()
+            return {'mission': mission_summary(contract), 'state': row.state}
+        except ValueError as exc:
+            await session.rollback()
+            raise HTTPException(400, str(exc))
+        finally:
+            await session.close()
 
 
 @app.post('/api/missions/{mission_id}/abandon')
@@ -969,7 +998,7 @@ async def battle_command(mission_id: str, req: CombatCommandRequest, identity: I
                     session, identity.guild_id, identity.user_id, mission_id,
                     command=req.model_dump(exclude_none=True),
                 )
-                if result and (not result.get("mercenary_interlude") or result.get("resumed_result")):
+                if result and not result.get("scene_continuation") and (not result.get("mercenary_interlude") or result.get("resumed_result")):
                     completed_mission = await session.get(MissionInstance, mission_id)
         except ValueError as exc:
             raise HTTPException(400, str(exc))
@@ -991,7 +1020,7 @@ async def battle_auto(mission_id: str, req: CombatAutoRequest, identity: Identit
                     session, identity.guild_id, identity.user_id, mission_id,
                     auto=req.tactic, resolve_all=req.resolve_all,
                 )
-                if result and (not result.get("mercenary_interlude") or result.get("resumed_result")):
+                if result and not result.get("scene_continuation") and (not result.get("mercenary_interlude") or result.get("resumed_result")):
                     completed_mission = await session.get(MissionInstance, mission_id)
         except ValueError as exc:
             raise HTTPException(400, str(exc))

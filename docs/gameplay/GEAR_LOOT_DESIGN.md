@@ -72,3 +72,8 @@ Equipped gear effects are now always shown directly in each filled slot. They ca
 ## Inventory UI and resale (October 1, 2026, dev)
 
 Character Equipment excludes non-wearable items; party Inventory has all gear, manuals and materials with search/categories/rarity and stacked duplicates. Only unequipped instances can be sold, after quantity/total-gold confirmation. Backend rarity prices and faction purchase-price caps are described in ../design/CAMP_INTERFACE.md. No buyback or automatic material-use action is implemented.
+
+
+## October 2 combat supplies and agreement keepsakes
+
+Three owned consumables now have battle actions; four existing nonweapon items grant selectable ally treatments. Six existing weapons gain distinct status procs. Fourteen private-agreement keepsakes grant defensive/support techniques and bounded equipment rules, with independent discovery rolls rather than guaranteed rewards. They remain excluded from general/event/trade stock. Existing icon art is reused for this initial content pass; a dedicated keepsake art sheet remains optional. See [Combat tools](COMBAT_TOOLS_AND_PACING.md) and [rotating trade](../design/FACTIONS_AND_ROTATING_TRADE.md) for costs, conditions and scopes.
