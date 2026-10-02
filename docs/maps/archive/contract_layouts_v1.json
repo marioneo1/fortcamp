@@ -1,0 +1,869 @@
+{
+  "road": {
+    "name": "Contract road",
+    "theme": "contract-road",
+    "width": 12,
+    "height": 9,
+    "default_ground": "grass",
+    "paint": [
+      {
+        "material": "dirt",
+        "rect": [
+          0,
+          3,
+          12,
+          3
+        ]
+      }
+    ],
+    "void_tiles": [],
+    "terrain": [
+      {
+        "id": "contract_cover_0",
+        "name": "Road Barricade",
+        "x": 5,
+        "y": 2,
+        "kind": "palisade",
+        "blocking": true,
+        "destructible": true,
+        "hp": 16,
+        "max_hp": 16,
+        "armor": 2,
+        "destroyed_kind": "rubble",
+        "destroyed_movement_cost": 2
+      },
+      {
+        "id": "contract_cover_1",
+        "name": "Road Barricade",
+        "x": 6,
+        "y": 6,
+        "kind": "palisade",
+        "blocking": true,
+        "destructible": true,
+        "hp": 16,
+        "max_hp": 16,
+        "armor": 2,
+        "destroyed_kind": "rubble",
+        "destroyed_movement_cost": 2
+      },
+      {
+        "id": "contract_cover_2",
+        "name": "Road Barricade",
+        "x": 7,
+        "y": 2,
+        "kind": "palisade",
+        "blocking": true,
+        "destructible": true,
+        "hp": 16,
+        "max_hp": 16,
+        "armor": 2,
+        "destroyed_kind": "rubble",
+        "destroyed_movement_cost": 2
+      },
+      {
+        "id": "contract_cover_3",
+        "name": "Road Barricade",
+        "x": 4,
+        "y": 6,
+        "kind": "palisade",
+        "blocking": true,
+        "destructible": true,
+        "hp": 16,
+        "max_hp": 16,
+        "armor": 2,
+        "destroyed_kind": "rubble",
+        "destroyed_movement_cost": 2
+      }
+    ],
+    "decorations": [
+      {
+        "id": "edge_tree_2_0",
+        "name": "Boundary Tree",
+        "x": 2,
+        "y": 0,
+        "sprite": "pine_tree"
+      },
+      {
+        "id": "edge_tree_5_0",
+        "name": "Boundary Tree",
+        "x": 5,
+        "y": 0,
+        "sprite": "oak_tree"
+      },
+      {
+        "id": "edge_tree_8_0",
+        "name": "Boundary Tree",
+        "x": 8,
+        "y": 0,
+        "sprite": "oak_tree"
+      },
+      {
+        "id": "edge_tree_3_8",
+        "name": "Boundary Tree",
+        "x": 3,
+        "y": 8,
+        "sprite": "oak_tree"
+      },
+      {
+        "id": "edge_tree_7_8",
+        "name": "Boundary Tree",
+        "x": 7,
+        "y": 8,
+        "sprite": "oak_tree"
+      },
+      {
+        "id": "edge_tree_10_8",
+        "name": "Boundary Tree",
+        "x": 10,
+        "y": 8,
+        "sprite": "oak_tree"
+      }
+    ],
+    "elevation": [
+      {
+        "x": 9,
+        "y": 2,
+        "height": 1,
+        "kind": "firing_bank"
+      }
+    ],
+    "extraction": {
+      "name": "Guild Approach",
+      "tiles": [
+        {
+          "x": 0,
+          "y": 2
+        },
+        {
+          "x": 0,
+          "y": 3
+        },
+        {
+          "x": 0,
+          "y": 4
+        },
+        {
+          "x": 0,
+          "y": 5
+        },
+        {
+          "x": 0,
+          "y": 6
+        }
+      ]
+    },
+    "enemy_extraction": {
+      "name": "Far Approach",
+      "tiles": [
+        {
+          "x": 11,
+          "y": 1
+        },
+        {
+          "x": 11,
+          "y": 2
+        },
+        {
+          "x": 11,
+          "y": 3
+        },
+        {
+          "x": 11,
+          "y": 4
+        },
+        {
+          "x": 11,
+          "y": 5
+        },
+        {
+          "x": 11,
+          "y": 6
+        },
+        {
+          "x": 11,
+          "y": 7
+        }
+      ]
+    },
+    "spawn_zones": {
+      "player": [
+        {
+          "x": 1,
+          "y": 4
+        },
+        {
+          "x": 1,
+          "y": 3
+        },
+        {
+          "x": 1,
+          "y": 5
+        },
+        {
+          "x": 2,
+          "y": 4
+        }
+      ],
+      "enemy": [
+        {
+          "x": 9,
+          "y": 4
+        },
+        {
+          "x": 8,
+          "y": 3
+        },
+        {
+          "x": 8,
+          "y": 5
+        },
+        {
+          "x": 9,
+          "y": 2
+        },
+        {
+          "x": 9,
+          "y": 6
+        },
+        {
+          "x": 10,
+          "y": 3
+        },
+        {
+          "x": 10,
+          "y": 5
+        },
+        {
+          "x": 10,
+          "y": 4
+        }
+      ]
+    }
+  },
+  "camp": {
+    "name": "Contract camp",
+    "theme": "contract-camp",
+    "width": 12,
+    "height": 9,
+    "default_ground": "grass",
+    "paint": [
+      {
+        "material": "dirt",
+        "rect": [
+          0,
+          3,
+          12,
+          3
+        ]
+      },
+      {
+        "material": "dirt",
+        "rect": [
+          8,
+          1,
+          4,
+          6
+        ]
+      }
+    ],
+    "void_tiles": [],
+    "terrain": [
+      {
+        "id": "contract_cover_0",
+        "name": "Road Barricade",
+        "x": 5,
+        "y": 2,
+        "kind": "palisade",
+        "blocking": true,
+        "destructible": true,
+        "hp": 16,
+        "max_hp": 16,
+        "armor": 2,
+        "destroyed_kind": "rubble",
+        "destroyed_movement_cost": 2
+      },
+      {
+        "id": "contract_cover_1",
+        "name": "Road Barricade",
+        "x": 6,
+        "y": 6,
+        "kind": "palisade",
+        "blocking": true,
+        "destructible": true,
+        "hp": 16,
+        "max_hp": 16,
+        "armor": 2,
+        "destroyed_kind": "rubble",
+        "destroyed_movement_cost": 2
+      },
+      {
+        "id": "contract_cover_2",
+        "name": "Road Barricade",
+        "x": 7,
+        "y": 2,
+        "kind": "palisade",
+        "blocking": true,
+        "destructible": true,
+        "hp": 16,
+        "max_hp": 16,
+        "armor": 2,
+        "destroyed_kind": "rubble",
+        "destroyed_movement_cost": 2
+      },
+      {
+        "id": "contract_cover_3",
+        "name": "Road Barricade",
+        "x": 4,
+        "y": 6,
+        "kind": "palisade",
+        "blocking": true,
+        "destructible": true,
+        "hp": 16,
+        "max_hp": 16,
+        "armor": 2,
+        "destroyed_kind": "rubble",
+        "destroyed_movement_cost": 2
+      }
+    ],
+    "decorations": [
+      {
+        "id": "edge_tree_2_0",
+        "name": "Boundary Tree",
+        "x": 2,
+        "y": 0,
+        "sprite": "pine_tree"
+      },
+      {
+        "id": "edge_tree_5_0",
+        "name": "Boundary Tree",
+        "x": 5,
+        "y": 0,
+        "sprite": "oak_tree"
+      },
+      {
+        "id": "edge_tree_8_0",
+        "name": "Boundary Tree",
+        "x": 8,
+        "y": 0,
+        "sprite": "oak_tree"
+      },
+      {
+        "id": "edge_tree_3_8",
+        "name": "Boundary Tree",
+        "x": 3,
+        "y": 8,
+        "sprite": "pine_tree"
+      },
+      {
+        "id": "edge_tree_7_8",
+        "name": "Boundary Tree",
+        "x": 7,
+        "y": 8,
+        "sprite": "pine_tree"
+      },
+      {
+        "id": "edge_tree_10_8",
+        "name": "Boundary Tree",
+        "x": 10,
+        "y": 8,
+        "sprite": "oak_tree"
+      }
+    ],
+    "elevation": [
+      {
+        "x": 9,
+        "y": 2,
+        "height": 1,
+        "kind": "firing_bank"
+      }
+    ],
+    "extraction": {
+      "name": "Guild Approach",
+      "tiles": [
+        {
+          "x": 0,
+          "y": 2
+        },
+        {
+          "x": 0,
+          "y": 3
+        },
+        {
+          "x": 0,
+          "y": 4
+        },
+        {
+          "x": 0,
+          "y": 5
+        },
+        {
+          "x": 0,
+          "y": 6
+        }
+      ]
+    },
+    "enemy_extraction": {
+      "name": "Far Approach",
+      "tiles": [
+        {
+          "x": 11,
+          "y": 1
+        },
+        {
+          "x": 11,
+          "y": 2
+        },
+        {
+          "x": 11,
+          "y": 3
+        },
+        {
+          "x": 11,
+          "y": 4
+        },
+        {
+          "x": 11,
+          "y": 5
+        },
+        {
+          "x": 11,
+          "y": 6
+        },
+        {
+          "x": 11,
+          "y": 7
+        }
+      ]
+    },
+    "spawn_zones": {
+      "player": [
+        {
+          "x": 1,
+          "y": 4
+        },
+        {
+          "x": 1,
+          "y": 3
+        },
+        {
+          "x": 1,
+          "y": 5
+        },
+        {
+          "x": 2,
+          "y": 4
+        }
+      ],
+      "enemy": [
+        {
+          "x": 9,
+          "y": 4
+        },
+        {
+          "x": 8,
+          "y": 3
+        },
+        {
+          "x": 8,
+          "y": 5
+        },
+        {
+          "x": 9,
+          "y": 2
+        },
+        {
+          "x": 9,
+          "y": 6
+        },
+        {
+          "x": 10,
+          "y": 3
+        },
+        {
+          "x": 10,
+          "y": 5
+        },
+        {
+          "x": 10,
+          "y": 4
+        }
+      ]
+    }
+  },
+  "ruin": {
+    "name": "Contract ruin",
+    "theme": "contract-ruin",
+    "width": 12,
+    "height": 9,
+    "default_ground": "stone",
+    "paint": [],
+    "void_tiles": [],
+    "terrain": [
+      {
+        "id": "contract_cover_0",
+        "name": "Broken Masonry",
+        "x": 5,
+        "y": 2,
+        "kind": "wall",
+        "blocking": true,
+        "destructible": true,
+        "hp": 16,
+        "max_hp": 16,
+        "armor": 2,
+        "destroyed_kind": "rubble",
+        "destroyed_movement_cost": 2
+      },
+      {
+        "id": "contract_cover_1",
+        "name": "Broken Masonry",
+        "x": 6,
+        "y": 6,
+        "kind": "wall",
+        "blocking": true,
+        "destructible": true,
+        "hp": 16,
+        "max_hp": 16,
+        "armor": 2,
+        "destroyed_kind": "rubble",
+        "destroyed_movement_cost": 2
+      },
+      {
+        "id": "contract_cover_2",
+        "name": "Broken Masonry",
+        "x": 7,
+        "y": 2,
+        "kind": "wall",
+        "blocking": true,
+        "destructible": true,
+        "hp": 16,
+        "max_hp": 16,
+        "armor": 2,
+        "destroyed_kind": "rubble",
+        "destroyed_movement_cost": 2
+      },
+      {
+        "id": "contract_cover_3",
+        "name": "Broken Masonry",
+        "x": 4,
+        "y": 6,
+        "kind": "wall",
+        "blocking": true,
+        "destructible": true,
+        "hp": 16,
+        "max_hp": 16,
+        "armor": 2,
+        "destroyed_kind": "rubble",
+        "destroyed_movement_cost": 2
+      }
+    ],
+    "decorations": [],
+    "elevation": [
+      {
+        "x": 9,
+        "y": 2,
+        "height": 1,
+        "kind": "firing_bank"
+      }
+    ],
+    "extraction": {
+      "name": "Guild Approach",
+      "tiles": [
+        {
+          "x": 0,
+          "y": 2
+        },
+        {
+          "x": 0,
+          "y": 3
+        },
+        {
+          "x": 0,
+          "y": 4
+        },
+        {
+          "x": 0,
+          "y": 5
+        },
+        {
+          "x": 0,
+          "y": 6
+        }
+      ]
+    },
+    "enemy_extraction": {
+      "name": "Far Approach",
+      "tiles": [
+        {
+          "x": 11,
+          "y": 1
+        },
+        {
+          "x": 11,
+          "y": 2
+        },
+        {
+          "x": 11,
+          "y": 3
+        },
+        {
+          "x": 11,
+          "y": 4
+        },
+        {
+          "x": 11,
+          "y": 5
+        },
+        {
+          "x": 11,
+          "y": 6
+        },
+        {
+          "x": 11,
+          "y": 7
+        }
+      ]
+    },
+    "spawn_zones": {
+      "player": [
+        {
+          "x": 1,
+          "y": 4
+        },
+        {
+          "x": 1,
+          "y": 3
+        },
+        {
+          "x": 1,
+          "y": 5
+        },
+        {
+          "x": 2,
+          "y": 4
+        }
+      ],
+      "enemy": [
+        {
+          "x": 9,
+          "y": 4
+        },
+        {
+          "x": 8,
+          "y": 3
+        },
+        {
+          "x": 8,
+          "y": 5
+        },
+        {
+          "x": 9,
+          "y": 2
+        },
+        {
+          "x": 9,
+          "y": 6
+        },
+        {
+          "x": 10,
+          "y": 3
+        },
+        {
+          "x": 10,
+          "y": 5
+        },
+        {
+          "x": 10,
+          "y": 4
+        }
+      ]
+    }
+  },
+  "court": {
+    "name": "Contract court",
+    "theme": "contract-court",
+    "width": 12,
+    "height": 9,
+    "default_ground": "stone",
+    "paint": [],
+    "void_tiles": [],
+    "terrain": [
+      {
+        "id": "contract_cover_0",
+        "name": "Broken Masonry",
+        "x": 5,
+        "y": 2,
+        "kind": "wall",
+        "blocking": true,
+        "destructible": true,
+        "hp": 16,
+        "max_hp": 16,
+        "armor": 2,
+        "destroyed_kind": "rubble",
+        "destroyed_movement_cost": 2
+      },
+      {
+        "id": "contract_cover_1",
+        "name": "Broken Masonry",
+        "x": 6,
+        "y": 6,
+        "kind": "wall",
+        "blocking": true,
+        "destructible": true,
+        "hp": 16,
+        "max_hp": 16,
+        "armor": 2,
+        "destroyed_kind": "rubble",
+        "destroyed_movement_cost": 2
+      },
+      {
+        "id": "contract_cover_2",
+        "name": "Broken Masonry",
+        "x": 7,
+        "y": 2,
+        "kind": "wall",
+        "blocking": true,
+        "destructible": true,
+        "hp": 16,
+        "max_hp": 16,
+        "armor": 2,
+        "destroyed_kind": "rubble",
+        "destroyed_movement_cost": 2
+      },
+      {
+        "id": "contract_cover_3",
+        "name": "Broken Masonry",
+        "x": 4,
+        "y": 6,
+        "kind": "wall",
+        "blocking": true,
+        "destructible": true,
+        "hp": 16,
+        "max_hp": 16,
+        "armor": 2,
+        "destroyed_kind": "rubble",
+        "destroyed_movement_cost": 2
+      }
+    ],
+    "decorations": [],
+    "elevation": [
+      {
+        "x": 9,
+        "y": 2,
+        "height": 1,
+        "kind": "firing_bank"
+      }
+    ],
+    "extraction": {
+      "name": "Guild Approach",
+      "tiles": [
+        {
+          "x": 0,
+          "y": 2
+        },
+        {
+          "x": 0,
+          "y": 3
+        },
+        {
+          "x": 0,
+          "y": 4
+        },
+        {
+          "x": 0,
+          "y": 5
+        },
+        {
+          "x": 0,
+          "y": 6
+        }
+      ]
+    },
+    "enemy_extraction": {
+      "name": "Far Approach",
+      "tiles": [
+        {
+          "x": 11,
+          "y": 1
+        },
+        {
+          "x": 11,
+          "y": 2
+        },
+        {
+          "x": 11,
+          "y": 3
+        },
+        {
+          "x": 11,
+          "y": 4
+        },
+        {
+          "x": 11,
+          "y": 5
+        },
+        {
+          "x": 11,
+          "y": 6
+        },
+        {
+          "x": 11,
+          "y": 7
+        }
+      ]
+    },
+    "spawn_zones": {
+      "player": [
+        {
+          "x": 1,
+          "y": 4
+        },
+        {
+          "x": 1,
+          "y": 3
+        },
+        {
+          "x": 1,
+          "y": 5
+        },
+        {
+          "x": 2,
+          "y": 4
+        }
+      ],
+      "enemy": [
+        {
+          "x": 9,
+          "y": 4
+        },
+        {
+          "x": 8,
+          "y": 3
+        },
+        {
+          "x": 8,
+          "y": 5
+        },
+        {
+          "x": 9,
+          "y": 2
+        },
+        {
+          "x": 9,
+          "y": 6
+        },
+        {
+          "x": 10,
+          "y": 3
+        },
+        {
+          "x": 10,
+          "y": 5
+        },
+        {
+          "x": 10,
+          "y": 4
+        }
+      ]
+    }
+  }
+}

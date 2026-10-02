@@ -1,0 +1,14 @@
+/* Terrain-only textures. Props/structures continue to use the separate sprite registry. */
+.battlefield.terrain-style-custom-painted .ground-shed_floor{background-image:url('/assets/combat-terrain/mega-terrain-tiles/castle_timber_floor.png')!important}
+.battlefield.terrain-style-custom-painted .ground-workshop_floor{background-image:url('/assets/combat-terrain/mega-terrain-tiles/fortress_cobble_rough.png')!important}
+.battlefield.terrain-style-custom-painted .ground-grave_earth{background-image:url('/assets/combat-terrain/mega-terrain-tiles/soil_forest_dark.png')!important}
+.battlefield.terrain-style-custom-painted .ground-grave_path{background-image:url('/assets/combat-terrain/mega-terrain-tiles/castle_flagstone_mossy.png')!important}
+.battlefield.terrain-style-custom-painted .ground-forest_dark{background-image:url('/assets/combat-terrain/mega-terrain-tiles/grass_forest_dark.png')!important}
+.battlefield.terrain-style-custom-painted .ground-bridge_deck{background-image:url('/assets/combat-terrain/mega-terrain-tiles/castle_timber_floor.png')!important}
+.battlefield.terrain-style-custom-painted .ground-deep_river,.battlefield.terrain-style-custom-painted .ground-deep_river.void-tile{background-image:url('/assets/combat-terrain/mega-terrain-tiles/water_deep.png')!important;background-size:cover;border-color:#437e8580;opacity:1}
+.ground-deep_river .void-marker{display:none}
+.theme-location-graveyard .battle-cell{filter:saturate(.7) brightness(.8)}
+.battle-terrain.gate.opened{opacity:.85}
+.ground-swatch.ground-shed_floor,.ground-swatch.ground-bridge_deck{background:#83603b}.ground-swatch.ground-workshop_floor{background:#777b70}.ground-swatch.ground-grave_earth{background:#443d32}.ground-swatch.ground-grave_path{background:#5e6658}.ground-swatch.ground-forest_dark{background:#3b5035}.ground-swatch.ground-deep_river{background:#124554}
+.battlefield[class*="theme-location-"] .battle-terrain .terrain-hp{opacity:0;transition:opacity .12s ease}
+.battlefield[class*="theme-location-"] .battle-terrain:hover .terrain-hp,.battlefield[class*="theme-location-"] .battle-terrain.attack-target .terrain-hp{opacity:1}

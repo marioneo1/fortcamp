@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## Completed October 2: First authored-location pass
+
+Six maps rebuilt around their quests: Locked Tool Shed, Intruders at the Workshop, Bone Collectors, Bone Patrol, Timber Across the Creek and Narrow Bridge Gang. Added reusable enclosure/work-bay/grave-row/river-crossing pieces, two seeded dressing variants, working attackable gates and separate twelve-prop/eight-structure art packs; reused existing terrain. Original generic layouts and assets preserved. Reference: docs/design/AUTHORED_BATTLE_LOCATIONS.md. Validation: 314 backend tests, browser checks of six maps, 65-map art coverage audit and frontend build/tests passed. Remaining: chapel/gatehouse, toll ford/watch dispute, fortified command/blockade, tunnels/armory, submerged bell, cache and reclaimed training yard. Subjective visual approval and map balance follow-up remain open. Production untouched.
+
 ## Completed October 2: Battle Lab and prison wagon size
 
 Implemented a dev-only Battle Lab with 73 current mission templates, rank/source/search filters, authored approach/outcome selection, seed controls, roster copies, optional temporary companion and restart/return controls. Tests use ephemeral server/player-scoped sessions without rewards or save changes; production profiles reject access. Captive Cart prison wagon/wreck artwork is doubled with preserved proportions and legacy CSS wheel cleanup. Reference: docs/design/BATTLE_LAB.md. Validation: 309 backend tests, 103 frontend tests, frontend build and desktop/mobile browser checks passed. Remaining: live visual feedback and subsequent scaling/balance review. Production untouched.

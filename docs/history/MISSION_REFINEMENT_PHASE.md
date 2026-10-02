@@ -395,3 +395,6 @@ October 2 clarification: capture weapons exclusively replace their basic Attack 
 # October 2 — development Battle Lab
 
 Added the isolated in-game battle mission catalogue and approach/outcome tester described in docs/design/BATTLE_LAB.md. All 73 supported mission templates launch using the real engine, including investigation complications and defense preparation. Test sessions never write player/mission records or award rewards. Enlarged Captive Cart wagon and wreck artwork without changing collision routes; cleared old CSS wheels from painted multi-cell props. Validation: 309 backend and 103 frontend tests, frontend build and browser desktop/mobile workflow checks. No production deployment; balance changes remain a separate pass.
+# October 2 — focused authored locations
+
+Rebuilt six mission maps using actual shed/repair-yard/cemetery/river-crossing settings. Added reusable pieces, deterministic dressing variants, operable/destroyable gates with AI support, a separate twelve-prop pack and eight-structure pack. Existing terrain reused and original generic layout snapshots preserved. Full backend suite: 314 tests; six-map browser previews and 65-map/1,044-reference art audit passed, plus frontend build/tests. Remaining locations and balance review recorded in docs/design/AUTHORED_BATTLE_LOCATIONS.md. No production deployment.

@@ -2,6 +2,7 @@
 
 from copy import deepcopy
 import random
+from .location_maps import MATERIALS as LOCATION_MATERIALS, location_blueprint
 
 
 GROUND_MATERIALS = {
@@ -12,6 +13,7 @@ GROUND_MATERIALS = {
     "stone": {"name": "Stone", "movement_cost": 1, "description": "Hard rock or laid masonry."},
     "water": {"name": "Shallow Water", "movement_cost": 2, "description": "Costs 2 movement and extinguishes Burn."},
 }
+GROUND_MATERIALS.update(LOCATION_MATERIALS)
 
 
 BATTLE_MAPS = {
@@ -191,6 +193,8 @@ def generated_scenario_blueprint(scenario: str, seed: str) -> dict:
     random material for every cell.  The same mission seed always produces the
     same map, so an active encounter cannot change after a restart.
     """
+    if scenario.startswith('location_'):
+        return location_blueprint(scenario.removeprefix('location_'), seed)
     if scenario.startswith("contract_"):
         return _contract_blueprint(scenario.removeprefix("contract_"), seed)
     if scenario == "frontier_watch_defense":

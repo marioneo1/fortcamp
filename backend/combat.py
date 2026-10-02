@@ -9,6 +9,7 @@ from copy import deepcopy
 from .battle_maps import compile_battle_map, compile_generated_battle_map, occupied_tiles
 from .content import ITEMS, RECRUIT_PROFILES, MISSION_TEMPLATES
 from .tactical_contracts import TACTICAL_CONTRACTS
+from .location_maps import MISSION_LOCATIONS
 from .portraits import choose_pool_portrait, portrait_pool_key
 from .races import race_gameplay
 from .perk_effects import modifiers
@@ -658,7 +659,8 @@ def create_frontier_watch_defense_battle(state: dict, party_ids: list[str], seed
 def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission_id: str, defer_start: bool = False, race_override: str | None = None) -> dict:
     spec = TACTICAL_CONTRACTS[mission_id]
     mission = MISSION_TEMPLATES[mission_id]
-    board = compile_generated_battle_map(f"contract_{spec['layout']}", seed)
+    location = MISSION_LOCATIONS.get(mission_id)
+    board = compile_generated_battle_map(f"location_{location}" if location else f"contract_{spec['layout']}", seed)
     characters = {c["id"]: c for c in state["characters"]}
     units = {cid: _player_unit(state, characters[cid], tile["x"], tile["y"])
              for cid, tile in zip(party_ids, board["spawn_zones"]["player"])}
@@ -1801,6 +1803,8 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
     if not targets:
         _finish_turn(battle); return
     target = min(targets, key=lambda candidate: (_distance(unit, candidate), candidate["hp"]))
+    if _auto_open_gate(battle, unit, target):
+        return
     snared = int(unit.get("snared_until_round", 0)) >= int(battle.get("round", 1))
     if not _can_attack(battle, unit, target) and not snared:
         _move_toward(battle, unit, target)
@@ -1960,6 +1964,9 @@ def _auto_support(battle, unit):
 
 
 def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
+    enemies = _living(battle, 'enemy')
+    if enemies and _auto_open_gate(battle, unit, min(enemies, key=lambda u: _distance(unit, u))):
+        return
     if battle.get('ambush_sleep_until_round'):
         target = next((u for u in _living(battle, 'enemy') if u.get('boss') or u.get('kind') == 'chieftain'), None)
         if target:
@@ -2073,7 +2080,31 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
     _finish_turn(battle)
 
 
+def _auto_open_gate(battle, unit, target):
+    for gate in battle.get('terrain', []):
+        if (gate.get('kind') == 'gate' and not gate.get('destroyed') and gate.get('state') != 'opened'
+                and _distance_to_entity(unit, gate) == 1 and _distance(gate, target) < _distance(unit, target)):
+            _interact(battle, unit, gate['id'])
+            return True
+    return False
+
+
 def _interact(battle: dict, unit: dict, object_id: str) -> None:
+    gate = next((t for t in battle.get('terrain', []) if t.get('id') == object_id and t.get('kind') == 'gate' and not t.get('destroyed')), None)
+    if gate:
+        if _distance_to_entity(unit, gate) != 1:
+            raise ValueError('Move next to the gate before operating it')
+        closing = gate.get('state') == 'opened'
+        if closing and any(u.get('conscious', True) and not u.get('extracted') and not u.get('carried_by')
+                           and (u['x'], u['y']) in occupied_tiles(gate) for u in battle['units'].values()):
+            raise ValueError('Someone is standing in the gate')
+        gate.update(state='closed' if closing else 'opened', blocking=closing, blocks_sight=closing,
+                    sprite=gate['closed_sprite'] if closing else gate['open_sprite'])
+        battle['log'].append(f"{unit['name']} {'closes' if closing else 'opens'} {gate['name']}.")
+        _record_sound(battle, 'cage_open')
+        unit['acted'] = True
+        _finish_turn(battle)
+        return
     obj = battle["objects"].get(object_id)
     if not obj or _distance_to_entity(unit, obj) != 1:
         raise ValueError("Move next to that object before interacting")
@@ -2258,6 +2289,13 @@ def _damage_terrain(battle: dict, unit: dict, target_id: str) -> None:
 def _context_actions(battle: dict, unit: dict) -> list[dict]:
     actions: list[dict] = []
     if not unit.get("acted"):
+        for gate in battle.get('terrain', []):
+            if gate.get('kind') != 'gate' or gate.get('destroyed') or _distance_to_entity(unit, gate) != 1:
+                continue
+            verb = 'Close' if gate.get('state') == 'opened' else 'Open'
+            actions.append({'id': f"gate:{gate['id']}", 'label': f"{verb} {gate['name']}", 'target': gate['name'],
+                            'description': f'{verb} the passage. Uses the main action and ends this activation. Gates can also be attacked.',
+                            'cost': 'Main action', 'hotkey': 'I', 'command': {'action':'interact','target_id':gate['id']}})
         for obj in battle.get("objects", {}).values():
             if _distance_to_entity(unit, obj) != 1:
                 continue
@@ -2731,7 +2769,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         if unit.get("acted"):
             raise ValueError("This unit already used its action")
         object_id = str(command.get("target_id", ""))
-        obj = battle["objects"].get(object_id)
+        obj = battle["objects"].get(object_id) or next((t for t in battle.get('terrain', []) if t.get('id') == object_id and t.get('kind') == 'gate'), None)
         if not obj or _distance_to_entity(unit, obj) != 1:
             raise ValueError("Move next to that object before interacting")
         _commit_player_movement(battle, unit)

@@ -54,4 +54,6 @@ Large map entities remain single sprites. A `footprint: [width, height]` reserve
 
 Each asset identifier belongs to exactly one runtime library. A source generation sheet may contain multiple families for visual consistency, but extraction must classify every exported file into one layer before it can be used by a map.
 
+New generation packs keep terrain, props and structures separate. The first authored-location pass adds `props/location-v1` (12 work/grave/riverbank props) and `structures/location-v1` (8 shed-wall/door/yard-gate/corner pieces). Its bridges are floor cells across a continuous river; gates are attackable, operable terrain entities above the floor, never duplicated as tiles. Existing ground textures are reused. See docs/design/AUTHORED_BATTLE_LOCATIONS.md for scope and tools.
+
 October 2: the Captive Cart's prison wagon artwork renders at twice its previous width and height, preserving aspect ratio. `art_scale: 2` enlarges its intact/wrecked sprite independently of collision footprint; the existing road and courier placement remain usable. Older saved `cart_body` objects receive the same visual scale without rewriting saves. Multi-cell painted art clears the legacy CSS wagon wheels so those circles cannot appear behind the enlarged sprite. Use Battle Lab to review the map at different zoom levels.
