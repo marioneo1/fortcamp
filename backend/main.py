@@ -24,6 +24,7 @@ from sqlalchemy import func, select
 
 from .auth import IdentityDep, create_session_token, exchange_discord_code, verify_discord_identity, session_namespace
 from .web_auth import browser_router
+from .battle_lab import router as battle_lab_router
 from .content import MISSION_TEMPLATES
 from .db import SessionLocal, init_db
 from .game import (
@@ -128,6 +129,7 @@ def installed_web_guilds():
     return {str(g.id):{'name':g.name,'icon':str(g.icon.url) if g.icon else None} for g in _bot.guilds}
 
 app.include_router(browser_router(installed_web_guilds))
+app.include_router(battle_lab_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], allow_credentials=False, allow_methods=["*"], allow_headers=["*"],

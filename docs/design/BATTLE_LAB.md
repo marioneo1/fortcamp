@@ -1,0 +1,21 @@
+# Battle Lab — implemented development tool
+
+Open **Mission Board → debug controls → Open Battle Lab** in the dev game. Restart the dev launcher once after backend changes, then refresh the browser/Discord Activity. `GAME_DEBUG_MODE` must be enabled. Production/release/stable profiles explicitly reject the lab even if debug is accidentally enabled. Server admins can use it; local auth bypass follows the existing debug policy.
+
+The lab replaces the three separate quick-test buttons with one searchable workspace. Currently 73 mission templates expose supported battle encounters; the list is derived from current content, not maintained separately. Search name, faction or mission type and filter by rank or source. Each entry shows its rank, description, regional pool or private follow-up source, faction when provided, and known preceding contracts. The encounter identifier makes it clear when a failed investigation loads a different battlefield.
+
+Choose a story approach and force a supported outcome. Only transitions that actually create a battle are offered; successful investigation results that continue dialogue or finish without combat are omitted. **Direct map test** bypasses the story and uses normal deployment. The lab bypasses party size, unlock and training requirements to make visual testing practical. Combat stats, gear, racial rules, loyalty, movement, AI and terrain still use the actual engine.
+
+Goblin Warcamp supports a head-on attack, scouting an ambush, and building a defensive lane. An ambush success puts enemies asleep for three rounds; attacking wakes everyone. Scouting failures give enemies initiative, and critical failures strengthen the commander. A successful defensive lane adds breakable cover. Trap placement is part of **Hold the Hedgerow Watch**, whose normal preparation screen opens in the lab.
+
+Select one to four roster copies, including busy characters. Their current equipment and stats are used without changing their saved availability. An optional temporary companion fills a solo party to two; it uses fixed modest stats, Skilled combat proficiency, 100 loyalty and no equipment. If no player save exists, a temporary starter is provided. Keep the generation seed for repeatable map, enemy and NPC generation; choose **New seed** to inspect another generation. Restart Same Test repeats the last launched request. Choose Another Map returns to the picker. Closing a preview does not create a resumable mission in Private Contracts.
+
+Test sessions live only in backend memory, are scoped to both server and player, expire after one hour of inactivity and disappear on server restart. At most four are retained per player and 64 overall. They create no mission records and never resolve real rewards, recruitment, prisoners, injuries, supplies or world outcomes. Auto battle remains available for previewing encounter behavior but pays nothing. The lab is a battle/map tester, not a full dialogue-chain or loot simulator.
+
+## Verification
+
+Eight backend tests cover all catalogued launch targets, authored setups, seeded repetition, save isolation, invalid selections, owner/server isolation, expiry/bounds and disabled/production permissions. Full suite: 309 backend tests and 103 frontend tests passed. Frontend build passed. Browser checks cover mission filtering, approach outcomes, launch/restart/return, defense preparation, enlarged wagon art and mobile layout.
+
+For isolated browser QA, run `.venv\Scripts\python.exe tools\build_battle_lab_preview.py`, then `node tools/serve_board_preview.mjs`. Launch headless Chrome with a temporary profile and remote debugging on port 9229, then run `node tools/battle_lab_browser_qa.mjs`. The fixture has four encounter families and uses actual UI modules with mocked API responses; it does not read saves or run the live server. Screenshots go to `staging-ui/battle-lab`. In-game testing supports the full catalogue.
+
+Remaining: subjective visual review and a later balancing pass. Enemy/stat tuning was not changed by this tool.

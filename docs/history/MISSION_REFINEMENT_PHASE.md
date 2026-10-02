@@ -392,3 +392,6 @@ The level/XP/specialization proposal is documented separately from live mechanic
 
 
 October 2 clarification: capture weapons exclusively replace their basic Attack with Subdue. The UI shows Subdue [A], sends the subdue command, and omits Attack previews; the backend rejects Attack for capture weapons. Auto battle uses the same restraint check. Isolated browser QA covers the A shortcut and outgoing command, alongside backend coverage of rejected Attack without damage or movement.
+# October 2 — development Battle Lab
+
+Added the isolated in-game battle mission catalogue and approach/outcome tester described in docs/design/BATTLE_LAB.md. All 73 supported mission templates launch using the real engine, including investigation complications and defense preparation. Test sessions never write player/mission records or award rewards. Enlarged Captive Cart wagon and wreck artwork without changing collision routes; cleared old CSS wheels from painted multi-cell props. Validation: 309 backend and 103 frontend tests, frontend build and browser desktop/mobile workflow checks. No production deployment; balance changes remain a separate pass.

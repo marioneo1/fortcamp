@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## Completed October 2: Battle Lab and prison wagon size
+
+Implemented a dev-only Battle Lab with 73 current mission templates, rank/source/search filters, authored approach/outcome selection, seed controls, roster copies, optional temporary companion and restart/return controls. Tests use ephemeral server/player-scoped sessions without rewards or save changes; production profiles reject access. Captive Cart prison wagon/wreck artwork is doubled with preserved proportions and legacy CSS wheel cleanup. Reference: docs/design/BATTLE_LAB.md. Validation: 309 backend tests, 103 frontend tests, frontend build and desktop/mobile browser checks passed. Remaining: live visual feedback and subsequent scaling/balance review. Production untouched.
+
 ## Completed October 2: Remaining active mission props
 
 Added twelve overhead sprites and wired missing dispatch satchel, loose wagon wheel and marked farm chart. Prison wagon now has dedicated intact/wrecked art; prepared traps have armed/spent variants and generic contract walls use the existing overhead stone-wall sprite. Shared state resolver supports older saved encounters without changing gameplay. Current registry: 55 sprites. Audit: 65 encounter setups, 888 references, no missing prop assignments/files. Validation: 301 backend and 103 frontend tests, browser encounter checks and frontend build passed. No production deployment. Remaining: subjective live review, unused legacy-library objects and future props needed by new mission forms.
