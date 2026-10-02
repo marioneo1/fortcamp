@@ -28,9 +28,9 @@ Only registered players scale new mission pools. `/unregister` pauses participat
 
 ## Develop safely
 
-Run **run_dev_windows.bat** in `fortcamp-dev`, then use **http://127.0.0.1:5174/**. This local runner enables debug/auth bypass and keeps the bot off. Backend port is 8001. Do not expose this bypass runner publicly. Source edits and dev builds cannot change the prepared production copy.
+Run **run_dev_windows.bat** in `fortcamp-dev`, then use **https://dev.fortcampgame.fyi/** or the dev Discord Activity. This single dev launcher runs the bot and real Discord login for both interfaces, with debug tools enabled and separate dev saves. Frontend port is 5174; backend port is 8001. Keep the dev Cloudflare route running. Source edits and dev builds cannot change the prepared production copy.
 
-The currently configured dev and prod environments still use the same Discord application. Do not run **run_dev_discord_windows.bat** while production is running until a separate development application has been configured. The launcher checks this. A production copy refuses dev launch profiles to prevent accidentally testing against the wrong folder.
+The currently configured dev and prod environments still use the same Discord application. Do not run the authenticated dev launcher while production is running until a separate development application has been configured. The launcher checks this. A production copy refuses dev launch profiles to prevent accidentally testing against the wrong folder.
 
 Production launch forces **GAME_DEBUG_MODE=false**, **DEV_BYPASS_AUTH=false**, **BOT_ENABLED=true**, **MISSION_TIME_SCALE=1.0**, and global command registration. Its private `.env`, signing secret and OAuth configuration are preserved from production; dev credentials are never automatically copied. Keep secrets and generated runtime media out of GitHub.
 
@@ -54,3 +54,10 @@ Targeted resets remain an explicit operation using `tools/reset_player.py --data
 ## October 2 deployment
 
 The current production preparation includes the tested mercenaries, quieter regional events, matching starter kits, camp/roster/inventory workspaces, and item sales. See [mercenary rules](design/MERCENARIES.md). Save isolation, production flags, rollback-on-build-failure and launcher guards are tested; actual Discord installation and server permissions remain account-specific.
+
+
+## Launcher cleanup ? October 2
+
+There is one game launcher in each folder: run_dev_windows.bat for authenticated browser and Discord development, run_prod_windows.bat for production. The former separate Discord shortcut is removed. Stop either session with Ctrl+C in its control window; the obsolete stop_dev_windows.bat was removed because it targeted the old three-window setup and could also stop the shared tunnel. Keep Cloudflare running independently.
+
+Release preparation excludes dev-only launch/update shortcuts from the production checkout using Git sparse checkout. This keeps the pinned production source clean and its integrity check intact. The currently installed production copy received only that launcher cleanup; it was not upgraded or restarted. Developer-only unauthenticated local diagnostics remain available through `.venv\Scripts\python.exe tools\run_profile.py dev`; this is an internal option, not a second everyday launcher.

@@ -6,7 +6,7 @@ Fortcamp is a Discord Activity fantasy settlement game with shared ranked contra
 
 1. Run `setup_windows.bat` to install dependencies.
 2. Copy `.env.example` to `.env` and configure your Discord application and hosting values.
-3. Run `run_dev_windows.bat`. The frontend uses port 5173 and the backend uses port 8000.
+3. Run `run_dev_windows.bat` for development with both browser and Discord login. The frontend uses port 5174 and the backend uses port 8001; debug tools are enabled. Production uses `run_prod_windows.bat` in the separate `fortcamp-prod` folder on port 5173.
 4. For Discord hosting, configure the application's URL mapping and your Cloudflare route, then use `start_tunnel_windows.bat` if a tunnel service is not already running.
 
 See [Windows tools](WINDOWS_TOOLS.md) for launcher purposes and limitations. Keep credentials in `.env`.

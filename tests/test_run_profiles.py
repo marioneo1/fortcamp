@@ -5,9 +5,32 @@ from contextlib import closing
 from pathlib import Path
 from unittest.mock import patch
 from tools.run_profile import profile_config, conflicting_application
-from tools.prepare_release_copy import release_paths, release_env_source, production_destination
+from tools.prepare_release_copy import release_paths, release_env_source, production_destination, configure_release_launchers, DEV_ONLY_LAUNCHERS
 
 class RunProfileTests(unittest.TestCase):
+    def test_release_excludes_dev_shortcuts_without_changing_source_or_runtime_files(self):
+        import subprocess
+        with tempfile.TemporaryDirectory() as d:
+            prod = Path(d)/'fortcamp-prod'; prod.mkdir()
+            def git(*args):
+                return subprocess.check_output(['git', *args], cwd=prod, text=True, stderr=subprocess.DEVNULL).strip()
+            git('init')
+            for name in DEV_ONLY_LAUNCHERS: (prod/name).write_text('@echo off\n')
+            (prod/'backend').mkdir(); (prod/'backend/main.py').write_text('unchanged source')
+            git('add', '.')
+            git('-c', 'user.name=Test', '-c', 'user.email=test@fortcamp.invalid', 'commit', '-m', 'fixture')
+            commit = git('rev-parse', 'HEAD')
+            # Generated runtime files are deliberately not part of the pinned source.
+            (prod/'.env').write_text('fixture only')
+            (prod/'run_prod_windows.bat').write_text('production fixture')
+            configure_release_launchers(prod)
+            self.assertTrue(all(not (prod/name).exists() for name in DEV_ONLY_LAUNCHERS))
+            self.assertEqual((prod/'backend/main.py').read_text(), 'unchanged source')
+            self.assertEqual((prod/'.env').read_text(), 'fixture only')
+            self.assertTrue((prod/'run_prod_windows.bat').is_file())
+            self.assertEqual(git('rev-parse', 'HEAD'), commit)
+            self.assertEqual(git('status', '--porcelain', '--untracked-files=no'), '')
+            configure_release_launchers(prod)  # Repeating does not restore the unwanted launchers.
     def test_fixed_prod_preserves_credentials_and_restores_failed_update(self):
         import sqlite3
         with tempfile.TemporaryDirectory() as d:

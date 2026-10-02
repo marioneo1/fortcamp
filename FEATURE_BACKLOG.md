@@ -165,3 +165,8 @@ Implemented fixed sibling `fortcamp-dev` and `fortcamp-prod` folders, a one-step
 - Remaining: multiplayer balance/soak testing, more factions and merchant goods, more authored branches/long arcs and lore-based Champion acquisition, more explicit sources for the full status catalogue, formation AI, dungeon floors/stealth, adventure injury/supply carryover, and optional dedicated keepsake art. Existing relationship/portrait/handbook backlog remains.
 
 Canonical references: docs/gameplay/COMBAT_TOOLS_AND_PACING.md and docs/design/FACTIONS_AND_ROTATING_TRADE.md. Local UI fixture: tools/build_faction_combat_preview.py; run with the existing tools/serve_board_preview.mjs and tools/faction_combat_browser_qa.mjs. These are developer QA tools, not new game launchers.
+
+
+## October 2: unified launcher cleanup
+
+Implemented one authenticated dev launcher for both website and Discord Activity, preserving debug tools and dev saves. Removed the duplicate Discord shortcut and obsolete title-based stop shortcut; Ctrl+C stops the owned process group. Release checkout filtering removes dev-only shortcuts without changing pinned production source, credentials, builds or saves, and persists in future release builds. Existing production received launcher filtering only, with no gameplay deployment or restart. README, WINDOWS_TOOLS, browser play and friend trial instructions updated. Validation: ten run-profile/release tests, including a real temporary Git checkout proving filtering preserves HEAD, source, generated runtime files and clean production status. Separate Discord application credentials remain necessary for concurrent authenticated dev/prod bots.

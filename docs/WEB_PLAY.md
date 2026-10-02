@@ -13,11 +13,11 @@ The existing dev and production `.env` files used the same Discord application. 
 3. Put that new application's Client ID, Client Secret and Bot Token into **dev's `.env`** under `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET`, `DISCORD_BOT_TOKEN`. Do not edit the existing release's `.env` or paste secrets into chat.
 4. Install **Fortcamp Dev** in your test Discord server, enabling the `bot` and `applications.commands` scopes (Developer Portal Installation settings / install link). Use the server installation type. Register with that bot using `/register`. Existing dev saves/registration rows are preserved; a code change does not require registering again.
 5. Keep the existing Cloudflare route **dev.fortcampgame.fyi → http://127.0.0.1:5174**. No new tunnel route is needed for the callback.
-6. Close the old dev runner and start **run_dev_discord_windows.bat**. Open **https://dev.fortcampgame.fyi/** in your browser. Choose **Sign in with Discord**, then select your server.
+6. Close the old dev runner and start **run_dev_windows.bat**. Open **https://dev.fortcampgame.fyi/** in your browser. Choose **Sign in with Discord**, then select your server.
 
 If the dev application should also run the embedded Activity, configure its Activity URL mappings/App Testers using [FRIEND_TRIAL.md](FRIEND_TRIAL.md). Browser play does not need the Activity configuration itself.
 
-`run_dev_windows.bat` remains the local bypass/testing option on port 5174; it does not run a bot or display the real Discord server picker. Use the authenticated dev launcher for website play with Discord accounts.
+`run_dev_windows.bat` is now the single authenticated development launcher for both browser play and Discord Activity. Debug tools stay enabled; real login and the bot are enabled. The former separate Discord launcher has been removed.
 
 ## Set up the release
 
@@ -35,7 +35,7 @@ The fixed production folder is now `fortcamp-prod`; its shared save remains in `
 | Website | dev.fortcampgame.fyi | play.fortcampgame.fyi |
 | Frontend/public port | 5174 | 5173 |
 | API port | 8001 | 5173 |
-| Saves | alpha/data/fortcamp-dev.db | fortcamp-release-data/fortcamp.db |
+| Saves | fortcamp-dev/data/fortcamp-dev.db | fortcamp-release-data/fortcamp.db |
 | Bot application | Fortcamp Dev | Original Fortcamp |
 | Debug controls | Enabled for permitted testers/admins | Disabled by launcher |
 | Browser badge | DEV · Test saves | Normal game |

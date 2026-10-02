@@ -12,6 +12,23 @@ from pathlib import Path
 from dotenv import set_key, dotenv_values
 
 ROOT=Path(__file__).resolve().parents[1]
+DEV_ONLY_LAUNCHERS = (
+    'run_dev_windows.bat', 'run_dev_discord_windows.bat',
+    'stop_dev_windows.bat', 'update_prod_windows.bat',
+)
+
+
+def configure_release_launchers(target):
+    """Exclude dev shortcuts from a release checkout without dirtying its pinned source."""
+    target = Path(target).resolve()
+    if target == ROOT.resolve() or not (target.name == 'fortcamp-prod' or target.name.startswith('fortcamp-release-')):
+        raise ValueError('Launcher filtering requires a sibling production/release checkout')
+    dirty = subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=no'], cwd=target, text=True)
+    if dirty.strip():
+        raise ValueError('Commit or restore source changes before filtering release shortcuts')
+    patterns = '/*\n' + ''.join(f'!/{name}\n' for name in DEV_ONLY_LAUNCHERS)
+    subprocess.run(['git', 'sparse-checkout', 'set', '--no-cone', '--stdin'], cwd=target,
+                   input=patterns, text=True, check=True)
 
 def release_paths(parent,version):
     if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9]+(?:\.[A-Za-z0-9]+)*)?',version):raise ValueError('Use a version such as 0.3.1-trial.2')
@@ -100,6 +117,7 @@ def build_copy(args,target,data,production_env):
     subprocess.run(['git','clone','--branch','release',remote,str(target)],check=True)
     actual=subprocess.check_output(['git','rev-parse','HEAD'],cwd=target,text=True).strip()
     if actual!=commit:raise SystemExit('Remote release advanced during creation; folder retained for inspection, no tag created.')
+    configure_release_launchers(target)
     # Independently installed packages; the release never uses the dev virtualenv.
     dev_python=ROOT/'.venv'/'Scripts'/'python.exe'
     subprocess.run([str(dev_python),'-m','venv',str(target/'.venv')],check=True)
