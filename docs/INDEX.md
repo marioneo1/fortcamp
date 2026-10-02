@@ -1,6 +1,7 @@
 # Fortcamp documentation map
 
 - [Relationships](design/CHARACTER_RELATIONSHIPS.md): loyalty, personality, records, conversations and staged roadmap.
+- [Prison recruitment proposal](design/PRISON_RECRUITMENT_PROPOSAL.md): warden work, prisoner conversations and boss acquisition pacing; not implemented.
 - [Combat](design/COMBAT_DESIGN.md): combat rules and outstanding mechanics.
 - [Critical outcomes](gameplay/CRITICAL_SUCCESS_BALANCE.md): current soft caps and stat curves.
 - [Gear and loot](gameplay/GEAR_LOOT_DESIGN.md), [item audit](gameplay/ITEM_CATALOGUE_AUDIT.md): current equipment and discoveries.

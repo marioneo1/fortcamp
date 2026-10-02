@@ -21,4 +21,4 @@ This records current behavior rather than planned features in BUILDINGS_DESIGN_W
 
 Camp hiring has been removed from both UI and server action. Workers must be encountered through missions. Later prisoner recruitment and a trader who offers captives require authored acquisition, pricing and loyalty rules; these are not implemented by this pass.
 
-Loyalty currently reaches combat units and supports low-loyalty party panic at low HP while outnumbered. Generic recruits default to 100 when loyalty is absent. There is no recruit loyalty progression, roster editor/display, or command-disobedience roll yet; the curve in COMBAT_DESIGN.md remains a proposal.
+Loyalty now checks command reliability once per combat activation: independent-action chance equals 100 minus loyalty. Missing NPC loyalty defaults to 80; the player is immune. Conversations, meal gifts and service records are implemented; prisoner recruitment and warden effects remain pending. See CHARACTER_RELATIONSHIPS.md and PRISON_RECRUITMENT_PROPOSAL.md.

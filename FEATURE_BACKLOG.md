@@ -111,3 +111,7 @@ Deferred: deeper debriefs and Champion voices, item/trinket gifts and crafter re
 - Camera buttons share one row with equal widths.
 - Centered wide objective-secured banner minimizes after Continue for optional objectives and can be reopened through Finish operation.
 - Validation: 94 frontend tests, production build, isolated browser checks of camera layout at three sizes, always-visible equipped effects and victory minimize/reopen. Gameplay rules and release saves unchanged.
+
+### Precise zoom and prison planning (2026-10-01)
+
+Implemented smooth pointer-anchored map wheel zoom, retaining modified-wheel scrolling, camera buttons and middle-click behavior. Proposed prison recruitment design documented in docs/design/PRISON_RECRUITMENT_PROPOSAL.md: warden attention, resistance versus loyalty, individual concerns and allegiance contracts for exceptional captives. Recruitment/warden effects remain pending; no prisoner data altered.

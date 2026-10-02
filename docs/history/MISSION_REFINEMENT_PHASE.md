@@ -324,3 +324,7 @@ Implemented outside-click contract dismissal, equipped gear effects, saved defau
 ### Victory and equipment presentation follow-up
 
 Fixed the camera grid cascade that wrapped zoom-in into a stretched row. Equipped effects now render directly instead of inside a disclosure. Objective completion uses a wide centered map overlay and a minimized finish bar during optional pursuit. Existing backend victory and extraction rules remain intact. 94 frontend tests and production build pass; mocked-API browser checks cover equal camera widths, visible equipped effects while spare details are hidden, centered banner and continue/reopen/minimize flow.
+
+### Map wheel zoom and prison design
+
+Added fine exponential wheel zoom centered on the pointer without a battle rerender. Documented the current prison gaps and proposed recruitment loop separately from live mechanics. Frontend unit tests, build and isolated browser wheel/control checks validate this UI pass.

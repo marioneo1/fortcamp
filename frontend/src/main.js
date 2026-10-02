@@ -1,6 +1,6 @@
 import {victoryMarkup} from './battle-victory-ui.js';
 import {attributeHelp,attributeTotalHelp,mountHoverHelp} from './roster-help.js';
-import {sizeBattleMap} from './battle-camera.js';
+import {sizeBattleMap,bindMapWheel} from './battle-camera.js';
 import {mountRelationships,mountServiceRecord} from './relationship-ui.js';
 import {createCombatEffects} from './combat-effects.js';
 import './combat-effects.css';
@@ -55,6 +55,11 @@ function updateBattleCamera(b){
   const viewport=document.querySelector('#battle-viewport');
   const update=()=>sizeBattleMap(viewport,{width:b.width,height:b.height,fit:battleFit,zoom:battleZoom});
   update();
+  if(viewport)bindMapWheel(viewport,{width:b.width,height:b.height,onZoom:zoom=>{
+    battleFit=false;battleZoom=zoom;
+    const reset=document.querySelector('[data-battle-zoom=reset]');if(reset)reset.textContent=`${Math.round(zoom*100)}%`;
+    document.querySelector('[data-battle-fit]')?.setAttribute('aria-pressed','false');
+  }});
   const fitButton=document.querySelector('[data-battle-fit]');if(fitButton)fitButton.setAttribute('aria-pressed',String(battleFit));
   battleResizeObserver=new ResizeObserver(update);
   if(viewport)battleResizeObserver.observe(viewport);

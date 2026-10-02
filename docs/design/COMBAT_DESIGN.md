@@ -295,3 +295,7 @@ Battles and defense preparation open in Fit map mode: preserve the map aspect ra
 ## Victory presentation follow-up (2026-10-01)
 
 Securing the primary objective displays a wide banner centered over the visible map viewport, without changing the map size or scrolling its content. Continue for optional objectives retains the existing pursuit action and minimizes the banner to an Objective secured bar. Finish operation reopens the completion choice; continuing again minimizes it locally without consuming an action. The bar follows the current battle?s victory state, including resumed pursuits. Camera controls have a separate heading row and four equally sized buttons, fixing the wrapped/stretched zoom-in control.
+
+### Precise wheel zoom
+
+Wheel over the map smoothly zooms around the pointer without redrawing units or sending game commands. Shift+wheel keeps ordinary scrolling; Ctrl/Meta+wheel remains available for browser zoom. Fit and fixed zoom buttons remain available in combat and preparation. Zoom is bounded at 25?300%.

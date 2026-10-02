@@ -10,7 +10,7 @@ await call('Emulation.setFocusEmulationEnabled',{enabled:true});
 await call('Page.navigate',{url:'http://127.0.0.1:8766/staging-ui/combat-relationships/preview.html'});
 for(let i=0;i<100;i++){if(await evaluate('Boolean(window.relationshipReady)'))break;await new Promise(r=>setTimeout(r,100))}
 for(const [width,height] of [[1440,1000],[1280,720],[800,700]]){
- await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});await evaluate('window.nativePreview()');await new Promise(r=>setTimeout(r,150));
+ await call('Emulation.setDeviceMetricsOverride',{width,height,deviceScaleFactor:1,mobile:false});await evaluate("window.nativePreview();document.querySelector('[data-battle-fit]').click()");await new Promise(r=>setTimeout(r,150));
  const dimensions=await evaluate(`(()=>{const v=document.querySelector('#battle-viewport'),f=v.querySelector('.battlefield'),r=f.getBoundingClientRect(),b=v.getBoundingClientRect();return {width:r.width,height:r.height,availableWidth:v.clientWidth,availableHeight:v.clientHeight,bottom:b.bottom,screen:innerHeight}})()`);
  assert.ok(dimensions.width<=dimensions.availableWidth+1,JSON.stringify(dimensions));assert.ok(dimensions.height<=dimensions.availableHeight+1,JSON.stringify(dimensions));assert.ok(dimensions.bottom<=height,JSON.stringify(dimensions));
  console.log('fit map',width,height,dimensions);
@@ -20,6 +20,9 @@ for(const [width,height] of [[1440,1000],[1280,720],[800,700]]){
  const zoomed=await evaluate("(()=>{document.querySelector('[data-battle-zoom=in]').click();return document.querySelector('.battlefield').getBoundingClientRect().width})()");
  assert.ok(zoomed>dimensions.width,'Zoom in must enlarge the fitted map');
  await evaluate("document.querySelector('[data-battle-fit]').click()");
+ const wheel=await evaluate(`(()=>{const v=document.querySelector('#battle-viewport'),f=v.querySelector('.battlefield'),before=f.getBoundingClientRect().width,r=v.getBoundingClientRect();v.dispatchEvent(new WheelEvent('wheel',{deltaY:-10,clientX:r.left+r.width/2,clientY:r.top+r.height/2,bubbles:true,cancelable:true}));return {before,after:f.getBoundingClientRect().width,same:f===v.querySelector('.battlefield')}})()`);
+ assert.ok(wheel.after>wheel.before&&wheel.after<wheel.before*1.05);assert.equal(wheel.same,true);
+ const modified=await evaluate("(()=>{const v=document.querySelector('#battle-viewport'),f=v.querySelector('.battlefield'),before=f.getBoundingClientRect().width;v.dispatchEvent(new WheelEvent('wheel',{deltaY:-10,shiftKey:true,bubbles:true,cancelable:true}));return {before,after:f.getBoundingClientRect().width}})()");assert.equal(modified.before,modified.after);
 }
 await call('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
 await new Promise(r=>setTimeout(r,150));
