@@ -30,6 +30,12 @@ window.relationshipPreview=()=>{combatEffects.pause();$('#mission-modal').classL
 window.nativePreview=()=>{$('#mission-modal').classList.remove('hidden');renderBattle(structuredClone(relationshipFixture.before));};
 window.nativeCast=()=>{const next=structuredClone(relationshipFixture.after);renderBattle(next);animateBattleMovement(relationshipFixture.before,next)};
 window.nativeDiagnostics=()=>combatEffects.diagnostics();window.nativePreview();window.relationshipReady=true;
+window.qolEquipment=()=>{window.relationshipPreview();
+ state.inventory.push({instance_id:'preview-equipped',item_id:'meridian_field_projector'},{instance_id:'preview-spare',item_id:'meridian_field_projector'});
+ state.characters.find(c=>c.id==='companion').equipment.weapon='preview-equipped';
+ rosterDetailTab='equipment';renderRoster();
+};
+window.qolContract=()=>openMission({id:'preview-contract',name:'A guild contract',rank:'E',status:'available',party_size:1,description:'Check the canal.',reward_preview:['Contract payment','Possible equipment discoveries']});
 """
 folder=ROOT/'staging-ui/combat-relationships';folder.mkdir(parents=True,exist_ok=True)
 (folder/'preview.js').write_text(source,encoding='utf-8')

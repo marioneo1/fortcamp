@@ -1,0 +1,11 @@
+/* Tooltips live outside tags and scroll panels so text cannot inherit pill sizing. */
+.perk-card>.perk-tooltip,.perk-pill>.perk-tooltip,.stat-tooltip{display:none!important}
+.floating-help{position:fixed;z-index:110;width:min(360px,calc(100vw - 16px));max-height:calc(100dvh - 16px);overflow:auto;padding:16px;border:1px solid var(--accent);border-radius:12px;background:#101b16;box-shadow:0 12px 40px #000a;color:#eee8d8;font-size:13px;line-height:1.55;white-space:normal;overflow-wrap:anywhere;text-align:left}
+.floating-help[hidden]{display:none}.floating-help p,.floating-help span,.floating-help strong{display:block;margin:0 0 9px;padding:0;border:0;border-radius:0;background:none;font-size:13px;line-height:1.55;text-transform:none;white-space:normal}.floating-help strong{color:var(--accent)}.floating-help>:last-child{margin-bottom:0}
+[data-stat-help]{cursor:help}[data-stat-help]:focus-visible,.perk-pill:focus-visible,.perk-card:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.armory-display-options{display:flex;gap:24px;flex-wrap:wrap}.armory-equipped-details{width:100%;font-size:11px;overflow-wrap:anywhere}.armory-equipped-details summary{cursor:pointer;color:var(--accent)}.armory-equipped-details p{font-size:12px;line-height:1.5;margin:8px 0;text-align:left}.armory-equipped{grid-template-columns:repeat(auto-fit,minmax(135px,1fr))}
+.battle-camera{grid-template-columns:1fr repeat(4,auto)}.battle-camera [data-battle-fit]{color:var(--accent)}
+.modal-card:has(.battlefield) .battle-layout{grid-template-columns:minmax(0,1fr) minmax(280px,340px)}
+.battle-viewport .battlefield{min-width:0!important}.battle-viewport{scrollbar-gutter:stable}
+@media(max-width:900px){.modal-card:has(.battlefield) .battle-layout{grid-template-columns:1fr}.battle-sidebar{min-width:0}.battle-header{display:block}.battle-objectives{min-width:0}.battle-camera{grid-template-columns:1fr repeat(4,auto)}}
+.roster-detail-tabs{flex-wrap:wrap}

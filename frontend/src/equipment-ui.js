@@ -5,6 +5,9 @@ export function readHideEquipped(storage,key){
 export function saveHideEquipped(storage,key,value){
   try{storage?.setItem(key,String(value))}catch{}
 }
+export function readHideDetails(storage,key){
+  try{return storage?.getItem(key)==='true'}catch{return false}
+}
 const ranks = ['common','uncommon','rare','epic','legendary','mythic','event','story'];
 const escape = value => String(value??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const label = value => String(value??'').replaceAll('_',' ').replace(/\b\w/g,c=>c.toUpperCase());
@@ -64,6 +67,7 @@ export function mountEquipmentBrowser(panel,{state,content,character,onEquip,onE
   const f=filters.get(character.id)||{query:'',slot:'',rarity:'',sort:'rarity',page:0};filters.set(character.id,f);
   let storage;try{storage=globalThis.localStorage}catch{}
   f.hideEquipped=readHideEquipped(storage,preferenceKey);
+  f.hideDetails=readHideDetails(storage,preferenceKey+':details');
   let pending=false;
   const wearables=new Set(content.slots);
   panel.innerHTML=`<div class="armory-heading"><h3>Equipment & Inventory</h3><span>${state.inventory.length} items · duplicate gear is stacked</span></div>
@@ -72,14 +76,14 @@ export function mountEquipmentBrowser(panel,{state,content,character,onEquip,onE
     <select aria-label="Equipment slot" data-filter="slot"><option value="">All items</option>${content.slots.map(s=>`<option value="${s}" ${f.slot===s?'selected':''}>${label(s)}</option>`).join('')}</select>
     <select aria-label="Item rarity" data-filter="rarity"><option value="">All rarities</option>${ranks.map(r=>`<option value="${r}" ${f.rarity===r?'selected':''}>${label(r)}</option>`).join('')}</select>
     <select aria-label="Sort inventory" data-filter="sort"><option value="rarity" ${f.sort==='rarity'?'selected':''}>Rarity first</option><option value="name" ${f.sort==='name'?'selected':''}>Name</option></select></div>
-    <label class="armory-hide-equipped"><input type="checkbox" data-hide-equipped ${f.hideEquipped?'checked':''}> Hide equipped gear <small>Show spare copies only</small></label>
+    <div class="armory-display-options"><label class="armory-hide-equipped"><input type="checkbox" data-hide-equipped ${f.hideEquipped?'checked':''}> Hide equipped gear</label><label class="armory-hide-equipped"><input type="checkbox" data-hide-details ${f.hideDetails?'checked':''}> Hide gear details</label></div>
     <div class="armory-result-count" aria-live="polite"></div><div class="armory-grid"></div><div class="armory-pages"></div>`;
   const find=selector=>panel.querySelector(selector);
   const render=()=>{
     const locked=!editable(character);
     find('.armory-equipped').innerHTML=content.slots.map(slot=>{
       const inst=state.inventory.find(i=>i.instance_id===character.equipment?.[slot]),item=content.items[inst?.item_id];
-      return `<div class="armory-slot ${item?'filled':''}"><span>${label(slot)}</span>${item?`${icon(inst.item_id)}<b>${escape(item.name)}</b><button data-remove="${slot}" ${locked||pending?'disabled':''}>Unequip</button>`:'<b>Empty</b>'}</div>`;
+      return `<div class="armory-slot ${item?'filled':''}"><span>${label(slot)}</span>${item?`${icon(inst.item_id)}<b title="${escape(describeGear(item,content.standalone_perks).join('\n'))}" tabindex="0">${escape(item.name)}</b><details class="armory-equipped-details"><summary>Gear effects</summary><p>${describeGear(item,content.standalone_perks).map(escape).join('<br>')}</p></details><button data-remove="${slot}" ${locked||pending?'disabled':''}>Unequip</button>`:'<b>Empty</b>'}</div>`;
     }).join('');
     const groups=inventoryGroups(state,content,character,f),pages=Math.max(1,Math.ceil(groups.length/18));f.page=Math.min(f.page,pages-1);
     find('.armory-result-count').textContent=`${groups.length} matching item types${locked?' · Equipment locked during a mission':''}`;
@@ -95,7 +99,7 @@ export function mountEquipmentBrowser(panel,{state,content,character,onEquip,onE
         ${owners.length?`<small class="armory-owners">Equipped: ${escape(owners.join(', '))}</small>`:'<small class="armory-owners">In inventory</small>'}
         <p>${escape(item.description||'')}</p>
         ${item.combat_skill?`<small>Ability: ${escape(item.combat_skill.name)}</small>`:''}${item.element?`<small>${label(item.element)} enchantment</small>`:''}
-        <details class="armory-effects"><summary>Stats, abilities & perks</summary><p>${describeGear(item,content.standalone_perks).slice(item.description?1:0).map(escape).join('<br>')||'No direct stat effects.'}</p></details>
+        <details class="armory-effects" ${f.hideDetails?'':'open'}><summary>Stats, abilities & perks</summary><p>${describeGear(item,content.standalone_perks).slice(item.description?1:0).map(escape).join('<br>')||'No direct stat effects.'}</p></details>
         ${current&&change.length?`<div class="armory-compare">Compared with ${escape(current.name)}: ${change.map(([a,v])=>`<span class="${v>0?'better':'worse'}">${v>0?'+':''}${v} ${escape(a.toUpperCase())}</span>`).join(' ')}</div>`:''}
         <button data-instance="${escape(candidate?.instance_id||'')}" data-slot="${escape(item.slot||'')}" ${!wearables.has(item.slot)||!candidate||owned||locked||pending?'disabled':''}>${owned?'Equipped here':!wearables.has(item.slot)?'Training / material item':candidate?.owner?`Transfer from ${escape(candidate.owner.name)}`:!candidate?'Equipped on a mission':'Equip'}</button></article>`;
     }).join('')||'<p class="muted">No items match these filters.</p>';
@@ -109,6 +113,7 @@ export function mountEquipmentBrowser(panel,{state,content,character,onEquip,onE
   };
   find('input[type="search"]').oninput=e=>{f.query=e.target.value;f.page=0;render()};
   find('[data-hide-equipped]').onchange=e=>{f.hideEquipped=e.target.checked;saveHideEquipped(storage,preferenceKey,f.hideEquipped);f.page=0;render()};
+  find('[data-hide-details]').onchange=e=>{f.hideDetails=e.target.checked;saveHideEquipped(storage,preferenceKey+':details',f.hideDetails);render()};
   panel.querySelectorAll('[data-filter]').forEach(el=>el.onchange=()=>{f[el.dataset.filter]=el.value;f.page=0;render()});
   render();
 }

@@ -287,3 +287,7 @@ This produces approximately 20% at Loyalty 0, 11.25% at 25, 5% at 50, 1.25% at 7
 Independent behavior should remain intelligible rather than randomly malicious. A cautious unit may Guard or seek cover, a compassionate unit may rescue an ally, an ambitious unit may pursue a valuable objective, and a hostile captive may attempt extraction. Before confirming a command, the UI should show the current obedience percentage and any visible reason for unusual resistance. Charm, Confuse, Berserk, Fear, and enemy control remain separate status mechanics and never masquerade as Loyalty.
 
 Loyalty changes through consequential events, not repetitive gifts: surviving missions together, rescue, fair reward, personal quests, compatible decisions, abandonment, friendly fire, broken promises, faction conflict, and mistreatment. Gains and losses should be capped per mission to prevent instant farming or a single incidental action permanently ruining a character.
+
+## Map camera QoL (2026-10-01)
+
+Battles and defense preparation open in Fit map mode: preserve the map aspect ratio and choose the largest size that fits both the available width and remaining screen height. A narrower sidebar gives the field more room. Fit map responds to window resizing. Zoom buttons leave fit mode and enlarge or shrink the actual current map size; the 50% view button restores the old fixed tile scale. Larger zooms remain scrollable. Small windows stack the sidebar below the map. This changes presentation only, not tile movement or targeting.

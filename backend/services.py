@@ -21,6 +21,7 @@ from .models import GuildConfig, MissionInstance, PlayerState
 from .settings import settings
 from .mission_decisions import initial_scene, decision_view, advance_scene, setup_encounter
 from .mission_loot import scene_reward_template
+from .reward_visibility import public_reward_preview
 from .economy import POINT_COST
 from .combat import _advance_to_player
 
@@ -393,7 +394,7 @@ def mission_summary(row: MissionInstance, include_result: bool = False, viewer_r
         "combat_critical_condition": m.get("combat_critical_condition"),
         "critical_success_available": bool((row.analysis or {}).get("critical_success_available", not m.get("critical_any"))),
         "requirements": [r.get("label", "Requirement") for r in m.get("claim_requirements", [])],
-        "reward_preview": m.get("reward_preview", []),
+        "reward_preview": public_reward_preview(m),
         "mission_form": m.get("mission_form", "operation"),
         "objective": m.get("objective", ""),
         "resolution_mode": m.get("resolution_mode", "roll"),

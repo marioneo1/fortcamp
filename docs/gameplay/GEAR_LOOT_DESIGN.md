@@ -60,3 +60,9 @@ Nonexclusive new equipment enters mixed general caches and suitable Goblin, Proc
 **Proficiencies** are Basic → Skilled → Expert → Master training tracks. **Perks** are distinctive traits, backgrounds, racial traits and equipment-granted properties. Internal saved `perks` track fields and existing endpoints remain compatible to preserve progress.
 
 The equipment browser is under Roster → Equipment. It pages item types, stacks duplicates, searches names/elements/abilities, filters by slot/rarity, sorts, identifies owners and supports named transfers and quick unequip. On-mission equipment stays locked; injured characters can change gear. Comparisons show attribute/weapon-power differences, not a universal gear score. Granted effects include the actual bounded equipment rules. A dedicated shared armory, loadouts, consumable actions and further branch-specific pools remain future passes.
+
+## Equipment and briefing QoL (2026-10-01)
+
+Spare gear stats, abilities and perks start expanded. Hide gear details is separate from Hide equipped gear and persists per player/server in browser storage. Equipped slots have Gear effects disclosures and a hover summary on the name. Attributes, CON and the mission DPS rating explain their actual formulas on hover or keyboard focus. Perk help uses a viewport-clamped panel rather than inheriting the rounded tag layout.
+
+Contract summaries conceal undisclosed exclusive item names and drop percentages, replacing duplicate spoilers with equipment discovery hints. An item explicitly named in the description/objective, or authored in disclosed_rewards, stays named as a possible recovery. Paid rewards and ordinary reward categories remain visible; no actual loot rolls were changed. All three briefing views use the same server-filtered preview.

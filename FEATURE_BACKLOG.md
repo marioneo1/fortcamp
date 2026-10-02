@@ -95,3 +95,12 @@ See docs/gameplay/GEAR_LOOT_DESIGN.md and docs/art/EQUIPMENT_ICON_PIPELINE.md fo
 Implemented: loyalty-based independent-turn chance, stable personalities (12 tropes / seven shared policies), individual meal tastes, roster conversations and service records, eight factual memories, prepared-meal gifts with six-hour cooldown, Effekseer death splash and magic projectile. docs/INDEX.md and AGENTS.md upkeep rules added. Durable completion notices with reconnect retry; Dev still needs `/fortcamp_setup` in its own channel.
 
 Deferred: deeper debriefs and Champion voices, item/trinket gifts and crafter recipes, relationship events/rivalries, adult SFW family/relationship design, award ceremonies and in-game handbook. See docs/design/CHARACTER_RELATIONSHIPS.md. No free-form conversational AI or retrospective statistics.
+
+## Completed: contract, equipment and map QoL (2026-10-01)
+
+- Click outside the contract dialog to close it without abandoning a saved mission.
+- Equipped gear effects; spare item effects visible by default; independently saved Hide gear details setting.
+- Viewport-clamped perk/attribute formula help; Service Record moved out of Conversation.
+- Fit map camera for combat and preparation; preserve proportions and manual scrolling at larger zooms.
+- Hidden unique rewards no longer advertised by name or numerical drop chance unless the briefing discloses them.
+- Validation: 226 backend tests, 94 frontend tests, production build; isolated real-browser checks for fit, zoom, gear preferences, tooltips, record placement and outside dismissal. No release/save changes.

@@ -34,3 +34,7 @@ Damage per turn is total damage divided by started activations, not real-time DP
 6. In-game handbook, contextual rule explanations and discovery pages; keep secret requirements out of public help.
 
 AGENTS.md requires documentation/backlog updates in the same feature pass. docs/INDEX.md is the document map and glossary. Repository instructions handle this more reliably than a separate skill that may not be invoked.
+
+## Roster presentation (2026-10-01)
+
+Career statistics now live in a separate Service Record tab. Conversation contains personality, loyalty, topics and meal gifts. Statistics and conversation behavior are unchanged.
