@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## Completed October 2: Short T stems and forge corner alignment
+
+Fixed in dev: independent corner-axis alignment and matching clipped wall sleeves beneath short corner/T connection ends, including rotation and destruction cleanup. No stretched images, new collision or regenerated art. Added an enlarged four-material comparison tool and browser check. Canonical references: docs/design/WALL_BOUNDARIES.md and BUILDING_TEMPLATES.md. Validation: 106 frontend tests, build, all authored-map browser checks and enlarged four-material previews pass. Production untouched.
+
 ## Completed October 2: Wall boundaries and material-specific building kits
 
 Implemented in dev: walkable interior floor beside edge walls/corners, blocked crossing/sight, full-tile centered dividers, real divider-to-shell T joins and boundary-aware gate/pursuit/escape behavior. Generated four complete 16-piece atlases, one per material, with matching walls, doors and gates; installed versioned art and preserved legacy sources/IDs. Canonical references: docs/design/WALL_BOUNDARIES.md and BUILDING_TEMPLATES.md. Validation: 323 backend tests, 103 frontend tests, build/browser checks and 83-encounter art audit pass. Remaining: more material-specific buildings, stair interactions and live balance/visual review. Production untouched.

@@ -1,5 +1,9 @@
 # Reusable building templates — implemented in dev
 
+## Current join repair (October 2)
+
+Corner arms now have independent display offsets, and clipped matching wall sections fill short corner/T ends. This fixes forge corner drift and divided-store stem gaps while preserving image proportions, rotated placement and existing collision. No new asset generation is needed. The installer maintains the shared geometry manifests; source art is unchanged. Enlarged material comparison: tools/build_wall_join_preview.py. See WALL_BOUNDARIES.md for details and current validation (106 frontend tests plus build/browser checks).
+
 Building plans are separate from battlefield plans. `backend/building_templates.py` defines local rooms, doors, breaches, dividers, furniture, courtyard paving and enemy spawn candidates. `place_building(template_id, anchor, instance_id, rotation)` in `backend/location_maps.py` places a complete instance at any map anchor, with 0/90/180/270-degree rotation. It returns a fragment; it does not own mission rewards, enemy budgets, exits or victory conditions. Distinct instance prefixes prevent ID collisions when a future map places multiple buildings.
 
 Rectangular room footprints form a union. Overlapping rooms lose shared internal walls; exposed edges select straight or convex corner pieces, and inward bends get concave joins. Explicit doors and breaches replace wall cells. Furniture and spawn candidates follow the same transform as the shell. Map dimensions accommodate the selected footprint rather than squeezing every building into the old rectangle. Ground is painted only under the building and its defined yard, preserving the outline.

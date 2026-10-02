@@ -37,6 +37,10 @@ def main():
         if not horizontal or not vertical:raise ValueError(f'{family}: incomplete corner')
         cy=sum(horizontal)/len(horizontal)/384;cx=sum(vertical)/len(vertical)/384
         geometry[family]={'join_offset':round(((cx-.5)+(.5-cy))/2*1.25,4)}
+        # The generated corner arms need independent alignment, not one averaged
+        # shift. Preserve aspect ratio; the renderer sleeves any short ends.
+        geometry[family]['corner_offset']=[round(geometry[family]['join_offset']-(cx-.5)*1.25,4),
+            round(-geometry[family]['join_offset']-(cy-.5)*1.25,4)]
         junction=sprites['edge_junction'].getchannel('A')
         top=[y for y in range(192) for x in range(32,145) if junction.getpixel((x,y))>100]
         stem=[x for x in range(96,288) for y in range(240,345) if junction.getpixel((x,y))>100]
@@ -55,6 +59,7 @@ def main():
     for old,new in aliases.items():registry['structure:'+old]=registry['structure:'+new]
     registry_path.write_text(json.dumps(registry,indent=2)+'\n')
     (ROOT/'backend/building_art_geometry.json').write_text(json.dumps(geometry,indent=2)+'\n')
+    (ROOT/'frontend/src/building-art-geometry.json').write_text(json.dumps(geometry,indent=2)+'\n')
     (SOURCE/'extraction.json').write_text(json.dumps(report,indent=2)+'\n')
     print(f'Installed {len(report)} material-specific building parts; geometry: {geometry}')
 

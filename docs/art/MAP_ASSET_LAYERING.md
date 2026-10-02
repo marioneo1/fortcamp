@@ -1,5 +1,9 @@
 # Map Asset Layering
 
+## Current connection repair (October 2)
+
+Generated corner/T silhouettes remain unchanged. Each corner has independent x/y calibration in building-art-geometry.json; matching straight-wall textures are clipped and drawn beneath short connection ends. These sleeves keep the original beam thickness and vanish with the parent. The installer writes the frontend geometry manifest as well as the backend copy. Enlarged comparison and exact rules: docs/design/WALL_BOUNDARIES.md, tools/build_wall_join_preview.py and tools/wall_join_browser_qa.mjs.
+
 ## Current building library: material-specific kits (October 2)
 
 The active library is structures/building-v2: four 16-piece atlases, generated separately for timber, rough fieldstone, polished limestone and iron. Each material includes its own matching walls, corners, T/cross joins, door/gate state pairs and supporting pieces. Sources, exact prompts and extraction report: staging-terrain/building-toolset-v2. Install with tools/install_material_building_toolsets.py; complete alpha silhouettes preserve proportions and paired gate anchors. Geometry includes per-material corner offsets and perimeter-T offsets. Existing libraries are preserved as legacy. New building collision follows docs/design/WALL_BOUNDARIES.md; other props/furniture and terrain packs remain separate.

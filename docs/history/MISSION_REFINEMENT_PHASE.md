@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Repair visible T and corner gaps
+
+User screenshots exposed shortened T stems, unequal corner arms and averaged-axis drift in the new generated structural pack. Added independent corner offsets to the reproducible material installer and synchronized backend/frontend geometry. The renderer now uses clipped sections of each material's existing straight wall beneath connection ends; no raster stretching/regeneration, health/collision changes or save migration. Sleeves rotate with parents and disappear when destroyed. Enlarged comparison screenshots confirm connected timber and forge stone joins; all four materials use the same repair. 106 frontend tests, frontend build, all authored-layout browser checks and enlarged real-CSS checks passed. Production untouched.
+
 ## 2026-10-02: Edge walls, T-junctions and four complete material atlases
 
 Replaced full-tile collision for newly authored perimeter walls with bidirectional edge boundaries. Corners keep usable interior floors; centered dividers still occupy their tiles. Both divided buildings now connect their partitions to the shell with T pieces. Movement, melee/ranged sight, gate use, enemy pursuit and panic routes agree on boundaries; existing saved battles retain legacy collision. Direct wall-floor clicks move while body context menus remain available.
