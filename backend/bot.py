@@ -91,20 +91,25 @@ class FortcampBot(commands.Bot):
         except discord.HTTPException as exc:
             print(f"Discord pool announcement failed for guild {guild_id}: {exc}")
 
-    async def announce_result(self, row: MissionInstance) -> None:
+    async def announce_result(self, row: MissionInstance) -> bool:
         async with SessionLocal() as session:
             config = await session.get(GuildConfig, row.guild_id)
         if not config or not config.announcement_channel_id or not row.claimed_by_user_id or not row.result:
-            return
+            return False
         channel = self.get_channel(int(config.announcement_channel_id))
-        if not isinstance(channel, discord.abc.Messageable):
-            return
+        if channel is None:
+            try:channel=await self.fetch_channel(int(config.announcement_channel_id))
+            except discord.HTTPException:return False
+        if not isinstance(channel, discord.abc.Messageable) or str(getattr(getattr(channel,"guild",None),"id",""))!=row.guild_id:
+            return False
         outcome = row.result.get("outcome", "completed").replace("_", " ").title()
         try:
             await channel.send(f"<@{row.claimed_by_user_id}> **{row.result.get('mission', 'Mission')}** finished: **{outcome}**. Open Fortcamp for the full result.")
+            return True
         except discord.HTTPException as exc:
             print(f"Discord result announcement failed for guild {row.guild_id}: {exc}")
 
+            return False
 
 bot = FortcampBot()
 

@@ -40,6 +40,7 @@ from .services import (
     force_pool_refresh, get_battle_instance, get_player, mission_summary, pool_event, pool_slot, resolve_due,
     spawn_private_contract, update_battle_instance,
 )
+from .notifications import dispatch_results
 from .settings import settings
 from .economy import camp_action, trade_view, purchase
 from .services import reserve_instance, abandon_reservation, claim_budget
@@ -54,6 +55,16 @@ Image.MAX_IMAGE_PIXELS = 25_000_000
 _bot_task: asyncio.Task | None = None
 _scheduler_task: asyncio.Task | None = None
 _bot = None
+_notice_tasks: set[asyncio.Task] = set()
+
+
+def request_notice_delivery(mission_ids):
+    if not _bot or not _bot.is_ready():return
+    async def send():
+        try:await dispatch_results(_bot,mission_ids)
+        except Exception as exc:print(f"notice delivery deferred: {type(exc).__name__}")
+    task=asyncio.create_task(send());_notice_tasks.add(task)
+    task.add_done_callback(_notice_tasks.discard)
 
 
 async def scheduler_loop() -> None:
@@ -72,8 +83,7 @@ async def scheduler_loop() -> None:
             if _bot and _bot.is_ready():
                 for guild_id, missions in created_batches:
                     await _bot.announce_pool(guild_id, missions)
-                for row in resolved_rows:
-                    await _bot.announce_result(row)
+                await dispatch_results(_bot)
         except Exception as exc:
             print(f"scheduler error: {exc}")
         await asyncio.sleep(10)
@@ -101,6 +111,7 @@ async def lifespan(app: FastAPI):
 
         _bot_task.add_done_callback(_report_bot_exit)
     yield
+    for task in list(_notice_tasks):task.cancel()
     if _scheduler_task:
         _scheduler_task.cancel()
     if _bot:
@@ -454,6 +465,29 @@ async def equip(req: EquipRequest, identity: IdentityDep):
     finally:
         await session.close()
 
+
+class RelationshipRequest(BaseModel):
+    action: str = "talk"
+    topic: str = "recent"
+    meal: str | None = None
+
+
+@app.post("/api/characters/{character_id}/conversation")
+async def character_conversation(character_id: str,req: RelationshipRequest,identity: IdentityDep):
+    from .relationships import conversation
+    from .services import _player_locks
+    lock=_player_locks.setdefault((identity.guild_id,identity.user_id),asyncio.Lock())
+    async with lock:
+        session,row=await locked_player(identity)
+        try:
+            state=normalize_state(deepcopy(row.state))
+            reply=conversation(state,character_id,req.action,req.topic,req.meal)
+            row.state=state;row.updated_at=int(time.time())
+            await session.commit()
+            return {"state":state,"reply":reply}
+        except ValueError as exc:
+            await session.rollback();raise HTTPException(400,str(exc))
+        finally:await session.close()
 
 @app.post("/api/prisoners/{prisoner_id}/action")
 async def prisoner_action(prisoner_id: str, req: PrisonerActionRequest, identity: IdentityDep):
@@ -825,6 +859,7 @@ async def mission_claim(mission_id: str, req: PartyRequest, identity: IdentityDe
                     decision = await get_decision_instance(session, identity.guild_id, identity.user_id, mission_id)
         except ValueError as exc:
             raise HTTPException(409, str(exc))
+    request_notice_delivery([mission.id])
     return {"mission": mission_summary(mission,include_result=True), "decision": decision, "message": "Contract saved to Private Contracts." if mission.status=='reserved' else 'Expedition started.'}
 
 
@@ -848,6 +883,7 @@ async def mission_choose(mission_id: str, req: MissionChoiceRequest, identity: I
                 response=await choose_decision_instance(session,identity.guild_id,identity.user_id,mission_id,req.node_id,req.revision,req.choice_id)
         except ValueError as exc:
             raise HTTPException(409,str(exc))
+    request_notice_delivery([mission_id])
     return response
 
 
@@ -877,7 +913,7 @@ async def battle_command(mission_id: str, req: CombatCommandRequest, identity: I
             raise HTTPException(400, str(exc))
     if completed_mission and _bot and _bot.is_ready():
         try:
-            await _bot.announce_result(completed_mission)
+            request_notice_delivery([completed_mission.id])
         except Exception as exc:
             print(f"battle result announcement error: {exc}")
     return {"battle": battle, "result": result}
@@ -899,7 +935,7 @@ async def battle_auto(mission_id: str, req: CombatAutoRequest, identity: Identit
             raise HTTPException(400, str(exc))
     if completed_mission and _bot and _bot.is_ready():
         try:
-            await _bot.announce_result(completed_mission)
+            request_notice_delivery([completed_mission.id])
         except Exception as exc:
             print(f"battle result announcement error: {exc}")
     return {"battle": battle, "result": result}
@@ -922,7 +958,7 @@ async def debug_complete_mission(mission_id: str, req: DebugCompleteRequest, ide
             raise HTTPException(400, str(exc))
     if _bot and _bot.is_ready():
         try:
-            await _bot.announce_result(mission)
+            request_notice_delivery([mission.id])
         except Exception as exc:
             print(f"debug result announcement error: {exc}")
     return {"mission": mission_summary(mission, include_result=True), "result": mission.result}
@@ -944,7 +980,7 @@ async def debug_resolve_mission_now(mission_id: str, identity: IdentityDep):
             raise HTTPException(400, str(exc))
     if mission.result and _bot and _bot.is_ready():
         try:
-            await _bot.announce_result(mission)
+            request_notice_delivery([mission.id])
         except Exception as exc:
             print(f"debug result announcement error: {exc}")
     return {"mission": mission_summary(mission, include_result=True), "result": mission.result}
@@ -963,7 +999,7 @@ async def active_missions(identity: IdentityDep):
     if _bot and _bot.is_ready():
         for row in resolved_rows:
             try:
-                await _bot.announce_result(row)
+                request_notice_delivery([row.id])
             except Exception as exc:
                 print(f"mission result announcement error: {exc}")
     return {"missions": [mission_summary(x, include_result=True) for x in rows]}

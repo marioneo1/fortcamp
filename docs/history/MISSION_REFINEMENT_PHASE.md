@@ -307,3 +307,12 @@ Removed automatic critical success from high totals and natural twenties. Rolled
 ## October 1: critical soft caps and diminishing returns
 
 Replaced the previous hard critical ceilings with soft caps. Extreme E/D/C stat advantages can reach genuine 100%, including an explicit natural-one mastery exception. C requires vastly more advantage. Pure-stat B remains below 50%, A below 10%, S at most 5%; rare A/S reach their useful soft caps sooner. Added precise percentile confirmation and readable two-decimal UI odds. Criteria and independent loot rolls remain unchanged; future special limit-breaking effects remain a separate design pass. See `docs/gameplay/CRITICAL_SUCCESS_BALANCE.md` for curves and achievable-vs-long-term limits.
+
+
+## October 1: loyalty, companion records and combat VFX trial
+
+Implemented once-per-activation loyalty checks, stable tropes/shared independent AI policies, character-specific tastes and first roster conversation/meal-gift UI. Added forward-only service records and eight owned expedition memories, champion-specific behavior/voice override seam, and durable mission-result notice delivery for all completion paths. Dev save inspection found two completed Wolves at the Fence missions and no configured announcement channel; `/fortcamp_setup` remains required in the Dev server. No retrospective announcements were queued.
+
+Native Effekseer 1.70e finite death splash and magic projectile compiled from source projects with procedural textures. Pre-hit token briefly flashes/fades before corpse marker. Existing sounds remain; native WebGL/actual roster browser fixture checks passed without runtime errors, with explicit fallback/reduced-motion behavior. Added docs/INDEX.md and repository AGENTS.md update rules. Future relationships, rivalries, awards and handbook remain documented design stages.
+
+Validation: 224 backend tests and 92 frontend tests passed; production build passed. Isolated real-browser QA confirmed native Effekseer rendering mode, two effect events, idle cleanup, actual Conversation tab and food discovery, without runtime errors. Discord delivery was tested with mocks; live Dev channel setup is still required. Existing saves keep explicit loyalty and completed historical results; new counters do not backfill old encounters.

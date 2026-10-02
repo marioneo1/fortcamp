@@ -1,4 +1,5 @@
 from __future__ import annotations
+from .notifications import queue_result_notice
 import asyncio
 import hashlib
 import random
@@ -539,6 +540,9 @@ async def claim_instance(
             if branch_triggered:
                 combat_definition = branch_definition
         deployed_party_ids = [*resolved_party_ids, *analysis.get("bodyguard_ids", [])]
+        from .relationships import record_mission_start
+        record_mission_start(state,deployed_party_ids)
+        analysis["service_record_started"]=True
         if has_scene:
             analysis['scene'] = initial_scene()
         elif combat_definition:
@@ -637,6 +641,7 @@ async def choose_decision_instance(session: AsyncSession, guild_id: str, user_id
             set_party_status(state,list(analysis.get('bodyguard_ids',[])),'idle')
             await _spawn_result_chains(session,mission,user_id,result,now_ts())
             mission.result=result;mission.status='completed';mission.resolved_at=now_ts();mission.completes_at=now_ts()
+            await queue_result_notice(session,mission)
         player.state=state;player.updated_at=now_ts()
         await session.flush()
         return {'mission':mission_summary(mission),'decision':decision_view(state,template,analysis) if mission.status=='decision' else None,'result':result}
@@ -1161,6 +1166,8 @@ async def _finish_battle(
     )
     result['debug_forced']=False
     set_party_status(state, list(analysis.get("bodyguard_ids", [])), "idle")
+    from .relationships import record_battle
+    record_battle(state,battle)
     recovered_ids = set(battle.get("auto_looted_ids", []))
     corpse_loot = []
     loot_rng = random.Random(f"{mission.id}:corpse-loot")
@@ -1253,6 +1260,7 @@ async def _finish_battle(
     await _spawn_result_chains(session, mission, mission.claimed_by_user_id, result, now_ts())
     player.state = state; player.updated_at = now_ts()
     mission.result = result; mission.status = "completed"; mission.completes_at = now_ts(); mission.resolved_at = now_ts()
+    await queue_result_notice(session,mission)
     await session.flush()
     return result
 
@@ -1342,6 +1350,7 @@ async def resolve_due(session: AsyncSession, guild_id: str | None = None, user_i
             mission.result = result
             mission.status = "completed"
             mission.resolved_at = now
+            await queue_result_notice(session,mission)
             resolved.append(mission)
         except Exception as exc:  # keep scheduler alive and make failure visible
             mission.status = "error"
@@ -1386,6 +1395,7 @@ async def debug_resolve_now_instance(
     mission.status = "completed"
     mission.completes_at = now
     mission.resolved_at = now
+    await queue_result_notice(session,mission)
     await session.flush()
     return mission
 
@@ -1461,5 +1471,6 @@ async def debug_complete_instance(
     mission.status = "completed"
     mission.completes_at = now
     mission.resolved_at = now
+    await queue_result_notice(session,mission)
     await session.flush()
     return mission

@@ -88,3 +88,10 @@ Effekseer Goblin fire is authored, compiled and browser-tested using the real WA
 See docs/gameplay/GEAR_LOOT_DESIGN.md and docs/art/EQUIPMENT_ICON_PIPELINE.md for the rules and asset workflow.
 
 - October 1 responsiveness follow-up: valid movement clicks now immediately redirect local walking using server-validated routes, without waiting for network replies. Older replies cannot undo newer input; failed moves restore the authoritative position. Tested with 400 ms simulated latency. Continue actual Discord/device review.
+
+
+## October 1 relationship / combat-effects foundation
+
+Implemented: loyalty-based independent-turn chance, stable personalities (12 tropes / seven shared policies), individual meal tastes, roster conversations and service records, eight factual memories, prepared-meal gifts with six-hour cooldown, Effekseer death splash and magic projectile. docs/INDEX.md and AGENTS.md upkeep rules added. Durable completion notices with reconnect retry; Dev still needs `/fortcamp_setup` in its own channel.
+
+Deferred: deeper debriefs and Champion voices, item/trinket gifts and crafter recipes, relationship events/rivalries, adult SFW family/relationship design, award ceremonies and in-game handbook. See docs/design/CHARACTER_RELATIONSHIPS.md. No free-form conversational AI or retrospective statistics.

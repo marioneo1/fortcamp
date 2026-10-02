@@ -2,7 +2,7 @@
 import {burningSources} from './burning-scene.js';
 const ROOT='/vendor/effekseer-1.70e/';
 let runtimePromise;
-function loadRuntime(){
+export function loadEffekseerRuntime(){
   if(!runtimePromise)runtimePromise=new Promise((resolve,reject)=>{
     const script=document.createElement('script');script.src=ROOT+'effekseer.js';
     script.onerror=()=>reject(Error('Effekseer script failed to load'));
@@ -11,7 +11,7 @@ function loadRuntime(){
   });
   return runtimePromise;
 }
-export async function createEffekseerFire(renderer,width,height,{load=loadRuntime,isCancelled=()=>false}={}){
+export async function createEffekseerFire(renderer,width,height,{load=loadEffekseerRuntime,isCancelled=()=>false}={}){
   const runtime=await load();if(isCancelled())throw Error('Effekseer initialization cancelled');
   const context=runtime.createContext();
   if(!context)throw Error('Effekseer context unavailable');

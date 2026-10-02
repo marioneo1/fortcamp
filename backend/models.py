@@ -65,3 +65,11 @@ class MissionInstance(Base):
     result: Mapped[dict | None] = mapped_column(JSON, nullable=True)
     resolved_at: Mapped[int | None] = mapped_column(BigInteger, nullable=True)
     error_text: Mapped[str | None] = mapped_column(Text, nullable=True)
+
+
+class MissionResultNotice(Base):
+    __tablename__ = "mission_result_notices"
+    mission_id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    status: Mapped[str] = mapped_column(String(16), default="pending", nullable=False)
+    lease_until: Mapped[int] = mapped_column(BigInteger, default=0, nullable=False)
+    attempts: Mapped[int] = mapped_column(default=0, nullable=False)

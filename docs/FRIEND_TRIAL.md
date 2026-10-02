@@ -69,3 +69,6 @@ Future targeted resets: stop the release and run `tools/reset_player.py --databa
 ## Browser play
 
 Website login and a server picker are available in the new source. See [WEB_PLAY.md](WEB_PLAY.md) for the exact Discord OAuth redirects, separate dev application setup and credential-safe release update. Current pinned releases need a newly prepared version to gain this feature; their credentials/saves are preserved.
+
+
+Mission completion notices use the same server channel for browser and Activity. Run `/fortcamp_setup` in the desired channel for each environment/server. New results queue after their save transaction and retry while the bot reconnects or a channel is missing; historical results are not reposted automatically. Normal dispatch is leased to avoid duplicate sends; a crash after Discord accepted a message but before its receipt is saved can still produce a retry (at-least-once delivery). Discord HTTP waits do not block the mission completion response.

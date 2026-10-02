@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import random
+from .relationships import ensure_character, independence_check, independent_chance, personality_profile
 import heapq
 from copy import deepcopy
 
@@ -307,7 +308,11 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
         "special": special, "skills":skills, "special_used": False, "guarding": rules.get('opening_guard',False),
         "moved": False, "acted": False, "alive": True, "conscious": True, "condition": "active",
         "statuses": ([{'id':'lifeline_ready'}] if rules.get('lifeline') else []), "carrying": None, "carrying_object": None, "carried_by": None, "panicked": False, "fled": False,
-        "loyalty": 100 if character.get("is_player") or character["id"] == "player" else int(character.get("loyalty", 100)),
+        "loyalty": ensure_character(character)["loyalty"],
+        "personality_id": character["personality_id"],
+        "personality_override": deepcopy(character.get("personality_override", {})),
+        "combat_record": {"kills":0,"subdues":0,"times_defeated":0,"total_damage":0,"combat_turns":0,"highest_turn_damage":0},
+        "turn_damage": 0,
         "player_avatar": bool(character.get("is_player") or character["id"] == "player"),
     }
 
@@ -1044,6 +1049,10 @@ def _current_unit(battle: dict) -> dict | None:
             stamp = [battle["round"], battle["turn_index"]]
             if unit.get("status_activation") != stamp:
                 unit["status_activation"] = stamp
+                if unit.get("team")=="player":
+                    facts=unit.setdefault("combat_record",{})
+                    facts["combat_turns"]=facts.get("combat_turns",0)+1
+                    unit["turn_damage"]=0
                 if any(s.get("id") in {"burn", "poison"} and "turns" in s for s in unit.get("statuses", [])):
                     _tick_gear_statuses(battle, unit)
                     _check_end(battle)
@@ -1111,7 +1120,8 @@ def _deal_damage(
         damage = max(1, damage // 2)
         target["guarding"] = False
         _record_sound(battle, "shield_block", offset=185)
-    target["hp"] = max(0, int(target["hp"]) - damage)
+    previous_hp = int(target["hp"])
+    target["hp"] = max(0, previous_hp - damage)
     if target['hp']==0 and intent!='nonlethal' and target.get('gear_rules',{}).get('lifeline') and not target.get('lifeline_used'):
         target['hp']=1;target['lifeline_used']=True
         target['statuses']=[s for s in target.get('statuses',[]) if s.get('id')!='lifeline_ready']+[{'id':'lifeline_spent'}]
@@ -1157,6 +1167,21 @@ def _deal_damage(
             carried_object.update({"x": target["x"], "y": target["y"], "state": "ground", "carried_by": None})
             target["carrying_object"] = None
             target.pop("carried_payload_penalty", None)
+    source=battle.get("units",{}).get(attacker.get("id"))
+    if source and source.get("team")=="player":
+        facts=source.setdefault("combat_record",{})
+        actual=max(0,previous_hp-int(target["hp"]))
+        facts["total_damage"]=facts.get("total_damage",0)+actual
+        source["turn_damage"]=source.get("turn_damage",0)+actual
+        facts["highest_turn_damage"]=max(facts.get("highest_turn_damage",0),source["turn_damage"])
+        if previous_hp>0 and target.get("condition") in {"dead","unconscious"}:
+            key="kills" if target["condition"]=="dead" else "subdues"
+            facts[key]=facts.get(key,0)+1
+    if previous_hp>0 and target.get("condition") in {"dead","unconscious"}:
+        facts=target.setdefault("combat_record",{})
+        facts["times_defeated"]=facts.get("times_defeated",0)+1
+        if target["condition"]=="dead":
+            battle.setdefault("animation_events",[]).append({"type":"death_burst","unit_id":target["id"],"x":target["x"],"y":target["y"],"race":target.get("race","Human")})
     return damage
 
 
@@ -1419,7 +1444,9 @@ def _record_melee_animation(battle: dict, attacker: dict, target: dict, hit: boo
                 {"name": ("arrow_hit" if ranged else "magic_hit") if hit else "attack_miss", "offset": 220}]
         if hit and target.get("condition") in {"dead", "unconscious"}:
             cues.append({"name": "unit_death" if target["condition"] == "dead" else "unit_unconscious", "offset": 350})
-        battle.setdefault("animation_events", []).append({"type": "sound", "cues": cues, "duration": 490})
+        if not ranged:
+            battle.setdefault("animation_events", []).append({"type":"magic_projectile", "attacker_id":attacker["id"],"target_id":target["id"],"from":{"x":attacker["x"],"y":attacker["y"]},"to":{"x":target["x"],"y":target["y"]},"hit":hit})
+        battle.setdefault("animation_events", []).append({"type":"sound", "cues":cues, "duration":490})
         return
     battle.setdefault("animation_events", []).append({
         "type": "melee_attack", "attacker_id": attacker["id"], "target_id": target["id"], "hit": bool(hit),
@@ -1618,9 +1645,53 @@ def _advance_to_player(battle: dict) -> None:
                 _flee_turn(battle, unit)
                 safety += 1
                 continue
+            if independence_check(battle,unit):
+                _independent_turn(battle,unit)
+                safety += 1
+                continue
             return
         _enemy_turn(battle, unit)
         safety += 1
+
+
+def _independent_turn(battle: dict,unit: dict) -> None:
+    profile=personality_profile(unit)
+    behavior=profile[2]
+    battle["log"].append(f"{unit['name']} acts independently ({unit.get('loyalty',100)} loyalty; {profile[0]}).")
+    unit["independent_actions"]=unit.get("independent_actions",0)+1
+    if behavior=="coward" or (behavior=="survival" and unit["hp"]<=unit["max_hp"]*.35):
+        _flee_turn(battle,unit)
+        return
+    if behavior in {"guardian","survival"}:
+        allies=[u for u in _living(battle,"player") if u["id"]!=unit["id"]]
+        enemies=_living(battle,"enemy")
+        reachable=_reachable(battle,unit,unit["move"])
+        if reachable:
+            if behavior=="guardian" and allies:
+                ally=min(allies,key=lambda u:(u["hp"]/u["max_hp"],_distance(unit,u)))
+                point=min(reachable,key=lambda p:(abs(p[0]-ally["x"])+abs(p[1]-ally["y"]),reachable[p]))
+            else:
+                point=max(reachable,key=lambda p:(min((abs(p[0]-e["x"])+abs(p[1]-e["y"]) for e in enemies),default=0),_tile_height(battle,*p),-reachable[p]))
+            _move_to_nearest_tile(battle,unit,[{"x":point[0],"y":point[1]}])
+        _guard(battle,unit);unit["acted"]=True;_finish_turn(battle)
+        return
+    if behavior=="merciful":
+        enemies=_living(battle,"enemy")
+        if enemies and unit.get("nonlethal_capable"):
+            target=min(enemies,key=lambda u:(_distance(unit,u),u["hp"]))
+            if not _can_attack(battle,unit,target,1):_move_toward(battle,unit,target)
+            if _can_attack(battle,unit,target,1):
+                hit,preview,roll=_attack_hits(battle,unit,target,"melee")
+                if hit:_deal_damage(battle,unit,target,preview["damage_bonus"]-1,intent="nonlethal")
+                _record_melee_animation(battle,unit,target,hit,"melee")
+                battle["log"].append(f"{unit['name']} attempts to subdue {target['name']}.")
+            else:_guard(battle,unit)
+        else:_guard(battle,unit)
+        unit["acted"]=True;_finish_turn(battle)
+        return
+    unit["independent_style"]=behavior
+    _player_auto_turn(battle,unit,"objective" if behavior=="objective" else "balanced")
+    unit.pop("independent_style",None)
 
 
 def _guard(battle: dict,unit: dict) -> None:
@@ -1667,9 +1738,9 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
     auto_range = max([unit['attack_range']]+[s['range'] for s in available_skills])
     in_range = [candidate for candidate in targets if _can_attack(battle, unit, candidate, auto_range)]
     target_priority = lambda candidate: (
-        0 if tactic == "objective" and candidate.get("capture_role") == "live_target" else 1,
-        0 if candidate.get("kind") == "chieftain" else 1,
-        candidate["hp"],
+        0 if unit.get("independent_style")=="duelist" or (tactic == "objective" and candidate.get("capture_role") == "live_target") else 1,
+        0 if unit.get("independent_style")=="duelist" or candidate.get("kind") == "chieftain" else 1,
+        -candidate["max_hp"] if unit.get("independent_style")=="duelist" else candidate["hp"],
     )
     target = (
         min(in_range, key=target_priority)
@@ -2188,6 +2259,11 @@ def apply_player_command(battle: dict, command: dict) -> dict:
     unit = _current_unit(battle)
     if not unit or unit["team"] != "player":
         raise ValueError("It is not a player turn")
+    if independence_check(battle,unit):
+        _independent_turn(battle,unit)
+        _advance_to_player(battle)
+        battle["action_count"]+=1
+        return battle_view(battle)
     if action == "move":
         if unit.get("acted"):
             raise ValueError("This unit already committed its action")

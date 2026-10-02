@@ -21,6 +21,8 @@ from .races import RACE_CATALOG, RACE_FAMILIES, RACE_GAMEPLAY, REGIONAL_RECRUIT_
 
 from .outcome_balance import CRITICAL_SOFT_CAPS, CRITICAL_STAT_LIMITS, classify_roll, outcome_probabilities
 
+from .relationships import ensure_character, record_mission, PERSONALITIES
+
 GRID_W = 12
 GRID_H = 8
 
@@ -99,6 +101,7 @@ def new_game(character: dict[str, Any]) -> dict[str, Any]:
 def public_content() -> dict[str, Any]:
     return {
         "economy": public_economy({}),
+        "personalities": {key:{"name":value[0],"description":value[1]} for key,value in PERSONALITIES.items()},
         "buildings": BUILDINGS,
         "items": ITEMS,
         "slots": EQUIPMENT_SLOTS,
@@ -281,6 +284,7 @@ def normalize_state(state: dict) -> dict:
             char["hp"] = max(1, int(char.get("max_hp", 100)) // 2)
             char.pop("recovers_at", None)
             char.pop("recovery_location", None)
+        ensure_character(char)
         char.setdefault("attributes", {attribute: 5 for attribute in ATTRIBUTE_NAMES})
         char.setdefault("portrait_thumbnail", char.get("portrait", ""))
         char.setdefault("portrait_source", "override" if char.get("portrait") else "none")
@@ -1256,6 +1260,7 @@ def resolve_mission(state: dict, mission: dict, party_ids: list[str], analysis: 
         outcome = _classify_roll(die, total, difficulty, crit_threshold, critical_success_available, mission.get("rank", "E"), critical_roll)
 
     party = [find_char(state, cid) for cid in party_ids]
+    record_mission(state, mission, list(dict.fromkeys(party_ids + list(analysis.get("bodyguard_ids", [])))), outcome, analysis.get("service_record_started",False))
     special_events = []
     for evt in mission.get("special_events", []):
         if condition_met(state, party, evt.get("condition", {})):
@@ -1309,6 +1314,9 @@ def resolve_mission(state: dict, mission: dict, party_ids: list[str], analysis: 
             injured['recovers_at'] = injury['recovers_at'] = resolved_at + 120
             injured['recovery_location'] = injury['location'] = 'Beginner field rest'
         if injury:
+            if not analysis.get("battle"):
+                injured=find_char(state,injury["character_id"]);ensure_character(injured)
+                injured["service_record"]["times_defeated"]+=1
             awarded["injuries"].append(injury)
     elif outcome == "failure":
         for c in party:

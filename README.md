@@ -26,3 +26,6 @@ Generated portraits, terrain, UI artwork, sound effects, music, player databases
 Run frontend tests with `node --test src/*.test.js` from `frontend`, and build with `npm run build`. Python tests live under `tests`; use the project virtual environment. Do not run paid generation tools without reviewing their options and authorization.
 
 Public code repository: [marioneo1/fortcamp](https://github.com/marioneo1/fortcamp).
+
+
+Documentation: [system map and glossary](docs/INDEX.md), [current backlog](FEATURE_BACKLOG.md), [relationships](docs/design/CHARACTER_RELATIONSHIPS.md).
