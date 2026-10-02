@@ -65,8 +65,8 @@ for(const family of ['timber','fieldstone','limestone','iron']){
   battle.material_showcase.pieces.forEach(p=>shown.add(p));
   assert.ok((await evaluate('document.querySelector(".battle-lab-toolbar").textContent')).includes('MATERIAL TEST'));
   assert.ok(await evaluate('Boolean(document.querySelector(".lab-pieces"))'));
-  if(family==='fieldstone')assert.ok(await evaluate("Array.from(document.querySelectorAll('.has-prop-art')).some(e=>e.style.getPropertyValue('--battle-prop').includes('building-v3'))"));
-  await writeFile(`staging-terrain/building-toolset-v3/${family}-${index+1}-in-game.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
+  if(['fieldstone','limestone'].includes(family))assert.ok(await evaluate("Array.from(document.querySelectorAll('.has-prop-art')).some(e=>e.style.getPropertyValue('--battle-prop').includes('building-v4'))"));
+  await writeFile(`staging-terrain/building-toolset-v4/${family}-${index+1}-in-game.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
   await evaluate("document.querySelector('[data-lab-return]').click()");await wait();
  }
  assert.equal(shown.size,16,family);
@@ -76,5 +76,5 @@ assert.ok(await evaluate('document.querySelector(".battle-lab").getBoundingClien
 assert.ok(await evaluate('document.querySelector(".lab-workspace").scrollHeight>document.querySelector(".lab-workspace").clientHeight'));
 await writeFile('staging-ui/battle-lab/mobile.png',Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
 assert.deepEqual(errors,[]);
-console.log('PASS: 77 entries, original mission workflows and all 16 material layouts; each material covers all 16 pieces; stone uses v3 art; mobile layout');
+console.log('PASS: 77 entries, original mission workflows and all 16 material layouts; each material covers all 16 pieces; both stones use v4 art; mobile layout');
 await Promise.race([call('Browser.close'),new Promise(r=>setTimeout(r,1000))]);ws.close();

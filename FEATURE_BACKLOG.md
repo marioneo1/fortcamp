@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## Completed October 2: Regenerated stone and neighbor-aware wall columns
+
+Generated new rough/polished stone v4 kits with uncapped connecting bands and separate caps. Metal now uses its post-free middle texture at connected joins, preserving terminal columns at exposed ends. Matching rotated endpoints handles corners/branches, parallel walls, door states and destroyed neighbors; caps are visual only. New stone half ends have explicit half-cell length. Original packs preserved; timber unchanged. Canonical guidance: docs/art/MODULAR_WALL_GENERATION_GUIDE.md and docs/design/WALL_BOUNDARIES.md. Validation: 325 backend tests, 117 frontend tests, build, enlarged/16-layout browser checks and 99-preview art audit pass. Remaining: subjective live approval and stricter overhead door/gate art; stair gameplay remains deferred. Production untouched.
+
 ## Completed October 2: Connection geometry from all eight user snips
 
 Replaced unreliable whole corner/T/cross silhouette placement with exact clipped matching straight-wall assembly; preserved painted thickness/proportions, rotation, inward corners and gameplay. Fixed directional short-end attachment and separately calibrated damaged corners without filling their broken center. Enlarged review tool now covers six connection types in all rotations. Canonical reference: docs/design/WALL_BOUNDARIES.md. Validation: 109 frontend tests, build, seven targeted backend tests, four-material enlarged browser checks and all 16 Battle Lab layouts pass. No new art generation or production changes. Remaining: live subjective review, future structural styles and functional stairs.

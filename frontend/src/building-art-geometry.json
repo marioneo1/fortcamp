@@ -24,56 +24,61 @@
     ]
   },
   "fieldstone": {
-    "join_offset": 0.3326,
-    "wall_half_thickness": 0.1139,
+    "join_offset": 0.3247,
+    "wall_half_thickness": 0.0944,
+    "cap_mode": "pillar",
+    "cap_scale": 0.6636,
     "corner_offset": [
-      -0.0348,
-      -0.0348
+      -0.0364,
+      -0.0365
     ],
     "broken_corner_offset": [
-      0.0144,
-      0.0125
+      -0.0476,
+      0.0099
     ],
     "end_offset": [
-      0.1973,
+      -0.0111,
       0
     ],
     "breach_offset": [
       0,
-      0.0851
+      0.1115
     ],
     "junction_offset": [
-      0.004,
-      0.0132
+      -0.0002,
+      -0.0466
     ]
   },
   "limestone": {
-    "join_offset": 0.3693,
-    "wall_half_thickness": 0.1253,
+    "join_offset": 0.3118,
+    "wall_half_thickness": 0.1188,
+    "cap_mode": "pillar",
+    "cap_scale": 0.8721,
     "corner_offset": [
-      -0.0477,
-      -0.0478
+      -0.0627,
+      -0.0626
     ],
     "broken_corner_offset": [
-      -0.0332,
-      -0.0423
+      -0.0615,
+      -0.0097
     ],
     "end_offset": [
-      0.2396,
+      0.002,
       0
     ],
     "breach_offset": [
       0,
-      0.0365
+      0.0716
     ],
     "junction_offset": [
-      -0.0032,
-      -0.071
+      0.0161,
+      0.0056
     ]
   },
   "iron": {
     "join_offset": 0.3843,
     "wall_half_thickness": 0.1123,
+    "cap_mode": "trim",
     "corner_offset": [
       0.021,
       0.0209

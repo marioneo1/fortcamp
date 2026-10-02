@@ -19,15 +19,18 @@ def main():
     dest.mkdir(parents=True,exist_ok=True)
     report=[];geometry={}
     for family in FAMILIES:
-        source=ROOT/'staging-terrain/building-toolset-v3'/f'{family}.png'
-        version='building-v3' if source.exists() else 'building-v2'
+        source=ROOT/'staging-terrain/building-toolset-v4'/f'{family}.png'
+        version='building-v4'
+        if not source.exists():
+            source=ROOT/'staging-terrain/building-toolset-v3'/f'{family}.png'
+            version='building-v3' if source.exists() else 'building-v2'
         if not source.exists():source=SOURCE/f'{family}.png'
         dest=ROOT/f'frontend/public/assets/combat-terrain/structures/{version}'
         dest.mkdir(parents=True,exist_ok=True)
         cells=groups(Image.open(source).convert('RGBA'),4,4)
         common_scale=320/cells[0][0].width
         sprites={piece:centered(cut,min(common_scale,350/max(cut.size))
-                 if version=='building-v3' or piece in {'end','pillar','stairs','brace'} else None)
+                 if version in {'building-v3','building-v4'} or piece in {'end','pillar','stairs','brace'} else None)
                  for piece,(cut,_) in zip(PARTS,cells)}
         # Door/gate pairs share a scale and the fixed post centerline. Opening
         # may add a downward leaf, but must never shrink or move the posts.
@@ -47,6 +50,12 @@ def main():
         geometry[family]={'join_offset':round(((cx-.5)+(.5-cy))/2*1.25,4)}
         wall_bounds=sprites['wall'].getchannel('A').getbbox()
         geometry[family]['wall_half_thickness']=round((wall_bounds[3]-wall_bounds[1])/384*1.25/2,4)
+        if version=='building-v4':
+            pillar_bounds=sprites['pillar'].getchannel('A').getbbox()
+            geometry[family]['cap_mode']='pillar'
+            geometry[family]['cap_scale']=round((wall_bounds[3]-wall_bounds[1])/(pillar_bounds[2]-pillar_bounds[0])*1.25*1.08,4)
+        elif family=='iron':
+            geometry[family]['cap_mode']='trim'
         # The generated corner arms need independent alignment, not one averaged
         # shift. Preserve aspect ratio; the renderer sleeves any short ends.
         geometry[family]['corner_offset']=[round(geometry[family]['join_offset']-(cx-.5)*1.25,4),

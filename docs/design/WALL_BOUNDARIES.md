@@ -1,5 +1,13 @@
 # Wall boundaries — implemented in dev
 
+## October 2: Neighbor-aware caps and regenerated stone kits
+
+Rough fieldstone and polished limestone now select new building-v4 atlases with plain connecting bands and separate end-cap pillars. End columns no longer repeat at every stone join. Metal keeps its source artwork but uses post-free center strips for the connected band; original terminal columns appear only at exposed endpoints. Timber is unchanged. This supersedes the earlier source selections below.
+
+Caps are chosen by matching rotated endpoints in map space, not simply checking neighboring tiles. Corners/Ts/crosses consume the endpoints they join, parallel walls remain independent, and open/closed door jambs count as connections. Destroying a neighbor exposes a cap. Damaged centers retain original debris; cap logic does not close the breach. New stone terminal bands occupy half a cell explicitly. Connection lookup uses one spatial index per render. Already resolved texture sections are excluded from recursive assembly.
+
+Source art, cap placement and saved edge-wall calibration are presentation only; collision, health, targeting and map geometry are unchanged. The installer selects v4→v3→v2 per material and maintains matching geometry manifests. Canonical art guidance: ../art/MODULAR_WALL_GENERATION_GUIDE.md. Validation: 325 backend tests, 117 frontend tests and build pass; enlarged material and 16-layout Battle Lab browser checks pass. Asset audit: 99 previews, 3,465 references, no missing files. Production untouched; subjective art approval remains pending.
+
 ## October 2: Position-aware painted wall connections
 
 The eight new user snips exposed that calibrated whole-image offsets and small sleeves did not reliably join unequal generated corner arms. Active rendering now assembles intact corners, perimeter Ts, centered Ts and crosses from clipped sections of the material's existing straight-wall texture. Length is clipped; thickness and image aspect ratio remain unchanged. Original join PNGs remain preserved but their main artwork is hidden for these assembled parts. The underlying terrain object, targeting, health and boundaries are unchanged.

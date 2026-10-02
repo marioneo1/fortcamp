@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {structuralLayout,structuralConnectors} from './building-joins.js';
+import {structuralLayout,structuralConnectors,connectionPorts} from './building-joins.js';
 const geometry={fieldstone:{join_offset:.36,corner_offset:[-.015,-.015]},timber:{join_offset:.4}};
 const close=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
 test('all four corners use the same beam thickness and follow both wall edges',()=>{
@@ -53,4 +53,66 @@ test('a breach aligns its surviving beam even after destruction and rotation',()
  const g={timber:{breach_offset:[0,.04]}};
  const result=structuralLayout({sprite:'structure:timber_breach',art_offset:[.4,0],rotation:90,destroyed:true},g);
  close(result.offset[0],.36);assert.equal(result.offset[1],0);assert.deepEqual(result.connectors,[]);
+});
+
+const modular={fieldstone:{join_offset:.36,wall_half_thickness:.09,cap_mode:'pillar',cap_scale:.35},iron:{join_offset:.38,cap_mode:'trim'}};
+const wall=(id,x,y=0,extra={})=>({id,x,y,sprite:'structure:fieldstone_wall',art_scale:1.25,...extra});
+const capCount=items=>structuralConnectors(items,modular).filter(c=>c.wall_cap).length;
+test('isolated walls cap both ends; connected runs cap only the outside ends',()=>{
+ assert.equal(capCount([wall('alone',0)]),2);
+ const run=[wall('first',0),wall('second',1),wall('third',2)];
+ assert.equal(capCount(run),2);
+ assert.deepEqual(structuralConnectors(run,modular).filter(c=>c.wall_cap).map(c=>c.parent_id),['first','third']);
+});
+test('corners and branch connections consume neighboring columns in every rotation',()=>{
+ for(const rotation of [0,90,180,270]){
+  const c={id:'c',x:4,y:4,sprite:'structure:fieldstone_corner',rotation};
+  const ports=connectionPorts(c,modular);
+  const neighbors=ports.map((p,index)=>({id:'n'+index,x:p.x,y:p.y,sprite:'structure:fieldstone_end',rotation:(p.rotation+180)%360,art_offset:[0,0]}));
+  // Put each neighbor's single attached port exactly against the corner port.
+  neighbors.forEach((n,index)=>{const p=connectionPorts(n,modular)[0];n.x+=ports[index].x-p.x;n.y+=ports[index].y-p.y});
+  assert.equal(structuralLayout(c,modular,neighbors).connectors.filter(c=>c.wall_cap).length,0);
+ }
+});
+test('door jambs keep wall ends connected, including open doors',()=>{
+ for(const state of ['closed','open']){
+  const run=[wall('left',0),wall('gate',1,0,{sprite:'structure:fieldstone_gate_'+state}),wall('right',2)];
+  assert.equal(capCount(run),2);
+ }
+});
+test('removing or destroying a neighbor exposes a cap; parallel walls do not consume it',()=>{
+ const a=wall('a',0),b=wall('b',1);
+ assert.equal(capCount([a,b]),2);
+ assert.equal(capCount([a,{...b,destroyed:true}]),2);
+ assert.equal(structuralLayout(a,modular,[{...b,destroyed:true}]).connectors.filter(c=>c.wall_cap).length,2);
+ assert.equal(capCount([a,wall('parallel',0,1)]),4);
+});
+test('connected metal reuses post-free center strips and leaves only external caps',()=>{
+ const items=[wall('a',0,0,{sprite:'structure:iron_wall'}),wall('b',1,0,{sprite:'structure:iron_wall'})];
+ const parts=structuralConnectors(items,modular);
+ assert.equal(parts.filter(c=>c.wall_cap).length,2);
+ assert.ok(parts.filter(c=>!c.wall_cap).every(c=>c.art_clip[1]>=25&&c.art_clip[3]>=25));
+ assert.equal(structuralLayout(items[0],modular).hideArt,true);
+});
+
+test('new stone terminal is a half wall with one outer cap when attached',()=>{
+ const end=wall('end',0,0,{sprite:'structure:fieldstone_end'}),neighbor=wall('next',1);
+ const layout=structuralLayout(end,modular,[neighbor]);
+ assert.equal(layout.hideArt,true);
+ assert.equal(layout.connectors.filter(c=>c.wall_cap).length,1);
+ assert.equal(layout.connectors.find(c=>!c.wall_cap).art_clip[3],50);
+});
+test('saved perimeter offsets follow the current material without changing map geometry',()=>{
+ const items=[wall('a',0,0,{edge_wall:true,wall_edges:['north'],art_offset:[0,-.5]}),wall('b',1,0,{edge_wall:true,wall_edges:['north'],art_offset:[0,-.3]})];
+ assert.deepEqual(structuralLayout(items[0],modular).offset,[0,-.36]);
+ assert.equal(capCount(items),2);
+});
+test('resolved metal strips stay visible and never recursively assemble themselves',()=>{
+ const sections=structuralConnectors([wall('metal',0,0,{sprite:'structure:iron_wall'})],modular);
+ for(const part of sections){
+  const layout=structuralLayout(part,modular);
+  assert.equal(layout.hideArt,undefined);
+  assert.deepEqual(layout.connectors,[]);
+  assert.deepEqual(layout.offset,part.art_offset);
+ }
 });

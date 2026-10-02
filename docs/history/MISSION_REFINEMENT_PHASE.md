@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## 2026-10-02: New stone art and exposed-end cap rules
+
+User identified repeated baked columns as the underlying source problem and requested regenerated stone plus connection-aware column removal. Built-in image generation produced separate rough-fieldstone/polished-limestone v4 atlases. Preserved sources/exact prompts in staging-terrain/building-toolset-v4 and selected complete extracted silhouettes under stable IDs. Old source/runtime packs remain retained.
+
+Added map-space endpoint matching and an indexed per-render lookup. Stone uses plain bands and separate exposed-end caps; metal clips/reuses its post-free center and retains source posts at exposed ends. Doors count as connections when open or closed, parallel walls do not, removing neighbors exposes caps, and damaged centers remain broken. New stone terminals use half-cell geometry. Excluded resolved texture sections from recursive assembly after visual QA exposed that issue. Physics, saves and production unchanged. 325 backend tests, 117 frontend tests, build and enlarged/full-map browser checks passed; 99 previews / 3,465 references have no missing art. User visual approval and a future stricter overhead door camera pass remain open.
+
 ## 2026-10-02: Repair joins using actual screenshot evidence
 
 Reviewed all eight snips in question: rough-stone general/corner alignment, polished-stone corner/T/end/damaged joins and timber/metal T/end/damaged joins. Generated whole silhouettes and short sleeves still failed to establish reliable attachment lengths. Changed intact corners/Ts/crosses to CSS assembly from clipped matching painted straight-wall textures, preserving thickness/proportions. Added directional short-end anchoring, separate damaged-corner calibration and surviving-arm extensions without replacing rubble. Kept old source/runtime art, boundaries, IDs, targeting, destruction and live saves.

@@ -1,5 +1,13 @@
 # Map Asset Layering
 
+## October 2: v4 stone sources and exposed-end columns
+
+Current runtime selection is building-v4 for rough fieldstone/polished limestone and building-v2 for timber/metal. Generated two new stone atlases with uncapped connecting walls and a separate pillar/cap. Sources and exact prompts: staging-terrain/building-toolset-v4. Old atlases/runtime images are retained. Media are local and excluded from Git.
+
+Stone caps are separate decorations at exposed endpoints only. Metal reuses its source wall's post-free center strips for connected bands and retains terminal posts only where exposed. No raster editing was used for this metal change; it is CSS texture clipping/assembly. Full silhouettes are extracted from the new generation without stretching. Cap scale is calibrated from wall thickness. Corners/Ts/crosses and half ends keep deterministic geometry; door/gate jambs participate in endpoint matching. See MODULAR_WALL_GENERATION_GUIDE.md for canonical prompt/connection rules and remaining camera limitations.
+
+The importer chooses v4→v3→v2 per family and preserves stable sprite IDs. Enlarged comparisons and all 16 material screenshots are now saved in staging-terrain/building-toolset-v4. Validation: 325 backend tests, 117 frontend tests, build and browser checks pass; 99 encounter previews / 3,465 references have no missing assets. User visual approval is still needed.
+
 ## October 2: Exact connections from existing painted textures
 
 The renderer now builds intact corners, perimeter/centered Ts and crosses from clipped straight-wall artwork in the same material. Their original PNGs remain preserved, but no longer determine connection lengths or thickness. This is CSS texture assembly, not raster editing or new image generation. Each piece keeps its existing terrain ID, health, collision and targets. Small end walls have measured directional attachment offsets. Damaged corners retain original broken artwork and get separately calibrated surviving arms. All quarter turns and inward-corner translations are supported.

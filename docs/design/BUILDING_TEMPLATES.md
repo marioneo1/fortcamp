@@ -1,5 +1,9 @@
 # Reusable building templates — implemented in dev
 
+## Current material selection and caps (October 2)
+
+Rough fieldstone and polished limestone now use newly generated building-v4 packs. Timber and metal keep v2; superseded v3 fieldstone and all earlier art remain preserved. The importer prefers v4, then v3, then v2 per family. Stone connection bands have no baked terminal columns; separate pillars cap exposed ends only. Metal connected bands omit their baked posts using the existing center texture. Corners/Ts/crosses still have deterministic grid anchors using the active painted band, and half-wall terminals retain a fixed half-cell length. Doors, damage, rotation and saved-map calibration follow the same endpoint model. See WALL_BOUNDARIES.md and ../art/MODULAR_WALL_GENERATION_GUIDE.md; earlier entries below record previous passes.
+
 ## Current connection renderer (October 2)
 
 Intact corner/T/cross artwork is now assembled from clipped matching straight-wall textures, with exact edge/center anchors and quarter-turn rotation. This supersedes the whole generated silhouette plus sleeve repair below. Short ends attach to their neighboring wall; damaged corners have independent alignment and retain their broken center. Original generated packs remain available. Canonical rules and validation: [Wall boundaries](WALL_BOUNDARIES.md). Generation prompts alone cannot enforce exact attachment geometry; active rendering supplies that contract without stretching images.

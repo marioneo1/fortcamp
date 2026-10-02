@@ -15,9 +15,9 @@ try{
   await evaluate(`document.querySelector('#material').value='${material}';window.drawJoins()`);
   await evaluate(`Promise.all(Array.from(document.querySelectorAll('.has-prop-art')).map(e=>new Promise((resolve,reject)=>{const i=new Image();i.onload=resolve;i.onerror=reject;i.src=e.style.getPropertyValue('--battle-prop').match(/url\\(['"]?([^'")]+)/)[1]})))`);
   const clips=await evaluate("Array.from(document.querySelectorAll('.wall-connector')).map(e=>getComputedStyle(e,'::before').clipPath)");
-  assert.equal(clips.length,10);assert.ok(clips.some(c=>c!=='inset(0%)'),clips);assert.equal(await evaluate("Array.from(document.querySelectorAll('.assembled-wall')).every(e=>getComputedStyle(e,'::before').visibility==='hidden')"),true);for(const rotation of [90,180,270,0])await evaluate(`document.querySelector('#rotation').value='${rotation}';window.drawJoins()`);
+  assert.ok(clips.length>=10);assert.equal(await evaluate("Array.from(document.querySelectorAll('.wall-connector')).every(e=>getComputedStyle(e,'::before').visibility==='visible')"),true);assert.ok(clips.some(c=>c!=='inset(0%)'),clips);assert.equal(await evaluate("Array.from(document.querySelectorAll('.assembled-wall')).every(e=>getComputedStyle(e,'::before').visibility==='hidden')"),true);for(const rotation of [90,180,270,0])await evaluate(`document.querySelector('#rotation').value='${rotation}';window.drawJoins()`);
   await new Promise(r=>setTimeout(r,100));
-  await writeFile(`staging-terrain/building-toolset-v2/${material}-joins-fixed.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip:{x:0,y:0,width:1280,height:1040,scale:1}})).data,'base64'));
+  await writeFile(`staging-terrain/building-toolset-v4/${material}-joins-fixed.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip:{x:0,y:0,width:1280,height:1040,scale:1}})).data,'base64'));
  }
  await evaluate("document.querySelector('#fix').checked=false;window.drawJoins()");
  assert.equal(await evaluate("document.querySelectorAll('.wall-connector').length"),0);
