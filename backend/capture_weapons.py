@@ -56,7 +56,7 @@ def apply_capture_content(items, missions, general, events, perks, effects):
             skill['nonlethal']=False
             skill['description']=skill['description'].replace(' Knocks out instead of killing.','')+' This is a damaging strike, not a capture action.'
     replacements={
-        'worn_mallet':'A carpenter’s discarded mallet. Ordinary STR-based blunt attacks; cannot choose Capture.',
+        'worn_mallet':'A carpenter’s discarded mallet. Ordinary STR-based blunt attacks; cannot choose Subdue.',
         'knotted_staff':'A worn walking staff. Ordinary STR-based blunt attacks, not a magical focus or capture tool.',
         'weighted_sling':'An ordinary short-range sling. Dazing Stone and its Stun proc provide control, not capture.',
         'mercykeepers_maul':'A heavy armor-piercing maul. Mercy Strike is damaging; neither attack guarantees live capture.',
@@ -66,7 +66,7 @@ def apply_capture_content(items, missions, general, events, perks, effects):
     }
     for iid,text in replacements.items(): items[iid]['description']=text
     items['watchmans_cudgel'].update(name='Blackwatch Cudgel', knockout_finisher=5,
-        description='An infamous STR-based club. Ordinary attacks can kill. On a killing direct blow, 5% chance to knock the target unconscious instead. Cannot choose Capture.')
+        description='An infamous STR-based club. Ordinary attacks can kill. On a killing direct blow, 5% chance to knock the target unconscious instead. Cannot choose Subdue.')
     items['padded_capture_gloves']['combat_rules']={'capture_chance':3,'carry_strength':1}
     items['chieftains_chain_grips']['combat_skill']={'id':'chain_brace','name':'Chain Brace','target':'ally','effect':'support',
         'range':2,'elevation_rule':'physical_care','scaling':'int','heal':0,'guard_ally':True,'cleanses':['bind'],

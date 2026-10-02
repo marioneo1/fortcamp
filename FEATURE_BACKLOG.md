@@ -5,7 +5,7 @@ Use this file for pending work and GAMEPLAY_VISION.md for standing design rules.
 ## October 2 ? capture weapons and starter roles
 
 - Implemented in dev: Fighter, Ranger, Mage, Captor, Medic and Engineer starting roles with matching poor-quality gear, one perk and Basic proficiency. Starting roles do not restrict later builds; existing characters keep their gear.
-- Implemented: dedicated capture weapons replace damaging basic attacks with repeatable STR/DEX/INT probability checks. Failed attempts do no damage; success leaves a living captive. Manual/automatic/personality combat, previews, boss resistance, control setup and legacy battles use the new rules.
+- Implemented: dedicated capture weapons replace Attack with Subdue, including the A hotkey, target menu and previews. The server rejects Attack for these weapons. Repeatable STR/DEX/INT probability checks drive Subdue. Failed attempts do no damage; success leaves a living captive. Manual/automatic/personality combat, previews, boss resistance, control setup and legacy battles use the new rules.
 - Implemented: nine capture weapons with rank-gated general/event sources and two rare mission exclusives; existing restraint tools converted. Ordinary blunt/unarmed capture and the glove loophole retired. Blackwatch Cudgel gets its own 5% killing-blow knockout effect.
 - Deferred/design recorded: levels, persistent XP, bounded specialization choices and fixed enemy levels; no automatic attribute inflation or player-scaled encounters. Respecialization and dedicated starter/capture art still need a pass.
 - Canonical reference: docs/design/CAPTURE_AND_STARTING_ROLES.md. Existing gear art reused; no new image generation or production deployment.

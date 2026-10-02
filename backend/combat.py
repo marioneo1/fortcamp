@@ -1292,7 +1292,7 @@ def _deal_damage(
 
 def _capture_attempt(battle: dict, actor: dict, target: dict) -> None:
     if not actor.get('capture_weapon'):
-        raise ValueError('Equip a capture weapon to attempt Capture')
+        raise ValueError('Equip a capture weapon to attempt Subdue')
     if not _combat_active(target) or not _can_attack(battle, actor, target):
         raise ValueError('Choose an active target within capture range')
     preview = _capture_preview(battle, actor, target)
@@ -2357,7 +2357,7 @@ def battle_view(battle: dict) -> dict:
         view["attack_previews"] = {}
         skill = current.get('special')
         options = {
-            'attack': (current['attack_range'], current['attack_elevation_rule'], not current.get('acted') and not (conditions.has(current, 'mute') and current['attack_elevation_rule'] in {'ignore','line_of_effect'})),
+            'attack': (current['attack_range'], current['attack_elevation_rule'], not current.get('capture_weapon') and not current.get('acted') and not (conditions.has(current, 'mute') and current['attack_elevation_rule'] in {'ignore','line_of_effect'})),
             'subdue': (current['attack_range'], current['attack_elevation_rule'], not current.get('acted') and current.get('capture_weapon') and not (conditions.has(current,'mute') and current['attack_elevation_rule']=='line_of_effect')),
             'skill': (skill['range'], skill['elevation_rule'], skill.get('target') != 'ally' and not current.get('acted') and not current.get('special_used') and not (conditions.has(current, 'mute') and skill['elevation_rule'] in {'ignore', 'line_of_effect'})) if skill else (0, 'melee', False),
         }
@@ -2632,8 +2632,10 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             target = battle["units"].get(target_id)
             if not target or not _combat_active(target) or target["team"] != "enemy":
                 raise ValueError("Choose a living enemy or destructible terrain target")
+            if action == "attack" and unit.get("capture_weapon"):
+                raise ValueError("Capture weapons can only use Subdue instead of Attack")
             if action == "subdue" and not unit.get("capture_weapon"):
-                raise ValueError("Equip a capture weapon to attempt Capture")
+                raise ValueError("Equip a capture weapon to attempt Subdue")
             if action == "skill" and not unit.get("special"):
                 raise ValueError("This unit has no equipped combat skill")
             attack_range = int(unit["special"]["range"] if action == "skill" else unit["attack_range"])

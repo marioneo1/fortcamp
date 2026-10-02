@@ -695,7 +695,7 @@ class TacticalCombatTests(unittest.TestCase):
         self.assertIsNone(distant["subdue"])
         target.update({"x": 0, "y": 6})
         adjacent = battle_view(battle)["attack_previews"][target["id"]]
-        self.assertIsNotNone(adjacent["attack"])
+        self.assertIsNone(adjacent["attack"])
         self.assertIsNotNone(adjacent["subdue"])
 
     def test_objective_auto_battle_completes_both_optional_objectives(self):

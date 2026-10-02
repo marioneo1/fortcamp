@@ -21,7 +21,7 @@ Existing saved characters are not re-equipped or retrained. Older callers withou
 
 ## Capture — implemented
 
-A capture weapon replaces the weapon's damaging basic attack with **Capture [A]**. There is one action button; the compatibility command `subdue` performs the same check. Ordinary weapons cannot choose Subdue. Each attempt consumes a main action, but not the once-per-battle technique use. You can try again on another activation while the battle continues.
+A capture weapon replaces the weapon's damaging basic attack with **Subdue [A]**. There is one action button; the client sends `subdue`, and the server rejects `attack` for capture weapons. Attack previews are absent. Ordinary weapons cannot choose Subdue. Each attempt consumes a main action, but not the once-per-battle technique use. You can try again on another activation while the battle continues.
 
 Failure does no damage and applies no enchantment or on-hit effect. Success immediately leaves an active target unconscious and alive. Capture receives a subdue in the service record but no damage or kill credit, and produces no death/blood animation. Recovering the captive still follows normal carrying, extraction, battlefield recovery and prison rules. Capture is not recruitment; boss allegiance agreements still gate using a powerful prisoner as a permanent crewmate.
 
@@ -74,4 +74,4 @@ Deferred: XP persistence and UI, specialization tree implementation, respecializ
 
 ## Validation
 
-295 backend tests, 100 frontend tests and a production frontend build passed. An isolated actual-browser fixture verified the Capture action/chance, no duplicate Subdue button, six role choices, matching kit/training previews, locked included training and a narrow layout. No production deployment, save wipe or live player API calls were performed.
+296 backend tests, 100 frontend tests and a production frontend build passed. An isolated actual-browser fixture verified the Capture action/chance, no duplicate Subdue button, six role choices, matching kit/training previews, locked included training and a narrow layout. No production deployment, save wipe or live player API calls were performed.

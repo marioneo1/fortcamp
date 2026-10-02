@@ -10,10 +10,14 @@ const evaluate=async expression=>{const result=await call('Runtime.evaluate',{ex
 await call('Runtime.enable');
 await call('Page.navigate',{url:'http://127.0.0.1:8766/staging-ui/equipment-icons-v1/battle-preview.html'});
 for(let i=0;i<100;i++){if(await evaluate('Boolean(window.gearReady)'))break;await new Promise(r=>setTimeout(r,100))}
-assert.equal(await evaluate('document.querySelector("[data-combat-mode=attack]").textContent.trim()'),'A Capture');
-assert.equal(await evaluate('document.querySelector("[data-combat-mode=subdue]")===null'),true);
-await evaluate('document.querySelector("[data-combat-mode=attack]").click()');
+assert.equal(await evaluate('document.querySelector("[data-combat-mode=subdue]").textContent.trim()'),'A Subdue');
+assert.equal(await evaluate('document.querySelector("[data-combat-mode=attack]")===null'),true);
+await evaluate('document.dispatchEvent(new KeyboardEvent("keydown",{key:"a",code:"KeyA",bubbles:true}))');
+assert.equal(await evaluate('document.querySelector(".battlefield").classList.contains("mode-subdue")'),true);
 assert.equal(await evaluate('document.querySelector("[data-battle-unit=gob_guard]").title.includes("capture chance")'),true);
+await evaluate('document.querySelector("[data-battle-unit=gob_guard]").click()');
+await new Promise(r=>setTimeout(r,150));
+assert.equal(await evaluate('window.gearCommands.at(-1).action'),'subdue');
 await evaluate('window.gearCreator()');
 assert.deepEqual(await evaluate('[...document.querySelector("#cc-trait").options].map(o=>o.textContent)'),['Fighter','Ranger','Mage','Captor','Medic','Engineer']);
 for(const [role,training,weapon] of [['fighter','combat','Chipped Sword'],['mage','magic','Cracked Wand'],['captor','combat','Frayed Capture Net'],['medic','medicine','Cracked Wand'],['engineer','building','Worn Mallet']]){

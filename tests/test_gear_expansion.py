@@ -33,7 +33,7 @@ class GearExpansionTests(unittest.TestCase):
                 if auto:
                     _player_auto_turn(battle, actor, 'aggressive')
                 else:
-                    apply_player_command(battle, {'action': 'attack', 'target_id': enemy['id']})
+                    apply_player_command(battle, {'action': 'subdue', 'target_id': enemy['id']})
             self.assertEqual(enemy['condition'], 'unconscious')
             self.assertTrue(enemy['alive'])
             self.assertFalse(actor['special_used'])

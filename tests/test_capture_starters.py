@@ -55,7 +55,7 @@ class CaptureStarterTests(unittest.TestCase):
         a.update(attack=1000,element='fire',on_hit={'id':'burn','chance':100,'turns':3})
         with patch('backend.combat.random.Random') as rng, patch('backend.combat._advance_to_player'):
             rng.return_value.randint.return_value=100
-            apply_player_command(b,{'action':'attack','target_id':t['id']})
+            apply_player_command(b,{'action':'subdue','target_id':t['id']})
         self.assertEqual(t['hp'],10)
         self.assertEqual(t['condition'],'active')
         self.assertEqual(t['statuses'],[])
@@ -70,6 +70,16 @@ class CaptureStarterTests(unittest.TestCase):
         self.assertEqual(a['combat_record']['total_damage'],0)
         self.assertEqual(a['combat_record']['subdues'],1)
         self.assertFalse(any(e['type']=='death_burst' for e in b['animation_events']))
+
+    def test_capture_weapon_has_only_subdue_preview_and_rejects_attack(self):
+        _,b,a,t=self.battle()
+        previews=battle_view(b)['attack_previews'][t['id']]
+        self.assertIsNone(previews['attack'])
+        self.assertIsNotNone(previews['subdue'])
+        before=(a['x'],a['y'],t['hp'],b.get('roll_counter'))
+        with self.assertRaisesRegex(ValueError,'only use Subdue'):
+            apply_player_command(b,{'action':'attack','target_id':t['id']})
+        self.assertEqual((a['x'],a['y'],t['hp'],b.get('roll_counter')),before)
 
     def test_balanced_stats_wounds_control_and_boss_resistance(self):
         _,b,a,t=self.battle()
@@ -87,7 +97,7 @@ class CaptureStarterTests(unittest.TestCase):
 
     def test_preview_matches_attempt_and_polling_cannot_roll(self):
         _,b,a,t=self.battle(weapon='goblin_net_bow')
-        preview=battle_view(b)['attack_previews'][t['id']]['attack']
+        preview=battle_view(b)['attack_previews'][t['id']]['subdue']
         self.assertTrue(preview['capture'])
         for _ in range(4):battle_view(b)
         self.assertNotIn('roll_counter',b)
