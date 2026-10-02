@@ -49,14 +49,21 @@ def new_game(character: dict[str, Any]) -> dict[str, Any]:
     stats = {k: max(1, min(v, 10)) for k, v in stats.items()}
     attributes = {k: int(character.get("attributes", {}).get(k, 4)) for k in ATTRIBUTE_NAMES}
     attributes = {k: max(1, min(v, 10)) for k, v in attributes.items()}
-    traits = list(dict.fromkeys(character.get("traits", [])))[:4]
+    from .starter_equipment import STARTING_ROLES
+    role_id = character.get('starting_role')
+    if role_id is not None and role_id not in STARTING_ROLES:
+        raise ValueError('Choose a valid starting role')
+    role = STARTING_ROLES.get(role_id)
+    traits = [role['perk']] if role else list(dict.fromkeys(character.get("traits", [])))[:4]
     perks = {track: "none" for track in PERK_TRACKS}
     for track, level in character.get("perks", {}).items():
         if track in perks and level in PERK_LEVELS:
             perks[track] = level
 
+    if role:
+        perks = {track: ('basic' if track == role['proficiency'] else 'none') for track in PERK_TRACKS}
     from .starter_equipment import starter_kit
-    kit=starter_kit(traits,perks)
+    kit=role['kit'] if role else starter_kit(traits,perks)
     inventory = [
         {"instance_id": uid("item"), "item_id": kit[0]},
         {"instance_id": uid("item"), "item_id": "worn_jacket"},
@@ -89,7 +96,8 @@ def new_game(character: dict[str, Any]) -> dict[str, Any]:
             "race": character.get("race", "Human")[:32],
             "series": character.get("series", "Player")[:64] or "Player",
             "traits": traits,
-            "specialty": character.get("specialty", "Survivor")[:32],
+            "specialty": role["name"] if role else character.get("specialty", "Survivor")[:32],
+            "starting_role": role_id,
             "stats": stats,
             "perks": perks,
             "attributes": attributes,
@@ -106,7 +114,9 @@ def new_game(character: dict[str, Any]) -> dict[str, Any]:
 
 def public_content() -> dict[str, Any]:
     from .inventory import sale_price
+    from .starter_equipment import STARTING_ROLES
     return {
+        "starting_roles": STARTING_ROLES,
         "economy": public_economy({}),
         "personalities": {key:{"name":value[0],"description":value[1]} for key,value in PERSONALITIES.items()},
         "buildings": BUILDINGS,
@@ -460,6 +470,8 @@ def combat_metrics(state: dict, char: dict) -> dict:
     weapon = equipped_weapon_def(state, char)
     scaling = (weapon or {}).get("weapon_scaling", "str")
     dps = effective_attribute(state, char, scaling) + int((weapon or {}).get("power", 0)) + effective_stat(state, char, "combat") // 2
+    if weapon and weapon.get("capture_weapon"):
+        dps = 0
     return {
         "constitution": effective_attribute(state, char, "vit"),
         "dps": dps,

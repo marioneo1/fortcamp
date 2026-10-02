@@ -1,5 +1,8 @@
 # Fortcamp Tactical Battle Design
 
+October 2 capture/starter update: [Capture and starting roles](CAPTURE_AND_STARTING_ROLES.md) is authoritative for dedicated capture weapons, removal of ordinary blunt/unarmed Subdue and six coherent starting kits. References below to old nonlethal weapon permissions are historical; XP/levels remain proposed.
+
+
 > This document combines implemented combat foundations with future design proposals. The live game now uses painted terrain and props, reusable scenario maps, defense preparation, and authored decision encounters. Later release proposals below are historical planning, not a statement that only one mission exists.
 
 ## Implemented vertical slice

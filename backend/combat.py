@@ -124,6 +124,19 @@ def _ensure_battle_schema(battle: dict) -> None:
         battle["decorations"] = compile_battle_map(map_id).get("decorations", [])
     special_rules = {"precision_shot": "ballistic", "arc_bolt": "ignore"}
     for unit in battle.get("units", {}).values():
+        # Existing saves cannot retain the obsolete blunt/unarmed Subdue permission.
+        if unit.get('team') == 'player' and 'capture_weapon' not in unit:
+            weapon = next((item for item in ITEMS.values() if item.get('name') == unit.get('weapon')), {})
+            if unit.get('weapon') == "Watchman's Cudgel": weapon = ITEMS['watchmans_cudgel']
+            profile = deepcopy(weapon.get('capture_weapon'))
+            unit.update(capture_weapon=profile, nonlethal_capable=bool(profile), knockout_finisher=weapon.get('knockout_finisher',0))
+            if profile:
+                unit.update(attack=0, attack_range=profile['range'], attack_elevation_rule=profile['elevation_rule'])
+                unit['skills'] = [skill for skill in unit.get('skills',[]) if not skill.get('nonlethal') and skill.get('id') not in {'precision_shot','arc_bolt'}]
+                unit['special'] = unit['skills'][0] if unit['skills'] else None
+            else:
+                for skill in unit.get('skills',[]): skill['nonlethal'] = False
+                if unit.get('special'): unit['special']['nonlethal'] = False
         unit.setdefault("statuses", [])
         unit.setdefault("conscious", bool(unit.get("alive", True)))
         unit.setdefault("condition", "active" if unit.get("alive", True) else "dead")
@@ -274,6 +287,11 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
         special["attack"] = 5 + _effective_attribute(state, character, special["scaling"]) // 2 + int(skill_item.get("power", 2))
         special.setdefault("element", skill_item.get("element"))
         special.setdefault("on_hit", deepcopy(skill_item.get("on_hit")))
+    capture_weapon = deepcopy(weapon.get('capture_weapon'))
+    if capture_weapon:
+        basic_special = None
+        special = None
+        granted_skill = None
     attack_range = int(weapon.get("attack_range", attack_range))
     vit = _effective_attribute(state, character, "vit")
     agi = _effective_attribute(state, character, "agi")
@@ -290,7 +308,7 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
             skills.append({'id': 'field_care', 'name': 'Field Care', 'target': 'ally', 'effect': 'support',
                            'range': 1, 'heal': 8, 'cleanses': ['bleed'], 'scaling': 'int',
                            'elevation_rule': 'physical_care', 'description': 'One shared technique use per battle. Range 1: restore 8 + half INT HP and stop Bleed. Physical treatment works while muted; cannot revive.'})
-    if skills:special=skills[0]
+    special = skills[0] if skills else None
     rules=collect_rules(equipped)
     race = character.get("race", "Human")
     racial = race_gameplay(race)
@@ -309,9 +327,12 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
         "gear_rules":rules,
         "race": race, "race_summary": racial["summary"],
         "strength": strength, "intelligence": _effective_attribute(state, character, 'int'), "weight": _race_weight(character.get("race", "human")),
-        "attack": 5 + scaling_value // 2 + int(weapon.get("power", 0)) + combat_training,
-        "attack_elevation_rule": "ballistic" if ranged else "ignore" if magical else "melee",
-        "nonlethal_capable": weapon_type in {"unarmed", "hammer", "club", "mace"} or "nonlethal" in weapon.get("tags", []) or rules.get('subdue_gloves',False),
+        "attack": 0 if capture_weapon else 5 + scaling_value // 2 + int(weapon.get("power", 0)) + combat_training,
+        "capture_weapon": capture_weapon,
+        "capture_attributes": {key:_effective_attribute(state, character, key) for key in ("str", "dex", "int")},
+        "knockout_finisher": int(weapon.get("knockout_finisher", 0)),
+        "attack_elevation_rule": capture_weapon["elevation_rule"] if capture_weapon else "ballistic" if ranged else "ignore" if magical else "melee",
+        "nonlethal_capable": bool(capture_weapon),
         "weapon": weapon.get("name", "Unarmed"), "scaling": scaling,
         "element": weapon.get("element"), "on_hit": deepcopy(weapon.get("on_hit")),
         "portrait": character.get("portrait_thumbnail") or character.get("portrait", ""),
@@ -1156,7 +1177,8 @@ def _deal_damage(
     if not attacker.get("status_tick"):
         _wake_ambush(battle, target)
     if ability:
-        attacker = {**attacker, "attack": ability.get("attack", attacker["attack"]),
+        finisher = attacker.get('knockout_finisher',0) if ability.get('source_name', attacker.get('weapon')) == attacker.get('weapon') else 0
+        attacker = {**attacker, 'knockout_finisher':finisher, "attack": ability.get("attack", attacker["attack"]),
                     "attack_elevation_rule": ability["elevation_rule"],
                     "element": ability.get("element", attacker.get("element")),
                     "on_hit": ability.get("on_hit", attacker.get("on_hit")),"weapon":ability.get('source_name',attacker.get('weapon',''))}
@@ -1198,6 +1220,13 @@ def _deal_damage(
         target["guarding"] = False
         _record_sound(battle, "shield_block", offset=185)
     previous_hp = int(target["hp"])
+    if intent == 'lethal' and not attacker.get('status_tick') and damage >= previous_hp and attacker.get('knockout_finisher'):
+        counter = int(battle.get('finisher_counter', 0))
+        battle['finisher_counter'] = counter + 1
+        roll = random.Random(f"{battle.get('seed')}:finisher:{counter}:{attacker.get('id')}:{target['id']}").randint(1,100)
+        if roll <= attacker['knockout_finisher']:
+            intent = 'nonlethal'
+            battle['log'].append(f"{attacker['weapon']} leaves {target['name']} unconscious instead of killing them.")
     target["hp"] = max(0, previous_hp - damage)
     if target['hp']==0 and intent!='nonlethal' and target.get('gear_rules',{}).get('lifeline') and not target.get('lifeline_used'):
         target['hp']=1;target['lifeline_used']=True
@@ -1246,7 +1275,7 @@ def _deal_damage(
     source=battle.get("units",{}).get(attacker.get("id"))
     if source and source.get("team")=="player":
         facts=source.setdefault("combat_record",{})
-        actual=max(0,previous_hp-int(target["hp"]))
+        actual=0 if attacker.get("capture_only") else max(0,previous_hp-int(target["hp"]))
         facts["total_damage"]=facts.get("total_damage",0)+actual
         source["turn_damage"]=source.get("turn_damage",0)+actual
         facts["highest_turn_damage"]=max(facts.get("highest_turn_damage",0),source["turn_damage"])
@@ -1259,6 +1288,36 @@ def _deal_damage(
         if target["condition"]=="dead":
             battle.setdefault("animation_events",[]).append({"type":"death_burst","unit_id":target["id"],"x":target["x"],"y":target["y"],"race":target.get("race","Human")})
     return damage
+
+
+def _capture_attempt(battle: dict, actor: dict, target: dict) -> None:
+    if not actor.get('capture_weapon'):
+        raise ValueError('Equip a capture weapon to attempt Capture')
+    if not _combat_active(target) or not _can_attack(battle, actor, target):
+        raise ValueError('Choose an active target within capture range')
+    preview = _capture_preview(battle, actor, target)
+    counter = int(battle.get('roll_counter', 0))
+    battle['roll_counter'] = counter + 1
+    roll = random.Random(f"{battle.get('seed')}:{counter}:{actor['id']}:{target['id']}").randint(1,100)
+    # The first attempt wakes the camp even when it fails; preview includes the initial sleep advantage.
+    _wake_ambush(battle, target)
+    success = roll <= preview['chance']
+    if success:
+        restrained = {**actor, 'attack': target['max_hp']*100 + target.get('armor',0),
+                      'status_tick': True, 'capture_only': True, 'element': None, 'on_hit': None}
+        _deal_damage(battle, restrained, target, intent='nonlethal')
+    battle['log'].append(f"{actor['name']} attempts to capture {target['name']}: {'successful' if success else 'failed'} ({roll} vs {preview['chance']}% capture chance).")
+    _record_melee_animation(battle, actor, target, success, actor['attack_elevation_rule'])
+
+
+def _capture_preview(battle: dict, actor: dict, target: dict) -> dict:
+    from .capture_weapons import capture_preview
+    result = capture_preview(actor, target)
+    accuracy, _ = _elevation_attack_modifier(battle, actor, target, actor['attack_elevation_rule'])
+    if conditions.has(actor, 'blind'): accuracy -= 35 if actor['attack_elevation_rule'] != 'melee' else 15
+    if conditions.has(actor, 'fear'): accuracy -= 15
+    result['chance'] = max(2, min(60 if target.get('boss') or target.get('kind') == 'chieftain' else 95, result['chance']+accuracy))
+    return result
 
 
 def _tick_gear_statuses(battle: dict, unit: dict) -> None:
@@ -1723,7 +1782,7 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
     if unit.get("panicked"):
         _flee_turn(battle, unit)
         return
-    if conditions.has(unit, 'mute') and unit.get('attack_elevation_rule') == 'ignore':
+    if conditions.has(unit, 'mute') and unit.get('attack_elevation_rule') in {'ignore','line_of_effect'}:
         _guard(battle, unit)
         _finish_turn(battle)
         return
@@ -1748,13 +1807,16 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
         target = min(targets, key=lambda candidate: (_distance(unit, candidate), candidate["hp"]))
     if _can_attack(battle, unit, target):
         target = conditions.confused_target(battle, unit, target, lambda u: _can_attack(battle, unit, u))
-        hit, preview, roll = _attack_hits(battle, unit, target, unit["attack_elevation_rule"])
-        if hit:
-            damage = _deal_damage(battle, unit, target, preview["damage_bonus"])
-            battle["log"].append(f"{unit['name']} attacks {target['name']} with {unit['weapon']} for {damage} damage.")
+        if unit.get('capture_weapon'):
+            _capture_attempt(battle, unit, target)
         else:
-            battle["log"].append(f"{unit['name']} misses {target['name']} ({roll} vs {preview['chance']}% accuracy).")
-        _record_melee_animation(battle, unit, target, hit)
+            hit, preview, roll = _attack_hits(battle, unit, target, unit["attack_elevation_rule"])
+            if hit:
+                damage = _deal_damage(battle, unit, target, preview["damage_bonus"])
+                battle["log"].append(f"{unit['name']} attacks {target['name']} with {unit['weapon']} for {damage} damage.")
+            else:
+                battle["log"].append(f"{unit['name']} misses {target['name']} ({roll} vs {preview['chance']}% accuracy).")
+            _record_melee_animation(battle, unit, target, hit)
     elif snared:
         battle["log"].append(f"{unit['name']} struggles against the snare and cannot advance.")
     else:
@@ -1824,12 +1886,9 @@ def _independent_turn(battle: dict,unit: dict) -> None:
         enemies=_living(battle,"enemy")
         if enemies and unit.get("nonlethal_capable"):
             target=min(enemies,key=lambda u:(_distance(unit,u),u["hp"]))
-            if not _can_attack(battle,unit,target,1):_move_toward(battle,unit,target)
-            if _can_attack(battle,unit,target,1):
-                hit,preview,roll=_attack_hits(battle,unit,target,"melee")
-                if hit:_deal_damage(battle,unit,target,preview["damage_bonus"]-1,intent="nonlethal")
-                _record_melee_animation(battle,unit,target,hit,"melee")
-                battle["log"].append(f"{unit['name']} attempts to subdue {target['name']}.")
+            if not _can_attack(battle,unit,target,unit["attack_range"]):_move_toward(battle,unit,target)
+            if _can_attack(battle,unit,target,unit["attack_range"]):
+                _capture_attempt(battle,unit,target)
             else:_guard(battle,unit)
         else:_guard(battle,unit)
         unit["acted"]=True;_finish_turn(battle)
@@ -1948,11 +2007,12 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
             return
     available_skills=[s for s in (unit.get('skills') or ([unit['special']] if unit.get('special') else []))
                       if s.get('target') != 'ally' and not (conditions.has(unit, 'mute') and s['elevation_rule'] in {'ignore', 'line_of_effect'})] if not unit.get('special_used') else []
-    if conditions.has(unit, 'mute') and unit['attack_elevation_rule'] == 'ignore' and not available_skills:
+    if conditions.has(unit, 'mute') and unit['attack_elevation_rule'] in {'ignore','line_of_effect'} and not available_skills:
         _guard(battle, unit)
         unit['acted'] = True
         _finish_turn(battle)
         return
+    if unit.get('capture_weapon'): available_skills = []  # Auto preserves the live-capture role.
     auto_range = max([unit['attack_range']]+[s['range'] for s in available_skills])
     in_range = [candidate for candidate in targets if _can_attack(battle, unit, candidate, auto_range)]
     target_priority = lambda candidate: (
@@ -1967,7 +2027,7 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
     )
     capturing=tactic=='objective' and target.get('capture_role')=='live_target'
     if capturing:
-        safe_ranges=([1] if unit.get('nonlethal_capable') else [])+[s['range'] for s in available_skills if s.get('nonlethal')]
+        safe_ranges=([unit['attack_range']] if unit.get('nonlethal_capable') else [])+[s['range'] for s in available_skills if s.get('nonlethal')]
         if not safe_ranges:
             _guard(battle,unit);unit['acted']=True
             battle['log'].append(f"{unit['name']} holds fire rather than killing the capture target.")
@@ -1977,31 +2037,34 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
     if not _can_attack(battle, unit, target, auto_range) and not pursuing_objective:
         _move_toward(battle, unit, target)
     if _can_attack(battle, unit, target, auto_range):
-        nonlethal = tactic == "objective" and target.get("capture_role") == "live_target" and unit.get("nonlethal_capable") and _can_attack(battle,unit,target,1)
-        choices=[s for s in available_skills if _can_attack(battle,unit,target,s['range']) and (not capturing or s.get('nonlethal'))]
-        special=max(choices,key=lambda s:(s.get('armor_pierce',0)+s.get('damage_bonus',0),s.get('attack',unit['attack']))) if choices and not nonlethal else None
-        if special:unit['special']=special
-        use_skill = bool(special and not unit.get("special_used") and _can_attack(battle, unit, target, special["range"]))
-        if not use_skill and not _can_attack(battle, unit, target, 1 if nonlethal else unit["attack_range"]):
-            unit["acted"] = True
-            _finish_turn(battle)
-            return
-        bonus = int(special.get("damage_bonus", 2)) if use_skill else 0
-        rule = special["elevation_rule"] if use_skill else unit["attack_elevation_rule"]
-        skill_nonlethal = use_skill and special.get("nonlethal", False)
-        target = conditions.confused_target(battle, unit, target, lambda u: _can_attack(battle, unit, u, special['range'] if use_skill else unit['attack_range']))
-        hit, preview, roll = _attack_hits(battle, unit, target, rule)
-        damage = _deal_damage(
-            battle, unit, target, bonus + preview["damage_bonus"] - (1 if nonlethal else 0),
-            int(special.get("armor_pierce", 2 if special["id"] == "precision_shot" else 0)) if use_skill else 0,
-            "nonlethal" if nonlethal or skill_nonlethal else "lethal",
-            ability=special if use_skill else None,
-        ) if hit else 0
-        _record_melee_animation(battle, unit, target, hit, rule)
-        if use_skill:
-            unit["special_used"] = True
-        attack_name = "a nonlethal takedown" if nonlethal else special["name"] if use_skill else unit["weapon"]
-        battle["log"].append(f"{unit['name']} uses {attack_name} on {target['name']} for {damage} damage." if hit else f"{unit['name']} misses {target['name']} ({roll} vs {preview['chance']}% accuracy).")
+        if unit.get('capture_weapon'):
+            _capture_attempt(battle, unit, target)
+        else:
+            nonlethal = tactic == "objective" and target.get("capture_role") == "live_target" and unit.get("nonlethal_capable") and _can_attack(battle,unit,target,1)
+            choices=[s for s in available_skills if _can_attack(battle,unit,target,s['range']) and (not capturing or s.get('nonlethal'))]
+            special=max(choices,key=lambda s:(s.get('armor_pierce',0)+s.get('damage_bonus',0),s.get('attack',unit['attack']))) if choices and not nonlethal else None
+            if special:unit['special']=special
+            use_skill = bool(special and not unit.get("special_used") and _can_attack(battle, unit, target, special["range"]))
+            if not use_skill and not _can_attack(battle, unit, target, 1 if nonlethal else unit["attack_range"]):
+                unit["acted"] = True
+                _finish_turn(battle)
+                return
+            bonus = int(special.get("damage_bonus", 2)) if use_skill else 0
+            rule = special["elevation_rule"] if use_skill else unit["attack_elevation_rule"]
+            skill_nonlethal = use_skill and special.get("nonlethal", False)
+            target = conditions.confused_target(battle, unit, target, lambda u: _can_attack(battle, unit, u, special['range'] if use_skill else unit['attack_range']))
+            hit, preview, roll = _attack_hits(battle, unit, target, rule)
+            damage = _deal_damage(
+                battle, unit, target, bonus + preview["damage_bonus"] - (1 if nonlethal else 0),
+                int(special.get("armor_pierce", 2 if special["id"] == "precision_shot" else 0)) if use_skill else 0,
+                "nonlethal" if nonlethal or skill_nonlethal else "lethal",
+                ability=special if use_skill else None,
+            ) if hit else 0
+            _record_melee_animation(battle, unit, target, hit, rule)
+            if use_skill:
+                unit["special_used"] = True
+            attack_name = "a nonlethal takedown" if nonlethal else special["name"] if use_skill else unit["weapon"]
+            battle["log"].append(f"{unit['name']} uses {attack_name} on {target['name']} for {damage} damage." if hit else f"{unit['name']} misses {target['name']} ({roll} vs {preview['chance']}% accuracy).")
     elif tactic == "defensive":
         _guard(battle,unit)
         _record_sound(battle, "guard")
@@ -2283,7 +2346,7 @@ def battle_view(battle: dict) -> dict:
         extraction_tiles = _player_exit_tiles(view)
         view["can_extract"] = (current["x"], current["y"]) in extraction_tiles and bool(current.get("exit_ready"))
         view["can_extract_body"] = view["can_extract"] and bool(current.get("carrying"))
-        view["can_subdue"] = bool(current.get("nonlethal_capable"))
+        view["can_subdue"] = bool(current.get("capture_weapon"))
         view["can_drop"] = bool(current.get("carrying") or current.get("carrying_object"))
         view["context_actions"] = _context_actions(view, current)
         view["carry_targets"] = [
@@ -2294,15 +2357,15 @@ def battle_view(battle: dict) -> dict:
         view["attack_previews"] = {}
         skill = current.get('special')
         options = {
-            'attack': (current['attack_range'], current['attack_elevation_rule'], not current.get('acted') and not (conditions.has(current, 'mute') and current['attack_elevation_rule'] == 'ignore')),
-            'subdue': (1, 'melee', not current.get('acted') and current.get('nonlethal_capable')),
+            'attack': (current['attack_range'], current['attack_elevation_rule'], not current.get('acted') and not (conditions.has(current, 'mute') and current['attack_elevation_rule'] in {'ignore','line_of_effect'})),
+            'subdue': (current['attack_range'], current['attack_elevation_rule'], not current.get('acted') and current.get('capture_weapon') and not (conditions.has(current,'mute') and current['attack_elevation_rule']=='line_of_effect')),
             'skill': (skill['range'], skill['elevation_rule'], skill.get('target') != 'ally' and not current.get('acted') and not current.get('special_used') and not (conditions.has(current, 'mute') and skill['elevation_rule'] in {'ignore', 'line_of_effect'})) if skill else (0, 'melee', False),
         }
         for target in _living(view, 'enemy'):
             previews = {}
             for action, (reach, rule, available) in options.items():
                 actor, approach = _attack_position(view, current, target, reach, reachable, parents) if available else (None, None)
-                previews[action] = {**_attack_preview(view, actor, target, rule), **(approach or {})} if actor else None
+                previews[action] = {**(_capture_preview(view, actor, target) if current.get('capture_weapon') and action in {'attack','subdue'} else _attack_preview(view, actor, target, rule)), **(approach or {})} if actor else None
             view['attack_previews'][target['id']] = previews
         view['skill_previews']={}
         for choice in current.get('skills',[]):
@@ -2324,7 +2387,7 @@ def battle_view(battle: dict) -> dict:
             view['skill_previews'][choice['id']]=entries
         view['terrain_attack_previews'] = {}
         for tile in view.get('terrain', []):
-            if not tile.get('destructible') or tile.get('destroyed') or current.get('acted') or (conditions.has(current, 'mute') and current['attack_elevation_rule'] == 'ignore'):
+            if current.get('capture_weapon') or not tile.get('destructible') or tile.get('destroyed') or current.get('acted') or (conditions.has(current, 'mute') and current['attack_elevation_rule'] == 'ignore'):
                 continue
             actor, approach = _attack_position(view, current, tile, current['attack_range'], reachable, parents)
             if actor:
@@ -2466,6 +2529,7 @@ def _apply_preparation_command(battle: dict, command: dict) -> dict:
 
 
 def apply_player_command(battle: dict, command: dict) -> dict:
+    _ensure_battle_schema(battle)
     battle["animation_events"] = []
     if battle.get("status") == "preparing":
         return _apply_preparation_command(battle, command)
@@ -2552,6 +2616,8 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             if tile.get("id") == target_id and tile.get("destructible") and not tile.get("destroyed")
         ), None)
         if terrain_target:
+            if unit.get("capture_weapon"):
+                raise ValueError("Capture weapons cannot damage structures")
             if action != "attack":
                 raise ValueError("Only a standard attack can target this terrain")
             if conditions.has(unit, 'mute') and unit['attack_elevation_rule'] == 'ignore':
@@ -2566,31 +2632,34 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             target = battle["units"].get(target_id)
             if not target or not _combat_active(target) or target["team"] != "enemy":
                 raise ValueError("Choose a living enemy or destructible terrain target")
-            if action == "subdue" and not unit.get("nonlethal_capable"):
-                raise ValueError("This weapon cannot perform a nonlethal takedown")
+            if action == "subdue" and not unit.get("capture_weapon"):
+                raise ValueError("Equip a capture weapon to attempt Capture")
             if action == "skill" and not unit.get("special"):
                 raise ValueError("This unit has no equipped combat skill")
-            attack_range = int(unit["special"]["range"] if action == "skill" else 1 if action == "subdue" else unit["attack_range"])
+            attack_range = int(unit["special"]["range"] if action == "skill" else unit["attack_range"])
             if action == "skill" and unit.get("special_used"):
                 raise ValueError("This unit's special skill has already been used")
             _apply_attack_approach(battle, unit, target, attack_range, command)
             if not _can_attack(battle, unit, target, attack_range):
                 raise ValueError("Target is outside attack range")
             _commit_player_movement(battle, unit)
-            rule = unit["special"]["elevation_rule"] if action == "skill" else "melee" if action == "subdue" else unit["attack_elevation_rule"]
+            rule = unit["special"]["elevation_rule"] if action == "skill" else unit["attack_elevation_rule"]
             if conditions.has(unit, 'mute') and rule in {'ignore', 'line_of_effect'}:
                 raise ValueError('Mute prevents this spell')
             target = conditions.confused_target(battle, unit, target, lambda u: _can_attack(battle, unit, u, attack_range))
-            hit, preview, roll = _attack_hits(battle, unit, target, rule)
-            bonus = int(unit["special"].get("damage_bonus", 3)) if action == "skill" else -1 if action == "subdue" else 0
-            pierce = int(unit["special"].get("armor_pierce", 2 if unit["special"]["id"] == "precision_shot" else 0)) if action == "skill" else 0
-            nonlethal = action == "subdue" or (action == "skill" and unit["special"].get("nonlethal", False))
-            damage = _deal_damage(battle, unit, target, bonus + preview["damage_bonus"], pierce, "nonlethal" if nonlethal else "lethal", ability=unit["special"] if action == "skill" else None) if hit else 0
-            _record_melee_animation(battle, unit, target, hit, rule)
-            if action == "skill":
-                unit["special_used"] = True
-            action_name = unit["special"]["name"] if action == "skill" else "a nonlethal takedown" if action == "subdue" else unit["weapon"]
-            battle["log"].append(f"{unit['name']} uses {action_name} on {target['name']} for {damage} damage." if hit else f"{unit['name']} misses {target['name']} ({roll} vs {preview['chance']}% accuracy).")
+            if unit.get('capture_weapon') and action != 'skill':
+                _capture_attempt(battle, unit, target)
+            else:
+                hit, preview, roll = _attack_hits(battle, unit, target, rule)
+                bonus = int(unit["special"].get("damage_bonus", 3)) if action == "skill" else -1 if action == "subdue" else 0
+                pierce = int(unit["special"].get("armor_pierce", 2 if unit["special"]["id"] == "precision_shot" else 0)) if action == "skill" else 0
+                nonlethal = action == "subdue" or (action == "skill" and unit["special"].get("nonlethal", False))
+                damage = _deal_damage(battle, unit, target, bonus + preview["damage_bonus"], pierce, "nonlethal" if nonlethal else "lethal", ability=unit["special"] if action == "skill" else None) if hit else 0
+                _record_melee_animation(battle, unit, target, hit, rule)
+                if action == "skill":
+                    unit["special_used"] = True
+                action_name = unit["special"]["name"] if action == "skill" else "a nonlethal takedown" if action == "subdue" else unit["weapon"]
+                battle["log"].append(f"{unit['name']} uses {action_name} on {target['name']} for {damage} damage." if hit else f"{unit['name']} misses {target['name']} ({roll} vs {preview['chance']}% accuracy).")
             unit["acted"] = True
     elif action == "carry":
         if unit.get("acted"):

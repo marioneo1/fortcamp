@@ -81,9 +81,9 @@ class SlotGearTests(unittest.TestCase):
             self.assertEqual(_step_cost(b, 0, 1, 1, 1, actor), 6)
 
     def test_equipped_techniques_are_selectable_and_share_one_use(self):
-        b, actor, enemy = self.battle('mooncord_sling', 'meridian_field_projector')
+        b, actor, enemy = self.battle('hooked_spear', 'meridian_field_projector')
         names = {s['name'] for s in actor['skills']}
-        self.assertIn('Mooncord Takedown', names)
+        self.assertGreaterEqual(len(names),2)
         self.assertIn('Field Lance', names)
         self.assertEqual(len(battle_view(b)['skill_previews']), len(actor['skills']))
         actor.update(x=2, y=2)
@@ -154,16 +154,15 @@ class SlotGearTests(unittest.TestCase):
             for iid in ITEMS:
                 self.assertTrue((root / f'frontend/public/assets/catalogue/items/{iid}.png').exists(), iid)
 
-    def test_capture_gloves_allow_sharp_weapon_subdue(self):
+    def test_capture_gloves_do_not_allow_sharp_weapon_capture(self):
         b, actor, enemy = self.battle('cinderhook_blade', 'padded_capture_gloves')
-        self.assertTrue(actor['nonlethal_capable'])
-        actor.update(x=2, y=2, attack=100)
+        self.assertFalse(actor['nonlethal_capable'])
+        actor.update(x=2, y=2)
         enemy.update(x=3, y=2, hp=1)
-        with patch('backend.combat._attack_hits', return_value=(True, {'damage_bonus': 0, 'chance': 100}, 1)):
+        with self.assertRaisesRegex(ValueError, 'capture weapon'):
             apply_player_command(b, {'action': 'subdue', 'target_id': enemy['id']})
-        self.assertEqual(enemy['condition'], 'unconscious')
-        self.assertTrue(enemy['alive'])
-        self.assertEqual(enemy['statuses'], [])
+        self.assertEqual(enemy['condition'], 'active')
+        self.assertEqual(enemy['hp'],1)
 
     def test_throw_and_breach_bonus_have_distinct_limits(self):
         b, actor, _ = self.battle('breach_gauntlets', 'counterweight_boots')
@@ -189,7 +188,7 @@ class SlotGearTests(unittest.TestCase):
         self.assertEqual(_deal_damage(b, actor, enemy), 5)
 
     def test_objective_auto_approaches_for_capture_instead_of_firing_lethal_bow(self):
-        b, actor, enemy = self.battle('field_crossbow', 'padded_capture_gloves')
+        b, actor, enemy = self.battle('frayed_capture_net', 'padded_capture_gloves')
         for obj in b['objects'].values():
             obj['state'] = 'opened' if obj['id'] == 'prisoner_pen' else 'disabled'
         for unit in b['units'].values():
@@ -198,7 +197,8 @@ class SlotGearTests(unittest.TestCase):
         b['terrain'] = []
         actor.update(x=2, y=2, attack=100)
         enemy.update(x=4, y=2, hp=1, capture_role='live_target')
-        with patch('backend.combat._attack_hits', return_value=(True, {'damage_bonus': 0, 'chance': 100}, 1)):
+        with patch('backend.combat.random.Random') as rng:
+            rng.return_value.randint.return_value=1
             _player_auto_turn(b, actor, 'objective')
         self.assertEqual(enemy['condition'], 'unconscious')
         self.assertTrue(enemy['alive'])

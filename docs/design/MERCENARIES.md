@@ -1,5 +1,8 @@
 # Mercenaries — implemented alpha/dev pass
 
+October 2 capture/starter update: [Capture and starting roles](CAPTURE_AND_STARTING_ROLES.md) is authoritative for dedicated capture weapons, removal of ordinary blunt/unarmed Subdue and six coherent starting kits. References below to old nonlethal weapon permissions are historical; XP/levels remain proposed.
+
+
 Each player has four persistent hiring contacts. Open a Private Contract, assign at least one available member of your own crew, and select **Hire mercenaries**. Select a contact to fill an empty party or optional bodyguard slot. Payment happens when the expedition starts, not when browsing or assigning. Public contracts must first be saved to Private Contracts.
 
 Names, portraits, equipment, rank, personality, and trust persist in the player's save. Existing contacts never reroll on refresh or restart. A missing contact is replaced the next time the hiring board is opened. Early contacts are Human fighters, scouts, adepts, medics, or builders; further racial and named mercenary content is future work. There is no background death lottery.

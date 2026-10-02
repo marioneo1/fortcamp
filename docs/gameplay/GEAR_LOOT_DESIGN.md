@@ -1,5 +1,8 @@
 # Gear and loot design
 
+October 2 capture/starter update: [Capture and starting roles](../design/CAPTURE_AND_STARTING_ROLES.md) is authoritative for dedicated capture weapons, removal of ordinary blunt/unarmed Subdue and six coherent starting kits. References below to old nonlethal weapon permissions are historical; XP/levels remain proposed.
+
+
 Updated October 1, 2026. The live catalogue has 180 items. The September pass added 28 tactical items; this pass adds 56 equipment pieces to a live baseline of 124. `backend/gear_expansion.py` and `backend/gear_progression.py` contain additions and placements, `backend/mission_loot.py` controls mixed cache rolls, and `backend/combat.py` applies actual abilities and enchantments. See [the complete catalogue audit](ITEM_CATALOGUE_AUDIT.md) for counts, individual effects and drop sources.
 
 ## Drop sequence

@@ -21,21 +21,23 @@ class GearExpansionTests(unittest.TestCase):
 
     def test_capture_skill_is_nonlethal_in_manual_and_auto_combat(self):
         for auto in (False, True):
-            battle, actor, enemy = self.battle('mercykeepers_maul')
+            battle, actor, enemy = self.battle('goblin_net_bow')
             actor.update(x=2, y=2, attack=100)
             enemy.update(x=3, y=2, hp=2)
             # Isolate the capture technique from boss-priority targeting.
             battle['units']['gob_chief'].update(x=7, y=0)
             battle['units']['gob_archer'].update(x=7, y=1)
             battle['units']['gob_horn'].update(x=7, y=2)
-            with patch('backend.combat._attack_hits', return_value=(True, {'damage_bonus': 0, 'chance': 100}, 1)):
+            with patch('backend.combat.random.Random') as rng:
+                rng.return_value.randint.return_value=1
                 if auto:
                     _player_auto_turn(battle, actor, 'aggressive')
                 else:
-                    apply_player_command(battle, {'action': 'skill', 'target_id': enemy['id']})
+                    apply_player_command(battle, {'action': 'attack', 'target_id': enemy['id']})
             self.assertEqual(enemy['condition'], 'unconscious')
             self.assertTrue(enemy['alive'])
-            self.assertTrue(actor['special_used'])
+            self.assertFalse(actor['special_used'])
+            self.assertEqual(actor['combat_record']['total_damage'],0)
 
     def test_element_affinities_and_nonlethal_safety(self):
         battle, actor, enemy = self.battle('coalbrand_sabre')

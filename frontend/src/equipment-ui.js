@@ -17,6 +17,8 @@ const icon = (id,item) => `<img class="catalogue-icon" src="${escape(item?.icon|
 export function describeGear(item, perks={}) {
   const lines=[];
   if(item.description)lines.push(item.description);
+  if(item.capture_weapon)lines.push(`Capture weapon: range ${item.capture_weapon.range}, balanced STR / DEX / INT. Uses capture checks instead of damaging attacks; never kills.`);
+  if(item.knockout_finisher)lines.push(`${item.knockout_finisher}% chance on a killing direct blow to leave the target unconscious instead. Ordinary attacks can kill.`);
   if(item.power)lines.push(`Weapon power: ${item.power}; scales with ${(item.weapon_scaling||'str').toUpperCase()}.`);
   for(const [key,value] of Object.entries(item.attribute_bonuses||{}))lines.push(`${value>=0?'+':''}${value} ${key.toUpperCase()}`);
   for(const [key,value] of Object.entries(item.bonuses||{}))lines.push(`${value>=0?'+':''}${value} ${label(key)} capability`);
@@ -40,7 +42,7 @@ export function describeGear(item, perks={}) {
   if(rules.water_walk)lines.push('Shallow water terrain costs 1 movement. Climbing costs still apply; does not cross pits.');
   if(rules.rubble_walk)lines.push('Rubble and destroyed structures cost 1 terrain movement. Climbing costs still apply.');
   if(rules.opening_guard)lines.push('Begin the battle guarding: halves the first incoming attack until hit or the next round.');
-  if(rules.subdue_gloves)lines.push('Enables melee Subdue with any equipped weapon.');
+  if(rules.capture_chance)lines.push(`+${rules.capture_chance} capture chance (percentage points), only with a capture weapon.`);
   if(rules.lifeline)lines.push('Once per battle, survive lethal damage at 1 HP. Does not prevent nonlethal capture. Multiple safeguards share one use.');
   if(rules.wounded_damage)lines.push(`+${rules.wounded_damage} direct damage against enemies at half HP or lower. Damage-over-time excluded.`);
   if(rules.boss_damage)lines.push(`+${rules.boss_damage} direct damage against bosses. Damage-over-time excluded.`);

@@ -137,6 +137,7 @@ app.mount("/api/champion-portraits", StaticFiles(directory=CHAMPION_PORTRAIT_ROO
 
 
 class CharacterCreate(BaseModel):
+    starting_role: str | None = None
     name: str = "Wanderer"
     race: str = "Human"
     series: str = "Player"

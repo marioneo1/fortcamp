@@ -64,6 +64,7 @@ class AttackApproachTests(unittest.TestCase):
 
     def test_reposition_uses_original_turn_budget(self):
         apply_player_command(self.battle,{'action':'move','x':2,'y':5})
+        self.actor['capture_weapon']={'base':8,'range':1,'elevation_rule':'melee'}
         preview=battle_view(self.battle)['attack_previews'][self.target['id']]['subdue']
         self.assertEqual(preview['movement_cost'],2)
         with patch('backend.combat._advance_to_player'):

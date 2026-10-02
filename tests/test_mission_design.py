@@ -688,7 +688,7 @@ class TacticalCombatTests(unittest.TestCase):
         current_id = battle_view(battle)["current_unit_id"]
         current = battle["units"][current_id]
         target = battle["units"]["gob_guard"]
-        current.update({"x": 0, "y": 7, "attack_range": 1, "nonlethal_capable": True})
+        current.update({"x": 0, "y": 7, "attack_range": 1, "nonlethal_capable": True, "capture_weapon": {"base":8,"range":1,"elevation_rule":"melee"}})
         target.update({"x": 6, "y": 1})
         distant = battle_view(battle)["attack_previews"][target["id"]]
         self.assertIsNone(distant["attack"])
@@ -764,10 +764,13 @@ class TacticalCombatTests(unittest.TestCase):
         current_id = battle_view(battle)["current_unit_id"]
         current = battle["units"][current_id]
         target = battle["units"]["gob_guard"]
-        current.update({"x": 3, "y": 1, "attack": 100, "nonlethal_capable": True})
+        current.update({"x": 3, "y": 1, "attack": 100, "nonlethal_capable": True, "capture_weapon": {"base":8,"range":1,"elevation_rule":"melee"}})
         target.update({"x": 3, "y": 2, "hp": 1, "evasion": 0})
 
-        apply_player_command(battle, {"action": "subdue", "target_id": target["id"]})
+        from unittest.mock import patch
+        with patch("backend.combat.random.Random") as rng:
+            rng.return_value.randint.return_value=1
+            apply_player_command(battle, {"action": "subdue", "target_id": target["id"]})
 
         self.assertTrue(target["alive"])
         self.assertFalse(target["conscious"])

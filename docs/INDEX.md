@@ -1,5 +1,6 @@
 # Fortcamp documentation map
 
+- [Capture and starting roles](design/CAPTURE_AND_STARTING_ROLES.md): live capture weapons, starter kits, balance rules, and the separate proposed level system.
 - [Mercenaries and early pacing](design/MERCENARIES.md): persistent hiring, betrayal, rare encounters, starter kits, and quieter regional events.
 - [Camp and roster UI](design/CAMP_INTERFACE.md): base sections, inventory, prisoner navigation and item selling.
 - [Relationships](design/CHARACTER_RELATIONSHIPS.md): loyalty, personality, records, conversations and staged roadmap.

@@ -44,7 +44,7 @@ PERK_EFFECTS = {
     'void_sight':{'combat':{'accuracy':5}},
     'stormbound':{'combat':{'initiative':2},'capabilities':{'magic':1}},
 }
-COMBAT_LABELS={'move':'movement','initiative':'initiative','armor':'armor','hp':'maximum HP','evasion':'evasion (percentage points)','accuracy':'accuracy (percentage points)','regeneration':'HP restored each new round','damage_goblin':'damage against Goblinoids','damage_deathless':'damage against Deathless','melee_damage':'melee damage','magic_reduction':'% less incoming magic damage'}
+COMBAT_LABELS={'move':'movement','initiative':'initiative','armor':'armor','hp':'maximum HP','evasion':'evasion (percentage points)','accuracy':'accuracy (percentage points)','regeneration':'HP restored each new round','damage_goblin':'damage against Goblinoids','damage_deathless':'damage against Deathless','melee_damage':'melee damage','magic_reduction':'% less incoming magic damage','capture_chance':'capture chance (percentage points)'}
 
 def annotate_perks(definitions):
     for key,effects in PERK_EFFECTS.items():

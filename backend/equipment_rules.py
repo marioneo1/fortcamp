@@ -1,6 +1,6 @@
 """Bounded equipment rules separate from additive attribute bonuses."""
-CAPS={'carry_strength':6,'throw_range':1,'breach_damage':3,'guard_heal':4,'wounded_damage':2,'boss_damage':2}
-FLAGS={'water_walk','rubble_walk','opening_guard','subdue_gloves','lifeline'}
+CAPS={'capture_chance':6,'carry_strength':6,'throw_range':1,'breach_damage':3,'guard_heal':4,'wounded_damage':2,'boss_damage':2}
+FLAGS={'water_walk','rubble_walk','opening_guard','lifeline'}
 
 def collect_rules(equipped):
     result={'resistances':[]}

@@ -2,6 +2,15 @@
 
 Use this file for pending work and GAMEPLAY_VISION.md for standing design rules. Update statuses when implementing a feature; record validation in docs/history/MISSION_REFINEMENT_PHASE.md. Requests here do not authorize paid generation or publication beyond the user's current instructions.
 
+## October 2 ? capture weapons and starter roles
+
+- Implemented in dev: Fighter, Ranger, Mage, Captor, Medic and Engineer starting roles with matching poor-quality gear, one perk and Basic proficiency. Starting roles do not restrict later builds; existing characters keep their gear.
+- Implemented: dedicated capture weapons replace damaging basic attacks with repeatable STR/DEX/INT probability checks. Failed attempts do no damage; success leaves a living captive. Manual/automatic/personality combat, previews, boss resistance, control setup and legacy battles use the new rules.
+- Implemented: nine capture weapons with rank-gated general/event sources and two rare mission exclusives; existing restraint tools converted. Ordinary blunt/unarmed capture and the glove loophole retired. Blackwatch Cudgel gets its own 5% killing-blow knockout effect.
+- Deferred/design recorded: levels, persistent XP, bounded specialization choices and fixed enemy levels; no automatic attribute inflation or player-scaled encounters. Respecialization and dedicated starter/capture art still need a pass.
+- Canonical reference: docs/design/CAPTURE_AND_STARTING_ROLES.md. Existing gear art reused; no new image generation or production deployment.
+
+
 ## Current pass — September 30, 2026
 
 - Goblin flames now emit continuously instead of ending together between bursts. Added a 24-second soft wood-fire loop with gentle context fades and Master/Ambient controls. Sources and listening previews are preserved; user listening approval remains pending. See docs/audio/WOOD_FIRE_AMBIENCE.md.

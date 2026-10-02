@@ -39,6 +39,7 @@ $('#loading').classList.add('hidden');$('#game').classList.remove('hidden');$('#
 window.gearRender=()=>renderBattle(fixture.battle);
 window.gearSend=()=>sendCombat({action:'skill',target_id:'gob_guard'});
 window.gearPreparation=()=>renderBattlePreparation({...fixture.battle,status:'preparing',preparation:{zone:[],deployment_zone:[],available:[],placements:[],budget:4,remaining:4}});
+window.gearCreator=()=>{mountCharacterCreator($('#creator'),content);$('#game').classList.add('hidden');$('#mission-modal').classList.add('hidden');$('#creator').classList.remove('hidden')};
 window.gearRender();window.gearReady=true;
 '''
 folder = ROOT / 'staging-ui/equipment-icons-v1'
