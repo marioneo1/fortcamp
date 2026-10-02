@@ -1,5 +1,13 @@
 # Map Asset Layering
 
+## October 2: Grounding and overhead study
+
+Live renderer preserves image aspect ratio when enlarging one-cell structures and interactables: horizontal size plus automatic height replaces independent width/height stretching. Short silhouette shadows replace the longer floating-looking drop shadow; hover retains the outline without a large glow. Multi-cell footprints and rotation remain unchanged. No gameplay collision or map placement changes.
+
+Generated a separate 12-object steep-overhead pilot using the painted terrain atlas as the sole style reference. Source, exact prompt, crops, comparison and real Warcamp toggle preview are in staging-terrain/overhead-props-v1. Existing art is preserved and the pilot does not automatically replace the live prop library. Crates/barrel/canopy/campfire show the overhead direction better; palisades still expose excessive front faces and need another pass. A global camera direction is not complete yet.
+
+Build the study with `.venv\Scripts\python.exe tools/build_overhead_prop_preview.py`, then serve using `node tools/serve_board_preview.mjs`. Open http://127.0.0.1:8766/staging-terrain/overhead-props-v1/preview.html for Grass/Dirt/Stone comparisons or battle-preview.html for the actual Warcamp toggle. These are isolated development fixtures, not launchers. Crop extraction uses connected silhouettes and removes neighboring artwork; it recovered two nominal-grid cuts (tent and tree). Scattered fragments are retained only near their owning silhouette; merged or ambiguous sheets reject extraction for review. Complete source art must exist to recover it; cropped-away details cannot be invented. All twelve crops preserve transparency and natural proportions.
+
 Fortcamp maps use three mutually exclusive runtime art layers.
 
 ## Terrain

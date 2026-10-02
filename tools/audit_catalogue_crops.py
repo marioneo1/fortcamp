@@ -21,7 +21,7 @@ def source_icons(image,columns,rows,expected_count=None):
     for y in range(rows):ordered.extend(sorted(by_y[y*columns:(y+1)*columns],key=lambda p:p['center'][0]))
     return ordered,parts,labels
 
-def recovered_icon(image,part,parts,labels):
+def recovered_icon(image,part,parts,labels,*,size=192,padding=6):
     # Take a generous source region, but retain only this silhouette and its nearby
     # detached details. Masking removes neighbors rather than clipping the icon.
     width,height=image.size;l,t,r,b=part['box'];pad=6
@@ -36,8 +36,8 @@ def recovered_icon(image,part,parts,labels):
             if labels[y*width+x] in owned:pixels[(y-box[1])*mask.width+x-box[0]]=255
     mask.frombytes(bytes(pixels));mask=mask.filter(ImageFilter.MaxFilter(7))
     tile=image.crop(box);alpha=tile.getchannel('A');alpha.frombytes(bytes(value if keep else 0 for value,keep in zip(alpha.tobytes(),mask.tobytes())));tile.putalpha(alpha)
-    tile=tile.crop(tile.getbbox());tile.thumbnail((180,180),Image.Resampling.LANCZOS)
-    result=Image.new('RGBA',(192,192));result.alpha_composite(tile,((192-tile.width)//2,(192-tile.height)//2))
+    tile=tile.crop(tile.getbbox());tile.thumbnail((size-padding*2,size-padding*2),Image.Resampling.LANCZOS)
+    result=Image.new('RGBA',(size,size));result.alpha_composite(tile,((size-tile.width)//2,(size-tile.height)//2))
     return result
 
 def audit_sheet(source,entries,columns,rows,apply=False,backup=None):

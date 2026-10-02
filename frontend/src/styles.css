@@ -347,3 +347,10 @@ body.board-vfx-active .event-arcane .guild-event-art:after{display:none}
 .battle-supplies button{border:1px solid #786945;border-radius:7px;background:#303a27;color:#f2e4c6;font:inherit;cursor:pointer}.battle-supplies button:hover:not(:disabled){background:#485338;border-color:#c5ac6f}.battle-supplies button:disabled{opacity:.4;cursor:default}
 
 .trade-rotation{padding:16px;border:1px solid #95764b;border-radius:12px;background:#2b291f}.trade-item-title{display:flex;gap:8px;align-items:center}.trade-item-title img{width:40px;height:40px;object-fit:contain}.faction-contact-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.faction-contact{padding:14px;border:1px solid #4b5145;border-radius:10px;background:#222a25}.faction-contact progress{width:100%;height:8px;accent-color:#d6ad64}.faction-job{display:grid;gap:6px;margin-top:14px}.faction-contact small{display:block;color:#b7c1b4}.trade-basic-supplies{display:flex;gap:8px;flex-wrap:wrap}
+
+/* Grounded painted props: preserve source proportions and avoid floating sticker shadows. */
+.battlefield.terrain-style-custom-painted .has-prop-art{filter:drop-shadow(1px 2px 1px #17201266)}
+.battlefield.terrain-style-custom-painted .battle-terrain.has-prop-art.prop-structure{background-size:var(--prop-scale,154%) auto!important}
+.battlefield.terrain-style-custom-painted .battle-object.has-prop-art{background-size:var(--prop-scale,142%) auto!important}
+.battlefield.terrain-style-custom-painted .battle-terrain.has-prop-art.destroyed{filter:grayscale(.18) drop-shadow(1px 1px 1px #17201255)}
+.battlefield.terrain-style-custom-painted .battle-object.has-prop-art:hover{outline:2px solid #f1d064;outline-offset:-4px;filter:drop-shadow(1px 2px 1px #17201266)}

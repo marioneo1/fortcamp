@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Grounded props and overhead pilot
+
+Corrected independent width/height enlargement of legacy painted props to preserve aspect ratio, shortened drop shadows and removed hover glow while retaining the selection outline. Generated one new transparent twelve-object atlas with the terrain sheet as the only style reference; old art was not modified. Connected-silhouette extraction recovered tent/tree crossing nominal cell edges and removed neighboring fragments. Added a comparison across three ground materials and an isolated actual Warcamp preview with old/new toggle. Atlas, exact prompt, extracted sprites and screenshots stay in staging-terrain/overhead-props-v1.
+
+Validation: two catalogue crop tests, frontend production build and real-browser checks passed. Browser checks verify all twelve comparison pairs and three material assets load, real Warcamp toggle changes only the preview art, and legacy enlargement uses automatic height. Palisades remain too frontal for the intended overhead direction; the full production pack is not replaced. No live saves or production files changed.
+
 ## 2026-10-02: Starter vendor, contract-priced hires and social UI
 
 Added ten always-available starter gear offers at 4-6 gold with server-side purchases, distinct unequipped copies and prices above resale value. Raised contact-grade base fees and added contract-rank multipliers; planner quotes, analysis and acceptance agree, while browsing preserves contacts. Redesigned prison as list/detail with visible capacity, assigned warden/readiness, stockade warnings and explicit full-cell swaps. Redesigned Conversation with portrait, loyalty, transcript, topic explanations and meal drawer. Retained reading position, topic/drawer selection and bounded session history through polling; guarded duplicate clicks and late responses.
