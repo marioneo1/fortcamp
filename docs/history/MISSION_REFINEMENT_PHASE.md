@@ -328,3 +328,7 @@ Fixed the camera grid cascade that wrapped zoom-in into a stretched row. Equippe
 ### Map wheel zoom and prison design
 
 Added fine exponential wheel zoom centered on the pointer without a battle rerender. Documented the current prison gaps and proposed recruitment loop separately from live mechanics. Frontend unit tests, build and isolated browser wheel/control checks validate this UI pass.
+
+## Prisoner allegiance first pass
+
+Implemented fixed capture/migration profiles, eight personal requests, warden INT sessions shared across prisoners, once-only payment and recruitment, owner-only allegiance missions with linked success credit, and prisoner conversation UI. Initial boss pacing distinguishes negotiation from agreements and adds proof after payment for B/A/S bosses. Legacy NPC records use authored baselines because no original attribute snapshots exist. Rescue templates scale enemy strength but reuse the wagon map; temporary factions and deeper individual loyalty missions remain deferred. Validation: 235 backend tests, 95 frontend tests, production build and isolated browser conversation/payment/recruitment checks. No release saves changed.

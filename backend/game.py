@@ -22,6 +22,7 @@ from .races import RACE_CATALOG, RACE_FAMILIES, RACE_GAMEPLAY, REGIONAL_RECRUIT_
 from .outcome_balance import CRITICAL_SOFT_CAPS, CRITICAL_STAT_LIMITS, classify_roll, outcome_probabilities
 
 from .relationships import ensure_character, record_mission, PERSONALITIES
+from .prison_recruitment import initialize_prisoner, prisoner_interaction, credit_allegiance
 
 GRID_W = 12
 GRID_H = 8
@@ -219,6 +220,8 @@ def manage_prisoner(
         if prisoner.get("holding") != "temporary_stockade":
             _enter_stockade(prisoner, now)
         return {"action": "stockade", "prisoner": prisoner}
+    if action in {"talk", "negotiate", "fulfill", "recruit"}:
+        return prisoner_interaction(state, prisoner, action, ITEMS, now)
     if action != "secure":
         raise ValueError("Unknown prisoner action")
     if prisoner.get("holding") == "prison_cell":
@@ -252,6 +255,8 @@ def normalize_state(state: dict) -> dict:
     if "prison_cell" not in state["learned_blueprints"]:
         state["learned_blueprints"].append("prison_cell")
     _normalize_prisoners(state)
+    for prisoner in state.get('prisoners',[]):
+        initialize_prisoner(prisoner, MISSION_TEMPLATES.get(prisoner.get('captured_from_template'),{}).get('rank','E'))
     if state.get("mission_rank") not in MISSION_RANKS:
         has_hall = any(building.get("type") == "guild_hall" for building in state.get("buildings", []))
         state["mission_rank"] = "D" if has_hall else "E"
@@ -1323,6 +1328,7 @@ def resolve_mission(state: dict, mission: dict, party_ids: list[str], analysis: 
             c["morale"] = max(0, int(c.get("morale", 70)) - 2)
 
     story = _mission_story(mission, party, analysis, outcome, rng, awarded)
+    credit_allegiance(state, analysis, outcome, story)
     if special_events:
         story.extend(special_events)
     if awarded["injuries"]:

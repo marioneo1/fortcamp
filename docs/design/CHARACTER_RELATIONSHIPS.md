@@ -38,3 +38,7 @@ AGENTS.md requires documentation/backlog updates in the same feature pass. docs/
 ## Roster presentation (2026-10-01)
 
 Career statistics now live in a separate Service Record tab. Conversation contains personality, loyalty, topics and meal gifts. Statistics and conversation behavior are unchanged.
+
+## Captive recruitment
+
+Prisoner conversation and agreements now precede roster membership; see PRISON_RECRUITMENT.md. Recruits keep stable identity/tastes and join with 70 loyalty through ordinary negotiation or 80 through a fulfilled agreement. Allegiance provenance is retained for later loyalty contracts; those follow-ups are not implemented yet.

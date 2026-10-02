@@ -13,7 +13,7 @@ This records current behavior rather than planned features in BUILDINGS_DESIGN_W
 | Watchpost | Can accept guard assignments | No watch/raid/base-defense benefit. Candidate for retiring from future construction/rewards until base defense is implemented |
 | Guild Hall | Mission-rank unlocks and free-for-all claim-allowance upgrades | Staff currently adds no board bonus |
 | Training Ground | Combatant, Scavenger and Survivalist training | Teacher-based rules replace the old implication that training is automatic |
-| Prison Cell | Four secure prisoner slots; temporary-stockade swaps; reserves a Warden slot | Warden effects and recruitment/trader acquisition remain pending |
+| Prison Cell | Four secure prisoner slots; temporary-stockade swaps; reserves a Warden slot | INT-based shared warden negotiation and personal recruitment terms implemented; security/trader acquisition remains pending |
 | Arcane Sanctum | Arcanist training | Keep |
 | Alchemy Lab | Alchemist training | Keep |
 | Lumbermill / Quarry / Salvage Yard / Farm / Herb Garden | Production yield upgrades, assignable work and work proficiency practice | Keep |
@@ -21,4 +21,4 @@ This records current behavior rather than planned features in BUILDINGS_DESIGN_W
 
 Camp hiring has been removed from both UI and server action. Workers must be encountered through missions. Later prisoner recruitment and a trader who offers captives require authored acquisition, pricing and loyalty rules; these are not implemented by this pass.
 
-Loyalty now checks command reliability once per combat activation: independent-action chance equals 100 minus loyalty. Missing NPC loyalty defaults to 80; the player is immune. Conversations, meal gifts and service records are implemented; prisoner recruitment and warden effects remain pending. See CHARACTER_RELATIONSHIPS.md and PRISON_RECRUITMENT_PROPOSAL.md.
+Loyalty now checks command reliability once per combat activation: independent-action chance equals 100 minus loyalty. Missing NPC loyalty defaults to 80; the player is immune. Conversations, meal gifts and service records are implemented; prisoner recruitment and INT-based warden negotiation are implemented. See CHARACTER_RELATIONSHIPS.md and PRISON_RECRUITMENT_PROPOSAL.md.

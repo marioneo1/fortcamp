@@ -1282,3 +1282,5 @@ from .gear_progression import apply_slot_gear
 apply_slot_gear(ITEMS,MISSION_TEMPLATES,GENERAL_LOOT_TABLE,EVENT_REWARD_TABLES)
 for _item_id,_item in ITEMS.items():
     _item['icon']=f'/assets/catalogue/items/{_item_id}.png'
+from .prison_recruitment import apply_prison_contracts
+apply_prison_contracts(MISSION_TEMPLATES)

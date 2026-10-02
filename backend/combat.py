@@ -614,7 +614,7 @@ def create_frontier_watch_defense_battle(state: dict, party_ids: list[str], seed
     }
 
 
-def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission_id: str, defer_start: bool = False) -> dict:
+def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission_id: str, defer_start: bool = False, race_override: str | None = None) -> dict:
     spec = TACTICAL_CONTRACTS[mission_id]
     mission = MISSION_TEMPLATES[mission_id]
     board = compile_generated_battle_map(f"contract_{spec['layout']}", seed)
@@ -624,7 +624,7 @@ def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission
     tier = {"E":0,"D":0,"C":1,"B":2,"A":3,"S":4}[mission["rank"]]
     count = min(8, spec.get('enemy_count',3 + tier + (1 if tier else 0)))
     rng = random.Random(f"contract:{seed}")
-    race = spec["race"]
+    race = race_override or spec["race"]
     racial = race_gameplay(race)
     used_names = set()
     for index, tile in enumerate(board["spawn_zones"]["enemy"][:count]):

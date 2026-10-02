@@ -49,5 +49,13 @@ await evaluate("document.querySelector('[data-combat-action=continue_pursuit]').
 assert.equal(await evaluate("document.querySelector('.battle-victory-overlay')===null&&Boolean(document.querySelector('[data-victory-expand]'))"),true);
 await evaluate("document.querySelector('[data-victory-expand]').click()");assert.equal(await evaluate("Boolean(document.querySelector('.battle-victory-overlay'))"),true);
 await evaluate("document.querySelector('[data-victory-minimize]').click()");assert.equal(await evaluate("document.querySelector('.battle-victory-overlay')===null"),true);
-assert.deepEqual(errors,[]);console.log('Gear details, tooltips, record tab and outside-click dismissal passed.');
+await evaluate('window.prisonPreview()');
+await evaluate("document.querySelector('[data-prison-talk]').open=true;document.querySelector('[data-prisoner-action=talk]').click()");await new Promise(r=>setTimeout(r,150));
+assert.match(await evaluate("document.querySelector('.prison-talk-reply').textContent"),/timber/);
+assert.equal(await evaluate("document.querySelector('[data-prisoner-action=recruit]').disabled"),true);
+await evaluate("window.confirm=()=>true;document.querySelector('[data-prisoner-action=fulfill]').click()");await new Promise(r=>setTimeout(r,150));
+assert.equal(await evaluate("document.querySelector('[data-prisoner-action=recruit]').disabled"),false);
+await evaluate("document.querySelector('[data-prisoner-action=recruit]').click()");await new Promise(r=>setTimeout(r,150));
+assert.equal(await evaluate("document.querySelector('[data-prison-talk]')===null"),true);
+assert.deepEqual(errors,[]);console.log('Camera, equipment, victory and prisoner talk/payment/recruitment checks passed.');
 await call('Browser.close');ws.close();

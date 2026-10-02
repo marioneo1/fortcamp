@@ -491,17 +491,25 @@ async def character_conversation(character_id: str,req: RelationshipRequest,iden
 
 @app.post("/api/prisoners/{prisoner_id}/action")
 async def prisoner_action(prisoner_id: str, req: PrisonerActionRequest, identity: IdentityDep):
-    session, row = await locked_player(identity)
-    try:
-        state = deepcopy(row.state)
-        result = manage_prisoner(state, prisoner_id, req.action, req.swap_prisoner_id)
-        row.state = state; row.updated_at = int(time.time())
-        await session.commit()
-        return {"result": result, "state": state}
-    except ValueError as exc:
-        await session.rollback(); raise HTTPException(400, str(exc))
-    finally:
-        await session.close()
+    from .services import _player_locks, spawn_prisoner_contract
+    async with _player_locks.setdefault((identity.guild_id,identity.user_id),asyncio.Lock()):
+        session, row = await locked_player(identity)
+        try:
+            state = normalize_state(deepcopy(row.state))
+            if req.action == 'quest':
+                prisoner=next((p for p in state.get('prisoners',[]) if p['id']==prisoner_id),None)
+                if not prisoner:raise ValueError('Prisoner not found or no longer in custody')
+                mission=await spawn_prisoner_contract(session,identity.guild_id,identity.user_id,prisoner)
+                result={'text':'Allegiance contract added to Private Contracts.','mission_id':mission.id,'mission':mission_summary(mission)}
+            else:
+                result = manage_prisoner(state, prisoner_id, req.action, req.swap_prisoner_id)
+            row.state = state; row.updated_at = int(time.time())
+            await session.commit()
+            return {"result": result, "state": state}
+        except ValueError as exc:
+            await session.rollback(); raise HTTPException(400, str(exc))
+        finally:
+            await session.close()
 
 
 @app.post("/api/train-perk")

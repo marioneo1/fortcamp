@@ -1,6 +1,6 @@
 # Prison recruitment proposal
 
-Status: design proposal, October 1, 2026. Recruitment and warden effects below are not implemented. Mousewheel camera controls are implemented separately.
+Status: original design proposal, October 1, 2026. The first playable recruitment pass is now documented in PRISON_RECRUITMENT.md. Unimplemented ideas below remain proposals. Mousewheel camera controls are implemented separately.
 
 ## Existing foundation
 

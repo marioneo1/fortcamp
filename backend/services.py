@@ -22,6 +22,7 @@ from .settings import settings
 from .mission_decisions import initial_scene, decision_view, advance_scene, setup_encounter
 from .mission_loot import scene_reward_template
 from .reward_visibility import public_reward_preview
+from .prison_recruitment import initialize_prisoner
 from .economy import POINT_COST
 from .combat import _advance_to_player
 
@@ -365,6 +366,30 @@ async def _spawn_result_chains(
     return spawned
 
 
+async def spawn_prisoner_contract(session, guild_id, user_id, prisoner):
+    """One active allegiance quest per captive; failed/expired attempts may be retried."""
+    r=prisoner['recruitment']
+    if not r['revealed'] or r['terms_met']:
+        raise ValueError('Discuss unfinished recruitment terms first.')
+    if prisoner.get('holding')!='prison_cell':
+        raise ValueError('Secure the prisoner before pursuing their agreement.')
+    quest_route=r.get('quest_route',r['route'])
+    if quest_route not in ('rival','former','proof','rescue'):
+        raise ValueError('This agreement asks for resources or an item, not a mission.')
+    if r.get('requires_proof') and not r.get('payment_met'):
+        raise ValueError('Fulfill the requested payment before starting the proof contract.')
+    prior=await session.get(MissionInstance,r['quest_id']) if r.get('quest_id') else None
+    if prior and prior.guild_id==guild_id and (prior.analysis or {}).get('chain_owner_user_id')==user_id and prior.status in ('available','reserved','claimed','battle','decision') and (prior.expires_at>now_ts() or prior.status in ('claimed','battle','decision')):
+        return prior
+    ts=now_ts();template_id=f"prison_{quest_route}_{r['rank'].lower()}"
+    row=MissionInstance(id=f'mis_{uuid.uuid4().hex}',guild_id=guild_id,template_id=template_id,
+        pool_slot=-(uuid.uuid4().int%8_000_000_000_000_000+1),position=0,spawned_at=ts,expires_at=ts+86400,
+        duration_seconds=1,status='available',analysis={'chain_owner_user_id':user_id,
+        'private_source_name':f"Allegiance: {prisoner['name']}",'prisoner_allegiance_id':prisoner['id'],
+        'prisoner_allegiance_route':r['route'],'prisoner_allegiance_name':prisoner['name']})
+    r['quest_id']=row.id;session.add(row);await session.flush();return row
+
+
 def mission_summary(row: MissionInstance, include_result: bool = False, viewer_rank: str | None = None) -> dict:
     m = MISSION_TEMPLATES[row.template_id]
     rank = m.get("rank", "E")
@@ -417,6 +442,8 @@ def mission_summary(row: MissionInstance, include_result: bool = False, viewer_r
             "private": True, "claim_by": row.expires_at,
         }
         data["private_source"] = (row.analysis or {}).get("private_source_name", "Earned follow-up")
+    if (row.analysis or {}).get('prisoner_allegiance_name'):
+        data['name']+=f" - {row.analysis['prisoner_allegiance_name']}"
     if include_result:
         data["result"] = row.result
     return data
@@ -503,13 +530,17 @@ async def claim_instance(
 
         state = deepcopy(player.state)
         template = MISSION_TEMPLATES[mission.template_id]
+        captive_id=(mission.analysis or {}).get('prisoner_allegiance_id')
+        captive=next((p for p in state.get('prisoners',[]) if p['id']==captive_id),None) if captive_id else None
+        if captive_id and (not captive or captive.get('holding')!='prison_cell' or captive.get('recruitment',{}).get('terms_met')):
+            raise ValueError('This prisoner must remain secured with unfinished terms to start their contract.')
         chain_metadata = dict(mission.analysis or {})
         if mission.status=='available':spend_claim(state,mission,now_ts())
         analysis = analyze_mission(state, template, party_ids, role_assignments, bodyguard_ids)
         for key in (
             "chain_owner_user_id", "chain_parent_id", "chain_id", "chain_step", "chain_total",
             "world_trigger_source_id", "world_trigger_source_name", "world_triggered_by_name",
-            "private_source_name",
+            "private_source_name", "prisoner_allegiance_id", "prisoner_allegiance_route", "prisoner_allegiance_name",
         ):
             if key in chain_metadata:
                 analysis[key] = chain_metadata[key]
@@ -547,7 +578,29 @@ async def claim_instance(
         if has_scene:
             analysis['scene'] = initial_scene()
         elif combat_definition:
-            analysis["battle"] = create_battle(state, deployed_party_ids, mission.id, combat_definition.get("id", mission.template_id))
+            analysis["battle"] = create_battle(state, deployed_party_ids, mission.id, combat_definition.get("id", mission.template_id),defer_start=bool(captive))
+            if captive and combat_definition.get('id','').startswith('contract:'):
+                from .combat import create_contract_battle
+                analysis['battle']=create_contract_battle(state,deployed_party_ids,mission.id,mission.template_id,defer_start=True,race_override=captive.get('race'))
+            if captive and captive['recruitment']['route']=='rescue' and template.get('rank') in ('E','D'):
+                enemies=[u for u in analysis['battle']['units'].values() if u.get('team')=='enemy']
+                keep={u['id'] for u in enemies if u.get('boss')}|{u['id'] for u in enemies[:1]}
+                for u in enemies:
+                    if u['id'] not in keep:
+                        analysis['battle']['units'].pop(u['id'],None)
+                    else:
+                        u.update(hp=min(u['hp'],14),max_hp=min(u['max_hp'],14),attack=3,armor=0)
+                analysis['battle']['turn_order']=[uid for uid in analysis['battle']['turn_order'] if uid in analysis['battle']['units']]
+                analysis['battle']['turn_index']=0
+            elif captive and captive['recruitment']['route']=='rescue':
+                tier=max(0,'EDCBAS'.index(template.get('rank','C'))-1)
+                for unit in analysis['battle']['units'].values():
+                    if unit.get('team')=='enemy':
+                        unit['hp']=unit['max_hp']=round(unit['max_hp']*(1+.2*tier))
+                        unit['attack']+=tier
+            if captive:
+                analysis['battle']['name']=f"{template['name']} - {captive['name']}"
+                _advance_to_player(analysis['battle'])
         mission_status = "decision" if has_scene else "battle" if combat_definition else "claimed"
         completes_at = None if combat_definition or has_scene else claimed_at
         original_status=mission.status
@@ -1086,6 +1139,9 @@ def _store_captured_prisoners(state: dict, battle: dict, mission: MissionInstanc
             prisoner["stockade_remaining_seconds"] = STOCKADE_LIMIT_SECONDS
             prisoner["stockade_expires_at"] = captured_at + STOCKADE_LIMIT_SECONDS
         prisoner["sale_value"] = prisoner_sale_value(prisoner)
+        if unit.get('recruitable_snapshot'):
+            prisoner['recruitable_snapshot']=deepcopy(unit['recruitable_snapshot'])
+        initialize_prisoner(prisoner, MISSION_TEMPLATES.get(mission.template_id,{}).get('rank','E'),captured_at)
         state["prisoners"].append(prisoner)
         stored.append(prisoner)
     return stored

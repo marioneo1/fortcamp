@@ -646,6 +646,8 @@ class TacticalCombatTests(unittest.TestCase):
             "perks": {"combat": "skilled"},
         })
         ally = _make_procedural("goblin_boss", random.Random(4))
+        # This fixture tests commanded tactics; disobedience has its own tests.
+        ally["loyalty"] = 100
         ally["attributes"].update({"str": 9, "agi": 7, "vit": 9})
         ally["equipment"] = {}
         state["characters"].append(ally)

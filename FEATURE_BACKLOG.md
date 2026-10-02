@@ -115,3 +115,7 @@ Deferred: deeper debriefs and Champion voices, item/trinket gifts and crafter re
 ### Precise zoom and prison planning (2026-10-01)
 
 Implemented smooth pointer-anchored map wheel zoom, retaining modified-wheel scrolling, camera buttons and middle-click behavior. Proposed prison recruitment design documented in docs/design/PRISON_RECRUITMENT_PROPOSAL.md: warden attention, resistance versus loyalty, individual concerns and allegiance contracts for exceptional captives. Recruitment/warden effects remain pending; no prisoner data altered.
+
+## Completed: first playable prisoner allegiance loop (2026-10-01)
+
+Stable capture terms and recruit profiles; eight initial concerns; shared INT-based warden negotiation; story-backed gold/wood/medicine/item sinks; 24 owner-only tactical allegiance templates; explicit one-time recruit conversion and starting loyalty. B/A/S officers with payments also require proof. Roster prisoner conversations and Private Contracts now connect. See docs/design/PRISON_RECRUITMENT.md for live rules, migration and limitations. Temporary faction politics, deeper authored chains, security incidents and personal loyalty follow-ups remain pending.

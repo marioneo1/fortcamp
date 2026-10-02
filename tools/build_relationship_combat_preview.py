@@ -20,12 +20,24 @@ battle['turn_order']=['player','gob_guard','gob_chief','gob_archer','gob_horn'];
 battle['units']['player'].update(x=2,y=2,attack=100,attack_range=4,attack_elevation_rule='ignore')
 battle['units']['gob_guard'].update(x=3,y=2,hp=1,evasion=0)
 before=battle_view(battle);after=apply_player_command(battle,{'action':'attack','target_id':'gob_guard'})
-payload=json.dumps({'state':state,'content':public_content(),'replies':replies,'before':before,'after':after},ensure_ascii=True)
+from backend.game import manage_prisoner
+from backend.prison_recruitment import initialize_prisoner
+prison_state=deepcopy(state)
+prison_state['buildings'].append({'id':'prison-fixture','type':'prison_cell','x':8,'y':8,'assigned':['player']})
+prison_state['resources']['wood']=100
+prisoner={'id':'prison-fixture-captive','capture_key':'fixture','name':'Vrix','race':'Goblin','kind':'raider','holding':'prison_cell','captured_at':1,'portrait':''}
+initialize_prisoner(prisoner);prisoner['recruitment'].update(route='rebuild',quest_route='rebuild',cost=30,terms_text='Our camp burned. Bring timber for roofs and a fence.')
+prison_state['prisoners']=[prisoner]
+responses={};changing=deepcopy(prison_state)
+for action in ('talk','fulfill','recruit'):
+ result=manage_prisoner(changing,prisoner['id'],action)
+ responses[action]={'result':result,'state':deepcopy(changing)}
+payload=json.dumps({'state':state,'content':public_content(),'replies':replies,'before':before,'after':after,'prison_state':prison_state,'prison_responses':responses},ensure_ascii=True)
 source=(ROOT/'staging-ui/equipment-icons-v1/battle-preview.js').read_text(encoding='utf-8')
 source+='\nconst relationshipFixture='+payload+';\n'+"""
 identity={guild_id:'fixture-guild',user_id:'fixture-user'};state=relationshipFixture.state;content=relationshipFixture.content;
 window.relationshipRequests=[];const previousFixtureFetch=window.fetch;
-window.fetch=(url,options)=>{if(window.qolVictoryState&&String(url).endsWith('/battle/command')){const request=JSON.parse(options.body);if(request.action==='continue_pursuit')window.qolVictoryState.decision_pending=false;return Promise.resolve(new Response(JSON.stringify({battle:window.qolVictoryState}),{status:200}))}if(String(url).endsWith('/conversation')){const request=JSON.parse(options.body);window.relationshipRequests.push(request);return Promise.resolve(new Response(JSON.stringify(relationshipFixture.replies[request.topic||'recent']),{status:200}))}return previousFixtureFetch(url,options)};
+window.fetch=(url,options)=>{if(String(url).includes('/prisoners/')){const request=JSON.parse(options.body);return Promise.resolve(new Response(JSON.stringify(relationshipFixture.prison_responses[request.action]),{status:200}))}if(window.qolVictoryState&&String(url).endsWith('/battle/command')){const request=JSON.parse(options.body);if(request.action==='continue_pursuit')window.qolVictoryState.decision_pending=false;return Promise.resolve(new Response(JSON.stringify({battle:window.qolVictoryState}),{status:200}))}if(String(url).endsWith('/conversation')){const request=JSON.parse(options.body);window.relationshipRequests.push(request);return Promise.resolve(new Response(JSON.stringify(relationshipFixture.replies[request.topic||'recent']),{status:200}))}return previousFixtureFetch(url,options)};
 window.relationshipPreview=()=>{combatEffects.pause();$('#mission-modal').classList.add('hidden');selectedCharacterId='companion';rosterDetailTab='conversation';renderRoster();$('.tabs button[data-tab="roster"]').click()};
 window.nativePreview=()=>{$('#mission-modal').classList.remove('hidden');renderBattle(structuredClone(relationshipFixture.before));};
 window.nativeCast=()=>{const next=structuredClone(relationshipFixture.after);renderBattle(next);animateBattleMovement(relationshipFixture.before,next)};
@@ -37,6 +49,7 @@ window.qolEquipment=()=>{window.relationshipPreview();
 };
 window.qolContract=()=>openMission({id:'preview-contract',name:'A guild contract',rank:'E',status:'available',party_size:1,description:'Check the canal.',reward_preview:['Contract payment','Possible equipment discoveries']});
 window.qolVictory=()=>{window.qolVictoryState={...structuredClone(relationshipFixture.before),battle_won:true,decision_pending:true,victory_title:'The chieftain has fallen.',victory_description:'The remaining goblins are fleeing. Leave now or pursue optional objectives.'};$('#mission-modal').classList.remove('hidden');renderBattle(window.qolVictoryState)};
+window.prisonPreview=()=>{$('#mission-modal').classList.add('hidden');state=structuredClone(relationshipFixture.prison_state);rosterCollectionOpen.prisoners=true;renderRoster();$('.tabs button[data-tab="roster"]').click()};
 """
 folder=ROOT/'staging-ui/combat-relationships';folder.mkdir(parents=True,exist_ok=True)
 (folder/'preview.js').write_text(source,encoding='utf-8')
