@@ -1,5 +1,12 @@
 # Fortcamp feature backlog
 
+## October 2: User-authored polished T and corner replacements
+
+Installed `staging-terrain/building-toolset-v10-polished/part_17.png` for both centered and perimeter T walls, and `part_18.png` for intact corners. Original atlas remains unchanged. The dedicated polished installer reapplies these overrides, records filenames in installed.json, measures the new horizontal/vertical anchors and fits their stems to the adjoining tile. Existing straight-wall boundary offset is preserved; rotations carry calibrated anchors to each corner and T orientation. Native artwork is retained, without assembled corner overlays. Damaged corner, cross, doors and other pieces remain from the existing kit. Asset cache version changed so refreshed clients load the replacement sprites.
+
+Reviewed enlarged browser captures of all four furnished polished buildings; browser loading/native-junction checks pass. Rough stone, timber, metal, production and saves unchanged. Small painted seams remain subject to live visual review.
+
+
 ## October 2: Complete painted polished-stone kit installed
 
 The active dev `limestone` family now uses one 4x4, 16-piece atlas in `staging-terrain/building-toolset-v10-polished`. References: successful timber/metal sheets, the user?s `question/better style.png`, and a visible diagram of sixteen equal square cells. Full walls, half ends, native corner/T/cross/perimeter-T joints, window, breach, matching open/closed doors and gates, pillar, stairs, damaged corner and brace were generated together. Exact prompt, original atlas, crop bounds and in-game screenshots are preserved beside the source.

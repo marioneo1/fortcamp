@@ -61,31 +61,31 @@
     "authored_junctions": true,
     "wall_half_thickness": 0.1139,
     "corner_offset": [
-      -0.0303,
-      -0.0303
+      -0.0311,
+      0.0574
     ],
     "junction_offset": [
       0,
       0
     ],
     "authored_junction_offset": [
-      0,
-      0.322
+      -0.0147,
+      0.41
     ],
     "authored_cross_offset": [
-      0,
+      0.0,
       0.0
     ],
     "authored_edge_junction_offset": [
-      0,
-      -0.0191
+      -0.0147,
+      0.0646
     ],
     "authored_window_offset": [
-      0,
+      0.0,
       -0.0006
     ],
     "authored_breach_offset": [
-      0,
+      0.0,
       0.0646
     ],
     "broken_corner_offset": [
