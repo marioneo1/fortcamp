@@ -1,6 +1,10 @@
 # Fortcamp feature backlog
 
-## Completed October 2: Visible fixed-unit corner/T/cross prototype
+## October 2: Rejected wall overlap prototype; generated junction candidates pending
+
+The user rejected the v6 procedural corner/T/cross preview. It is not completed or approved art. Generated two dedicated three-piece junction candidates using measured geometry and existing painted wall references; complete silhouettes extracted to staging-terrain/building-toolset-v7-junctions. Both still fail modular geometry checks and remain uninstalled. Pending: correctly matched authored junctions/straight bands, connection review, then additive game integration. Canonical direction: docs/art/MODULAR_WALL_GENERATION_GUIDE.md. No runtime or production changes.
+
+## Rejected October 2: Fixed-unit corner/T/cross assembly prototype
 
 Added an isolated interactive preview of actual corner, T and cross assembly using the v6 painted material. Includes all four quarter turns, four surface variants, optional grid and actual map paving. Exact arm spans, common top width and union-based side-face projection; browser validation/export passes for 16 configurations. Source: tools/build_gridfit_join_preview.py; page/images: staging-terrain/building-toolset-v6-gridfit. Inspected all four comparison images; mortar transitions remain visibly assembled. Existing game materials, combat renderer, saves and production unchanged. Next: user art comparison; guided dedicated junction art remains a valid option; no automatic rollout. Canonical reference: docs/art/MODULAR_WALL_GENERATION_GUIDE.md.
 

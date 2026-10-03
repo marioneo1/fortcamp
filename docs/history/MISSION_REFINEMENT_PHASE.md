@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Reject patched junction assembly and test dedicated generated pieces
+
+User explicitly rejected the procedural overlap approach. Generated actual complete corner/T/cross artwork in two built-in imagegen calls, referencing a measured silhouette guide and existing painted limestone. Preserved prompts/source outputs and recovered each whole silhouette through alpha-component extraction without warping or patch assembly. Inspection found dimensional inconsistencies in both trials, plus a stepped corner in the second. Saved measured reports and candid rejection notes under staging-terrain/building-toolset-v7-junctions. Neither trial was installed. Updated canonical guidance to require authored junction artwork and explicitly supersede the rejected assembly direction. Game art, runtime, production and saves unchanged; no gameplay tests needed for staging media/docs.
+
 ## 2026-10-02: Demonstrate fixed-unit junction construction
 
 User asked to see the promised corner/T/cross assembly and questioned excluding dedicated guided junction artwork. Confirmed dedicated generation is a valid option. Built a standalone staging canvas renderer using existing v6 painted bands, fixed 128px corner arms, 256/128px T and 256px cross spans, with 48px top thickness. Combined top footprints before projecting their shaded sides so internal connections have no dark face crossing their stem. Camera direction remains constant across quarter turns. Matching local top patches cover intersections without raised columns.

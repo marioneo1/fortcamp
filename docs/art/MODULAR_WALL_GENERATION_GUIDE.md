@@ -1,18 +1,24 @@
 # Modular wall art — current dev strategy
 
+## October 2: Assembly rejected; dedicated generated junctions required
+
+User rejected the v6 band-and-patch corner/T/cross assembly because of ugly overlaps. That prototype is rejected, not awaiting approval. Do not promote its renderer, overlays or center patches into combat. Generate complete authored corner, T and cross silhouettes with continuous masonry, matching painted-map art and shared full/half-unit geometry. Request the pieces the renderer actually needs; do not substitute intersecting straight sprites as the finished art solution.
+
+Two guided built-in imagegen trials are saved in staging-terrain/building-toolset-v7-junctions with source images, exact prompts, a geometry diagram, alpha-extracted whole pieces and measured extraction reports. First trial has inconsistent arm lengths/cross-sections; second has inconsistent T/cross spans and a stepped corner. Neither is modularly approved or installed. Do not conceal mismatches with independent resizing, warping or patch overlays. Next pass must validate actual end ports, matching straight-band cross-sections and connection examples before installation. Existing materials remain active.
+
 ## October 2: Fixed-unit corner/T/cross preview available
 
 Built a standalone assembly prototype from the v6 painted bands. Open staging-terrain/building-toolset-v6-gridfit/junction-preview.html, or review junctions-0/90/180/270.png. Controls choose quarter-turn rotation, one of four source textures and a tile grid. Each preview shows the three junctions enlarged and on actual smithy paving. Corner arms measure 128px each; T bar/stem 256/128px; cross spans 256/256px. All top bands are 48px thick. The 84px painted source cross-section is split into 48px top and 36px side material. No texture scaling or independently inflated half pieces.
 
 This prototype combines the top footprint before projecting a 36px shaded side downward. That suppresses internal faces passing across a connecting stem and keeps camera direction stable through rotation. A 48px matching top patch covers the center; it is not a raised column. Brick/mortar transitions remain visibly assembled, so this is an art comparison rather than an approved replacement. The production combat renderer has not adopted this projection algorithm. Original materials remain active.
 
-Guided dedicated junction generation is also valid: use these fixed-unit footprints as geometry references and preserve dimensions at import. The user does not prohibit actual corner/T/cross shapes; the rejected issue was oversized independently sized illustrations. tools/build_gridfit_join_preview.py reproduces the standalone page and tools/gridfit_join_browser_qa.mjs checks 16 rotation/texture combinations and exports the four comparison images. User visual review remains pending.
+Guided dedicated junction generation is also valid: use these fixed-unit footprints as geometry references and preserve dimensions at import. The user does not prohibit actual corner/T/cross shapes; the rejected issue was oversized independently sized illustrations. tools/build_gridfit_join_preview.py reproduces the standalone page and tools/gridfit_join_browser_qa.mjs checks 16 rotation/texture combinations and exports the four comparison images. User rejected this assembly preview; retain it only as historical evidence of the failed approach.
 
 ## October 2: Painted grid-unit direction supersedes the pure-overhead experiment
 
 User rejected the planar polished material style and inconsistent generated lengths, and explicitly withdrew pure-top-down as the main requirement. PRIORITY: match existing painted terrain/props. Preserve all original and comparison materials. Do not interpret the prior overhead trial as the new art standard.
 
-Construction assets must be designed around one declared unit and its exact half, with one material cross-section and one stone scale. Do not request long independent L-corner sprites or full T/cross illustrations when the renderer uses straight bands. Corner/junction art covers only the local join; attached full/half segments supply arms. An atlas cell is packaging, not permission to inflate small parts to its size. Never normalize a half wall or small joint independently to full-wall width.
+Construction assets must be designed around one declared unit and its exact half, with one material cross-section and one stone scale. Generate dedicated corner, T and cross pieces with specified half-length arms and full-length bars, sharing one cross-section and compatible end ports with straight bands. Do not generate oversized long L legs or use intersecting bands as a substitute for authored junction masonry. An atlas cell is packaging, not permission to inflate small parts to its size. Never normalize a half wall or small joint independently to full-wall width.
 
 New source trial: staging-terrain/building-toolset-v6-gridfit. References explicitly separate a measured geometry blueprint, existing v4 limestone wall style and actual smithy-cobble map style. The new generated sheet is closer to the painted direction but still failed dimensional constraints: full bands measured 276-281px, alleged halves 171-174px. Rejected its structural half/join/door rows. Do not claim the raw sheet is grid-correct.
 
