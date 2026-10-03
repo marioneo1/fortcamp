@@ -219,11 +219,41 @@ test('directional corners select their matching artwork without rotating or mirr
  const g={fieldstone:{...modular.fieldstone,directional_corners:Object.fromEntries(names.map((name,i)=>[name,{offset:[.01*i,.02*i]}]))}};
  for(const [i,name] of names.entries()){
   const item={id:'corner',x:4,y:3,sprite:'structure:fieldstone_corner',rotation:i*90,art_offset:[.72,.72]};
-  const layout=structuralLayout(item,g),art=layout.connectors.find(c=>!c.wall_cap);
+  const layout=structuralLayout(item,g),art=layout.connectors.find(c=>c.sprite==='structure:fieldstone_wall_'+name);
   assert.equal(layout.hideArt,true);assert.equal(art.sprite,'structure:fieldstone_wall_'+name);
   assert.equal(art.rotation,0);assert.equal(art.art_mirror_y,1);
   close(art.art_offset[0],.72+.01*i);close(art.art_offset[1],.72+.02*i);
   assert.deepEqual(connectionPorts(item,g),connectionPorts(item,modular));
   assert.deepEqual(structuralLayout({...item,destroyed:true},g).connectors,[]);
  }
+});
+test('outward-painted corner kits dictate all four perimeter wall faces after rotation',()=>{
+ const g={fieldstone:{...modular.fieldstone,perimeter_face:'outward'}},edges=['north','east','south','west'];
+ const outward=[[0,-1],[1,0],[0,1],[-1,0]];
+ for(let turn=0;turn<4;turn++)for(let side=0;side<4;side++){
+  const item=wall('edge',0,0,{rotation:(side%2*90+turn*90)%360,edge_wall:true,wall_edges:[edges[(side+turn)%4]]});
+  const layout=structuralLayout(item,g);let normal=[0,layout.mirrorY];
+  for(let n=0;n<item.rotation/90;n++)normal=[-normal[1],normal[0]];
+  assert.deepEqual(normal.map(v=>v||0),outward[(side+turn)%4]);
+  assert.deepEqual(connectionPorts(item,g),connectionPorts(item,modular));
+ }
+ const centered=structuralLayout(wall('inside',0,0,{rotation:90}),g);assert.equal(centered.mirrorY,1);
+});
+test('matching bands extend into directional corner columns while the column stays in front',()=>{
+ const g={fieldstone:{...modular.fieldstone,perimeter_face:'outward',corner_overlap:.035,
+  directional_corners:{north_east:{offset:[-.09,.15]}}}};
+ const layout=structuralLayout({id:'corner',sprite:'structure:fieldstone_corner'},g);
+ const band=layout.connectors.filter(c=>c.sprite==='structure:fieldstone_wall'&&!c.wall_cap);
+ assert.equal(band.length,2);assert.ok(band.every(c=>c.art_mirror_y===-1));
+ close((.5-band[0].art_clip[1]/100)*1.25,.36+.035);
+ close((band[1].art_clip[3]/100-.5)*1.25,-.36+.035);
+ const original=layout.connectors.find(c=>c.id==='corner_directional_corner');
+ assert.equal(original.art_layer,4);
+ assert.ok(original.art_clip.some(v=>v>0));
+ assert.equal(layout.connectors.filter(c=>c.sprite==='structure:fieldstone_wall_north_east').length,1);
+});
+test('outward perimeter T reverses only its bar and keeps the divider face',()=>{
+ const g={fieldstone:{...modular.fieldstone,perimeter_face:'outward'}};
+ const parts=structuralLayout({id:'t',sprite:'structure:fieldstone_edge_junction',rotation:0},g).connectors.filter(c=>!c.wall_cap);
+ assert.equal(parts[0].art_mirror_y,-1);assert.equal(parts[1].art_mirror_y,1);
 });

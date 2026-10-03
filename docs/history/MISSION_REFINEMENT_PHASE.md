@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Correct missed limestone face mismatch and corner overlap
+
+User correctly identified that the preceding corner replacement still faced opposite to adjoining wall bands. Inspected the source art and enlarged actual-CSS renders instead of treating alignment tests as visual acceptance. Added a material-specific outward perimeter convention, including T bars and exposed caps. Rejected perpendicular wall inset because it created stepped edges. Extended matching bands 0.035 tile into existing corner columns and clipped the supplied directional image to its foreground column, eliminating protruding source arm tips without introducing separate pillars or changing source images. Preserved logical connections, collision, destruction and saves.
+
+Reviewed all four enlarged limestone directions plus full gatehouse/divided-hall layouts. 131 frontend tests, build, seven targeted backend tests, four-material/four-rotation enlarged QA and all 16 Battle Lab material layouts pass. Production untouched; user visual approval remains pending. Legacy damaged-corner arm shading remains a separate art limitation.
+
 ## 2026-10-02: Revert strategic posts and select directional limestone corners
 
 User rejected c8dd76e's strategic pillars. Reverted that pass and inspected the supplied four limestone_wall_* directional corner PNGs, located in frontend/dist. Preserved them in frontend/public plus a staging backup before rebuilding. Calibrated horizontal/vertical arm anchors independently, selected one unrotated image for each logical corner direction and preserved connection ports/translation/destruction. Installer now detects complete optional directional sets without overwriting their source files. Earlier exposed caps, layer order, mirroring and native T remain; rough stone keeps previous corners. 128 frontend tests, build, seven targeted backend checks and all 16 Battle Lab layouts pass. Production/saves unchanged; subjective approval pending.

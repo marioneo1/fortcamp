@@ -110,6 +110,9 @@ def main():
                     round((-o if direction.startswith('north') else o)-(cy-.5)*1.25,4)]}
                 registry[f'structure:{family}_wall_{direction}']=f'structures/{version}/{file.name}'
             geometry[family]['directional_corners']=calibrated
+            if family=='limestone':
+                geometry[family]['perimeter_face']='outward'
+                geometry[family]['corner_overlap']=.035
     aliases={'shed_wall_straight':'timber_wall','shed_wall_corner':'timber_corner','shed_wall_broken':'timber_breach',
              'shed_door_closed':'timber_door_closed','shed_door_open':'timber_door_open',
              'stone_wall_straight':'fieldstone_wall','cemetery_wall_corner':'fieldstone_corner',

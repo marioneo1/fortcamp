@@ -1,5 +1,13 @@
 # Wall boundaries — implemented in dev
 
+## October 2: Match supplied limestone corners and seat bands inside their columns
+
+The previous directional-corner pass missed a material-specific face mismatch: the supplied limestone corners shade outward, while their adjoining perimeter bands shaded inward. Limestone now declares `perimeter_face: outward`; straight runs, perimeter-T bars, exposed end posts and corner support bands follow it after every quarter turn. Interior dividers retain horizontal-down/vertical-left faces. Other materials retain their existing convention.
+
+Corner bands extend 0.035 tile into the supplied corner's built-in column along their length. Do not shift the boundary sideways: that produced stepped seams in the enlarged review and was rejected. The directional image is clipped to its built-in column and drawn in front on layer 4; matching continuous bands replace its unequal loose arm tips. Horizontal bands remain layer 3 and vertical bands layer 2. No new strategic pillars, image stretching or source-file edits. Original directional anchors, logical rotation, ports, collision, health and destruction remain unchanged. Installer records the face convention and overlap.
+
+Reviewed enlarged renders in all four directions and the full limestone gatehouse/divided hall. Automated checks: 131 frontend tests, build, seven targeted backend tests, all 16 Battle Lab material layouts and four-material/four-rotation enlarged browser checks. Legacy damaged-corner source art remains; its surviving arm shading is a separate art limitation, not covered by the intact-corner correction. Production and saves untouched. User approval remains pending.
+
 ## October 2: Revert connector pillars; use directional limestone corners
 
 Removed the strategic connector-pillar pass at the user's request. Ordinary joins again use the earlier band assembly, foreground exposed-end posts, face mirroring and dedicated stone T. No new pillars are added at T/cross/gate seams.

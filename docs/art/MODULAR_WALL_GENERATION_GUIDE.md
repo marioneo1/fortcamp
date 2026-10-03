@@ -1,5 +1,11 @@
 # Modular wall art — current dev strategy
 
+## Supplied limestone corners: face and seating rules
+
+The current limestone directional images shade outward. Use material metadata `perimeter_face: outward` for their adjoining perimeter bands, perimeter-T bars and exposed posts; other kits retain their existing inward convention. Match the source corner rather than assuming a universal inward face. Centered dividers still face horizontal-down/vertical-left.
+
+Render the supplied corner's built-in column only, clipped in its original unrotated directional image on layer 4. Assemble its arms from matching straight bands on layers 3/2. Extend bands 0.035 tile under the column along their length, preserving thickness and aspect ratio. This removes unequal source arm tips and seats the bands inside the existing column without adding pillars or shifting the boundary sideways. Directional anchor offsets and collision ports are unchanged. Check all four corner directions enlarged as well as perimeter runs in a full map; passing geometry tests alone does not establish visual quality. Legacy damaged-corner art needs a separate matching-face pass.
+
 ## Directional limestone corners - current replacement
 
 The strategic connector-pillar experiment was reverted. Intact limestone corners instead use the user's four limestone_wall_north_east/north_west/south_east/south_west.png images from building-v4. Their built-in corner detail remains part of the image; no separate strategic pillars are added. Logical quarter turns select a matching directional file; the image itself stays at zero rotation with no mirroring. Each horizontal/vertical arm has a measured alignment offset, preserving scale and logical ports.
@@ -20,8 +26,8 @@ This is implemented for regenerated rough fieldstone and polished limestone (bui
 
 ## Required building assembly checklist
 
-- Perimeter bands face inward and match their corner arms; interior horizontal bands face down, vertical bands face left.
-- T/cross arms normalize their face independently. A perimeter T keeps its inward-facing bar and matches only its stem to the divider.
+- Perimeter bands follow their kit's corner faces (outward for the supplied limestone corners, inward for the other kits); interior horizontal bands face down, vertical bands face left.
+- T/cross arms normalize their face independently. A perimeter T follows the material's perimeter face for its bar and matches only its stem to the divider.
 - Preserve thickness and proportions; clip lengths and metal corner mating planes instead of stretching art.
 - Connected ports suppress terminal posts. Exposed posts match the attached face, including mirrored opposite endpoints.
 - Vertical bands use layer 2, horizontal bands layer 3, and exposed posts layer 4 below character tokens (5). This makes horizontal bands cover vertical ones at corners and T/cross joins. Keep posts non-interactive and separate from collision.

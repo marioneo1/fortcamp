@@ -73,7 +73,7 @@ for(const family of ['timber','fieldstone','limestone','iron']){
   }
   if(['fieldstone','limestone'].includes(family)&&index===1){
    assert.equal(await evaluate("Array.from(document.querySelectorAll('.wall-cap')).every(e=>Number(getComputedStyle(e).zIndex)===4)"),true);
-   assert.equal(await evaluate("Array.from(document.querySelectorAll('.wall-connector:not(.wall-cap)')).every(e=>Number(getComputedStyle(e).zIndex)===(parseInt(e.style.getPropertyValue('--asset-rotation'))%180===0?3:2))"),true);
+   assert.equal(await evaluate("Array.from(document.querySelectorAll('.wall-connector:not(.wall-cap)')).every(e=>Number(getComputedStyle(e).zIndex)===Number(e.style.getPropertyValue('--wall-art-layer')))"),true);
    assert.ok(await evaluate("Array.from(document.querySelectorAll('.wall-cap')).some(e=>e.style.getPropertyValue('--asset-rotation')==='180deg'&&e.style.getPropertyValue('--asset-mirror-y')==='-1')"));
   }
   await writeFile(`staging-terrain/building-toolset-v4/${family}-${index+1}-in-game.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));

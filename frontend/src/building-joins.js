@@ -3,12 +3,13 @@ function turn([x,y],rotation){for(let i=0;i<rotation/90;i++)[x,y]=[-y,x];return 
 const matchPiece=item=>/^structure:(timber|fieldstone|limestone|iron)_(.+)$/.exec(item.sprite||'');
 const rotationOf=item=>((Number(item.rotation)||0)%360+360)%360;
 const inward={north:[0,1],east:[-1,0],south:[0,-1],west:[1,0]};
-function faceMirror(item){
+function faceMirror(item,g={}){
  const face=inward[item.wall_edges?.length===1?item.wall_edges[0]:null];
  // Centered dividers share a stable face convention, even after a half turn.
  if(!face)return rotationOf(item)>=180?-1:1;
  const normal=turn([0,1],rotationOf(item));
- return normal[0]*face[0]+normal[1]*face[1]<0?-1:1;
+ const facing=normal[0]*face[0]+normal[1]*face[1]<0?-1:1;
+ return facing*(g.perimeter_face==='outward'?-1:1);
 }
 // Clip the texture at a diagonal mating plane instead of drawing two rims
 // over one another. Coordinates remain local to each unscaled texture strip.
@@ -80,7 +81,7 @@ export function structuralLayout(item,geometry,neighbors=[]){
  const match=matchPiece(item);
  if(!match)return {offset:item.art_offset||[0,0],connectors:[]};
  const [,family,piece]=match,g=geometry[family];if(!g)return {offset:item.art_offset||[0,0],connectors:[]};
- const base=offsetOf(item,g,piece),mirrorY=faceMirror(item);
+ const base=offsetOf(item,g,piece),mirrorY=faceMirror(item,g);
  const rotation=rotationOf(item);
  if(piece==='breach'){
   const [dx,dy]=g.breach_offset||[0,0];
@@ -101,8 +102,11 @@ export function structuralLayout(item,geometry,neighbors=[]){
   // A rotated T/cross changes where its arms go, not which side of an
   // interior wall carries the painted face. Match the ordinary divider runs.
   const interiorArm=['junction','cross'].includes(piece)||(piece==='edge_junction'&&direction===90);
+  const perimeterArm=piece==='edge_junction'&&direction===0;
   const armMirror=interiorArm?(beamRotation>=180?-1:1):
-   ['wall','end'].includes(piece)?mirrorY:((piece==='corner'||piece==='corner_broken')&&base.some(v=>Math.abs(v)>.5)?-1:1);
+   perimeterArm?(g.perimeter_face==='outward'?-1:1):
+   ['wall','end'].includes(piece)?mirrorY:
+   ((piece==='corner'||piece==='corner_broken')&&base.some(v=>Math.abs(v)>.5)?-1:1)*(g.perimeter_face==='outward'?-1:1);
   return {id:`${item.id}_sleeve_${serial++}`,parent_id:item.id,x:item.x,y:item.y,
    sprite:`structure:${family}_wall`,art_scale:scale,rotation:beamRotation,
    art_offset:[x+anchor[0],y+anchor[1]],
@@ -130,7 +134,7 @@ export function structuralLayout(item,geometry,neighbors=[]){
    const trim=g.cap_mode==='trim',[dx,dy]=turn([.5,0],p.rotation);
    return {id:`${item.id}_cap_${p.index}`,parent_id:item.id,wall_cap:true,x:item.x,y:item.y,
     sprite:`structure:${family}_${trim?'wall':'pillar'}`,rotation:p.rotation,
-    art_mirror_y:trim?1:faceMirror({...item,rotation:p.rotation}),
+    art_mirror_y:trim?1:faceMirror({...item,rotation:p.rotation},g),
     art_scale:trim?scale:g.cap_scale||.4,
     art_offset:trim?[p.point[0]+dx,p.point[1]+dy]:p.point,
     ...(trim?{art_clip:[0,72,0,0]}:{})};
@@ -140,10 +144,19 @@ export function structuralLayout(item,geometry,neighbors=[]){
  if(piece==='corner'&&g.directional_corners){
   const direction={0:'north_east',90:'south_east',180:'south_west',270:'north_west'}[rotation];
   const art=g.directional_corners[direction];
-  if(art)return {offset:base,hideArt:true,connectors:[{
+  if(art){const corner={
    id:`${item.id}_directional_corner`,parent_id:item.id,x:item.x,y:item.y,
-   sprite:`structure:${family}_wall_${direction}`,rotation:0,art_mirror_y:1,art_layer:3,art_scale:scale,
-   art_offset:[base[0]+art.offset[0],base[1]+art.offset[1]]},...caps()]};
+   sprite:`structure:${family}_wall_${direction}`,rotation:0,art_mirror_y:1,art_layer:4,art_scale:scale,
+   art_offset:[base[0]+art.offset[0],base[1]+art.offset[1]]};
+   const north=direction.startsWith('north'),east=direction.endsWith('east');
+   // Extend matching bands into the authored column. Keep the original
+   // column in front, while hiding loose arm tips beneath continuous bands.
+   const overlap=g.corner_overlap||0;
+   return {offset:base,hideArt:true,connectors:[
+    ...beam([0,-o],0,-scale/2,o+overlap),
+    ...beam([o,0],90,-o+overlap,scale/2),{...corner,
+    art_clip:[north?0:58,east?5:64,north?58:0,east?64:5]},...caps()]};
+  }
  }
  if(piece==='junction'&&g.native_junction_rotations?.includes(rotation)){
   const [x,y]=turn(g.native_junction_offset,rotation);

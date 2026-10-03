@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## Completed October 2: Limestone face matching and corner seating
+
+Corrected the supplied directional limestone corners' outward-face convention across perimeter bands, Ts and exposed posts. Matching straight bands extend into each existing built-in column; clipped foreground columns hide unequal source arm tips. Rejected a sideways inset after it visibly stepped the joins. No separate strategic pillars or image warping. Reviewed enlarged renders in all four directions and full limestone layouts; 131 frontend tests, build, seven targeted backend checks and enlarged/16-layout browser checks pass. Canonical rules: docs/design/WALL_BOUNDARIES.md and docs/art/MODULAR_WALL_GENERATION_GUIDE.md. Production unchanged; subjective approval pending. Remaining art limitation: legacy damaged limestone corner faces.
+
 ## Completed October 2: Revert connector pillars and try user-authored limestone corners
 
 Removed the strategic pillar rule after visual rejection. Limestone corners now use the four supplied directional images with independent measured alignment; earlier face/layer/end-post/T fixes remain. Preserved files from disposable frontend/dist into source assets and a staging backup. Installer keeps/calibrates optional directional sets; rough stone retains prior assembly. Canonical reference: docs/design/WALL_BOUNDARIES.md and docs/art/MODULAR_WALL_GENERATION_GUIDE.md. Validation: 128 frontend tests, build, seven targeted backend tests and all 16 Battle Lab layouts pass. Production untouched; subjective review pending.

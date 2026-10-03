@@ -113,7 +113,9 @@
           -0.1472
         ]
       }
-    }
+    },
+    "perimeter_face": "outward",
+    "corner_overlap": 0.035
   },
   "iron": {
     "join_offset": 0.3843,
