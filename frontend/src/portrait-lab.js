@@ -24,7 +24,7 @@ export async function openPortraitLab({api,src,esc,onSaved,onError}){
     find('[data-grid]').querySelectorAll('[data-key]').forEach(button=>button.onclick=()=>{
       const row=rows.find(r=>r.key===button.dataset.key);
       const save=async payload=>{const result=await api('/api/debug/portrait-lab/frame',{method:'POST',body:JSON.stringify({key:row.key,...payload})});row.portrait_frame=result.portrait_frame;render();await onSaved?.()};
-      openPortraitFraming({character:row,src:src(row.key),onSave:save,onReset:()=>save({reset:true}),onError});
+      openPortraitFraming({character:row,src:src(row.full||row.key),onSave:save,onReset:()=>save({reset:true}),onError});
     });
   }
   for(const key of ['query','kind','group'])find('[data-'+key+']').addEventListener(key==='query'?'input':'change',event=>{filters[key]=event.target.value;page=0;render()});

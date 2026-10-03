@@ -12,7 +12,7 @@ from .content import (
     MISSION_TEMPLATES, EVENT_REWARD_TABLES, RANK_REWARD_SCALING, PERK_LEVELS, PERK_TRACKS,
     PERK_TRAINING_ITEMS, RECRUIT_PROFILES, STANDALONE_PERKS, STAT_NAMES,
 )
-from .portraits import champion_portrait, choose_pool_portrait, portrait_pool_key
+from .portraits import champion_portrait, choose_pool_portrait, portrait_pool_key, version_pool_url
 from .portrait_framing import resolve_frame
 from .appearance import has_appearance, sanitize_appearance, tagged_appearance
 from .perk_effects import modifiers
@@ -342,7 +342,10 @@ def normalize_state(state: dict) -> dict:
                     char.update(portrait)
                     char["portrait_source"] = "pool"
                     char["portrait_locked"] = True
+        for field in ('portrait','portrait_full','portrait_thumbnail'):
+            if char.get(field):char[field] = version_pool_url(char[field])
         char['portrait_frame'] = resolve_frame(char)
+        char['portrait_frame_default'] = resolve_frame({'portrait':char.get('portrait_full') or char.get('portrait')})
         char["appearance"] = sanitize_appearance(char.get("appearance", {}))
         char.setdefault("appearance_source", "manual" if has_appearance(char["appearance"]) else "none")
         tagged = tagged_appearance(char)

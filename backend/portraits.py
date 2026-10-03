@@ -4,6 +4,7 @@ import random
 import re
 from pathlib import Path
 from urllib.parse import quote
+from urllib.parse import urlsplit, unquote
 
 from .appearance import champion_metadata, portrait_metadata
 from .portrait_framing import resolve_frame
@@ -23,6 +24,19 @@ ARCHETYPE_ROLES = {
 
 PORTRAIT_ROLES = ("melee", "ranged", "magic", "healer", "worker", "special")
 ROLELESS_PORTRAIT_RACES = frozenset({"slimefolk", "werewolf"})
+
+
+def version_pool_url(url):
+    """Refresh a changed asset without changing its stable portrait identity."""
+    parsed=urlsplit(str(url or ''))
+    if parsed.netloc:return url
+    if not parsed.path.startswith('/api/portrait-pools/'):return url
+    parts=unquote(parsed.path).removeprefix('/api/portrait-pools/').split('/')
+    if len(parts)!=3 or parts[1] not in {'full','thumb','original'}:return url
+    if any(not re.fullmatch(r'[a-zA-Z0-9_.-]+',part) or part in {'.','..'} for part in parts):return url
+    path=PORTRAIT_POOL_ROOT.joinpath(*parts)
+    if not path.is_file():return url
+    return parsed.path+'?v='+str(path.stat().st_mtime_ns)
 
 
 def portrait_pool_key(race: str, gender: str, archetype_id: str, special: bool = False) -> str:
@@ -80,8 +94,8 @@ def choose_pool_portrait(pool_key: str, rng: random.Random) -> dict:
     base = f"/api/portrait-pools/{quote(resolved_pool)}/"
     appearance = portrait_metadata(resolved_pool, chosen.name)
     return {
-        "portrait": base + "full/" + quote(chosen.name),
-        "portrait_thumbnail": base + ("thumb/" if thumb.is_file() else "full/") + quote(chosen.name),
+        "portrait": version_pool_url(base + "full/" + quote(chosen.name)),
+        "portrait_thumbnail": version_pool_url(base + ("thumb/" if thumb.is_file() else "full/") + quote(chosen.name)),
         "portrait_pool": resolved_pool,
         "portrait_frame": resolve_frame({'portrait':base + "full/" + quote(chosen.name)}),
         "appearance": appearance,

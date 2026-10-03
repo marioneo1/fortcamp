@@ -1,8 +1,10 @@
 # Portrait framing and Portrait Lab
 
+Pool image URLs carry a file version so browser caches refresh after recropping, including existing roster/battle images and Portrait Lab. Versions do not change portrait identities or saved framing keys. Retained battle DOM images have framing reapplied after UI patches, even when their source has not changed.
+
 Implemented in development: **Mission Board → debug controls → Open Portrait Lab** lists all installed generic pool images and Champion defaults/expressions. Search by race, name or image ID; filter collections or individual image sets. Sixty circle previews per page keep the library manageable.
 
-Click a preview to edit it. The editor defaults to **Original image (uncropped)**; **Image source → Square crop** switches to the ordinary square portrait. Drag the circle or use horizontal/vertical sliders; circle size and mouse wheel change how much is included. Save stores both the framing and chosen source. **Use recommended framing** removes the library correction and returns to the automatic square recommendation. Automatic square recommendations are constrained to stay within the image, avoiding empty borders.
+Click a preview to edit it. The editor defaults to **Original image (uncropped)**; **Image source → Square crop** switches to the ordinary square portrait. Drag the circle or use horizontal/vertical sliders; circle size and mouse wheel change how much is included. Save stores both the framing and chosen source. **Reset to default** previews the default without saving: click **Save framing** to apply it, or **Cancel** to retain your saved framing. In a character editor, reset removes only that character's override and returns to the current shared image default. In Portrait Lab, it removes the shared correction and returns to the automatic square recommendation. It resets framing, not the character's image identity or uploaded photo. Automatic square recommendations are constrained to stay within the image, avoiding empty borders.
 
 **Roster → Appearance → Adjust portrait framing** saves an individual character override. This takes priority over library defaults. A replacement photo gets its own framing; the old photo's override is not applied to it. Framing never changes portrait identity, filenames, pool order or the original full photo. Image proportions are preserved.
 

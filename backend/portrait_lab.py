@@ -5,8 +5,8 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from .auth import IdentityDep
 from .battle_lab import authorize
-from .portraits import PORTRAIT_POOL_ROOT, CHAMPION_PORTRAIT_ROOT, SUPPORTED_EXTENSIONS
-from .portrait_framing import defaults, clean_frame, save_default
+from .portraits import PORTRAIT_POOL_ROOT, CHAMPION_PORTRAIT_ROOT, SUPPORTED_EXTENSIONS, version_pool_url
+from .portrait_framing import defaults, clean_frame, save_default, recommended_frame
 
 router = APIRouter(prefix='/api/debug/portrait-lab')
 
@@ -18,8 +18,8 @@ def catalogue():
         pool = path.parent.parent.name
         key = '/api/portrait-pools/'+quote(pool)+'/full/'+quote(path.name)
         thumb = path.parent.parent/'thumb'/path.name
-        rows.append({'key':key,'name':path.stem,'group':pool,'kind':'Generic',
-                     'thumbnail':key.replace('/full/','/thumb/') if thumb.is_file() else key})
+        rows.append({'key':key,'full':version_pool_url(key),'name':path.stem,'group':pool,'kind':'Generic',
+                     'thumbnail':version_pool_url(key.replace('/full/','/thumb/') if thumb.is_file() else key)})
     for path in sorted(CHAMPION_PORTRAIT_ROOT.glob('**/full.webp')):
         relative = path.relative_to(CHAMPION_PORTRAIT_ROOT)
         key = '/api/champion-portraits/'+quote(relative.as_posix(),safe='/')
@@ -28,7 +28,9 @@ def catalogue():
                      'variant':'/'.join(relative.parts[1:-1]),
                      'thumbnail':key.replace('/full.webp','/thumb.webp') if path.with_name('thumb.webp').is_file() else key})
     frames = defaults()
-    for row in rows:row['portrait_frame'] = clean_frame(frames.get(row['key']))
+    for row in rows:
+        row['portrait_frame'] = clean_frame(frames.get(row['key']))
+        row['portrait_frame_default'] = recommended_frame(row['key'])
     return rows
 
 

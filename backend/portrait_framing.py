@@ -8,6 +8,7 @@ REGISTRY_PATH = Path(__file__).resolve().parents[1] / 'data' / 'portrait_framing
 OVERRIDES_PATH = REGISTRY_PATH.with_name('portrait_framing_overrides.json')
 _cache_stamp = None
 _cache = {}
+_recommendations = {}
 
 
 def portrait_key(url):
@@ -33,7 +34,7 @@ def clean_frame(frame):
 
 
 def defaults():
-    global _cache_stamp, _cache
+    global _cache_stamp, _cache, _recommendations
     stamp = tuple(p.stat().st_mtime_ns if p.exists() else None for p in (REGISTRY_PATH, OVERRIDES_PATH))
     if stamp != _cache_stamp:
         try:_cache = json.loads(REGISTRY_PATH.read_text(encoding='utf-8')).get('portraits',{})
@@ -45,10 +46,16 @@ def defaults():
             radius = f['size']/2
             for axis in ('x','y'):f[axis] = max(radius,min(1-radius,f[axis]))
             _cache[key] = f
+        _recommendations = dict(_cache)
         try:_cache.update(json.loads(OVERRIDES_PATH.read_text(encoding='utf-8')).get('portraits',{}))
         except (OSError, ValueError):pass
         _cache_stamp = stamp
     return _cache
+
+
+def recommended_frame(key):
+    defaults()
+    return clean_frame(_recommendations.get(portrait_key(key),{}))
 
 
 def save_default(key, frame=None):

@@ -8,9 +8,24 @@ from unittest.mock import patch
 from fastapi import HTTPException
 from backend import portrait_framing as framing, portrait_lab as lab
 from backend.auth import Identity
+from backend import portraits
 
 
 class PortraitFramingTests(unittest.TestCase):
+    def test_changed_asset_gets_new_url_without_changing_framing_identity(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root=Path(directory);image=root/'test'/'full'/'001.webp';image.parent.mkdir(parents=True)
+            image.write_bytes(b'first')
+            url='/api/portrait-pools/test/full/001.webp'
+            with patch.object(portraits,'PORTRAIT_POOL_ROOT',root):
+                first=portraits.version_pool_url(url)
+                import os
+                os.utime(image,ns=(image.stat().st_atime_ns,image.stat().st_mtime_ns+1000000000))
+                second=portraits.version_pool_url(first)
+                self.assertNotEqual(first,second)
+                self.assertEqual(framing.portrait_key(first),framing.portrait_key(second))
+                self.assertEqual(portraits.version_pool_url('https://example.com'+url),'https://example.com'+url)
+
     def test_default_override_survives_audit_and_manual_character_wins(self):
         with tempfile.TemporaryDirectory() as directory:
             registry=Path(directory)/'defaults.json';overrides=Path(directory)/'overrides.json'
@@ -19,6 +34,7 @@ class PortraitFramingTests(unittest.TestCase):
             with patch.object(framing,'REGISTRY_PATH',registry),patch.object(framing,'OVERRIDES_PATH',overrides):
                 framing._cache_stamp=None
                 corrected=framing.save_default(key,{'x':.4,'y':.2,'size':.8})
+                self.assertNotEqual(framing.recommended_frame(key),corrected)
                 registry.write_text(json.dumps({'portraits':{key:{'x':.6,'y':.6,'size':1}}}))
                 character={'portrait':key.replace('/full/','/thumb/')}
                 self.assertEqual(framing.resolve_frame(character),corrected)

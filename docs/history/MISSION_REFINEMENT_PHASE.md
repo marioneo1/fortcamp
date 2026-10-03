@@ -1,5 +1,13 @@
 # Mission Refinement Phase
 
+## October 3: Safe default framing and one male portrait test
+
+Replaced immediate recommended-frame reset with a preview-only Reset to default button. Saving clears the appropriate individual/shared override; cancelling sends no mutation. Browser QA verified reset preview makes zero writes, cancel makes zero writes, and save sends exactly one reset. Eleven framing/importer tests and frontend build passed. Generated a single new male Goblin ranged 5×4 sheet with the built-in image tool, approved art reference and male presentation reference. Saved image/prompt in staging-portraits; not imported. Some narrower jaws remain a visual-review concern before further male generations.
+
+## October 3: Refreshed portrait cache and retained geometry
+
+Checked the five reported Aasimar healer images: current square full/thumb files have no side padding and their resolved default circles remain inside the image. Added file versions to generic portrait URLs without changing canonical IDs or manual frame keys. Existing character normalization and battle views refresh versions too. Retained battle DOM patches reapply image geometry so cached images do not lose computed positioning. Regression tests cover version changes and preserved framing identity.
+
 ## October 3: Square portraits and separate originals
 
 Restored square generic previews and square thumbnails for new uploads; recovered all 1,080 uncropped generic cells into separate original folders without changing IDs. Reimported the padded Aasimar sheet as square previews with uncropped originals and a backup. Both editors offer Original/Square source selection and default to Original for manual editing; source choice persists with framing. Automatic recommendations remain inside square bounds. Ten framing/importer tests and frontend build passed. Browser QA confirmed original-source selection and saved source-aware frames with no script errors.

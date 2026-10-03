@@ -40,6 +40,7 @@ export function patchLiveHTML(root,html){
   if(previous?.html===html&&previous.first===root.firstChild)return;
   const template=root.ownerDocument.createElement('template');template.innerHTML=html;
   children(root,template.content);
+  root.dispatchEvent(new CustomEvent('portrait-framing-update',{bubbles:true}));
   rendered.set(root,{html,first:root.firstChild});
 }
 export function captureMovingPositions(field){

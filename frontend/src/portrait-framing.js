@@ -30,13 +30,15 @@ function positionImage(image){
   for(const key of ['width','height','left','top'])image.style.setProperty(key,g[key]+'%','important');
 }
 document.addEventListener('load',event=>{if(event.target.matches?.('.portrait-framed-image'))positionImage(event.target)},true);
+document.addEventListener('portrait-framing-update',event=>event.target.querySelectorAll('.portrait-framed-image').forEach(positionImage));
 document.addEventListener('error',event=>{const image=event.target;if(image.matches?.('.portrait-framed-image')){image.parentElement.classList.add('portrait-unavailable');image.parentElement.title='Portrait could not be loaded'}},true);
 
 export function openPortraitFraming({character,src,onSave,onReset,onError}){
   const dialog=document.createElement('dialog');dialog.className='portrait-framing-dialog';
   dialog.innerHTML=`<header><div><small>PORTRAIT FRAMING</small><h2>Adjust character icon</h2></div><button type="button" data-close aria-label="Close">×</button></header><p>Drag the circle onto the face. A larger circle includes more hair and headroom.</p><div class="portrait-framing-workspace"><canvas data-editor width="420" height="420" aria-label="Drag to position the portrait circle"></canvas><aside><canvas data-preview width="180" height="180" aria-label="Battle icon preview"></canvas><b>Battle icon preview</b><small>The full photo stays intact. The icon frame keeps its current size.</small></aside></div><div class="portrait-framing-controls"><label>Horizontal position<input type="range" data-axis="x" min="0" max="1" step=".005"></label><label>Vertical position<input type="range" data-axis="y" min="0" max="1" step=".005"></label><label>Circle size<input type="range" data-axis="size" min=".25" max="2.5" step=".01"></label></div><p data-error class="portrait-framing-error" role="status"></p><footer><button type="button" data-reset>Use recommended framing</button><div><button type="button" data-close>Cancel</button><button type="button" data-save class="primary">Save framing</button></div></footer>`;
   document.body.append(dialog);dialog.showModal();
-  let frame=normalizeFrame(character.portrait_frame),ready=false,busy=false;
+  dialog.querySelector('[data-reset]').textContent='Reset to default';
+  let frame=normalizeFrame(character.portrait_frame),ready=false,busy=false,pendingReset=false;
   const squareSrc=src.includes('/api/portraits/')&&character.portrait_thumbnail?character.portrait_thumbnail:src,originalSrc=originalPortraitSrc(src);
   const sourceControl=document.createElement('label');sourceControl.className='portrait-framing-source';sourceControl.innerHTML='<span>Image source</span><select><option value="original">Original image (uncropped)</option><option value="square">Square crop</option></select>';dialog.querySelector('.portrait-framing-workspace').before(sourceControl);
   const sourceSelect=sourceControl.querySelector('select');sourceSelect.value='original';
@@ -57,16 +59,17 @@ export function openPortraitFraming({character,src,onSave,onReset,onError}){
     p.strokeStyle='#c9ad70';p.lineWidth=2;p.beginPath();p.arc(90,90,89,0,Math.PI*2);p.stroke();
   }
   image.onload=()=>{if(initialSquareFrame&&sourceSelect.value==='original'){const w=image.naturalWidth,h=image.naturalHeight,d=Math.min(w,h);frame={x:((w-d)*.5+initialSquareFrame.x*d)/w,y:((h-d)*.35+initialSquareFrame.y*d)/h,size:initialSquareFrame.size,image:'original'};initialSquareFrame=null}ready=true;draw()};image.onerror=()=>{if(sourceSelect.value==='original'&&originalSrc!==squareSrc){sourceSelect.value='square';sourceSelect.querySelector('[value="original"]').disabled=true;initialSquareFrame=null;frame={x:.5,y:.5,size:1,image:'square'};image.src=squareSrc;dialog.querySelector('[data-error]').textContent='Uncropped source is unavailable; showing the square crop.'}else dialog.querySelector('[data-error]').textContent='The photo could not be loaded.'};image.src=originalSrc;
-  sourceSelect.onchange=()=>{ready=false;frame={x:.5,y:.5,size:1,image:sourceSelect.value};image.src=sourceSelect.value==='original'?originalSrc:squareSrc;draw()};
+  sourceSelect.onchange=()=>{pendingReset=false;ready=false;frame={x:.5,y:.5,size:1,image:sourceSelect.value};image.src=sourceSelect.value==='original'?originalSrc:squareSrc;draw()};
   const close=()=>{if(!busy){dialog.close();dialog.remove()}};
   dialog.querySelectorAll('[data-close]').forEach(button=>button.onclick=close);
   dialog.addEventListener('cancel',event=>{event.preventDefault();close()});
   dialog.onclick=event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)close()}};
-  dialog.querySelectorAll('[data-axis]').forEach(input=>input.oninput=()=>{frame[input.dataset.axis]=Number(input.value);draw()});
-  function point(event){if(!ready||busy)return;const rect=editor.getBoundingClientRect(),b=bounds();frame.x=Math.max(0,Math.min(1,((event.clientX-rect.left)*420/rect.width-b.x)/b.w));frame.y=Math.max(0,Math.min(1,((event.clientY-rect.top)*420/rect.height-b.y)/b.h));draw()}
+  dialog.querySelectorAll('[data-axis]').forEach(input=>input.oninput=()=>{pendingReset=false;frame[input.dataset.axis]=Number(input.value);draw()});
+  function point(event){if(!ready||busy)return;pendingReset=false;const rect=editor.getBoundingClientRect(),b=bounds();frame.x=Math.max(0,Math.min(1,((event.clientX-rect.left)*420/rect.width-b.x)/b.w));frame.y=Math.max(0,Math.min(1,((event.clientY-rect.top)*420/rect.height-b.y)/b.h));draw()}
   editor.onpointerdown=event=>{editor.setPointerCapture(event.pointerId);point(event)};editor.onpointermove=event=>{if(editor.hasPointerCapture(event.pointerId))point(event)};
   editor.onpointerup=event=>{if(editor.hasPointerCapture(event.pointerId))editor.releasePointerCapture(event.pointerId)};
-  editor.onwheel=event=>{event.preventDefault();if(!busy){frame.size=Math.max(.25,Math.min(2.5,frame.size+event.deltaY*.001));draw()}};
+  editor.onwheel=event=>{event.preventDefault();if(!busy){pendingReset=false;frame.size=Math.max(.25,Math.min(2.5,frame.size+event.deltaY*.001));draw()}};
   async function save(reset){if(busy||!ready)return;busy=true;dialog.querySelectorAll('button,input,select').forEach(e=>e.disabled=true);try{await(reset?onReset():onSave(frame));busy=false;close()}catch(error){busy=false;dialog.querySelectorAll('button,input,select').forEach(e=>e.disabled=false);dialog.querySelector('[data-error]').textContent=error.message;onError?.(error)}}
-  dialog.querySelector('[data-save]').onclick=()=>save(false);dialog.querySelector('[data-reset]').onclick=()=>save(true);draw();
+  dialog.querySelector('[data-save]').onclick=()=>save(pendingReset);
+  dialog.querySelector('[data-reset]').onclick=()=>{if(busy)return;pendingReset=true;initialSquareFrame=null;frame=normalizeFrame(character.portrait_frame_default);sourceSelect.value=frame.image;ready=false;image.src=frame.image==='original'?originalSrc:squareSrc;dialog.querySelector('[data-error]').textContent='Default framing previewed. Click Save framing to apply, or Cancel to keep your current framing.';draw()};draw();
 }

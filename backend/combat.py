@@ -2396,7 +2396,10 @@ def _context_actions(battle: dict, unit: dict) -> list[dict]:
 def battle_view(battle: dict) -> dict:
     view = deepcopy(battle)
     from .portrait_framing import resolve_frame
+    from .portraits import version_pool_url
     for unit in view.get('units',{}).values():
+        for field in ('portrait','portrait_full','portrait_thumbnail'):
+            if unit.get(field):unit[field] = version_pool_url(unit[field])
         unit['portrait_frame'] = resolve_frame(unit)
     # Keep the existing object ID and alarm rules compatible with saved battles.
     if 'alarm_horn' in view.get('objects', {}):

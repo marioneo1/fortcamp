@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+October 3 safe framing reset: Reset to default previews the appropriate character/shared default and requires Save framing; Cancel performs no write. Browser-tested both paths. One male Goblin ranged 5×4 generation is staged for visual review, with its exact prompt; further male batches remain deferred until review.
+
+October 3 portrait borders follow-up: verified Aasimar healer 013/014/015/019/020 square files contain artwork to their edges and their default circles stay inside bounds. Added file-versioned pool URLs to roster normalization, battle views and Portrait Lab so old padded image caches are replaced. Reapply circle positioning after retained DOM patches so combat updates cannot discard portrait geometry.
+
 October 3 portrait follow-up: restored square full/thumb previews, recovered separate uncropped originals for all 1,080 generic portraits, and added an image-source switch to framing editors. Portrait Lab opens the uncropped image by default. Saved manual frames remember which source they use; automatic square frames stay inside image bounds to avoid black borders. Existing portrait IDs and character assignments remain unchanged.
 
 October 3 portrait framing: implemented per-character circle editor and dev-only Portrait Lab with search/set filters, sixty previews per page and persistent shared image defaults. First automatic audit covers 1,304 portraits; visually inspect uncertain nonhuman faces in the Lab. Manual library corrections survive re-audits; source images and identity order remain unchanged. Updated twenty Aasimar female healer images in place. See docs/art/PORTRAIT_FRAMING.md. Future work: review remaining detector estimates and reimport sources whose heads were already clipped.
