@@ -1,5 +1,9 @@
 # Map Asset Layering
 
+## October 2: Additional overhead stone kits
+
+structures/building-v5-topdown now supplies 32 additive assets under limestone_plan/fieldstone_plan IDs. Existing IDs, source files and defaults remain unchanged. Both profiles use plan-view rotations without painted-face flips or separate end columns; assembled bands retain horizontal/vertical layer order. Door/gate state pairs share measured jamb anchors. Six dev Battle Lab materials now expose 24 comparable layouts; see ../design/BATTLE_LAB.md.
+
 Strategic seam pillars have been reverted. Supplied limestone corners shade outward, so limestone perimeter bands/caps now match that convention. Intact corners assemble continuous straight bands (horizontal layer 3, vertical layer 2), extending 0.035 tile under the original built-in column. Only the column region of each unrotated directional corner is drawn on foreground layer 4; unequal loose arm tips are clipped away. No separate connector pillars or source-image edits. Other kits retain their face convention, and all interior dividers retain their existing faces. See MODULAR_WALL_GENERATION_GUIDE.md.
 
 Exposed wall caps use the `wall-cap` class: layer 4, above horizontal wall bands (3) and vertical bands (2), below character tokens (5). They remain non-interactive. Stone caps mirror to the attached wall face rather than reversing that face at the opposite endpoint. Both preparation and active battle use the same rule. Horizontal bands cover vertical bands at corner/T/cross joins; dedicated calibrated stone Ts use the horizontal foreground layer. See MODULAR_WALL_GENERATION_GUIDE.md for the required building assembly checklist.

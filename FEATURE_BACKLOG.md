@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## Completed October 2: Additive overhead stone material tests
+
+Installed both overhead candidates as additional materials (limestone_plan/fieldstone_plan), preserving every existing registry/geometry entry and all old art. Battle Lab now has six material entries and 24 comparable layouts. Separate top-down calibration, gate/door state anchors and no painted-face flips/extra columns; normal interactions, collision, damage and save isolation retained. Additive installer is tools/install_topdown_stone_toolsets.py; canonical controls: docs/design/BATTLE_LAB.md. Verified 132 frontend tests, build, eight targeted backend checks and all 24 material-layout browser checks. Remaining: user visual comparison and deciding whether any mission defaults should change. Production untouched.
+
 ## October 2: Generated pure overhead stone trial; integration pending
 
 Created separate polished/rough stone plan-view 4x4 candidates, preserved active packs and wood/metal. Rejected an initial limestone draft with frontal doors; revised doors/gates use narrow overhead leaves. Staging: staging-terrain/building-toolset-v5-topdown contains exact prompts, original sheets, 32 complete alpha-extracted pieces, extraction.json and preview.html. Checked camera and representative extracted corner/door/gate silhouettes. No runtime replacement or gameplay changes. Next: subjective review, separate optional stone profile calibration and actual-map comparison before choosing a default. Canonical reference: docs/art/MODULAR_WALL_GENERATION_GUIDE.md.

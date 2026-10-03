@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Install new overhead stones alongside original materials
+
+User requested playable comparisons, keeping old limestone. Added independent limestone_plan and fieldstone_plan profiles, 32 building-v5-topdown sprites and two named Pure overhead entries to dev Battle Lab. Reused all four showcase plans/layout seeds for direct comparisons. Implemented a dedicated additive installer with complete alpha extraction, shared scale, jamb-based state-pair anchors and separate joint/damage/end calibration. Planar sprites rotate without side-face flips or old column overlays. Original registry/geometry entries were programmatically compared with HEAD and confirmed unchanged; original material reinstallation retains additive profiles.
+
+Validation: 132 frontend tests and build, eight backend boundary/showcase tests (including identical comparison footprints/spawns and owner/save isolation), plus all 24 material layouts in the isolated real-renderer browser fixture. Enlarged/direct screenshot review covers new overhead maps; user art approval remains pending. Production and player saves untouched. Generated media remain local and require separate backup.
+
 ## 2026-10-02: Separate pure top-down stone generation trial
 
 User requested new pure-overhead polished/rough stone building sets while retaining the current art and leaving wood/metal intact. Generated separate packs with explicit architectural plan-view constraints. The first polished draft still showed upright door fronts, so it was rejected and regenerated with thin top-edge door leaves. Selected polished/rough outputs are 1254px square 4x4 packs, not the requested 2048px. Saved exact prompts and sources in staging-terrain/building-toolset-v5-topdown, recovered all 32 complete silhouettes with existing alpha-component extraction, normalized without warping and created a portable preview gallery. Inspected source sheets and extracted corner/door/gate examples.

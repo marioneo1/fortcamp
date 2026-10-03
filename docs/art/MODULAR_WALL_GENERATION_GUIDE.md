@@ -1,5 +1,11 @@
 # Modular wall art — current dev strategy
 
+## October 2: Overhead stone profiles installed additively for comparison
+
+The two candidates below are now installed as separate limestone_plan and fieldstone_plan materials under structures/building-v5-topdown, with 32 new stable registry entries. No original registry entry, geometry profile, source image or default mission material was changed. Battle Lab > Building material tests exposes both Pure overhead entries alongside the four original kits, with the same four layout seeds.
+
+The additive installer tools/install_topdown_stone_toolsets.py extracts complete silhouettes, shares source scale, anchors open/closed gate/door pairs to their measured jambs and writes independent join/breach/end metadata to both geometry manifests. Plan-view profiles disable painted-face mirroring and additional end columns; intact corners/Ts/crosses still assemble matching unclipped-thickness straight bands at deterministic boundaries. The original material installer now retains additive profiles. Remaining: user comparison/selection and a later decision about mission defaults. Previous staging-only status below records the generation phase.
+
 ## October 2: Pure overhead stone candidates (not active)
 
 Preserved every active kit and generated new polished-limestone and rough-fieldstone packs from scratch using the built-in image generator. Separate 4x4 packs live in staging-terrain/building-toolset-v5-topdown. Their strict plan-view prompt rejects visible vertical faces, perspective, raised columns and external cast shadows. Closed/open doors and gates are thin top-edge leaves in the ground plane. Rejected the first limestone draft because it still illustrated door fronts; retained it under an explicit rejected filename.

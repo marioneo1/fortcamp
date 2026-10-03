@@ -1,6 +1,6 @@
 # Fortcamp documentation map
 
-Current wall generation/connection strategy: [Modular wall art](art/MODULAR_WALL_GENERATION_GUIDE.md) documents uncapped bands, separate exposed-end columns, v4 stone sources, supplied limestone corner face/seating rules and enlarged material review.
+Current wall generation/connection strategy: [Modular wall art](art/MODULAR_WALL_GENERATION_GUIDE.md) documents uncapped bands, separate exposed-end columns, v4 stone sources, supplied limestone corner face/seating rules, additive pure-overhead stone profiles and enlarged material review.
 
 Current building collision/art: [Wall boundaries](design/WALL_BOUNDARIES.md) explains walkable edge-wall floors, blocked crossing/sight, gates and T-junctions; [Building templates](design/BUILDING_TEMPLATES.md) lists the eight reusable plans and four material-specific art kits.
 

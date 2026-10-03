@@ -141,5 +141,55 @@
       0.0043,
       -0.0252
     ]
+  },
+  "limestone_plan": {
+    "plan_view": true,
+    "join_offset": 0.3249,
+    "wall_half_thickness": 0.1058,
+    "corner_offset": [
+      -0.0595,
+      -0.0595
+    ],
+    "broken_corner_offset": [
+      -0.0608,
+      -0.0323
+    ],
+    "breach_offset": [
+      0,
+      0.0098
+    ],
+    "end_offset": [
+      0.1582,
+      0
+    ],
+    "junction_offset": [
+      0,
+      0
+    ]
+  },
+  "fieldstone_plan": {
+    "plan_view": true,
+    "join_offset": 0.3006,
+    "wall_half_thickness": 0.1074,
+    "corner_offset": [
+      -0.043,
+      -0.043
+    ],
+    "broken_corner_offset": [
+      0.007,
+      -0.0254
+    ],
+    "breach_offset": [
+      0,
+      -0.002
+    ],
+    "end_offset": [
+      0.1842,
+      0
+    ],
+    "junction_offset": [
+      0,
+      0
+    ]
   }
 }

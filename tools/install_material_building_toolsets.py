@@ -17,7 +17,7 @@ def main():
     registry=json.loads(registry_path.read_text())
     dest=ROOT/'frontend/public/assets/combat-terrain/structures/building-v2'
     dest.mkdir(parents=True,exist_ok=True)
-    report=[];geometry={}
+    report=[];geometry=json.loads((ROOT/'backend/building_art_geometry.json').read_text())
     for family in FAMILIES:
         source=ROOT/'staging-terrain/building-toolset-v4'/f'{family}.png'
         version='building-v4'

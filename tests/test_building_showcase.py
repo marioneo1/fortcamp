@@ -54,3 +54,18 @@ class BuildingShowcaseTests(unittest.TestCase):
         with patch.object(lab,'settings',SimpleNamespace(environment='prod',game_debug_mode=True,dev_bypass_auth=True)):
             with self.assertRaises(HTTPException):
                 lab.start_session(identity,lab.StartRequest(mission_id='material_iron'),state)
+
+    def test_overhead_profiles_are_additive_and_use_comparable_layouts(self):
+        from backend.location_maps import ART_GEOMETRY
+        for old in ('limestone', 'fieldstone'):
+            new = old + '_plan'
+            self.assertIn(old, FAMILIES)
+            self.assertTrue(ART_GEOMETRY[new]['plan_view'])
+            for preset in presets(old):
+                original = blueprint(old, preset['seed'])
+                overhead = blueprint(new, preset['seed'])
+                self.assertEqual(original['width'], overhead['width'])
+                self.assertEqual(original['height'], overhead['height'])
+                self.assertEqual([(t['x'], t['y']) for t in original['terrain']],
+                                 [(t['x'], t['y']) for t in overhead['terrain']])
+                self.assertEqual(original['spawn_zones'], overhead['spawn_zones'])

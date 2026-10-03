@@ -1,5 +1,11 @@
 # Battle Lab — implemented development tool
 
+## October 2: Additive pure overhead stone materials
+
+Restart dev and refresh the client. Open Mission Board > debug controls > Open Battle Lab; set Source to Building material tests. Two additional entries are available: **Polished stone (Pure overhead) building kit** and **Rough stone (Pure overhead) building kit**. The original Polished stone, Rough stone, Timber and Metal entries remain unchanged. Select the same named Map layout (Gatehouse, Divided hall, Breached annex or Twin stores) on old/new entries to compare identical terrain positions and spawn locations. Six materials now provide 24 layouts, with all 16 parts covered across each material's four layouts.
+
+The new profiles use independent limestone_plan/fieldstone_plan IDs and building-v5-topdown art. They are debug tests, not public contracts or default replacements; gates, wall damage, movement boundaries and test/save isolation still use normal rules. Plan-view art rotates without old face mirroring or added corner columns. Separate calibration keeps door/gate open/closed jamb anchors consistent. Screenshots are saved in staging-terrain/building-toolset-v5-topdown. Install/reinstall only the additive candidates with tools/install_topdown_stone_toolsets.py; the older material installer preserves their registered geometry. Generated media are local and excluded from Git.
+
 ## Latest stone/metal review (October 2)
 
 Restart dev and refresh the client, then use **Source: Building material tests** to inspect all four layouts. Rough/polished stone now use newly generated v4 bands with caps only at exposed ends; connected metal segments omit repeated posts. Enlarged six-type/rotation screenshots and the 16 full maps are saved in staging-terrain/building-toolset-v4. Sources/prompts and remaining art limitations: ../art/MODULAR_WALL_GENERATION_GUIDE.md. Validation: 325 backend tests, 117 frontend tests, build and enlarged/full-layout browser checks pass. No rewards, save writes or production changes.

@@ -1,5 +1,9 @@
 # Reusable building templates — implemented in dev
 
+## October 2: Two additional overhead material profiles
+
+Six materials can now skin the four material-showcase plans: the original timber/fieldstone/limestone/iron plus fieldstone_plan and limestone_plan. The new profiles use independent geometry and artwork, and are offered only through dev Battle Lab comparison entries. Existing mission templates retain their original families. Identical layout seeds retain terrain positions, dimensions and spawn locations, allowing direct comparisons. No saves are migrated and no existing limestone assets are removed. See BATTLE_LAB.md for controls and ../art/MODULAR_WALL_GENERATION_GUIDE.md for the additive installer.
+
 ## Current material selection and caps (October 2)
 
 Rough fieldstone and polished limestone now use newly generated building-v4 packs. Timber and metal keep v2; superseded v3 fieldstone and all earlier art remain preserved. The importer prefers v4, then v3, then v2 per family. Stone connection bands have no baked terminal columns; separate pillars cap exposed ends only. Metal connected bands omit their baked posts using the existing center texture. Corners/Ts/crosses still have deterministic grid anchors using the active painted band, and half-wall terminals retain a fixed half-cell length. Doors, damage, rotation and saved-map calibration follow the same endpoint model. See WALL_BOUNDARIES.md and ../art/MODULAR_WALL_GENERATION_GUIDE.md; earlier entries below record previous passes.

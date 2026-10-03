@@ -257,3 +257,17 @@ test('outward perimeter T reverses only its bar and keeps the divider face',()=>
  const parts=structuralLayout({id:'t',sprite:'structure:fieldstone_edge_junction',rotation:0},g).connectors.filter(c=>!c.wall_cap);
  assert.equal(parts[0].art_mirror_y,-1);assert.equal(parts[1].art_mirror_y,1);
 });
+
+test('overhead material profiles rotate planar joins without side-face mirroring or old corner columns',()=>{
+ const family='limestone_plan',g={[family]:{join_offset:.325,wall_half_thickness:.106,plan_view:true}};
+ for(const rotation of [0,90,180,270]){
+  const corner={id:'plan',sprite:`structure:${family}_corner`,rotation};
+  const layout=structuralLayout(corner,g);
+  assert.equal(layout.hideArt,true);
+  assert.equal(layout.connectors.length,2);
+  assert.ok(layout.connectors.every(p=>p.sprite===`structure:${family}_wall`&&p.art_mirror_y===1));
+  assert.equal(connectionPorts(corner,g).length,2);
+  const edge={sprite:`structure:${family}_wall`,rotation,edge_wall:true,wall_edges:['south']};
+  assert.equal(structuralLayout(edge,g).mirrorY,1);
+ }
+});

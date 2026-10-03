@@ -1,9 +1,10 @@
 // Painted modular connections: plain mating ends, caps only at exposed ports.
 function turn([x,y],rotation){for(let i=0;i<rotation/90;i++)[x,y]=[-y,x];return [x,y]}
-const matchPiece=item=>/^structure:(timber|fieldstone|limestone|iron)_(.+)$/.exec(item.sprite||'');
+const matchPiece=item=>/^structure:(timber|fieldstone_plan|limestone_plan|fieldstone|limestone|iron)_(.+)$/.exec(item.sprite||'');
 const rotationOf=item=>((Number(item.rotation)||0)%360+360)%360;
 const inward={north:[0,1],east:[-1,0],south:[0,-1],west:[1,0]};
 function faceMirror(item,g={}){
+ if(g.plan_view)return 1;
  const face=inward[item.wall_edges?.length===1?item.wall_edges[0]:null];
  // Centered dividers share a stable face convention, even after a half turn.
  if(!face)return rotationOf(item)>=180?-1:1;
@@ -103,7 +104,7 @@ export function structuralLayout(item,geometry,neighbors=[]){
   // interior wall carries the painted face. Match the ordinary divider runs.
   const interiorArm=['junction','cross'].includes(piece)||(piece==='edge_junction'&&direction===90);
   const perimeterArm=piece==='edge_junction'&&direction===0;
-  const armMirror=interiorArm?(beamRotation>=180?-1:1):
+  const armMirror=g.plan_view?1:interiorArm?(beamRotation>=180?-1:1):
    perimeterArm?(g.perimeter_face==='outward'?-1:1):
    ['wall','end'].includes(piece)?mirrorY:
    ((piece==='corner'||piece==='corner_broken')&&base.some(v=>Math.abs(v)>.5)?-1:1)*(g.perimeter_face==='outward'?-1:1);

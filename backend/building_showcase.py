@@ -2,7 +2,9 @@
 import random
 from .location_maps import place_building, wall
 
-FAMILIES={'timber':'Timber','fieldstone':'Rough stone','limestone':'Polished stone','iron':'Metal'}
+FAMILIES={'timber':'Timber','fieldstone':'Rough stone','limestone':'Polished stone','iron':'Metal',
+          'limestone_plan':'Polished stone (Pure overhead)',
+          'fieldstone_plan':'Rough stone (Pure overhead)'}
 PARTS={'wall','corner','junction','cross','end','breach','door_closed','door_open',
        'gate_closed','gate_open','window','pillar','stairs','corner_broken','edge_junction','brace'}
 PLANS=[('gatehouse','Gatehouse and courtyard','workshop_forge_yard'),

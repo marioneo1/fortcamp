@@ -1,5 +1,9 @@
 # Wall boundaries — implemented in dev
 
+## October 2: Additive plan-view stone profiles
+
+limestone_plan and fieldstone_plan provide separate pure-overhead art and geometry for dev comparisons. Existing profiles remain unchanged. Boundary connectivity, walkable edge floors, sight blocking, gate operation and destruction use the same rules. Their planar render profile disables side-face mirroring and extra end/corner columns; matching bands assemble intact joins. Review four layouts per new material in Battle Lab. Installer: tools/install_topdown_stone_toolsets.py; controls: BATTLE_LAB.md.
+
 ## October 2: Match supplied limestone corners and seat bands inside their columns
 
 The previous directional-corner pass missed a material-specific face mismatch: the supplied limestone corners shade outward, while their adjoining perimeter bands shaded inward. Limestone now declares `perimeter_face: outward`; straight runs, perimeter-T bars, exposed end posts and corner support bands follow it after every quarter turn. Interior dividers retain horizontal-down/vertical-left faces. Other materials retain their existing convention.
