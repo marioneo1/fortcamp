@@ -12,7 +12,7 @@ from .tactical_contracts import TACTICAL_CONTRACTS
 from .location_maps import MISSION_LOCATIONS
 from .wall_boundaries import crossed_walls, can_operate_gate
 from .portraits import choose_pool_portrait, portrait_pool_key
-from .races import race_gameplay
+from .races import race_gameplay, generated_genders
 from .perk_effects import modifiers
 from .equipment_rules import collect_rules,equipped_skills
 from .combat_pacing import enemy_budget
@@ -683,7 +683,7 @@ def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission
             identity = _goblin_npc_identity(seed, uid, "scout" if kind == "archer" else "fighter")
             name = identity["name"]
         else:
-            gender = rng.choice(("male", "female"))
+            gender = rng.choice(generated_genders(race))
             name = rng.choice(("Tarin","Nessa","Rovan","Mira","Kellan","Sera","Veyra","Darin")) + " " + rng.choice(("Hale","Voss","Carrow","Fen","Rook","Vale"))
             identity = choose_pool_portrait(portrait_pool_key(race,gender,"scout" if kind == "archer" else "fighter"),rng) or {}
             identity["gender"] = gender

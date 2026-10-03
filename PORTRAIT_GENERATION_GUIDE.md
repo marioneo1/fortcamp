@@ -1,5 +1,7 @@
 # Fortcamp portrait batch generation
 
+October 3 batch 004: final ten planned male race sheets generated and staged with exact prompts at staging-portraits/MALE_BATCH_004.md. Banshee and Dryad excluded: female-only in new recruit/combat generation. Slimefolk and Werewolf keep roleless pool names. Approved Aasimar male healer installed separately without regeneration. Production and legacy prompt sections retained.
+
 October 3 installation follow-up: batches 002 and 003 approved and consumed into dev, sixteen pools/320 portraits with stable IDs and separate square/original assets. Staged sheets and exact prompts retained. Twelve male generation targets remain; selective female quality review is deferred and tracked in docs/art/MALE_PORTRAIT_ROLLOUT.md.
 
 October 3 batch 003: eight additional male sheets staged (Revenant/Vampire/Ogre/Troll melee, Alien ranged, Undead/Manaforged/Dreamkin magic), with exact expanded prompts in staging-portraits/MALE_BATCH_003.md. Same full production male approach and style/presentation reference roles; no female counterpart generation references. Not imported. Current and legacy prompts remain intact.

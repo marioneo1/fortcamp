@@ -18,7 +18,7 @@ from .appearance import has_appearance, sanitize_appearance, tagged_appearance
 from .perk_effects import modifiers
 from .mission_loot import roll_item_pool
 from .economy import initialize as initialize_economy, settle as settle_economy, public_economy, earn_relationship, practice
-from .races import RACE_CATALOG, RACE_FAMILIES, RACE_GAMEPLAY, REGIONAL_RECRUIT_TABLES, race_families, race_mission_bonus
+from .races import RACE_CATALOG, RACE_FAMILIES, RACE_GAMEPLAY, REGIONAL_RECRUIT_TABLES, race_families, race_mission_bonus, generated_genders
 
 from .outcome_balance import CRITICAL_SOFT_CAPS, CRITICAL_STAT_LIMITS, classify_roll, outcome_probabilities
 
@@ -742,7 +742,7 @@ def _make_procedural(profile_id: str, rng: random.Random) -> dict:
     for varied in rng.sample(list(stats), k=min(2, len(stats))):
         stats[varied] = max(1, min(10, stats[varied] + rng.choice([-1, 1])))
     traits = list(dict.fromkeys(list(archetype.get("traits", [])) + list(profile.get("extra_traits", []))))
-    gender = rng.choice(profile.get("genders", ["male", "female"]))
+    gender = rng.choice(generated_genders(profile.get("race", "Human"), profile))
     special = profile.get("portrait_tier") == "special"
     portrait = choose_pool_portrait(portrait_pool_key(profile.get("race", "Human"), gender, archetype_id, special), rng)
     return {

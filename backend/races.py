@@ -2,6 +2,18 @@
 from __future__ import annotations
 
 
+FEMALE_ONLY_RACES = frozenset({"Banshee", "Dryad"})
+
+
+def generated_genders(race: str, profile: dict | None = None) -> tuple[str, ...]:
+    """Allowed genders for new generic people; never rewrite saved identities."""
+    if str(race).strip().casefold() in {name.casefold() for name in FEMALE_ONLY_RACES}:
+        return ("female",)
+    configured = (profile or {}).get("genders", ("male", "female"))
+    allowed = tuple(gender for gender in configured if gender in {"male", "female"})
+    return allowed or ("male", "female")
+
+
 ADDITIONAL_RECRUIT_PROFILES = {
     "dark_elf": {
         "race": "Dark Elf", "series": "Original", "archetypes": ["adept", "scout", "fighter"],
@@ -10,6 +22,7 @@ ADDITIONAL_RECRUIT_PROFILES = {
         "last_names": ["Nightbloom", "Deepstar", "Gloamveil", "Underbough"],
     },
     "dryad": {
+        "genders": ["female"],
         "race": "Dryad", "series": "Original", "archetypes": ["medic", "adept", "scout"],
         "extra_traits": ["verdant_soul", "beast_bond"], "attribute_bonuses": {"vit": 1, "int": 2, "luk": 1},
         "first_names": ["Aster", "Bryony", "Elowen", "Hazel", "Ilex", "Sorrel"],
@@ -94,6 +107,7 @@ ADDITIONAL_RECRUIT_PROFILES = {
         "last_names": ["Beyond-the-Rift", "Last-Star", "No-Horizon", "World-Eater"],
     },
     "banshee": {
+        "genders": ["female"],
         "race": "Banshee", "series": "Original", "archetypes": ["adept", "scout"],
         "extra_traits": ["deathless", "wailing_magic", "incorporeal"], "attribute_bonuses": {"agi": 2, "int": 2, "luk": 1},
         "first_names": ["Eira", "Keening", "Mourn", "Nuala", "Siofra", "Wail"],

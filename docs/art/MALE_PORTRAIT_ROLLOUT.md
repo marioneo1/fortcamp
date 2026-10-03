@@ -4,7 +4,7 @@ Plan: one common visual role per generic race, with existing same-race/gender fa
 
 ## Installed or already available
 
-Human, Goblin, Dwarf and Kobold have installed male pools. October 3 Goblin melee/ranged installations added twenty per role. An approved Aasimar male healer sheet remains staged and can be installed without regeneration. Celestials are individually named characters, not generic male pool targets.
+Human, Goblin, Dwarf and Kobold have installed male pools. October 3 Goblin melee/ranged installations added twenty per role. Approved Aasimar male healer is now installed with twenty stable IDs and square full/thumb plus separate originals; sixty files and exact/fallback role matching verified. Portrait Lab now lists 1,844 portraits. Celestials are individually named characters, not generic male pool targets.
 
 ## Batch 001 — approved and installed in dev
 
@@ -31,14 +31,18 @@ Combined installation verified all 960 assets, exact-role and alternate-role sel
 
 Inspected all outputs. Face/crest repetition is notable in Alien; some Troll ears and Manaforged crystal tips approach or touch edges. Ogre faces lean angular; circle framing cannot recover clipped source pixels. Undead retains the existing preserved humanoid design. Validation covers file decoding and grid evidence, not perfect anatomy or unique face detection.
 
-## Remaining 12 generation targets
+## Batch 004 — staged; generation plan complete
 
 | Common portrait role | Races |
 |---|---|
-| Magic | Astral Elf, Voidsent, Dark Elf, Foxkin, Fairy, Banshee |
-| Healer | Homunculus, Dryad, Merfolk |
+| Magic | Astral Elf, Voidsent, Dark Elf, Foxkin, Fairy |
+| Healer | Homunculus, Merfolk |
 | Worker | Automaton |
 | General, no class suffix | Slimefolk, Werewolf |
+
+Ten fresh sheets (200 portraits), saved with exact expanded prompts and review links in staging-portraits/MALE_BATCH_004.md. All decode at 1254×1254, five columns/four rows; grid evidence recorded in data/portrait_audit/male_batch_004/manifest.json. Not imported yet. Inspected complete outputs; some face repetition, tight ears/horns/fur, subtle Homunculus markings and luminous Slimefolk cores remain review notes.
+
+No further generic male generation targets remain in this plan. User excluded Banshee and Dryad: new recruits and combat enemies now generate female only, regardless of available male artwork or a conflicting profile gender preference. Saved identities are retained. Named Champions/Celestials are not generic generation targets.
 
 Do not reuse the Dwarf reference for unrelated races or opposite-gender race anatomy. Preserve source sheets and prompts in staging; use canonical IDs and separate original/square assets when installing. Existing character portraits must not be rerolled.
 

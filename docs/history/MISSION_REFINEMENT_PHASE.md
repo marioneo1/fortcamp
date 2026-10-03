@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## October 3: Final male generation and female-only race rules
+
+Generated ten fresh sheets: Astral Elf/Voidsent/Dark Elf/Foxkin/Fairy magic, Homunculus/Merfolk healer, Automaton worker, roleless Slimefolk/Werewolf. Saved 200 portraits and exact prompts under staging-portraits/MALE_BATCH_004.md; all files decode at 1254×1254 and grid evidence recorded. Inspected outputs and documented edge/face/anatomy concerns. New sheets remain staged.
+
+Skipped Banshee/Dryad males at user request and enforced female-only new generic recruits and contract combat enemies through a shared race gender rule; other profile restrictions retained. Existing saved identities unaffected. Installed the previously approved Aasimar male healer sheet, verified all sixty assets and role fallback; Lab now 1,844 portraits. Fourteen focused tests passed covering race generation, portrait framing and importer behavior. No production changes.
+
 ## October 3: Approved male batches 002 and 003 consumed
 
 Imported all sixteen approved race sheets into dev through the stable append-only importer. Twenty IDs per pool, separate original images, square 768px full and 192px thumbs; canonical sources copied into portraits and staging retained. Verified all 960 assets decode, runtime exact/alternate role fallback, and all 320 additions in Portrait Lab (1,824 total). Inspected installed montage at data/portrait_audit/male_batch_002_003_install/installed.jpg. Existing identities and production unchanged. Recorded user interest in a selective female quality pass after male rollout.

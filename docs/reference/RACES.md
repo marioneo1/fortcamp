@@ -1,5 +1,7 @@
 # Fortcamp Race Ledger
 
+Gender rule: Banshee and Dryad generate female only for new generic recruits and combat enemies. Other races retain their allowed profile genders. This does not rename or rewrite existing saved characters or named Champions/Celestials.
+
 Rarity describes how often a race appears **when the party is already adventuring in an appropriate place**. It does not measure combat power. Minimum mission ranks and weighted regional pools make the rare groups substantially harder to encounter.
 
 ## Recruitable and transformable races
