@@ -3,7 +3,7 @@
 Generated from runtime content with `.venv\Scripts\python.exe tools/audit_battle_locations.py`.
 This inventories existing tactical encounters, including combat branches of roll/story missions. It does not propose converting roll-only contracts to combat.
 
-43 contract encounter IDs use authored locations; 18 still use generic road/camp/ruin/court layouts. Prison rank copies are grouped below. Generic maps have seeded dressing but no named, mission-specific building plans.
+44 contract encounter IDs use authored locations; 17 still use generic road/camp/ruin/court layouts. Prison rank copies are grouped below. Generic maps have seeded dressing but no named, mission-specific building plans.
 
 ## Authored contract locations
 
@@ -34,6 +34,7 @@ This inventories existing tactical encounters, including combat branches of roll
 | End the Old Command | E | command_post | 4 |
 | End the Old Command | S | command_camp | 4 |
 | Herbs Behind the Wall | E | herb_garden | 4 |
+| Highway Ambush | D | highway_cut | 4 |
 | Intruders at the Workshop | D | repair_yard | 4 |
 | Movement at the Old Well | E | well_yard | 4 |
 | Rats in the Storehouse | E | provision_store | 4 |
@@ -61,7 +62,6 @@ This inventories existing tactical encounters, including combat branches of roll
 | Boar-Rider Patrol | D | road |
 | Court of the Empty Crown | A | court |
 | Goblin Warren Purge | C | ruin |
-| Highway Ambush | D | road |
 | Knight without a Grave | B | ruin |
 | The Caravan’s False Account | D | road |
 | The Custodian Who Would Not Stop | B | camp |

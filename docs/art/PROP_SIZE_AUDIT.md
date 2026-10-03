@@ -1,6 +1,6 @@
 # Map prop size audit
 
-Checked 131 registered non-modular sprites across 249 isolated encounter previews. Architectural wall kits keep their existing joint calibration.
+Checked 131 registered non-modular sprites across 253 isolated encounter previews. Architectural wall kits keep their existing joint calibration.
 
 Footprints reserve logical cells. Fill is the maximum visible silhouette fraction within its art box; it does not stretch the PNG. Prepared/unseen assets are retained rather than deleted merely for zero fixture use.
 
@@ -10,30 +10,30 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | treasure_chest_bronze_open | 1x1 | 85% | 0 | prepared / state art |
 | campfire_lit | 1x1 | 85% | 31 | 1x1 |
 | cut_log_pile | 1x1 | 85% | 17 | 1x1 |
-| mossy_boulder | 1x1 | 85% | 4 | 1x1 |
+| mossy_boulder | 1x1 | 85% | 14 | 1x1 |
 | canvas_tent | 2x2 | 90% | 30 | 2x2 |
-| oak_tree | 1x1 | 85% | 271 | 1x1 |
-| pine_tree | 1x1 | 85% | 115 | 1x1 |
+| oak_tree | 1x1 | 85% | 288 | 1x1 |
+| pine_tree | 1x1 | 85% | 112 | 1x1 |
 | birch_tree | 1x1 | 85% | 0 | prepared / state art |
 | dead_tree | 1x1 | 85% | 12 | 1x1 |
-| dense_shrub | 1x1 | 85% | 143 | 1x1 |
-| thorny_bramble | 1x1 | 85% | 8 | 1x1 |
+| dense_shrub | 1x1 | 85% | 155 | 1x1 |
+| thorny_bramble | 1x1 | 85% | 21 | 1x1 |
 | leafy_sapling | 1x1 | 85% | 0 | prepared / state art |
 | tree_stump | 1x1 | 85% | 0 | prepared / state art |
 | fallen_branches | 1x1 | 85% | 2 | 1x1 |
 | scattered_stones | 1x1 | 85% | 1 | 1x1 |
 | rounded_boulder | 1x1 | 85% | 11 | 1x1 |
 | hay_bale | 1x1 | 85% | 38 | 1x1 |
-| bound_barrels | 1x1 | 85% | 90 | 1x1 |
-| structure:palisade_straight | 1x1 | 85% | 89 | 1x1 |
+| bound_barrels | 1x1 | 85% | 95 | 1x1 |
+| structure:palisade_straight | 1x1 | 85% | 85 | 1x1 |
 | structure:palisade_gate_closed | 1x1 | 85% | 0 | prepared / state art |
 | structure:palisade_gate_open | 1x1 | 85% | 0 | prepared / state art |
-| structure:palisade_breached | 1x1 | 85% | 89 | 1x1 |
+| structure:palisade_breached | 1x1 | 85% | 85 | 1x1 |
 | structure:wooden_watch_platform | 1x1 | 85% | 1 | 1x1 |
 | structure:wooden_rescue_cage_closed | 2x2 | 90% | 1 | 2x2 |
 | structure:wooden_rescue_cage_open | 2x2 | 90% | 0 | prepared / state art |
 | structure:wooden_barricade | 1x1 | 85% | 0 | prepared / state art |
-| structure:wall_rubble | 1x1 | 85% | 1531 | 1x1, 2x2, 1x2, 2x1 |
+| structure:wall_rubble | 1x1 | 85% | 1576 | 2x1, 1x1, 2x2, 1x2 |
 | alarm_bell_active | 1x1 | 85% | 31 | 1x1 |
 | alarm_bell_disabled | 1x1 | 85% | 0 | prepared / state art |
 | crate_closed | 1x1 | 85% | 96 | 1x1 |
@@ -57,7 +57,7 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | spike_trap_spent | 1x1 | 85% | 1 | 1x1 |
 | iron_jaw_trap | 1x1 | 85% | 1 | 1x1 |
 | iron_jaw_trap_spent | 1x1 | 85% | 1 | 1x1 |
-| wooden_handcart | 2x1 | 88% | 94 | 2x1 |
+| wooden_handcart | 2x1 | 88% | 99 | 2x1 |
 | campfire_cold | 1x1 | 85% | 30 | 1x1 |
 | wooden_table | 1x1 | 85% | 105 | 1x1 |
 | repair_workbench | 1x1 | 85% | 62 | 1x1 |
@@ -70,7 +70,7 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | old_bone_pile | 1x1 | 85% | 12 | 1x1 |
 | carpenter_sawhorse | 1x1 | 85% | 23 | 1x1 |
 | stacked_planks | 1x1 | 85% | 18 | 1x1 |
-| camp_lantern | 1x1 | 38% | 87 | 1x1 |
+| camp_lantern | 1x1 | 38% | 92 | 1x1 |
 | open_toolbox | 1x1 | 85% | 17 | 1x1 |
 | weapon_rack | 1x1 | 85% | 136 | 1x1 |
 | shield_rack | 1x1 | 85% | 24 | 1x1 |
@@ -98,7 +98,7 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | reed_sleeping_mat | 1x2 | 92% | 30 | 1x2 |
 | camp_cooking_pot | 1x1 | 85% | 30 | 1x1 |
 | food_prep_table | 1x1 | 85% | 0 | prepared / state art |
-| grain_sacks | 1x1 | 85% | 40 | 1x1 |
+| grain_sacks | 1x1 | 85% | 45 | 1x1 |
 | water_trough | 1x1 | 85% | 40 | 1x1 |
 | wash_tub | 1x1 | 85% | 40 | 1x1 |
 | mess_bench | 1x1 | 85% | 30 | 1x1 |
@@ -128,7 +128,7 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | horticulture_potting_bench | 2x1 | 85% | 5 | 2x1 |
 | horticulture_watering_can | 1x1 | 45% | 44 | 1x1 |
 | horticulture_wheelbarrow | 2x1 | 85% | 5 | 2x1 |
-| horticulture_tool_crate | 1x1 | 45% | 78 | 1x1 |
+| horticulture_tool_crate | 1x1 | 45% | 83 | 1x1 |
 | horticulture_soil_sack | 1x1 | 45% | 3 | 1x1 |
 | horticulture_clay_pots | 1x1 | 45% | 10 | 1x1 |
 | horticulture_seedling_tray | 1x1 | 45% | 4 | 1x1 |

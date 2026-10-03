@@ -37,3 +37,6 @@ for _location in COMMAND_SETTINGS:
 from .beginner_locations import BEGINNER_SETTINGS
 for _location, _labels in BEGINNER_SETTINGS.items():
     BUILDING_PLANS[_location]=[{'id':f'{_location}_{i}','label':label} for i,label in enumerate(_labels,1)]
+from .road_locations import ROAD_SETTINGS
+for _location, _labels in ROAD_SETTINGS.items():
+    BUILDING_PLANS[_location]=[{'id':f'{_location}_{i}','label':label} for i,label in enumerate(_labels,1)]

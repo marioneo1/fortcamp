@@ -1,5 +1,46 @@
 # Authored battle locations
 
+## October 3: Highway Ambush
+
+Implemented in dev: Highway Ambush (D-rank) now uses `highway_cut` instead of
+the generic road. Four named layouts are available through verified Battle Lab
+seeds:
+
+| Layout | Geography and tactics |
+| --- | --- |
+| Sunken straight road | Three-cell highway, northern shoulder trail and southern stolen-supply pull-off. |
+| Descending bend | Road bends south; a northern trail reconnects beyond the ambushers, with supplies above the bend. |
+| Wooded ridge fork | Straight highway and a southern branch around a low grassy ridge, rejoining at both ends. |
+| Passing place | Road bends around a wider passing area; southern back trail and rear supply stop. |
+
+The road has coherent painted dirt, shaded woodland borders, climbable height-1
+banks and short muddy ditch sections. One of the three current enemies starts
+on the bank; the others hold the highway. Climbing uses existing movement costs,
+and ranged/magic height behavior remains weapon-specific. Neither shoulder is
+an impassable cliff. Cover pockets are authored off the lanes; both road ends
+remain reachable without destroying cover. Eight clear party slots and eight
+safe enemy candidates support the existing deployment pipeline; the actual
+D-rank encounter retains its three enemies and fixed stats.
+
+Stolen carts, provisions, barrels, repair tools and lanterns identify the pull-off.
+These are scenery/destructible furniture, not new loot containers. No reward,
+mission-choice, victory or enemy-budget rules changed. Existing saved battles
+retain their map. Prepared art is reused; no new art pack was needed.
+
+`backend/road_locations.py` owns the reusable road-lane piece and four plans.
+Ground art is separate from movement material, props preserve shared footprint
+and size rules, and healthy prop HP is shown on hover/targeting. Review with
+`node tools/location_rollout_browser_qa.mjs --road-sites`; retained render captures
+are `staging-terrain/road-locations-v1/highway_ambush_v1.png` through `v4.png`.
+
+Validation: 23 focused road/map/Battle Lab tests pass, including clear spawn
+footprints, repeatable layout selection, both exits reachable across 40 seeds,
+unchanged enemy budgets and save isolation. All four actual-render layouts were
+inspected; browser checks load ground and prop art without runtime exceptions.
+Final asset coverage and any follow-up validation are recorded in the phase log.
+Production and saves remain untouched. Next focused road sites: Boar-Rider Patrol
+and The Tithe Convoy; tunnels and specialized later facilities still need review.
+
 October 3 approved-kit rollout: all garden and training-yard variants have tailored ground/clutter layouts. Suitable props also appear in farm, well, provision/supply and full camp settings. See ../art/GARDEN_TOOLKIT_V2.md for the variation table and scope. Earlier layout-1-only notes below describe the preceding review stage.
 
 October 3 garden clutter follow-up: layout 1 now includes low crop edging, a scarecrow, pump, workbench/stools, compost/drying area and wheelbarrow. Training layout 1 receives modest rest/repair clutter. See ../art/GARDEN_TOOLKIT_V2.md.

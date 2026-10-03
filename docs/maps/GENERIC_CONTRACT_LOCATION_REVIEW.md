@@ -1,5 +1,7 @@
 # Generic contract location review
 
+October 3 follow-up: Highway Ambush now has four authored layouts. Its row below is the preserved proposal; AUTHORED_BATTLE_LOCATIONS.md documents the implementation. Current runtime coverage: 44 authored and 17 generic contract encounter IDs. Other convoy/watch/collection-road proposals remain pending.
+
 Status update October 3: roadblocks/command camps and the seven compact beginner/training settings below are implemented in dev. The original review is preserved; read AUTHORED_BATTLE_LOCATIONS.md for the final maps. Highway/convoy/watch, tunnels and later story locations remain proposed. Runtime audit currently lists 43 authored and 18 generic encounter IDs.
 
 Current status: the first roadblock/command-position batch below is implemented in dev, with four variants per setting and compact E/D old-command posts. See ../design/AUTHORED_BATTLE_LOCATIONS.md for exact behavior and validation. All later batches below remain proposals. The original review counts and assessments are preserved as the planning baseline; BATTLE_LOCATION_AUDIT.md contains current coverage.

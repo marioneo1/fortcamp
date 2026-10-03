@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Current highway rollout: [Authored locations](design/AUTHORED_BATTLE_LOCATIONS.md) describes four Highway Ambush layouts, bank/flank rules and review captures. [Coverage audit](maps/BATTLE_LOCATION_AUDIT.md) lists the remaining generic encounters.
+
 Current garden props: [Overhead garden toolkit](art/GARDEN_TOOLKIT_V2.md) covers crop edging, clutter, shared sizes, the atlas importer and prepared versus active pieces.
 
 Current activity environments: [Garden and training yard dressing](art/ENVIRONMENT_DRESSING_V1.md) records the new overhead ground atlas, all four layout compositions, placement rules and review tools.

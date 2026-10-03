@@ -1,5 +1,7 @@
 # Fortcamp feature backlog
 
+October 3 road rollout: Highway Ambush now has four authored road/bank/flank layouts with stolen-supply pull-offs and verified Battle Lab seeds. Existing enemies, objectives and rewards retained. Next road review: Boar-Rider Patrol and The Tithe Convoy; other generic road, tunnel and later facility maps remain pending. See docs/design/AUTHORED_BATTLE_LOCATIONS.md.
+
 October 3 environment variations: all four gardens and all four training yards now use distinct footprint-aware arrangements. Kit reused in farm clearings, well yards, provision/supply sites and full command/redoubt/vanguard camps (36 authored variants across nine settings). Visual dressing only; save layouts, mission rewards and mechanics retained.
 
 October 3 garden clutter follow-up: new overhead garden prop kit installed in reviewed layout 1. Crop edging overlays planting without blocking movement; potting, watering, drying and rest areas now have sized clutter. Training layout 1 gets a small equipment/rest addition. Other variants and interactive fence/gardening mechanics remain deferred.

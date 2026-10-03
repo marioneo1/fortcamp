@@ -683,3 +683,36 @@ Validation: 9 backend tests including 400-map reachability; frontend build;
 exceptions. Visually inspected all six new activity arrangements and representative
 farm, well and camp renders. Coverage rebuilt for 249 encounters: 20,330 prop
 references, no missing art; 131 shared non-modular size profiles.
+
+
+## October 3: Highway Ambush authored road layouts
+
+Replaced this D-rank contract's generic road with four named, seed-persistent
+16x11 plans: straight cut, descending bend, wooded-ridge fork and passing place.
+Added reusable road-lane assembly in backend/road_locations.py, coherent painted
+road ground, climbable height-1 banks, short muddy ditches, connecting flank
+trails, authored vegetation cover pockets and stolen-supply pull-offs. One
+ambusher starts on a bank. Eight reserved party/enemy candidate slots have no
+prop overlap; the actual encounter still uses its original three enemies.
+Supplies are scenery, not guaranteed loot. Enemy stats, mission choices,
+objectives and reward/drop rules remain unchanged. Existing generic fallback
+maps and active saved battles remain intact. No new art pack was necessary;
+approved textures and shared-size props were reused.
+
+Battle Lab exposes all four named layouts with verified seeds. Added scoped
+--road-sites renderer review. Canonical: docs/design/AUTHORED_BATTLE_LOCATIONS.md;
+updated index/backlog and runtime coverage audit (44 authored, 17 generic).
+Final rendered captures are staged under staging-terrain/road-locations-v1.
+
+Validation: 23 focused road/map/Battle Lab tests passed, including 40-seed routes
+to both exits and preview save isolation. After final bank/route refinements,
+the three road tests passed again. All four final renderer captures were
+visually inspected; 10 ground/prop URLs load with no runtime exceptions. Full
+asset coverage checks 253 encounters and 20,441 references with no missing art;
+131 non-modular size profiles remain unchanged. Different approaches can change
+tactical difficulty despite fixed enemy stats; player balance feedback remains
+follow-up work. Production, credentials and player saves were untouched.
+
+Next focused maps: Boar-Rider Patrol (open road/courier fork) and The Tithe Convoy
+(guarded tribute-wagon stopping yard). Do not mix terrain and props in any
+additional asset packs.
