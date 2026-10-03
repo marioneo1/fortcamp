@@ -98,6 +98,7 @@ def blueprint(location, variant, rng):
         if location=='supply_stop':
             item('water_trough',7,10)
             candidate_floor.update((x,y) for x in range(8,14) for y in range(9,12))
+        item('horticulture_tool_crate',4,10,'Delivery Repair Tools',loose=True)
     elif location in {'farm_clearing','herb_garden','occupied_training_yard'}:
         family='limestone' if location=='herb_garden' else 'timber'
         piece=building(f'activity_yard_{variant+1}',(4,1),family)
@@ -109,6 +110,9 @@ def blueprint(location, variant, rng):
             for x,y in [(6,2),(7,2),(11,2)]:item('hay_bale',x,y)
             item('water_trough',6,3)
             item('dense_shrub',11,3,loose=True)
+            item('horticulture_scarecrow',11,4,'Farm Scarecrow')
+            item('horticulture_tool_crate',7,4,'Farm Tools',loose=True)
+            item('horticulture_watering_can',8,4,'Farm Watering Can',loose=True)
         else:
             for x,y in [(6,2),(7,2)]:item('straw_training_dummy',x,y)
             for x,y in [(11,2),(12,2)]:item('archery_target',x,y)
@@ -128,6 +132,9 @@ def blueprint(location, variant, rng):
                           hp=0,sprite='structure:fieldstone_breach',name='Collapsed Cottage Wall')
         item('village_well',7,10,'Old Village Well')
         item('wash_tub',9,10)
+        item('horticulture_hand_pump',9,11,'Old Village Pump')
+        item('horticulture_watering_can',10,10,'Abandoned Watering Can',loose=True)
+        item('horticulture_clay_pots',11,11,'Abandoned Pots',loose=True)
         item('fallen_gravestone',12,10,'Broken Village Boundary Stone',loose=True)
         p.append({'material':'toll_cobbles','rect':[5,9,7,3]})
         # The cobbled village yard offers room to approach either ruin.

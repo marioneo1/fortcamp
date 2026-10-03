@@ -18,7 +18,7 @@ def dress_camp(board, rng):
             reserved |= {(gate['x']+dx,gate['y']+dy) for dx,dy in [(0,0),(1,0),(-1,0),(0,1),(0,-1)]}
     reserved |= {(x,y) for x,y in floor if y in (5,6) or x==9}
 
-    def place(sprite, name, preferred, size=(1,1), decorative=False):
+    def place(sprite, name, preferred, size=(1,1), decorative=False, offset=(0,0)):
         w,h = size
         candidates = sorted(floor, key=lambda p:(abs(p[0]-preferred[0])+abs(p[1]-preferred[1]),p[1],p[0]))
         for x,y in candidates:
@@ -26,6 +26,7 @@ def dress_camp(board, rng):
             if not cells <= floor or cells & (occupied|reserved):
                 continue
             item=prop('camp_'+sprite,name,sprite,x,y,not decorative)
+            item['art_offset']=list(offset)
             if size != (1,1): item['footprint']=[w,h]
             (board['decorations'] if decorative else board['terrain']).append(item)
             occupied.update(cells)
@@ -49,6 +50,11 @@ def dress_camp(board, rng):
     place('grain_sacks','Food Stores',(7,4))
     place('water_trough','Water Trough',(16,8))
     place('war_drum','Signal Drum',(6,3))
+    # Small, useful kit reuse around existing cooking/water/repair stations.
+    place('horticulture_herb_basket','Cooking Herbs',(8,7),decorative=True,offset=(.15,.15))
+    place('horticulture_round_stool','Cook’s Stool',(7,7),offset=(-.12,.12))
+    place('horticulture_tool_crate','Equipment Repair Tools',(8,9),decorative=True,offset=(.15,.15))
+    place('horticulture_watering_can','Water Can',(16,9),decorative=True,offset=(.15,.15))
     if board['location_id']=='vanguard_camp':
         place('ballista_bolts','Ballista Bolts',(16,4),decorative=True)
     else:

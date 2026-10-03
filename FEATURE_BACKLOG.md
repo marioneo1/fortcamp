@@ -1,5 +1,7 @@
 # Fortcamp feature backlog
 
+October 3 environment variations: all four gardens and all four training yards now use distinct footprint-aware arrangements. Kit reused in farm clearings, well yards, provision/supply sites and full command/redoubt/vanguard camps (36 authored variants across nine settings). Visual dressing only; save layouts, mission rewards and mechanics retained.
+
 October 3 garden clutter follow-up: new overhead garden prop kit installed in reviewed layout 1. Crop edging overlays planting without blocking movement; potting, watering, drying and rest areas now have sized clutter. Training layout 1 gets a small equipment/rest addition. Other variants and interactive fence/gardening mechanics remain deferred.
 
 October 3 environment follow-up: implemented one herb-garden and one training-yard composition (layout 1) with a new overhead terrain-only atlas, coherent multi-cell ground patches, paths, activity areas and edge-offset equipment. Other three variants await visual review; harvesting/training mechanics are unchanged. See docs/art/ENVIRONMENT_DRESSING_V1.md.

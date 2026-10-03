@@ -24,7 +24,7 @@ try{
  for(const mid of activitySites?['herbs_wall','prison_proof_d']:sizeAudit?[]:beginnerSites?['rats_storehouse','wolves_fence','herbs_wall','goblin_pickpockets','ruined_well','supply_watch','prison_proof_d']:
                  commandCamps?['prison_rival_d','prison_former_e','prison_former_c','goblin_chieftain','hobgoblin_vanguard']:
                               ['chapel_patrol','roadside_toll','road_cache','goblin_armory','salvage_court']){
-  for(let variant=1;variant<=(activitySites?1:4);variant++){
+  for(let variant=1;variant<=4;variant++){
    const key=`${mid}_v${variant}`;
    await evaluate(`window.propEncounter('${key}')`);await new Promise(r=>setTimeout(r,120));
    if(activitySites){

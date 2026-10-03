@@ -2,8 +2,7 @@
 
 The garden now has additional overhead props and low crop edging; see [GARDEN_TOOLKIT_V2.md](GARDEN_TOOLKIT_V2.md). The first training-yard layout also has extra rest/repair clutter. This supersedes the initial furniture list below; ground composition and later-variant scope are unchanged.
 
-Implemented in dev, October 3. Review one composition of each setting before
-rolling the approach out to other variations. In Battle Lab, choose **Herbs
+Implemented in dev, October 3. Following approval of the first compositions, all four variants now have authored environment dressing; see GARDEN_TOOLKIT_V2.md for the current rollout. In Battle Lab, choose **Herbs
 Behind the Wall → Walled herb beds** or **A Promise Proven in Battle ? Sparring yard and archery lane** (layout 1). Start a fresh session: saved
 encounters retain their scenery and occupancy.
 
@@ -24,8 +23,7 @@ encounters retain their scenery and occupancy.
 
 The ground detail is cosmetic and walkable. It introduces no harvesting,
 training income, irrigation actions, firing-line restrictions or new loot.
-Combat budgets and mission resolution remain unchanged. Other three layouts
-of each setting keep their earlier composition while these prototypes are reviewed.
+Combat budgets and mission resolution remain unchanged. All four layouts of each setting now have their own adapted composition. The original layout-1 description above remains the starting point.
 
 ## Art and runtime
 
@@ -69,8 +67,7 @@ with the existing dedicated headless Chrome session. Results go to
 
 Review vegetation density, palette joins and equipment placement. This pack
 does not guarantee seamless texture edges; broad patches and a consistent soil
-palette reduce repetition, but actual screenshots must be checked. Additional
-layout compositions and more specialised work props can follow once approved.
+palette reduce repetition, but actual screenshots must be checked. All four activity layouts now have adapted compositions; further specialised work props can follow as needed.
 
 ## Validation
 

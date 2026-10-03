@@ -10,7 +10,7 @@ from backend.location_maps import location_blueprint, MISSION_LOCATIONS
 
 
 class BeginnerLocationTests(unittest.TestCase):
-    def test_activity_prototypes_keep_art_separate_from_collision_and_other_variants(self):
+    def test_activity_variations_keep_art_separate_from_collision(self):
         for location in ['herb_garden','occupied_training_yard']:
             variants={}
             for index in range(40):
@@ -18,8 +18,7 @@ class BeginnerLocationTests(unittest.TestCase):
                 variants[board['map_variation']]=board
             self.assertEqual(len(variants),4)
             for variant,board in variants.items():
-                self.assertEqual(bool(board.get('ground_art')),variant==1)
-                if variant!=1:continue
+                self.assertTrue(board.get('ground_art'))
                 self.assertEqual(len(board['activity_areas']),4)
                 for tile in board['ground_art']:
                     self.assertTrue(0<=tile['x']<board['width'] and 0<=tile['y']<board['height'])
@@ -33,8 +32,9 @@ class BeginnerLocationTests(unittest.TestCase):
                     walking={**deepcopy(board),'units':{}}
                     # Crossing a low edging rail leaves ordinary crop ground
                     # walkable; the fence never becomes a full-cell obstacle.
-                    self.assertTrue(_can_step(walking,7,4,7,5,{'id':'walker'}))
-                    self.assertTrue(_can_step(walking,9,5,8,5,{'id':'walker'}))
+                    if variant==1:
+                        self.assertTrue(_can_step(walking,7,4,7,5,{'id':'walker'}))
+                        self.assertTrue(_can_step(walking,9,5,8,5,{'id':'walker'}))
 
     def test_current_dressing_keeps_every_spawn_connected_to_an_exit(self):
         locations={'provision_store','farm_clearing','herb_garden','purse_road','well_yard',

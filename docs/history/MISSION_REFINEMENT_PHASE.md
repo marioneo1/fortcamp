@@ -659,3 +659,27 @@ crossings; 9 focused frontend tests and frontend build pass. Two actual-render
 layouts inspected, 55 asset URLs loaded, no runtime exceptions. Full coverage:
 249 encounters, 19,705 prop references, zero missing art. Shared profiles cover
 131 non-modular sprites. Rechecked profile mirrors after long-canvas correction.
+
+
+## October 3: Activity variations and garden-kit reuse
+
+Extended approved garden and training-yard dressing to all four building
+layouts. Annex, divided and deep courtyards have their own planted areas,
+paths, practice lanes, equipment and rest stations. Ground art follows actual
+building floor unions. Low crop edging remains step-over scenery and does not
+remove clear furniture or enemy deployment cells. Approved wall geometry and
+first-layout compositions remain unchanged.
+
+Reused suitable props in farm clearings, village well yards, provision/supply
+stores and full command, timber-redoubt and vanguard camps. Tools, herbs, stools,
+pumps and watering cans fit existing work stations; camp placement respects
+reserved routes and full footprints. This affects 36 authored layouts across
+nine settings. No farming, pump or training gameplay was added. Fresh battles
+receive the dressing; saved encounters, production and player saves are untouched.
+Canonical reference: docs/art/GARDEN_TOOLKIT_V2.md.
+
+Validation: 9 backend tests including 400-map reachability; frontend build;
+8 activity, 28 beginner and 20 command/camp real browser renders without runtime
+exceptions. Visually inspected all six new activity arrangements and representative
+farm, well and camp renders. Coverage rebuilt for 249 encounters: 20,330 prop
+references, no missing art; 131 shared non-modular size profiles.

@@ -23,8 +23,8 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | fallen_branches | 1x1 | 85% | 2 | 1x1 |
 | scattered_stones | 1x1 | 85% | 1 | 1x1 |
 | rounded_boulder | 1x1 | 85% | 11 | 1x1 |
-| hay_bale | 1x1 | 85% | 24 | 1x1 |
-| bound_barrels | 1x1 | 85% | 89 | 1x1 |
+| hay_bale | 1x1 | 85% | 38 | 1x1 |
+| bound_barrels | 1x1 | 85% | 90 | 1x1 |
 | structure:palisade_straight | 1x1 | 85% | 89 | 1x1 |
 | structure:palisade_gate_closed | 1x1 | 85% | 0 | prepared / state art |
 | structure:palisade_gate_open | 1x1 | 85% | 0 | prepared / state art |
@@ -33,7 +33,7 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | structure:wooden_rescue_cage_closed | 2x2 | 90% | 1 | 2x2 |
 | structure:wooden_rescue_cage_open | 2x2 | 90% | 0 | prepared / state art |
 | structure:wooden_barricade | 1x1 | 85% | 0 | prepared / state art |
-| structure:wall_rubble | 1x1 | 85% | 1394 | 1x1, 2x2, 1x2, 2x1 |
+| structure:wall_rubble | 1x1 | 85% | 1531 | 1x1, 2x2, 1x2, 2x1 |
 | alarm_bell_active | 1x1 | 85% | 31 | 1x1 |
 | alarm_bell_disabled | 1x1 | 85% | 0 | prepared / state art |
 | crate_closed | 1x1 | 85% | 96 | 1x1 |
@@ -80,17 +80,17 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | chapel_pew | 1x1 | 85% | 20 | 1x1 |
 | fallen_church_bell | 1x1 | 85% | 10 | 1x1 |
 | toll_desk | 1x1 | 85% | 28 | 1x1 |
-| straw_training_dummy | 1x1 | 85% | 90 | 1x1 |
-| armored_training_dummy | 1x1 | 85% | 30 | 1x1 |
-| archery_target | 1x1 | 85% | 81 | 1x1 |
-| hay_archery_butt | 1x1 | 85% | 39 | 1x1 |
+| straw_training_dummy | 1x1 | 85% | 83 | 1x1 |
+| armored_training_dummy | 1x1 | 85% | 37 | 1x1 |
+| archery_target | 1x1 | 85% | 60 | 1x1 |
+| hay_archery_butt | 1x1 | 85% | 60 | 1x1 |
 | practice_weapon_rack | 1x1 | 85% | 60 | 1x1 |
 | training_shield_rack | 1x1 | 85% | 30 | 1x1 |
-| arrow_bundle | 1x1 | 45% | 39 | 1x1 |
+| arrow_bundle | 1x1 | 45% | 60 | 1x1 |
 | war_drum | 1x1 | 85% | 30 | 1x1 |
 | sleeping_bag | 1x2 | 92% | 7 | 1x2 |
 | straw_bed | 1x2 | 92% | 5 | 1x2 |
-| canvas_cot | 1x2 | 92% | 34 | 1x2 |
+| canvas_cot | 1x2 | 92% | 13 | 1x2 |
 | wooden_bed | 1x2 | 92% | 0 | prepared / state art |
 | stone_bed | 1x2 | 92% | 0 | prepared / state art |
 | luxurious_bed | 1x2 | 92% | 0 | prepared / state art |
@@ -100,9 +100,9 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | food_prep_table | 1x1 | 85% | 0 | prepared / state art |
 | grain_sacks | 1x1 | 85% | 40 | 1x1 |
 | water_trough | 1x1 | 85% | 40 | 1x1 |
-| wash_tub | 1x1 | 85% | 19 | 1x1 |
-| mess_bench | 1x1 | 85% | 9 | 1x1 |
-| herb_planter | 1x1 | 85% | 21 | 1x1 |
+| wash_tub | 1x1 | 85% | 40 | 1x1 |
+| mess_bench | 1x1 | 85% | 30 | 1x1 |
+| herb_planter | 1x1 | 85% | 5 | 1x1 |
 | village_well | 2x2 | 90% | 5 | 2x2 |
 | ballista_loaded | 2x2 | 90% | 5 | 2x2 |
 | ballista_empty | 2x2 | 90% | 0 | prepared / state art |
@@ -117,23 +117,23 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | horticulture_fence_corner | 1x1 | 85% | 0 | prepared / state art |
 | horticulture_fence_junction | 1x1 | 85% | 0 | prepared / state art |
 | horticulture_fence_cross | 1x1 | 85% | 0 | prepared / state art |
-| horticulture_fence_post | 1x1 | 85% | 16 | 1x1 |
+| horticulture_fence_post | 1x1 | 85% | 72 | 1x1 |
 | horticulture_gate_closed | 1x1 | 85% | 0 | prepared / state art |
 | horticulture_gate_open | 1x1 | 85% | 0 | prepared / state art |
 | horticulture_fence_damaged | 1x1 | 85% | 0 | prepared / state art |
-| horticulture_scarecrow | 1x1 | 85% | 1 | 1x1 |
-| horticulture_hand_pump | 1x1 | 55% | 1 | 1x1 |
-| horticulture_round_stool | 1x1 | 45% | 11 | 1x1 |
-| horticulture_round_table | 1x1 | 85% | 1 | 1x1 |
-| horticulture_potting_bench | 2x1 | 85% | 1 | 2x1 |
-| horticulture_watering_can | 1x1 | 45% | 1 | 1x1 |
-| horticulture_wheelbarrow | 2x1 | 85% | 1 | 2x1 |
-| horticulture_tool_crate | 1x1 | 45% | 10 | 1x1 |
-| horticulture_soil_sack | 1x1 | 45% | 1 | 1x1 |
-| horticulture_clay_pots | 1x1 | 45% | 1 | 1x1 |
-| horticulture_seedling_tray | 1x1 | 45% | 0 | prepared / state art |
-| horticulture_herb_basket | 1x1 | 45% | 1 | 1x1 |
-| horticulture_compost_bin | 1x1 | 85% | 1 | 1x1 |
-| horticulture_drying_screen | 2x1 | 85% | 1 | 2x1 |
-| horticulture_hose_coil | 1x1 | 45% | 0 | prepared / state art |
-| horticulture_fence_joined | 1x1 | 85% | 36 | 1x1 |
+| horticulture_scarecrow | 1x1 | 85% | 10 | 1x1 |
+| horticulture_hand_pump | 1x1 | 55% | 10 | 1x1 |
+| horticulture_round_stool | 1x1 | 45% | 70 | 1x1 |
+| horticulture_round_table | 1x1 | 85% | 4 | 1x1 |
+| horticulture_potting_bench | 2x1 | 85% | 5 | 2x1 |
+| horticulture_watering_can | 1x1 | 45% | 44 | 1x1 |
+| horticulture_wheelbarrow | 2x1 | 85% | 5 | 2x1 |
+| horticulture_tool_crate | 1x1 | 45% | 78 | 1x1 |
+| horticulture_soil_sack | 1x1 | 45% | 3 | 1x1 |
+| horticulture_clay_pots | 1x1 | 45% | 10 | 1x1 |
+| horticulture_seedling_tray | 1x1 | 45% | 4 | 1x1 |
+| horticulture_herb_basket | 1x1 | 45% | 33 | 1x1 |
+| horticulture_compost_bin | 1x1 | 85% | 5 | 1x1 |
+| horticulture_drying_screen | 2x1 | 85% | 5 | 2x1 |
+| horticulture_hose_coil | 1x1 | 45% | 1 | 1x1 |
+| horticulture_fence_joined | 1x1 | 85% | 172 | 1x1 |
