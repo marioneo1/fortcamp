@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## October 3: Approved male batches 002 and 003 consumed
+
+Imported all sixteen approved race sheets into dev through the stable append-only importer. Twenty IDs per pool, separate original images, square 768px full and 192px thumbs; canonical sources copied into portraits and staging retained. Verified all 960 assets decode, runtime exact/alternate role fallback, and all 320 additions in Portrait Lab (1,824 total). Inspected installed montage at data/portrait_audit/male_batch_002_003_install/installed.jpg. Existing identities and production unchanged. Recorded user interest in a selective female quality pass after male rollout.
+
 ## October 3: Third common-role male batch staged
 
 Generated eight fresh sheets using the full approved production male template and specific race anatomy: Revenant/Vampire/Ogre/Troll melee, Alien ranged, Undead/Manaforged/Dreamkin magic. Saved all images and exact prompts under staging-portraits/MALE_BATCH_003.md. All eight decode at 1254×1254; grid boundary evidence recorded in data/portrait_audit/male_batch_003/manifest.json. Inspected every output and documented recurring Alien structures, edge clearance concerns and preserved humanoid Undead design. No imports, identity rerolls or production changes.

@@ -1,5 +1,7 @@
 # Fortcamp portrait batch generation
 
+October 3 installation follow-up: batches 002 and 003 approved and consumed into dev, sixteen pools/320 portraits with stable IDs and separate square/original assets. Staged sheets and exact prompts retained. Twelve male generation targets remain; selective female quality review is deferred and tracked in docs/art/MALE_PORTRAIT_ROLLOUT.md.
+
 October 3 batch 003: eight additional male sheets staged (Revenant/Vampire/Ogre/Troll melee, Alien ranged, Undead/Manaforged/Dreamkin magic), with exact expanded prompts in staging-portraits/MALE_BATCH_003.md. Same full production male approach and style/presentation reference roles; no female counterpart generation references. Not imported. Current and legacy prompts remain intact.
 
 October 3 batch 002: eight additional male sheets staged for review (Bugbear/Lizardfolk/Minotaur/Dragonkin melee; Harpy/Centaur/Faun/Catfolk ranged). Images and exact expanded prompts are in staging-portraits/MALE_BATCH_002.md. Used the same full production male template and reference roles as approved batch 001, with species-specific anatomy. Not imported yet. Production and legacy prompts below remain intact.

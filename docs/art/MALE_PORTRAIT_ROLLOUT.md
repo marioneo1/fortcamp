@@ -17,15 +17,17 @@ Files and exact expanded prompts: staging-portraits/MALE_BATCH_001.md. All eight
 
 Review notes retained for future refinement: some Halfling/Gnome faces read youthful, some Tiefling horn tips sit close to source edges, and several related face structures recur despite the diversity prompt. The user approved these images. Do not claim perfect identity diversity or full horn clearance. Grid decode/boundaries were checked and complete outputs inspected.
 
-## Batch 002 — staged for review
+## Batch 002 — approved and installed in dev
 
-Bugbear, Lizardfolk, Minotaur and Dragonkin melee; Harpy, Centaur, Faun and Catfolk ranged. Eight fresh sheets, 160 portraits, saved with exact expanded prompts in staging-portraits/MALE_BATCH_002.md. Each decodes at 1254×1254 with five columns and four rows; boundary evidence is recorded in data/portrait_audit/male_batch_002/manifest.json. No runtime import yet.
+Bugbear, Lizardfolk, Minotaur and Dragonkin melee; Harpy, Centaur, Faun and Catfolk ranged. Eight fresh sheets, 160 portraits, saved with exact expanded prompts in staging-portraits/MALE_BATCH_002.md. Each decodes at 1254×1254 with five columns and four rows; boundary evidence is recorded in data/portrait_audit/male_batch_002/manifest.json. User approved; installed twenty stable IDs per pool with square full/thumb and separate original images. Canonical source copies are in portraits/.
 
 Female sheets were inspected for established species anatomy, but generation references remained the authoritative art reference and male Human presentation sheet. Some horn/ear tips approach edges. Harpy wing-arm anatomy is difficult to establish in the close crop; Centaur bodies are partly visible and their smaller faces will need careful circle framing. Complete generated sheets were inspected; file/grid validation does not establish anatomical correctness or perfect face diversity.
 
-## Batch 003 — staged for review
+## Batch 003 — approved and installed in dev
 
-Revenant, Vampire, Ogre and Troll melee; Alien ranged; Undead, Manaforged and Dreamkin magic. Eight fresh sheets, 160 portraits, with exact expanded prompts and review links in staging-portraits/MALE_BATCH_003.md. All decode at 1254×1254; five-column/four-row boundary evidence recorded in data/portrait_audit/male_batch_003/manifest.json. Not imported.
+Revenant, Vampire, Ogre and Troll melee; Alien ranged; Undead, Manaforged and Dreamkin magic. Eight fresh sheets, 160 portraits, with exact expanded prompts and review links in staging-portraits/MALE_BATCH_003.md. All decode at 1254×1254; five-column/four-row boundary evidence recorded in data/portrait_audit/male_batch_003/manifest.json. User approved; installed twenty stable IDs per pool with square full/thumb and separate original images. Canonical source copies are in portraits/.
+
+Combined installation verified all 960 assets, exact-role and alternate-role selection, and Portrait Lab coverage (1,824 total). Installed montage and report: data/portrait_audit/male_batch_002_003_install/. Existing assignments and production unchanged.
 
 Inspected all outputs. Face/crest repetition is notable in Alien; some Troll ears and Manaforged crystal tips approach or touch edges. Ogre faces lean angular; circle framing cannot recover clipped source pixels. Undead retains the existing preserved humanoid design. Validation covers file decoding and grid evidence, not perfect anatomy or unique face detection.
 
@@ -39,3 +41,7 @@ Inspected all outputs. Face/crest repetition is notable in Alien; some Troll ear
 | General, no class suffix | Slimefolk, Werewolf |
 
 Do not reuse the Dwarf reference for unrelated races or opposite-gender race anatomy. Preserve source sheets and prompts in staging; use canonical IDs and separate original/square assets when installing. Existing character portraits must not be rerolled.
+
+## Deferred female review
+
+User requested another quality pass on female pools after consuming these males. Audit race fidelity, underlying face variety and composition against approved style before choosing individual sheets for fresh regeneration. Preserve legacy sources and stable identity order; do not replace every female pool indiscriminately.

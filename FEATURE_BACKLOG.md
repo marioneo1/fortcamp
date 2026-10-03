@@ -1,5 +1,7 @@
 # Fortcamp feature backlog
 
+October 3 male batches 002/003 consumed after user approval: sixteen pools, 320 portraits, 960 full/thumb/original files verified. Exact and alternate-role matching checked; installed montage inspected; Portrait Lab now 1,824 portraits. Existing assignments and production unchanged. Twelve male generation targets and staged Aasimar installation remain. New deferred request: review female pool quality and plan selective fresh generations using approved style; preserve legacy sources and IDs. Canonical: docs/art/MALE_PORTRAIT_ROLLOUT.md.
+
 October 3 male batch 003: eight new sheets staged with exact prompts, 160 portraits (Revenant/Vampire/Ogre/Troll melee, Alien ranged, Undead/Manaforged/Dreamkin magic). All decode at 1254×1254; grid evidence and visual-review concerns recorded. Not imported. Twelve generic generation targets remain plus the approved staged Aasimar installation; batches 002/003 await pool installation. See docs/art/MALE_PORTRAIT_ROLLOUT.md.
 
 October 3 male batch 002: eight beast-race sheets staged with exact prompts and review index, 160 portraits (Bugbear/Lizardfolk/Minotaur/Dragonkin melee; Harpy/Centaur/Faun/Catfolk ranged). File decoding and 5×4 boundary evidence checked; horn clearance, Harpy wing anatomy and Centaur framing remain review concerns. Not imported. Twenty generic generation targets remain, plus the approved staged Aasimar installation. Canonical progress: docs/art/MALE_PORTRAIT_ROLLOUT.md.
