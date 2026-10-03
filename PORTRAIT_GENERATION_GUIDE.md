@@ -1,6 +1,6 @@
 # Fortcamp portrait batch generation
 
-October 3 male restart test: generated one new `staging-portraits/goblin_male_ranged.png` 5×4 sheet using the production male prompt, authoritative art reference and male Human presentation reference only. Exact expanded prompt is beside it in `goblin_male_ranged.prompt.md`. Staging test, not installed or promoted to a new production reference. The painterly style is close, but several narrower jaws still need user review for Goblin identity before continuing the male batches. Existing approved male/female prompts and legacy sections remain unchanged.
+October 3 male restart: the user approved `staging-portraits/goblin_male_ranged.png`, generated using the production male prompt, authoritative art reference and male Human presentation reference only. Exact expanded prompt is beside it in `goblin_male_ranged.prompt.md`. Installed twenty ranged portraits and twenty melee portraits from the earlier approved `goblin_male_melee_style_test_v2.png`. Canonical source copies are `portraits/goblin_male_ranged.png` and `portraits/goblin_male_melee.png`. Each pool has square full/thumb assets and separate uncropped originals. Existing approved male/female prompts and legacy sections remain unchanged.
 
 Generate one contact sheet per portrait set, then use the importer to split it into twenty full portraits and twenty roster thumbnails. Keep one consistent visual style across every batch.
 

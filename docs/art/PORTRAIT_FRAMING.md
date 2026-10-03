@@ -1,5 +1,7 @@
 # Portrait framing and Portrait Lab
 
+October 3 Goblin male rollout: installed twenty approved melee and twenty approved ranged portraits (IDs 001–020 in their respective pools), including square full/thumb assets and uncropped originals. Portrait Lab now contains 1,344 images; the earlier automatic audit covered 1,304. New portraits use centered square defaults until manually adjusted or audited. Existing characters with an assigned portrait keep it; portraitless matching recruits can receive the new images through normal resolution.
+
 Pool image URLs carry a file version so browser caches refresh after recropping, including existing roster/battle images and Portrait Lab. Versions do not change portrait identities or saved framing keys. Retained battle DOM images have framing reapplied after UI patches, even when their source has not changed.
 
 Implemented in development: **Mission Board → debug controls → Open Portrait Lab** lists all installed generic pool images and Champion defaults/expressions. Search by race, name or image ID; filter collections or individual image sets. Sixty circle previews per page keep the library manageable.

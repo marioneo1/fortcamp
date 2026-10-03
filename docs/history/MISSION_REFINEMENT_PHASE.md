@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## October 3: Approved male Goblin portrait installation
+
+Installed the approved ranged sheet and earlier approved melee style test, twenty images per pool. Preserved staging references and copied canonical sheets into portraits. Verified all 120 full/thumb/original files decode, exact role selection chooses its matching pool, and Portrait Lab lists all forty additions. Inspected the installed thumbnail montage at data/portrait_audit/goblin_male_install/installed.jpg. Existing assigned portraits are not rerolled; production is unchanged.
+
 ## October 3: Safe default framing and one male portrait test
 
 Replaced immediate recommended-frame reset with a preview-only Reset to default button. Saving clears the appropriate individual/shared override; cancelling sends no mutation. Browser QA verified reset preview makes zero writes, cancel makes zero writes, and save sends exactly one reset. Eleven framing/importer tests and frontend build passed. Generated a single new male Goblin ranged 5×4 sheet with the built-in image tool, approved art reference and male presentation reference. Saved image/prompt in staging-portraits; not imported. Some narrower jaws remain a visual-review concern before further male generations.

@@ -1,5 +1,7 @@
 # Fortcamp feature backlog
 
+October 3 male Goblin portraits: approved ranged and prior approved melee sheets installed in dev, twenty portraits per role with stable IDs, square previews and uncropped originals. Both pools verified against runtime role selection and Portrait Lab. Further male races remain pending.
+
 October 3 safe framing reset: Reset to default previews the appropriate character/shared default and requires Save framing; Cancel performs no write. Browser-tested both paths. One male Goblin ranged 5×4 generation is staged for visual review, with its exact prompt; further male batches remain deferred until review.
 
 October 3 portrait borders follow-up: verified Aasimar healer 013/014/015/019/020 square files contain artwork to their edges and their default circles stay inside bounds. Added file-versioned pool URLs to roster normalization, battle views and Portrait Lab so old padded image caches are replaced. Reapply circle positioning after retained DOM patches so combat updates cannot discard portrait geometry.
