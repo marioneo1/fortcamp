@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## October 3: Obsolete map art cleared from dev
+
+Archived 54 obsolete map-art/cache targets outside dev after automatic approval review rejected permanent deletion. Archive uses NTFS compression; exact paths and space measurements are in docs/art/MAP_ART_CLEANUP_20261003.json. Approved sources, current map templates, latest screenshots and required legacy pilot prop source retained. Fixed the legacy building installer to recognize current source versions. All 171 registered runtime assets remain byte-for-byte unchanged; 145-encounter/7,877-reference asset audit passes. No game data or production changes.
+
 ## October 3: Mission building rollout completed; remaining maps audited
 
 Approved material kits now serve chapel patrol/gate, five toll/watch contracts, raider cache/outpost, Goblin Armory and Salvage Court encounters. Each building setting has four named layouts; all building locations have four deterministic dressing choices. Armory replaces its two legacy enclosures with four metal-magazine plans. Small twin-building patrols use both buildings. Mission modes, objectives, budgets, rewards and active saved maps are retained. See docs/design/AUTHORED_BATTLE_LOCATIONS.md for exact mapping and limitations.

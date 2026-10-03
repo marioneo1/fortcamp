@@ -1,5 +1,13 @@
 # Modular wall art — current dev strategy
 
+## October 3: Obsolete map art cleanup
+
+Moved 54 obsolete targets out of dev into `E:/Other Games/Fortcamp/fortcamp-art-archive/map-cleanup-20261003`: temporary art-preview Chrome profiles, old v1/v3 building sources/runtime copies, superseded v2 rough-stone files, old comparison screenshots and one verified duplicate reference image. Automatic approval review blocked permanent deletion; these files and the earlier rejected polished trials are instead retained outside the project with NTFS compression. The archive can be removed manually if permanent space reclamation is wanted. Details and measured space recovery: [cleanup manifest](MAP_ART_CLEANUP_20261003.json).
+
+Preserved active source sheets: v2 timber/iron, v4 fieldstone, v10 polished with the user-authored parts, v5 rough-stone overhead, current terrain/props, latest map screenshots and all map templates. The pilot overhead-props-v1 sheet remains required by the current prop manifest; its version number alone does not make it obsolete. No source artwork was replaced. All 171 registered runtime asset hashes were verified unchanged; the full 145-encounter/7,877-reference audit still passes.
+
+The old `install_building_toolset.py` shortcut now detects the current sources across versions before delegating to the canonical material installer. It no longer mistakes absent retired v2 stone sheets for a reason to reinstall v1 drafts. Historical paths below may now point into the external archive rather than dev. Preview tools recreate their screenshots/profiles when run again.
+
 ## October 3: Side-facing T choice reverted
 
 At the user's request, restored the previous side-facing interior T artwork: the part-20 inward arm plus part-19 upright continuation. The part-17 trial below is no longer active. This restores map detail 2's previous junction through the shared orientation rule; true inward corners, including map detail 3, retain part 20. Reinstalled the assets and changed the cache version. No other wall rules or layouts changed.

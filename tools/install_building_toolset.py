@@ -40,7 +40,9 @@ def centered(image,scale=None,anchor_y=None):
 def main():
     # Prefer the complete material packs; this old entry point must not revert
     # the active registry to the earlier mixed-material draft.
-    if all((ROOT/'staging-terrain/building-toolset-v2'/f'{f}.png').exists() for f in FAMILIES):
+    versions=('building-toolset-v10-polished','building-toolset-v4','building-toolset-v3','building-toolset-v2')
+    if all(any((ROOT/'staging-terrain'/version/f'{family}.png').exists()
+               for version in versions) for family in FAMILIES):
         from install_material_building_toolsets import main as install_current
         return install_current()
     sprites={};report=[]

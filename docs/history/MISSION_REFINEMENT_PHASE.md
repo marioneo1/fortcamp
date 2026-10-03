@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## October 3: Map art cleanup
+
+Moved 54 obsolete art/cache targets (about 799.5 MiB logical size) outside dev and compressed the archive, including the earlier rejected polished trials. Permanent deletion was rejected by automatic approval review; originals remain recoverable in fortcamp-art-archive. Active source atlases/user parts and all map templates remain. Verified all 171 registered runtime asset hashes and the complete 145-preview/7,877-reference asset audit. Updated the old installer shortcut to detect the active sources across versions. The cleanup manifest records exact paths and measured allocated-space recovery.
+
 ## October 3: Approved buildings expanded into contract settings
 
 Added sixteen thematic chapel/armory/cache/checkpoint templates from the eight existing footprints, plus Salvage Court workshop routing. Current authored coverage is 17 contract encounter IDs; 44 remain generic, including repeated prison ranks. Added independent deterministic dressing choices and distributed small patrols across twin buildings. Battle Lab derives four named seeds per setting from the actual generator. Material art, collision rules, objectives, budgets, rewards, production and saves remain unchanged. Reviewed actual renderer screenshots across new settings; remaining specialized sites and proposed batches are documented in AUTHORED_BATTLE_LOCATIONS.md and the generated BATTLE_LOCATION_AUDIT.md.

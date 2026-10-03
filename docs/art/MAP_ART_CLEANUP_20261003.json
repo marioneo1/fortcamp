@@ -1,0 +1,335 @@
+{
+  "date": "2026-10-03",
+  "action": "Archived after automatic approval review rejected permanent deletion; archive will use NTFS compression",
+  "moved": [
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\chrome-qa",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\chrome-qa",
+      "bytes": 357233305,
+      "files": 1978
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v10-polished\\chrome-qa",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v10-polished\\chrome-qa",
+      "bytes": 293480272,
+      "files": 1844
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v1",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v1",
+      "bytes": 3589793,
+      "files": 7
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v3",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v3",
+      "bytes": 167364976,
+      "files": 1666
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v1",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v1",
+      "bytes": 3212976,
+      "files": 40
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v3",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v3",
+      "bytes": 1093737,
+      "files": 16
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_brace.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_brace.png",
+      "bytes": 96288,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_breach.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_breach.png",
+      "bytes": 78864,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_corner.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_corner.png",
+      "bytes": 91122,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_corner_broken.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_corner_broken.png",
+      "bytes": 104051,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_cross.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_cross.png",
+      "bytes": 94300,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_door_closed.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_door_closed.png",
+      "bytes": 55461,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_door_open.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_door_open.png",
+      "bytes": 69608,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_edge_junction.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_edge_junction.png",
+      "bytes": 94633,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_end.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_end.png",
+      "bytes": 99842,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_gate_closed.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_gate_closed.png",
+      "bytes": 54256,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_gate_open.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_gate_open.png",
+      "bytes": 64007,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_junction.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_junction.png",
+      "bytes": 87322,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_pillar.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_pillar.png",
+      "bytes": 145725,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_stairs.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_stairs.png",
+      "bytes": 152916,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_wall.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_wall.png",
+      "bytes": 58487,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_window.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\frontend\\public\\assets\\combat-terrain\\structures\\building-v2\\fieldstone_window.png",
+      "bytes": 61551,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\fieldstone-1-in-game.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\fieldstone-1-in-game.png",
+      "bytes": 537275,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\fieldstone-2-in-game.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\fieldstone-2-in-game.png",
+      "bytes": 503916,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\fieldstone-3-in-game.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\fieldstone-3-in-game.png",
+      "bytes": 631515,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\fieldstone-4-in-game.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\fieldstone-4-in-game.png",
+      "bytes": 599234,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\fieldstone-joins-0.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\fieldstone-joins-0.png",
+      "bytes": 152905,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\fieldstone-joins-180.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\fieldstone-joins-180.png",
+      "bytes": 157038,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\fieldstone-joins-270.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\fieldstone-joins-270.png",
+      "bytes": 160251,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\fieldstone-joins-90.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\fieldstone-joins-90.png",
+      "bytes": 149698,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\fieldstone-joins-fixed.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\fieldstone-joins-fixed.png",
+      "bytes": 152905,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\fieldstone-joint-pillars-closeup.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\fieldstone-joint-pillars-closeup.png",
+      "bytes": 1070521,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\iron-1-in-game.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\iron-1-in-game.png",
+      "bytes": 492192,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\iron-2-in-game.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\iron-2-in-game.png",
+      "bytes": 460197,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\iron-3-in-game.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\iron-3-in-game.png",
+      "bytes": 663010,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\iron-4-in-game.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\iron-4-in-game.png",
+      "bytes": 562410,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\iron-joins-0.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\iron-joins-0.png",
+      "bytes": 121022,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\iron-joins-180.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\iron-joins-180.png",
+      "bytes": 127114,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\iron-joins-270.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\iron-joins-270.png",
+      "bytes": 130370,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\iron-joins-90.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\iron-joins-90.png",
+      "bytes": 118405,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\iron-joins-fixed.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\iron-joins-fixed.png",
+      "bytes": 121022,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\timber-1-in-game.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\timber-1-in-game.png",
+      "bytes": 538890,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\timber-2-in-game.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\timber-2-in-game.png",
+      "bytes": 500034,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\timber-3-in-game.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\timber-3-in-game.png",
+      "bytes": 621481,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\timber-4-in-game.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\timber-4-in-game.png",
+      "bytes": 607862,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\timber-joins-0.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\timber-joins-0.png",
+      "bytes": 126536,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\timber-joins-180.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\timber-joins-180.png",
+      "bytes": 126838,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\timber-joins-270.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\timber-joins-270.png",
+      "bytes": 129085,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\timber-joins-90.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\timber-joins-90.png",
+      "bytes": 113879,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v4\\timber-joins-fixed.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v4\\timber-joins-fixed.png",
+      "bytes": 126536,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v2\\fieldstone-joins-fixed.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v2\\fieldstone-joins-fixed.png",
+      "bytes": 161741,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v2\\fieldstone.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v2\\fieldstone.png",
+      "bytes": 956400,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v2\\fieldstone_PROMPT.md",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v2\\fieldstone_PROMPT.md",
+      "bytes": 2566,
+      "files": 1
+    },
+    {
+      "source": "E:\\Other Games\\Fortcamp\\fortcamp-dev\\staging-terrain\\building-toolset-v10-polished\\sixteen_equal_cells_reference - Copy.png",
+      "destination": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\map-cleanup-20261003\\staging-terrain\\building-toolset-v10-polished\\sixteen_equal_cells_reference - Copy.png",
+      "bytes": 48182,
+      "files": 1
+    }
+  ],
+  "bytes": 838354522,
+  "protectedRuntimeAssets": 171,
+  "archiveAllocatedBytesBeforeCompression": 1021282184,
+  "archiveAllocatedBytesAfterCompression": 599002915,
+  "reclaimedAllocatedBytes": 422279269
+}
