@@ -454,7 +454,7 @@ def create_captive_cart_battle(state: dict, party_ids: list[str], seed: str, def
     courier_identity, cartmaster_identity = _captive_cart_identities(seed)
     courier_name = courier_identity["name"]
     cartmaster_name = cartmaster_identity["name"]
-    courier = _enemy("captive_courier", courier_name, "archer", 8, 4, courier_identity)
+    courier = _enemy("captive_courier", courier_name, "archer", 7, 4, courier_identity)
     courier.update({
         "team": "neutral", "hp": 8, "max_hp": 18, "alive": True, "conscious": False,
         "condition": "unconscious", "weapon": "None", "attack": 0, "capture_role": "rescue",

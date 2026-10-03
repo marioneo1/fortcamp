@@ -19,6 +19,6 @@ for(const [encounter,battle] of Object.entries(battles)){
     records.push({encounter,id:item.id,type,sprite,file,overhead:Boolean(registry[sprite])});
   }
 }
-await writeFile('staging-terrain/overhead-props-v2/coverage-audit.json',JSON.stringify({encounters:Object.keys(battles).length,checks:records.length,problems,legacySprites:[...new Set(records.filter(r=>!r.overhead).map(r=>r.sprite))]},null,2)+'\n');
+await writeFile('staging-terrain/overhead-props-v2/coverage-audit.json',JSON.stringify({encounters:Object.keys(battles).length,checks:records.length,problems,records,legacySprites:[...new Set(records.filter(r=>!r.overhead).map(r=>r.sprite))]},null,2)+'\n');
 console.log(JSON.stringify({encounters:Object.keys(battles).length,checks:records.length,problems}));
 if(problems.length)process.exitCode=1;

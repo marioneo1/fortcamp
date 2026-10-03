@@ -147,8 +147,11 @@ def blueprint(location, variant, rng):
 
     # Any branch/rank may need up to eight enemies. Candidates are genuinely
     # free floor, not furniture, wall cells, entrance queues or loose scenery.
+    if location=='herb_garden':
+        from .garden_dressing import dress_garden
+        dress_garden(board,candidate_floor)
     occupied={cell for obj in t for cell in occupied_tiles(obj)}
-    scenery={(obj['x'],obj['y']) for obj in d}
+    scenery={cell for obj in d for cell in occupied_tiles(obj)}
     gateways={(g['x']+dx,g['y']+dy) for g in t if g['kind']=='gate'
               for dx,dy in [(0,0),(1,0),(-1,0),(0,1),(0,-1)]}
     valid=candidate_floor-occupied-scenery-gateways

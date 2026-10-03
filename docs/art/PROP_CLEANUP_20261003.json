@@ -1,0 +1,225 @@
+{
+  "archive": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003",
+  "retired": [
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\ancient_reliquary_closed.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\ancient_reliquary_closed.png",
+      "bytes": 28038,
+      "replacement": "props/overhead-v2/ancient_reliquary_closed.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\ancient_reliquary_open.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\ancient_reliquary_open.png",
+      "bytes": 28271,
+      "replacement": "props/overhead-v2/ancient_reliquary_open.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\birch_tree.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\birch_tree.png",
+      "bytes": 19157,
+      "replacement": "props/overhead-v2/birch_tree.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\campfire_cold.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\campfire_cold.png",
+      "bytes": 17374,
+      "replacement": "props/overhead-v2/campfire_cold.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\dead_tree.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\dead_tree.png",
+      "bytes": 18033,
+      "replacement": "props/overhead-v2/dead_tree.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\dense_shrub.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\dense_shrub.png",
+      "bytes": 24818,
+      "replacement": "props/overhead-v2/dense_shrub.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\fallen_branches.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\fallen_branches.png",
+      "bytes": 21063,
+      "replacement": "props/overhead-v2/fallen_branches.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\floor_lever_off.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\floor_lever_off.png",
+      "bytes": 18342,
+      "replacement": "props/overhead-v2/floor_lever_off.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\floor_lever_on.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\floor_lever_on.png",
+      "bytes": 17286,
+      "replacement": "props/overhead-v2/floor_lever_on.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\hay_bale.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\hay_bale.png",
+      "bytes": 23330,
+      "replacement": "props/overhead-v2/hay_bale.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\iron_jaw_trap.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\iron_jaw_trap.png",
+      "bytes": 17109,
+      "replacement": "props/overhead-v2/iron_jaw_trap.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\leafy_sapling.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\leafy_sapling.png",
+      "bytes": 15601,
+      "replacement": "props/overhead-v2/leafy_sapling.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\military_supply_coffer_closed.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\military_supply_coffer_closed.png",
+      "bytes": 25494,
+      "replacement": "props/overhead-v2/military_supply_coffer_closed.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\military_supply_coffer_open.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\military_supply_coffer_open.png",
+      "bytes": 29038,
+      "replacement": "props/overhead-v2/military_supply_coffer_open.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\pine_tree.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\pine_tree.png",
+      "bytes": 15167,
+      "replacement": "props/overhead-v2/pine_tree.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\rounded_boulder.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\rounded_boulder.png",
+      "bytes": 23340,
+      "replacement": "props/overhead-v2/rounded_boulder.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\scattered_stones.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\scattered_stones.png",
+      "bytes": 20200,
+      "replacement": "props/overhead-v2/scattered_stones.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\spike_trap.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\spike_trap.png",
+      "bytes": 19596,
+      "replacement": "props/overhead-v2/spike_trap.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\thorny_bramble.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\thorny_bramble.png",
+      "bytes": 23834,
+      "replacement": "props/overhead-v2/thorny_bramble.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\treasure_chest_gold_closed.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\treasure_chest_gold_closed.png",
+      "bytes": 27146,
+      "replacement": "props/overhead-v2/treasure_chest_gold_closed.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\treasure_chest_gold_open.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\treasure_chest_gold_open.png",
+      "bytes": 27849,
+      "replacement": "props/overhead-v2/treasure_chest_gold_open.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\treasure_chest_silver_closed.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\treasure_chest_silver_closed.png",
+      "bytes": 24076,
+      "replacement": "props/overhead-v2/treasure_chest_silver_closed.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\treasure_chest_silver_open.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\treasure_chest_silver_open.png",
+      "bytes": 26097,
+      "replacement": "props/overhead-v2/treasure_chest_silver_open.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\tree_stump.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\tree_stump.png",
+      "bytes": 12696,
+      "replacement": "props/overhead-v2/tree_stump.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\weapon_rack.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\weapon_rack.png",
+      "bytes": 20846,
+      "replacement": "props/armory-v1/weapon_rack.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\wooden_handcart.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\wooden_handcart.png",
+      "bytes": 18054,
+      "replacement": "props/overhead-v2/wooden_handcart.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\props\\wooden_table.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\props\\wooden_table.png",
+      "bytes": 16372,
+      "replacement": "props/overhead-v2/wooden_table.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\structures\\palisade_breached.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\structures\\palisade_breached.png",
+      "bytes": 20820,
+      "replacement": "structures/overhead-v2/palisade_breached.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\structures\\palisade_gate_closed.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\structures\\palisade_gate_closed.png",
+      "bytes": 19125,
+      "replacement": "structures/overhead-v2/palisade_gate_closed.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\structures\\palisade_gate_open.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\structures\\palisade_gate_open.png",
+      "bytes": 16414,
+      "replacement": "structures/overhead-v2/palisade_gate_open.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\structures\\stone_wall_straight.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\structures\\stone_wall_straight.png",
+      "bytes": 18246,
+      "replacement": "structures/building-v4/fieldstone_wall.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\structures\\wall_rubble.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\structures\\wall_rubble.png",
+      "bytes": 19632,
+      "replacement": "structures/overhead-v2/wall_rubble.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\structures\\wooden_barricade.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\structures\\wooden_barricade.png",
+      "bytes": 18943,
+      "replacement": "structures/overhead-v2/wooden_barricade.png"
+    },
+    {
+      "from": "frontend\\public\\assets\\combat-terrain\\structures\\wooden_watch_platform.png",
+      "to": "E:\\Other Games\\Fortcamp\\fortcamp-art-archive\\prop-audit-20261003\\structures\\wooden_watch_platform.png",
+      "bytes": 22263,
+      "replacement": "structures/overhead-v2/wooden_watch_platform.png"
+    }
+  ],
+  "style_reference_names_kept": [
+    "bound_barrels",
+    "campfire_lit",
+    "canvas_tent",
+    "crate_closed",
+    "crate_open",
+    "cut_log_pile",
+    "mossy_boulder",
+    "oak_tree",
+    "palisade_corner",
+    "palisade_straight",
+    "treasure_chest_bronze_closed",
+    "treasure_chest_bronze_open",
+    "wooden_rescue_cage_closed",
+    "wooden_rescue_cage_open"
+  ]
+}

@@ -90,10 +90,14 @@ def enclosure(ident, rect, doorway, wood=False):
 
 
 def prop(ident, name, sprite, x, y, blocking=True):
+    from .prop_sizes import prop_footprint
+    size=prop_footprint(sprite)
     if not blocking:
         return {'id': ident, 'name': name, 'sprite': sprite, 'x': x, 'y': y,
+                'footprint':size,
                 **({'art_scale': 1/3} if sprite=='camp_lantern' else {})}
     return {'id': ident, 'name': name, 'sprite': sprite, 'x': x, 'y': y, 'kind': 'furniture',
+            'footprint':size,
             'blocking': True, 'blocks_sight': False, 'destructible': True, 'hp': 10, 'max_hp': 10,
             'armor': 0, 'destroyed_kind': 'rubble', 'destroyed_movement_cost': 2}
 

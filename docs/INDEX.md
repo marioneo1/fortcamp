@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Current prop sizes and garden import: [Prop size standards](art/PROP_SIZE_STANDARDS.md), [complete prop audit](art/PROP_SIZE_AUDIT.md) and [retired-copy manifest](art/PROP_CLEANUP_20261003.json) cover shared scaling, actual footprints, the supplied gardening atlas and retained references.
+
 Camp/training/bedding and siege artwork: [Camp prop pack](art/CAMP_PROP_PACK.md) records the new 32-sprite atlas, installation, silhouette recovery and prepared versus functional assets. [Authored locations](design/AUTHORED_BATTLE_LOCATIONS.md) records seven new compact settings and full-camp clutter.
 
 Current map rollout and remaining coverage: [Combat location audit](maps/BATTLE_LOCATION_AUDIT.md) lists authored and generic contract encounters from runtime content; [authored locations](design/AUTHORED_BATTLE_LOCATIONS.md) records the chapel/toll/cache/armory rollout and proposed next batches.

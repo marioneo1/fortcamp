@@ -1,5 +1,13 @@
 # Fortcamp feature backlog
 
+## October 3: Prop sizing audit and gardening atlas integrated
+
+Audited all 138 registered non-modular prop/state sprites across 249 encounters; shared alpha-calibrated presentation and new-object footprint defaults now distinguish small clutter, ordinary furniture and multi-cell objects. New wells/wagons/cages/tents/ballistas use 2x2 defaults; carts and long furniture use two cells. Existing saved occupancy is retained; walls preserve material join calibration. Captive Cart courier moved outside the enlarged logical wagon footprint.
+
+Imported all 32 supplied garden objects as complete proportional silhouettes. Four herb-garden variants now use three/four large planting beds, potting/watering corner, compost and tools with clear aisles. No farming/harvest mechanics added. Archived 34 obsolete replaced runtime PNGs; active artwork, style references and prepared assets retained. Canonical: docs/art/PROP_SIZE_STANDARDS.md, PROP_SIZE_AUDIT.md and PROP_CLEANUP_20261003.json. Map rollout paused for this refinement. Next map work remains convoy/highway/watch; siege operation and additional prop interactions stay proposed.
+
+Validation: 140 distinct backend tests, 37 frontend tests, build, all-location route checks and 249-preview/19,603-reference art coverage pass. Real renderer checks include all four gardens and cart/well 2-column footprints. Imported garden perspective is not pure overhead; replacement art may be considered later if this mismatch remains distracting.
+
 ## October 3: Beginner maps and full-camp clutter completed
 
 Seven compact settings each have four named layouts: provision stores, farm paddocks, herb gardens, purse roads, well yards, supply stops and occupied training yards (all prisoner-proof ranks). Existing encounter counts, mission paths and rewards retained. Full command compounds/redoubts/vanguard camps now contain training/archery props, bedding, cooking and supplies, with reserved deployment/door lanes and complete furniture footprints.

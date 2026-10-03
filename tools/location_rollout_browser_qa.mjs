@@ -4,7 +4,8 @@ import assert from 'node:assert/strict';
 import {mkdir, writeFile} from 'node:fs/promises';
 const commandCamps=process.argv.includes('--command-camps');
 const beginnerSites=process.argv.includes('--beginner-sites');
-const out=beginnerSites?'staging-terrain/beginner-locations-v1':commandCamps?'staging-terrain/command-locations-v1':'staging-terrain/location-rollout-v1';await mkdir(out,{recursive:true});
+const sizeAudit=process.argv.includes('--size-audit');
+const out=sizeAudit?'staging-terrain/prop-size-audit/in-game':beginnerSites?'staging-terrain/beginner-locations-v1':commandCamps?'staging-terrain/command-locations-v1':'staging-terrain/location-rollout-v1';await mkdir(out,{recursive:true});
 const tabs=await(await fetch('http://127.0.0.1:9229/json')).json();
 const ws=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);
 await new Promise(r=>ws.onopen=r);
@@ -19,7 +20,7 @@ try{
  for(let i=0;i<100;i++){if(await evaluate('Boolean(window.propCoverageReady)'))break;await new Promise(r=>setTimeout(r,100))}
  assert.equal(await evaluate('Boolean(window.propCoverageReady)'),true);
  const seen=new Set();let maps=0;
- for(const mid of beginnerSites?['rats_storehouse','wolves_fence','herbs_wall','goblin_pickpockets','ruined_well','supply_watch','prison_proof_d']:
+ for(const mid of sizeAudit?[]:beginnerSites?['rats_storehouse','wolves_fence','herbs_wall','goblin_pickpockets','ruined_well','supply_watch','prison_proof_d']:
                  commandCamps?['prison_rival_d','prison_former_e','prison_former_c','goblin_chieftain','hobgoblin_vanguard']:
                               ['chapel_patrol','roadside_toll','road_cache','goblin_armory','salvage_court']){
   for(let variant=1;variant<=4;variant++){
@@ -31,6 +32,25 @@ try{
    const clip=await evaluate("(()=>{const r=document.querySelector('.battle-cell').parentElement.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,scale:1.5}})()");
    await writeFile(`${out}/${key}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip})).data,'base64'));
    maps++;
+  }
+ }
+ if(sizeAudit){
+  for(const key of ['captive_cart','ruined_well_v1','hobgoblin_vanguard_v3','herbs_wall_v1','herbs_wall_v2','herbs_wall_v3','herbs_wall_v4']){
+   await evaluate(`window.propEncounter('${key}')`);await new Promise(r=>setTimeout(r,150));
+   const urls=await evaluate("Array.from(new Set(Array.from(document.querySelectorAll('.battlefield *')).flatMap(e=>[e.style.getPropertyValue('--battle-prop'),getComputedStyle(e).backgroundImage,getComputedStyle(e,'::before').backgroundImage]).flatMap(v=>Array.from(v.matchAll(/url\\([\"']?([^\"'\\)]+)/g),m=>m[1]))))");
+   for(const path of urls){if(!seen.has(path)){const url=new URL(path,'http://127.0.0.1:8766');assert.equal((await fetch(url)).status,200,url.href);seen.add(path)}}
+   await evaluate(`Promise.all(${JSON.stringify(urls)}.map(url=>new Promise((resolve,reject)=>{const img=new Image();img.onload=resolve;img.onerror=()=>reject(Error('Image failed: '+url));img.src=url})))`);
+   await new Promise(r=>setTimeout(r,400));
+   const measured=await evaluate(`(()=>{const cell=document.querySelector('.battle-cell').getBoundingClientRect();return {cellWidth:cell.width,props:Array.from(document.querySelectorAll('[data-battle-terrain]')).map(e=>({id:e.dataset.battleTerrain,width:e.getBoundingClientRect().width,height:e.getBoundingClientRect().height,artWidth:getComputedStyle(e,'::before').width}))}})()`);
+   if(key==='captive_cart'){
+    const cart=measured.props.find(p=>p.id==='cart_body');assert.ok(cart);assert.ok(Math.abs(cart.width/measured.cellWidth-2)<.05,'Prison cart must really span two tile columns');
+   }
+   if(key==='ruined_well_v1'){
+    const well=measured.props.find(p=>p.id.includes('village_well'));assert.ok(well);assert.ok(Math.abs(well.width/measured.cellWidth-2)<.05,'Well must really span two tile columns');
+   }
+   const clip=await evaluate("(()=>{const r=document.querySelector('.battle-cell').parentElement.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,scale:1.5}})()");
+   await writeFile(`${out}/${key}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip})).data,'base64'));
+   await writeFile(`${out}/${key}.json`,JSON.stringify(measured,null,2));maps++;
   }
  }
  assert.deepEqual(errors,[]);

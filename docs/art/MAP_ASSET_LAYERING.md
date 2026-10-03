@@ -1,5 +1,7 @@
 # Map Asset Layering
 
+Current October 3 prop sizing, actual multi-cell occupancy and gardening import are documented in [Prop size standards](PROP_SIZE_STANDARDS.md). Shared visual calibration supersedes older ad-hoc enlargement settings below; approved modular wall geometry remains separate.
+
 ## October 2: Additional overhead stone kits
 
 structures/building-v5-topdown now supplies 32 additive assets under limestone_plan/fieldstone_plan IDs. Existing IDs, source files and defaults remain unchanged. Both profiles use plan-view rotations without painted-face flips or separate end columns; assembled bands retain horizontal/vertical layer order. Door/gate state pairs share measured jamb anchors. Six dev Battle Lab materials now expose 24 comparable layouts; see ../design/BATTLE_LAB.md.
