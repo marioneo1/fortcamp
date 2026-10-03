@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Demonstrate fixed-unit junction construction
+
+User asked to see the promised corner/T/cross assembly and questioned excluding dedicated guided junction artwork. Confirmed dedicated generation is a valid option. Built a standalone staging canvas renderer using existing v6 painted bands, fixed 128px corner arms, 256/128px T and 256px cross spans, with 48px top thickness. Combined top footprints before projecting their shaded sides so internal connections have no dark face crossing their stem. Camera direction remains constant across quarter turns. Matching local top patches cover intersections without raised columns.
+
+Rendered the three shapes on a plain backing and actual map paving; interactive controls provide four rotations, four source textures and grid toggle. Browser QA checked all 16 configurations, loaded terrain and no runtime exceptions, then exported four comparison images. Inspected every rotation. Mortar transitions still show assembly; the preview is not a claim of finished join artwork or combat integration. Original assets/runtime/production/saves unchanged. Stored reproducible tools and updated art guidance; user review pending.
+
 ## 2026-10-02: Reject independently sized wall illustrations; restore painted-map priority
 
 User correctly criticized the new polished style and wasteful long L/cross silhouettes, emphasizing full/half grid lengths and consistent band widths. User withdrew strict overhead as the primary target. Preserved all active materials. Created a geometry reference and generated a new painted limestone material sheet referencing the existing v4 wall and actual map cobbles. Inspection/measurement showed it still failed the exact 2:1 ratio (276-281px full vs 171-174px half), despite a closer painted appearance. Explicitly rejected the independent half/join/door rows rather than presenting them as correct.

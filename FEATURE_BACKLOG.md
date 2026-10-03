@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## Completed October 2: Visible fixed-unit corner/T/cross prototype
+
+Added an isolated interactive preview of actual corner, T and cross assembly using the v6 painted material. Includes all four quarter turns, four surface variants, optional grid and actual map paving. Exact arm spans, common top width and union-based side-face projection; browser validation/export passes for 16 configurations. Source: tools/build_gridfit_join_preview.py; page/images: staging-terrain/building-toolset-v6-gridfit. Inspected all four comparison images; mortar transitions remain visibly assembled. Existing game materials, combat renderer, saves and production unchanged. Next: user art comparison; guided dedicated junction art remains a valid option; no automatic rollout. Canonical reference: docs/art/MODULAR_WALL_GENERATION_GUIDE.md.
+
 ## October 2: Correct wall source strategy - painted style and exact construction units
 
 User rejected the pure-overhead polished style and irregular generated lengths; strict overhead is no longer the priority. Preserve current six material profiles while returning to the existing painted-map style. Generated a measured-layout source trial using the current wall/paving references; rejected its inaccurate half/join/door geometry. Prepared twelve crop-only material parts with exact 256px full / 128px half lengths, common cross-section and compact 48px joints, without long L arms or independent rescaling. Verified dimensions and checked the two-full/two-half paving preview. Source/prompts/report: staging-terrain/building-toolset-v6-gridfit. Canonical rules: docs/art/MODULAR_WALL_GENERATION_GUIDE.md. Remaining: validate style with user, prototype grid-defined connection ports and doors/gates, then test an additive material before changing defaults. Current game art/registry/geometry and production unchanged.

@@ -1,5 +1,13 @@
 # Modular wall art — current dev strategy
 
+## October 2: Fixed-unit corner/T/cross preview available
+
+Built a standalone assembly prototype from the v6 painted bands. Open staging-terrain/building-toolset-v6-gridfit/junction-preview.html, or review junctions-0/90/180/270.png. Controls choose quarter-turn rotation, one of four source textures and a tile grid. Each preview shows the three junctions enlarged and on actual smithy paving. Corner arms measure 128px each; T bar/stem 256/128px; cross spans 256/256px. All top bands are 48px thick. The 84px painted source cross-section is split into 48px top and 36px side material. No texture scaling or independently inflated half pieces.
+
+This prototype combines the top footprint before projecting a 36px shaded side downward. That suppresses internal faces passing across a connecting stem and keeps camera direction stable through rotation. A 48px matching top patch covers the center; it is not a raised column. Brick/mortar transitions remain visibly assembled, so this is an art comparison rather than an approved replacement. The production combat renderer has not adopted this projection algorithm. Original materials remain active.
+
+Guided dedicated junction generation is also valid: use these fixed-unit footprints as geometry references and preserve dimensions at import. The user does not prohibit actual corner/T/cross shapes; the rejected issue was oversized independently sized illustrations. tools/build_gridfit_join_preview.py reproduces the standalone page and tools/gridfit_join_browser_qa.mjs checks 16 rotation/texture combinations and exports the four comparison images. User visual review remains pending.
+
 ## October 2: Painted grid-unit direction supersedes the pure-overhead experiment
 
 User rejected the planar polished material style and inconsistent generated lengths, and explicitly withdrew pure-top-down as the main requirement. PRIORITY: match existing painted terrain/props. Preserve all original and comparison materials. Do not interpret the prior overhead trial as the new art standard.
