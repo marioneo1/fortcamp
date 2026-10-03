@@ -1,0 +1,18 @@
+{
+  "garden_soil": "environment-ground-v1/garden_soil.png",
+  "garden_worn_soil": "environment-ground-v1/garden_worn_soil.png",
+  "garden_furrows": "environment-ground-v1/garden_furrows.png",
+  "garden_irrigation": "environment-ground-v1/garden_irrigation.png",
+  "herbs_broadleaf": "environment-ground-v1/herbs_broadleaf.png",
+  "herbs_violet": "environment-ground-v1/herbs_violet.png",
+  "herbs_sage": "environment-ground-v1/herbs_sage.png",
+  "herbs_white": "environment-ground-v1/herbs_white.png",
+  "practice_earth": "environment-ground-v1/practice_earth.png",
+  "practice_scuffs": "environment-ground-v1/practice_scuffs.png",
+  "practice_straw": "environment-ground-v1/practice_straw.png",
+  "practice_grass": "environment-ground-v1/practice_grass.png",
+  "garden_stepping_stones": "environment-ground-v1/garden_stepping_stones.png",
+  "practice_footprints": "environment-ground-v1/practice_footprints.png",
+  "garden_weeds": "environment-ground-v1/garden_weeds.png",
+  "garden_leaf_litter": "environment-ground-v1/garden_leaf_litter.png"
+}

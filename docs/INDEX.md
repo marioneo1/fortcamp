@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Current environment prototypes: [Garden and training yard dressing](art/ENVIRONMENT_DRESSING_V1.md) records the new overhead ground atlas, first-layout compositions, placement rules and review tools.
+
 Current prop sizes and environment dressing: [Prop size standards](art/PROP_SIZE_STANDARDS.md), [complete prop audit](art/PROP_SIZE_AUDIT.md) and [retired-copy manifest](art/PROP_CLEANUP_20261003.json) cover shared scaling, actual footprints, retirement of the rejected gardening atlas, proposed ground dressing and retained references.
 
 Camp/training/bedding and siege artwork: [Camp prop pack](art/CAMP_PROP_PACK.md) records the new 32-sprite atlas, installation, silhouette recovery and prepared versus functional assets. [Authored locations](design/AUTHORED_BATTLE_LOCATIONS.md) records seven new compact settings and full-camp clutter.

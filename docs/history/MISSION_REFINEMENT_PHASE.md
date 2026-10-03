@@ -601,3 +601,31 @@ Removed the supplied 32-sprite garden kit from active runtime art, registry and 
 Proposed next pass, not implemented: coherent planting areas and worn paths instead of a checkerboard of dirt; true overhead herb ground detail; scuffed sparring areas and archery lanes; equipment clustered by activity, with visual offsets against walls/edges independent of logical collision. Review one garden and one training yard before generating more variations. Retained the user's separate layout mockup as a composition reference.
 
 Validation: 8 backend tests, including 400-map reachability; 6 focused frontend tests; frontend build. Refreshed 249 encounter previews and 19,555 sprite references with no missing art. Seven isolated scenes rendered, 117 asset URLs loaded, no runtime exceptions; restored garden screenshot inspected. No player saves accessed or modified.
+
+
+## October 3: First herb-garden and training-yard environment compositions
+
+Implemented layout 1 of Herbs Behind the Wall and the prisoner-proof training
+site (A Promise Proven in Battle). A newly generated 4x4 terrain-only atlas adds
+overhead medicinal herbs, quiet soil, shallow irrigation, worn paths, scuffed
+practice earth, straw and small footprints. Continuous 2x2 ground patches share
+image fragments across cells rather than repeating a full texture on each tile.
+Ground presentation remains independent of movement material and collision.
+
+Garden plants now grow directly in the soil; a cross-path separates four patches
+and a work/rest area uses approved existing equipment. The training yard has a
+sparring court, two dummy stations, archery lanes and an equipment/rest corner.
+Furniture has deliberate sub-cell visual offsets; approved wall joins are
+unchanged. Visual review moved the bench onto clear ground and reduced footprint
+texture size. Other three layouts remain for later composition review. No new
+harvesting, training actions, loot or combat budgets were added.
+
+Added a narrowly scoped atlas installer and --activity-sites to the existing
+renderer QA tool. Fixed a Chrome teardown race in that tool. Source/prompt and
+screenshots live in staging-terrain/environment-ground-v1. Canonical reference:
+docs/art/ENVIRONMENT_DRESSING_V1.md.
+
+Validation: 9 backend tests, including 400-map reachability, 8 focused frontend
+tests and frontend build pass. Both real rendered layouts were inspected; 40
+asset URLs load and no runtime exceptions occur. Full coverage: 249 encounters,
+19,571 prop references, no missing art. Production and player saves untouched.

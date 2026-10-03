@@ -24,7 +24,7 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | scattered_stones | 1x1 | 85% | 1 | 1x1 |
 | rounded_boulder | 1x1 | 85% | 11 | 1x1 |
 | hay_bale | 1x1 | 85% | 15 | 1x1 |
-| bound_barrels | 1x1 | 85% | 88 | 1x1 |
+| bound_barrels | 1x1 | 85% | 89 | 1x1 |
 | structure:palisade_straight | 1x1 | 85% | 89 | 1x1 |
 | structure:palisade_gate_closed | 1x1 | 85% | 0 | prepared / state art |
 | structure:palisade_gate_open | 1x1 | 85% | 0 | prepared / state art |
@@ -33,7 +33,7 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | structure:wooden_rescue_cage_closed | 2x2 | 90% | 1 | 2x2 |
 | structure:wooden_rescue_cage_open | 2x2 | 90% | 0 | prepared / state art |
 | structure:wooden_barricade | 1x1 | 85% | 0 | prepared / state art |
-| structure:wall_rubble | 1x1 | 85% | 1352 | 1x1, 2x2, 1x2 |
+| structure:wall_rubble | 1x1 | 85% | 1360 | 1x1, 2x2, 1x2 |
 | alarm_bell_active | 1x1 | 85% | 31 | 1x1 |
 | alarm_bell_disabled | 1x1 | 85% | 0 | prepared / state art |
 | crate_closed | 1x1 | 85% | 96 | 1x1 |
@@ -82,27 +82,27 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | toll_desk | 1x1 | 85% | 28 | 1x1 |
 | straw_training_dummy | 1x1 | 85% | 90 | 1x1 |
 | armored_training_dummy | 1x1 | 85% | 30 | 1x1 |
-| archery_target | 1x1 | 85% | 90 | 1x1 |
-| hay_archery_butt | 1x1 | 85% | 30 | 1x1 |
+| archery_target | 1x1 | 85% | 81 | 1x1 |
+| hay_archery_butt | 1x1 | 85% | 39 | 1x1 |
 | practice_weapon_rack | 1x1 | 85% | 60 | 1x1 |
 | training_shield_rack | 1x1 | 85% | 30 | 1x1 |
-| arrow_bundle | 1x1 | 45% | 30 | 1x1 |
+| arrow_bundle | 1x1 | 45% | 39 | 1x1 |
 | war_drum | 1x1 | 85% | 30 | 1x1 |
 | sleeping_bag | 1x2 | 92% | 7 | 1x2 |
 | straw_bed | 1x2 | 92% | 5 | 1x2 |
-| canvas_cot | 1x2 | 92% | 43 | 1x2 |
+| canvas_cot | 1x2 | 92% | 34 | 1x2 |
 | wooden_bed | 1x2 | 92% | 0 | prepared / state art |
 | stone_bed | 1x2 | 92% | 0 | prepared / state art |
 | luxurious_bed | 1x2 | 92% | 0 | prepared / state art |
 | tribal_hide_bed | 1x2 | 92% | 5 | 1x2 |
 | reed_sleeping_mat | 1x2 | 92% | 30 | 1x2 |
 | camp_cooking_pot | 1x1 | 85% | 30 | 1x1 |
-| food_prep_table | 1x1 | 85% | 0 | prepared / state art |
+| food_prep_table | 1x1 | 85% | 1 | 1x1 |
 | grain_sacks | 1x1 | 85% | 40 | 1x1 |
 | water_trough | 1x1 | 85% | 40 | 1x1 |
 | wash_tub | 1x1 | 85% | 10 | 1x1 |
-| mess_bench | 1x1 | 85% | 0 | prepared / state art |
-| herb_planter | 1x1 | 85% | 25 | 1x1 |
+| mess_bench | 1x1 | 85% | 10 | 1x1 |
+| herb_planter | 1x1 | 85% | 21 | 1x1 |
 | village_well | 2x2 | 90% | 5 | 2x2 |
 | ballista_loaded | 2x2 | 90% | 5 | 2x2 |
 | ballista_empty | 2x2 | 90% | 0 | prepared / state art |

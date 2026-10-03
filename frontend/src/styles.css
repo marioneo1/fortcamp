@@ -360,3 +360,12 @@ body.board-vfx-active .event-arcane .guild-event-art:after{display:none}
 .battlefield.terrain-style-custom-painted .battle-object.has-prop-art{background-size:var(--prop-scale,142%) auto!important}
 .battlefield.terrain-style-custom-painted .battle-terrain.has-prop-art.destroyed{filter:grayscale(.18) drop-shadow(1px 1px 1px #17201255)}
 .battlefield.terrain-style-custom-painted .battle-object.has-prop-art:hover{outline:2px solid #f1d064;outline-offset:-4px;filter:drop-shadow(1px 2px 1px #17201266)}
+
+/* Authored activity ground shares texture fragments across adjacent cells.
+   Movement, targeting and exit highlights remain on their separate overlay. */
+.battlefield.terrain-style-custom-painted .battle-cell[style*="--authored-ground"]{
+ background-image:var(--authored-ground)!important;
+ background-size:var(--ground-span) var(--ground-span)!important;
+ background-position:var(--ground-x) var(--ground-y)!important;
+ background-repeat:no-repeat!important;
+}

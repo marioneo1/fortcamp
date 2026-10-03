@@ -5,7 +5,8 @@ import {mkdir, writeFile} from 'node:fs/promises';
 const commandCamps=process.argv.includes('--command-camps');
 const beginnerSites=process.argv.includes('--beginner-sites');
 const sizeAudit=process.argv.includes('--size-audit');
-const out=sizeAudit?'staging-terrain/prop-size-audit/in-game':beginnerSites?'staging-terrain/beginner-locations-v1':commandCamps?'staging-terrain/command-locations-v1':'staging-terrain/location-rollout-v1';await mkdir(out,{recursive:true});
+const activitySites=process.argv.includes('--activity-sites');
+const out=activitySites?'staging-terrain/environment-ground-v1/in-game':sizeAudit?'staging-terrain/prop-size-audit/in-game':beginnerSites?'staging-terrain/beginner-locations-v1':commandCamps?'staging-terrain/command-locations-v1':'staging-terrain/location-rollout-v1';await mkdir(out,{recursive:true});
 const tabs=await(await fetch('http://127.0.0.1:9229/json')).json();
 const ws=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);
 await new Promise(r=>ws.onopen=r);
@@ -20,12 +21,20 @@ try{
  for(let i=0;i<100;i++){if(await evaluate('Boolean(window.propCoverageReady)'))break;await new Promise(r=>setTimeout(r,100))}
  assert.equal(await evaluate('Boolean(window.propCoverageReady)'),true);
  const seen=new Set();let maps=0;
- for(const mid of sizeAudit?[]:beginnerSites?['rats_storehouse','wolves_fence','herbs_wall','goblin_pickpockets','ruined_well','supply_watch','prison_proof_d']:
+ for(const mid of activitySites?['herbs_wall','prison_proof_d']:sizeAudit?[]:beginnerSites?['rats_storehouse','wolves_fence','herbs_wall','goblin_pickpockets','ruined_well','supply_watch','prison_proof_d']:
                  commandCamps?['prison_rival_d','prison_former_e','prison_former_c','goblin_chieftain','hobgoblin_vanguard']:
                               ['chapel_patrol','roadside_toll','road_cache','goblin_armory','salvage_court']){
-  for(let variant=1;variant<=4;variant++){
+  for(let variant=1;variant<=(activitySites?1:4);variant++){
    const key=`${mid}_v${variant}`;
    await evaluate(`window.propEncounter('${key}')`);await new Promise(r=>setTimeout(r,120));
+   if(activitySites){
+    const backgrounds=await evaluate("Array.from(document.querySelectorAll('.battle-cell[style*=\"--authored-ground\"]')).map(e=>getComputedStyle(e).backgroundImage)");
+    assert.ok(backgrounds.length>=60,'Authored activity ground reached the actual renderer');
+    assert.ok(backgrounds.every(v=>v.includes('environment-ground-v1/')));
+    const urls=[...new Set(backgrounds.flatMap(v=>Array.from(v.matchAll(/url\([\"']?([^\"'\)]+)/g),m=>m[1])))];
+    for(const url of urls){assert.equal((await fetch(new URL(url,'http://127.0.0.1:8766'))).status,200);seen.add(url)}
+    await evaluate(`Promise.all(${JSON.stringify(urls)}.map(url=>new Promise((resolve,reject)=>{const image=new Image();image.onload=resolve;image.onerror=reject;image.src=url})))`);
+   }
    const props=await evaluate("Array.from(document.querySelectorAll('.has-prop-art')).map(e=>e.style.getPropertyValue('--battle-prop'))");
    assert.ok(props.length>=(mid==='goblin_pickpockets'?6:10),key);
    for(const value of props){const path=value.match(/url\(['\"]?([^'\")]+)/)?.[1];if(path&&!seen.has(path)){assert.equal((await fetch('http://127.0.0.1:8766'+path)).status,200,path);seen.add(path)}}
@@ -55,4 +64,8 @@ try{
  }
  assert.deepEqual(errors,[]);
  console.log(`PASS: ${maps} authored mission layouts render; ${seen.size} asset URLs load; no runtime exceptions.`);
-}finally{await call('Browser.close');ws.close()}
+}finally{
+ // Chrome may close its socket before acknowledging Browser.close.
+ const disconnected=new Promise(resolve=>ws.addEventListener('close',resolve,{once:true}));
+ await Promise.race([call('Browser.close'),disconnected]);ws.close();
+}

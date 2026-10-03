@@ -1,5 +1,7 @@
 # Fortcamp feature backlog
 
+October 3 environment follow-up: implemented one herb-garden and one training-yard composition (layout 1) with a new overhead terrain-only atlas, coherent multi-cell ground patches, paths, activity areas and edge-offset equipment. Other three variants await visual review; harvesting/training mechanics are unchanged. See docs/art/ENVIRONMENT_DRESSING_V1.md.
+
 October 3 follow-up: rejected supplied gardening kit retired from runtime and source staging; earlier herb props restored. Saved battle art has approved replacement aliases. Proposed next pass: overhead ground vegetation, paths/scuffed training ground, purposeful work/rest clusters and sub-cell visual placement. Review one garden and one training yard before expanding variants.
 
 ## October 3: Earlier prop sizing audit (garden import superseded above)

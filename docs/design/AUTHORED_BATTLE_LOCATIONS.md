@@ -1,5 +1,7 @@
 # Authored battle locations
 
+October 3 environment follow-up: herb-garden and training-yard layout 1 now have authored overhead ground patches, paths/lanes, equipment clusters and visual offsets. Remaining variants await review. See ../art/ENVIRONMENT_DRESSING_V1.md.
+
 ## October 3: Shared prop sizes; rejected garden kit retired
 
 Current presentation uses alpha-calibrated size rules across 106 approved non-modular sprites. Village wells and prison wagons reserve 2x2; the Captive Cart courier starts outside the wagon. Saved battles retain occupancy; walls retain approved join rules. See ../art/PROP_SIZE_STANDARDS.md.

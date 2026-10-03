@@ -10,6 +10,23 @@ from backend.location_maps import location_blueprint, MISSION_LOCATIONS
 
 
 class BeginnerLocationTests(unittest.TestCase):
+    def test_activity_prototypes_keep_art_separate_from_collision_and_other_variants(self):
+        for location in ['herb_garden','occupied_training_yard']:
+            variants={}
+            for index in range(40):
+                board=location_blueprint(location,f'layout-{index}')
+                variants[board['map_variation']]=board
+            self.assertEqual(len(variants),4)
+            for variant,board in variants.items():
+                self.assertEqual(bool(board.get('ground_art')),variant==1)
+                if variant!=1:continue
+                self.assertEqual(len(board['activity_areas']),4)
+                for tile in board['ground_art']:
+                    self.assertTrue(0<=tile['x']<board['width'] and 0<=tile['y']<board['height'])
+                    self.assertNotIn('blocking',tile)
+                furniture=[p for p in board['terrain']+board['decorations'] if p['id'].startswith(location+'_')]
+                self.assertTrue(any(p.get('art_offset') and any(p['art_offset']) for p in furniture))
+
     def test_current_dressing_keeps_every_spawn_connected_to_an_exit(self):
         locations={'provision_store','farm_clearing','herb_garden','purse_road','well_yard',
                    'supply_stop','occupied_training_yard','command_camp','timber_redoubt','vanguard_camp'}
