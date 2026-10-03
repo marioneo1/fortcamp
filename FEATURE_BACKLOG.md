@@ -1,5 +1,7 @@
 # Fortcamp feature backlog
 
+October 3 male batch 001 installed after approval: 160 portraits across eight male pools; all 480 full/thumb/original assets verified, matching-role and alternate-role fallback verified, and installed montage reviewed. Portrait Lab lists 1,504 images. Remaining 28 generic male generation targets are unchanged; existing portrait assignments and production saves/assets are untouched.
+
 October 3 male portrait batch 001: eight sheets (Half-Orc/Orc/Hobgoblin melee, Wood Elf/Halfling ranged, Tiefling/High Elf magic, Gnome worker), 160 portraits generated and staged with exact prompts. Halfling redrawn from scratch for stronger adult features. Review/import remains pending; remaining 28 generic male generation targets and staged Aasimar installation are tracked in docs/art/MALE_PORTRAIT_ROLLOUT.md.
 
 October 3 male Goblin portraits: approved ranged and prior approved melee sheets installed in dev, twenty portraits per role with stable IDs, square previews and uncropped originals. Both pools verified against runtime role selection and Portrait Lab. Further male races remain pending.

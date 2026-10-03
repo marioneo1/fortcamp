@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## October 3: Approved male batch 001 consumed
+
+Following user approval, imported all eight batch 001 male sheets into their matching pools. Copied canonical source sheets into portraits while retaining staging references and exact prompts. Each pool received twenty IDs (001–020) with square full/thumb images and separate uncropped originals. Verified all 480 assets decode at expected preview sizes, runtime role/fallback matching works, and Portrait Lab lists all 160 additions (1,504 total portraits). Inspected installed montage at data/portrait_audit/male_batch_001/installed.jpg. Existing character portrait assignments are preserved; production unchanged.
+
 ## October 3: First eight common-role male sheets
 
 Generated eight new 5×4 male race sheets using the built-in image tool, full production male prompt, authoritative style reference and male presentation reference. Saved all requested images and exact prompts in staging-portraits, with batch index and grid/size report. Halfling required a fresh second pass for adult proportions; first attempt retained. Inspected complete outputs; all decode at 1254×1254 with twenty slots. Some face repetition, youthful small-race faces and tight Tiefling horn clearance remain visual-review concerns. No live portraits, character assignments or production assets changed.

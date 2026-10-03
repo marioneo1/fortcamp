@@ -6,16 +6,16 @@ Plan: one common visual role per generic race, with existing same-race/gender fa
 
 Human, Goblin, Dwarf and Kobold have installed male pools. October 3 Goblin melee/ranged installations added twenty per role. An approved Aasimar male healer sheet remains staged and can be installed without regeneration. Celestials are individually named characters, not generic male pool targets.
 
-## Batch 001 — generated, awaiting visual review
+## Batch 001 — approved and installed in dev
 
 - Half-Orc melee, Orc melee, Hobgoblin melee.
 - Wood Elf ranged, Halfling ranged.
 - Tiefling magic, High Elf magic.
 - Gnome worker.
 
-Files and exact expanded prompts: staging-portraits/MALE_BATCH_001.md. All eight requested sheets are saved, 160 portraits total, each actual file 1254×1254. Nine image calls were used because Halfling was generated again to strengthen adult proportions. The first attempt is retained as a comparison. No live pool imports or production changes in this generation pass.
+Files and exact expanded prompts: staging-portraits/MALE_BATCH_001.md. All eight requested sheets are saved, 160 portraits total, each actual file 1254×1254. Nine image calls were used because Halfling was generated again to strengthen adult proportions. The first attempt is retained as a comparison. The user approved the batch; all eight sheets are now installed in dev, twenty stable IDs per pool with full/thumb/original files. Runtime exact-role and same-race/gender fallback were verified. Existing portraits and production are unchanged.
 
-Review concerns: some Halfling/Gnome faces still read youthful, some Tiefling horn tips sit close to source edges, and several related face structures recur despite the diversity prompt. Inspect before installation; do not claim perfect identity diversity or full horn clearance. Grid decode/boundaries were checked and complete outputs inspected.
+Review notes retained for future refinement: some Halfling/Gnome faces read youthful, some Tiefling horn tips sit close to source edges, and several related face structures recur despite the diversity prompt. The user approved these images. Do not claim perfect identity diversity or full horn clearance. Grid decode/boundaries were checked and complete outputs inspected.
 
 ## Remaining 28 generation targets
 
