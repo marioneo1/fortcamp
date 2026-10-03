@@ -1,5 +1,11 @@
 # Wall boundaries — implemented in dev
 
+## October 2: T/cross faces match centered divider runs
+
+The follow-up stone screenshots exposed painted faces reversing at rotated junctions. Each centered T/cross arm now follows the same face convention as its adjoining divider: horizontal faces point down and vertical faces point left, independent of whether its arm is authored forward or backward. Perimeter Ts retain the inward-facing outside bar and apply this convention only to their interior stem. Centered straight bands and terminal bands also normalize their face after half turns. Attachment offsets, arm lengths, clipping, saved rotation and collision are unchanged.
+
+Validated 124 frontend tests, frontend build and all 16 material layouts in the actual Battle Lab browser fixture. No new image generation or backend changes; production untouched. Refresh dev to apply the adjustment to existing maps.
+
 ## October 2: Inward-facing wall art and metal corner seams
 
 The updated polished/rough-stone snips showed opposite perimeter runs using identical artwork rotation. Painted front faces now point into the building, matching the rotated corner arms. The renderer compares the wall's rotated painted normal with its named boundary and mirrors the texture across its thickness when necessary. This handles all four building rotations; centered dividers retain their existing orientation. Concave corner arms reverse their face while preserving their translated attachment points. Mirrored breaches also mirror their measured alignment correction.

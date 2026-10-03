@@ -165,3 +165,27 @@ test('mirrored breaches retain their surviving band alignment on the opposite pe
  close(north.offset[1],-.36);close(south.offset[1],.36);
  assert.equal(north.mirrorY,1);assert.equal(south.mirrorY,-1);
 });
+
+test('T and cross arms match adjoining centered walls after every quarter turn',()=>{
+ const normal=part=>{
+  let p=[0,part.art_mirror_y??part.mirrorY??1];
+  for(let n=0;n<(part.rotation||0)/90;n++)p=[-p[1],p[0]];
+  return p.map(v=>v||0);
+ };
+ for(const family of ['fieldstone','iron'])for(const piece of ['junction','cross','edge_junction'])for(const rotation of [0,90,180,270]){
+  const result=structuralLayout({id:'branch',sprite:`structure:${family}_${piece}`,rotation},modular);
+  const arms=result.connectors.filter(c=>!c.wall_cap);
+  for(const arm of arms){
+   if(piece==='edge_junction'&&arm.rotation===rotation)continue; // perimeter bar follows the outside boundary
+   const neighbor={sprite:`structure:${family}_wall`,rotation:arm.rotation};
+   assert.deepEqual(normal(arm),normal({...neighbor,...structuralLayout(neighbor,modular)}));
+  }
+ }
+});
+test('the lower perimeter T preserves its inward-facing bar while reversing only its divider stem',()=>{
+ const result=structuralLayout({id:'bottom',sprite:'structure:fieldstone_edge_junction',rotation:180,wall_edges:['south']},modular);
+ const arms=result.connectors.filter(c=>!c.wall_cap);
+ assert.equal(arms[0].rotation,180);assert.equal(arms[0].art_mirror_y,1);
+ assert.equal(arms[1].rotation,270);assert.equal(arms[1].art_mirror_y,-1);
+ assert.deepEqual(arms.map(c=>c.art_offset),[[0,.36],[0,0]]);
+});

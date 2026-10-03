@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## Completed October 2: Consistent T/cross branch faces
+
+Matched rotated centered T/cross arms to neighboring divider faces; perimeter Ts keep their inward-facing boundary bar while their stem matches the interior wall. Half-turned centered runs/terminal bands use the same face convention. This addresses the upper T/gate, lower T and cross seams in the latest polished/rough-stone screenshots without altering placement or collision. Validation: 124 frontend tests, build and all 16 material-layout browser checks pass. Canonical reference: docs/design/WALL_BOUNDARIES.md. Production untouched; final visual review remains pending.
+
 ## Completed October 2: Corner-consistent wall faces and metal corner joins
 
 Updated stone screenshots exposed opposite perimeter bands facing outward. Boundary-aware texture mirroring now matches the inward-facing corner arms across all building rotations; centered dividers retain their orientation, translated concave arms reverse their face, and breach calibration follows mirroring. Metal corner rims meet at a diagonal seam rather than overlap. No source art regeneration, save migration or gameplay changes. Canonical references: docs/design/WALL_BOUNDARIES.md and docs/art/MODULAR_WALL_GENERATION_GUIDE.md. Validation: 122 frontend tests, build, seven targeted backend boundary/showcase tests, four-material/four-rotation enlarged checks and all 16 Battle Lab layouts pass. Remaining: user visual review and previously documented door camera/stair work. Production untouched.

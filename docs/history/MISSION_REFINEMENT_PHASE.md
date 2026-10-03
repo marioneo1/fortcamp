@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Finish stone T and cross orientation
+
+Reviewed refreshed polished/rough-stone screenshots. Rotated junction arms still reversed their painted face relative to ordinary divider runs. Normalized each interior arm separately; retained inward-facing perimeter bars and unchanged attachment geometry. Centered half-turn walls/terminal bands share the convention. Added rotation and bottom-perimeter-T regression checks. 124 frontend tests, build and all 16 actual Battle Lab material layouts pass. No asset generation, backend changes, save changes or production deployment.
+
 ## 2026-10-02: Match wall faces to corners
 
 Reviewed the updated metal corner and polished/rough-stone snips. Opposite perimeter bands shared grid rotations, making their painted face inconsistent with the adjoining corners. Added boundary-normal texture mirroring separately from movement geometry, preserved centered divider orientation, reversed concave corner faces and mirrored breach alignment corrections. Replaced metal corner overlap with complementary diagonal texture cuts without stretching the source or generating new art.

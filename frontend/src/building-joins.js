@@ -5,7 +5,8 @@ const rotationOf=item=>((Number(item.rotation)||0)%360+360)%360;
 const inward={north:[0,1],east:[-1,0],south:[0,-1],west:[1,0]};
 function faceMirror(item){
  const face=inward[item.wall_edges?.length===1?item.wall_edges[0]:null];
- if(!face)return 1;
+ // Centered dividers share a stable face convention, even after a half turn.
+ if(!face)return rotationOf(item)>=180?-1:1;
  const normal=turn([0,1],rotationOf(item));
  return normal[0]*face[0]+normal[1]*face[1]<0?-1:1;
 }
@@ -87,17 +88,23 @@ export function structuralLayout(item,geometry,neighbors=[]){
  if(item.destroyed)return {offset:base,connectors:[]};
  if(piece==='end'&&g.cap_mode!=='pillar'){
   const [x,y]=turn(g.end_offset||[.25,0],rotation);
-  return {offset:[base[0]+x,base[1]+y],connectors:[]};
+  return {offset:[base[0]+x,base[1]+y],connectors:[],mirrorY};
  }
  const scale=item.art_scale||1.25,o=g.join_offset,half=g.wall_half_thickness||.09;
  const anchor=piece==='edge_junction'?[0,0]:base;
  let serial=0;
  const raw=(point,direction,left,right,cut)=>{
   const [x,y]=turn(point,rotation);
+  const beamRotation=(direction+rotation)%360;
+  // A rotated T/cross changes where its arms go, not which side of an
+  // interior wall carries the painted face. Match the ordinary divider runs.
+  const interiorArm=['junction','cross'].includes(piece)||(piece==='edge_junction'&&direction===90);
+  const armMirror=interiorArm?(beamRotation>=180?-1:1):
+   ['wall','end'].includes(piece)?mirrorY:((piece==='corner'||piece==='corner_broken')&&base.some(v=>Math.abs(v)>.5)?-1:1);
   return {id:`${item.id}_sleeve_${serial++}`,parent_id:item.id,x:item.x,y:item.y,
-   sprite:`structure:${family}_wall`,art_scale:scale,rotation:(direction+rotation)%360,
+   sprite:`structure:${family}_wall`,art_scale:scale,rotation:beamRotation,
    art_offset:[x+anchor[0],y+anchor[1]],
-   art_mirror_y:piece==='wall'?mirrorY:((piece==='corner'||piece==='corner_broken')&&base.some(v=>Math.abs(v)>.5)?-1:1),
+   art_mirror_y:armMirror,
    ...(cut?{art_clip_polygon:matingPolygon(scale,left,right,cut)}:{}),
    art_clip:[0,Math.max(0,(.5-right/scale)*100),0,Math.max(0,(.5+left/scale)*100)]};
  };
