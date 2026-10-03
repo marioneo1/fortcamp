@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Portrait review: [Portrait framing and Portrait Lab](art/PORTRAIT_FRAMING.md) covers the dev art browser, saved circle adjustments, automatic recommendations and per-character overrides.
+
 Current highway rollout: [Authored locations](design/AUTHORED_BATTLE_LOCATIONS.md) describes four Highway Ambush layouts, bank/flank rules and review captures. [Coverage audit](maps/BATTLE_LOCATION_AUDIT.md) lists the remaining generic encounters.
 
 Current garden props: [Overhead garden toolkit](art/GARDEN_TOOLKIT_V2.md) covers crop edging, clutter, shared sizes, the atlas importer and prepared versus active pieces.

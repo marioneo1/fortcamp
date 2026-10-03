@@ -337,7 +337,12 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
         "nonlethal_capable": bool(capture_weapon),
         "weapon": weapon.get("name", "Unarmed"), "scaling": scaling,
         "element": weapon.get("element"), "on_hit": deepcopy(weapon.get("on_hit")),
-        "portrait": character.get("portrait_thumbnail") or character.get("portrait", ""),
+        "portrait": (character.get('portrait') if character.get('portrait_source')=='override' and not character.get('portrait_thumbnail_uncropped')
+                     else character.get("portrait_thumbnail") or character.get("portrait", "")),
+        "portrait_full": character.get("portrait", ""),
+        "portrait_frame": deepcopy(character.get('portrait_frame', {})),
+        "portrait_frame_source": character.get('portrait_frame_source'),
+        "portrait_frame_key": character.get('portrait_frame_key'),
         "special": special, "skills":skills, "special_used": False, "guarding": rules.get('opening_guard',False),
         "moved": False, "acted": False, "alive": True, "conscious": True, "condition": "active",
         "statuses": ([{'id':'lifeline_ready'}] if rules.get('lifeline') else []), "carrying": None, "carrying_object": None, "carried_by": None, "panicked": False, "fled": False,
@@ -2390,6 +2395,9 @@ def _context_actions(battle: dict, unit: dict) -> list[dict]:
 
 def battle_view(battle: dict) -> dict:
     view = deepcopy(battle)
+    from .portrait_framing import resolve_frame
+    for unit in view.get('units',{}).values():
+        unit['portrait_frame'] = resolve_frame(unit)
     # Keep the existing object ID and alarm rules compatible with saved battles.
     if 'alarm_horn' in view.get('objects', {}):
         view['objects']['alarm_horn']['name'] = 'Alarm Bell'

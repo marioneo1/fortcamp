@@ -159,8 +159,10 @@ def _render_cells(
         cell = sheet.crop((
             round(left + dx), round(top + dy), round(right - dx), round(bottom - dy),
         ))
-        full = ImageOps.fit(cell, (768, 768), Image.Resampling.LANCZOS, centering=(0.5, 0.35))
-        thumb = ImageOps.fit(cell, (192, 192), Image.Resampling.LANCZOS, centering=(0.5, 0.35))
+        # Keep the complete source cell. Circle framing is a separate, editable
+        # presentation step; a square fit here permanently removed headroom.
+        full = ImageOps.pad(cell, (768, 768), Image.Resampling.LANCZOS, color=(23,27,25))
+        thumb = ImageOps.pad(cell, (192, 192), Image.Resampling.LANCZOS, color=(23,27,25))
         full.save(staging / f"full-{name}", "WEBP", quality=90, method=0)
         thumb.save(staging / f"thumb-{name}", "WEBP", quality=84, method=0)
     return x_bounds, y_bounds, evidence

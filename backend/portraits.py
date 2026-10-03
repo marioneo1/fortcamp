@@ -6,6 +6,7 @@ from pathlib import Path
 from urllib.parse import quote
 
 from .appearance import champion_metadata, portrait_metadata
+from .portrait_framing import resolve_frame
 
 ROOT = Path(__file__).resolve().parents[1]
 PORTRAIT_POOL_ROOT = ROOT / "data" / "portrait_pools"
@@ -82,6 +83,7 @@ def choose_pool_portrait(pool_key: str, rng: random.Random) -> dict:
         "portrait": base + "full/" + quote(chosen.name),
         "portrait_thumbnail": base + ("thumb/" if thumb.is_file() else "full/") + quote(chosen.name),
         "portrait_pool": resolved_pool,
+        "portrait_frame": resolve_frame({'portrait':base + "full/" + quote(chosen.name)}),
         "appearance": appearance,
         "appearance_source": "portrait" if any(appearance.values()) else "none",
     }
@@ -121,6 +123,7 @@ def champion_portrait(champion_id: str, variant: str = "default") -> dict[str, s
         "portrait": f"{base}full.webp?v={version}",
         "portrait_thumbnail": f"{base}{'thumb.webp' if thumb.is_file() else 'full.webp'}?v={version}",
         "portrait_variant": resolved_variant,
+        "portrait_frame": resolve_frame({'portrait':f"{base}full.webp?v={version}"}),
         "appearance": appearance,
         "appearance_source": "portrait" if any(appearance.values()) else "none",
     }

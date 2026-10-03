@@ -25,6 +25,7 @@ from sqlalchemy import func, select
 from .auth import IdentityDep, create_session_token, exchange_discord_code, verify_discord_identity, session_namespace
 from .web_auth import browser_router
 from .battle_lab import router as battle_lab_router
+from .portrait_lab import router as portrait_lab_router
 from .content import MISSION_TEMPLATES
 from .db import SessionLocal, init_db
 from .game import (
@@ -33,6 +34,7 @@ from .game import (
 )
 from .portraits import CHAMPION_PORTRAIT_ROOT, PORTRAIT_POOL_ROOT
 from .appearance import has_appearance, sanitize_appearance, tagged_appearance
+from .portrait_framing import portrait_key, resolve_frame
 from .models import GuildConfig, MissionInstance, PlayerState
 from .services import (
     active_pool_slot, analyze_instance, available_chain_missions, claim_instance, create_player, debug_complete_instance,
@@ -130,6 +132,7 @@ def installed_web_guilds():
 
 app.include_router(browser_router(installed_web_guilds))
 app.include_router(battle_lab_router)
+app.include_router(portrait_lab_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], allow_credentials=False, allow_methods=["*"], allow_headers=["*"],
@@ -219,6 +222,13 @@ class PortraitRequest(BaseModel):
 
 class PortraitUploadRequest(BaseModel):
     data_url: str
+
+
+class PortraitFrameRequest(BaseModel):
+    x: float = Field(default=.5, ge=0, le=1, allow_inf_nan=False)
+    y: float = Field(default=.5, ge=0, le=1, allow_inf_nan=False)
+    size: float = Field(default=1, ge=.25, le=2.5, allow_inf_nan=False)
+    reset: bool = False
 
 
 class AppearanceRequest(BaseModel):
@@ -673,7 +683,8 @@ def _resize_portrait(raw: bytes) -> tuple[bytes, bytes]:
         raise ValueError("Portrait image could not be decoded safely") from exc
     full = image.copy()
     full.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
-    thumb = ImageOps.fit(image, (192, 192), method=Image.Resampling.LANCZOS, centering=(0.5, 0.35))
+    thumb = image.copy()
+    thumb.thumbnail((192,192),Image.Resampling.LANCZOS)
     full_buffer, thumb_buffer = io.BytesIO(), io.BytesIO()
     full.save(full_buffer, format="WEBP", quality=90, method=6)
     thumb.save(thumb_buffer, format="WEBP", quality=84, method=6)
@@ -720,6 +731,7 @@ async def upload_character_portrait(character_id: str, req: PortraitUploadReques
         character["portrait"] = f"/api/portraits/{asset_name}"
         character["portrait_thumbnail"] = f"/api/portraits/{thumb_name}"
         character["portrait_source"] = "override"
+        character['portrait_thumbnail_uncropped'] = True
         character["portrait_locked"] = True
         character["portrait_metadata_available"] = False
         if character.get("appearance_source") == "portrait":
@@ -741,6 +753,29 @@ async def upload_character_portrait(character_id: str, req: PortraitUploadReques
         path.unlink(missing_ok=True)
         thumb_path.unlink(missing_ok=True)
         raise
+    finally:
+        await session.close()
+
+
+@app.post("/api/characters/{character_id}/portrait-frame")
+async def update_portrait_frame(character_id: str, req: PortraitFrameRequest, identity: IdentityDep):
+    session, row = await locked_player(identity)
+    try:
+        state = deepcopy(row.state)
+        character = next((c for c in state.get('characters',[]) if c.get('id') == character_id), None)
+        if not character:raise HTTPException(404,'Character not found')
+        if not character.get('portrait'):raise HTTPException(400,'Add a portrait before adjusting its frame')
+        if req.reset:
+            character.pop('portrait_frame_source',None)
+            character.pop('portrait_frame_key',None)
+        else:
+            character['portrait_frame'] = req.model_dump(exclude={'reset'})
+            character['portrait_frame_source'] = 'manual'
+            character['portrait_frame_key'] = portrait_key(character['portrait'])
+        character['portrait_frame'] = resolve_frame(character)
+        row.state = state; row.updated_at = int(time.time())
+        await session.commit()
+        return {'state':state}
     finally:
         await session.close()
 

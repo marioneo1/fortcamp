@@ -1,5 +1,7 @@
 # Fortcamp feature backlog
 
+October 3 portrait framing: implemented per-character circle editor and dev-only Portrait Lab with search/set filters, sixty previews per page and persistent shared image defaults. First automatic audit covers 1,304 portraits; visually inspect uncertain nonhuman faces in the Lab. Manual library corrections survive re-audits; source images and identity order remain unchanged. Updated twenty Aasimar female healer images in place. See docs/art/PORTRAIT_FRAMING.md. Future work: review remaining detector estimates and reimport sources whose heads were already clipped.
+
 October 3 road rollout: Highway Ambush now has four authored road/bank/flank layouts with stolen-supply pull-offs and verified Battle Lab seeds. Existing enemies, objectives and rewards retained. Next road review: Boar-Rider Patrol and The Tithe Convoy; other generic road, tunnel and later facility maps remain pending. See docs/design/AUTHORED_BATTLE_LOCATIONS.md.
 
 October 3 environment variations: all four gardens and all four training yards now use distinct footprint-aware arrangements. Kit reused in farm clearings, well yards, provision/supply sites and full command/redoubt/vanguard camps (36 authored variants across nine settings). Visual dressing only; save layouts, mission rewards and mechanics retained.

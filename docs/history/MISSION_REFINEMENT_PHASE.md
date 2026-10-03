@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## October 3: Portrait framing and Portrait Lab
+
+Added a saved per-character circle editor and searchable dev art browser for all 1,304 installed generic/Champion portraits. Drag/resize previews preserve image proportions. Library defaults are stored separately from automatic estimates, individual overrides take priority, and production access is explicitly blocked. Updated the Aasimar healer sheet with stable IDs and backups; future imports preserve full rectangular cells with padding. Nine framing/importer tests passed; production frontend build passed. Headless Chrome checked 60-card pagination, Aasimar filtering, editor preview and save payload with no browser errors. Review captures live under data/portrait_audit/lab_preview. Automatic face recommendations are not a guarantee of perfect framing and cannot restore pixels missing from original sources.
+
 ## October 3: Roadblocks and military compounds
 
 Implemented the first four mission families from the location review, including all six prisoner-rival/former rank copies. Added four roadblock layouts, four small-post footprints, four compound perimeters and a separate barracks; the same compound plans support timber command/redoubt and rough-stone/metal vanguard sites. Preserved gate mechanics, rank budgets, rewards, active saved maps and production isolation. Existing approved art sufficed. Verified 39 focused backend tests, 20 rendered layout cases and 201-preview/14,615-reference asset audit. Current authored/generic coverage: 31/30 encounter IDs. Remaining specialized sites stay documented as proposals.
