@@ -70,3 +70,22 @@ class BuildingShowcaseTests(unittest.TestCase):
                 self.assertEqual([(t['x'], t['y']) for t in original['terrain']],
                                  [(t['x'], t['y']) for t in overhead['terrain']])
                 self.assertEqual(original['spawn_zones'], overhead['spawn_zones'])
+
+    def test_boxed_trial_uses_complete_furnished_buildings_and_working_gates(self):
+        for preset in presets('limestone_boxed'):
+            candidate=blueprint('limestone_boxed',preset['seed'])
+            original=blueprint('limestone',preset['seed'])
+            self.assertEqual(candidate['building_templates'],original['building_templates'])
+            self.assertEqual(candidate['paint'],original['paint'])
+            original_props=[t for t in original['terrain']+original['decorations']
+                            if not t.get('sprite','').startswith('structure:')]
+            candidate_props=[t for t in candidate['terrain']+candidate['decorations']
+                             if t.get('sprite') and not t['sprite'].startswith('structure:')]
+            self.assertTrue(all(t in candidate_props for t in original_props))
+            gates=[t for t in candidate['terrain'] if t.get('kind')=='gate']
+            self.assertTrue(gates)
+            self.assertTrue(all(t['closed_sprite'].startswith('structure:timber_') and
+                                t['open_sprite'].startswith('structure:timber_') for t in gates))
+            self.assertFalse(any(t.get('sprite','').startswith('structure:limestone_') and
+                                 not t['sprite'].startswith('structure:limestone_boxed_')
+                                 for t in candidate['terrain']+candidate['decorations']))

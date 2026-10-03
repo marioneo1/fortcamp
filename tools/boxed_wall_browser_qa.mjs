@@ -12,8 +12,9 @@ try{
  await call('Page.navigate',{url:'http://127.0.0.1:8766/staging-terrain/overhead-props-v2/encounter-preview.html'});
  for(let i=0;i<100;i++){if(await evaluate('Boolean(window.propCoverageReady)'))break;await new Promise(r=>setTimeout(r,100))}
  assert.equal(await evaluate('Boolean(window.propCoverageReady)'),true);
+ const plans=['gatehouse','divided_hall','breached_annex','twin_stores'];
  for(let i=1;i<=4;i++){
-  await evaluate(`window.propEncounter('limestone_boxed_${i}')`);
+  await evaluate(`window.propEncounter('limestone_boxed_${plans[i-1]}')`);
   await new Promise(r=>setTimeout(r,200));
   const assets=await evaluate("Array.from(document.querySelectorAll('.has-prop-art')).map(e=>e.style.getPropertyValue('--battle-prop')).filter(s=>s.includes('building-v9-boxed'))");
   assert.ok(assets.length>=6);
@@ -21,5 +22,5 @@ try{
   for(const value of assets){const path=value.match(/url\(['\"]?([^'\")]+)/)?.[1];assert.equal((await fetch('http://127.0.0.1:8766'+path)).status,200)}
   await writeFile(`staging-terrain/building-toolset-v9-boxed-reference/in-game-${i}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false})).data,'base64'));
  }
- console.log('PASS: four candidate maps render six generated pieces; assets load; no assembled wall connectors.');
+ console.log('PASS: four full furnished buildings render candidate walls; assets load; no assembled wall connectors.');
 }finally{await call('Browser.close');ws.close()}

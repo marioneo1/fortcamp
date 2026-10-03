@@ -112,10 +112,10 @@ def catalogue():
     for family,label in FAMILIES.items():
         boxed=family=='limestone_boxed'
         result.append({'id':'material_'+family,'name':label+' building kit','rank':'E',
-            'description':('Six generated wall pieces at one shared scale. Compare isolated pieces and connected runs; spans are not exact.' if boxed else 'Four authored material test maps. Every kit piece appears across the four layouts. No rewards or save changes.'),
+            'description':('Four complete furnished buildings using the generated wall kit. Compare gatehouse, divided hall, breached annex and twin stores.' if boxed else 'Four authored material test maps. Every kit piece appears across the four layouts. No rewards or save changes.'),
             'form':'art test','source':'Building material tests','faction':'','follows':[],
             'variants':[{'id':'direct','label':'Material test','node':'Building kit inspection','outcome':'direct',
-                         'description':('Inspect full/half straight walls and authored corner/T/cross connections. This candidate has no doors or gates.' if boxed else 'Inspect walls, openings, damage states and supporting parts. Doors and walls work normally; stairs are scenery.'),
+                         'description':('Inspect the generated stone shell in full buildings, with working timber doors/gates, furniture and open breaches.' if boxed else 'Inspect walls, openings, damage states and supporting parts. Doors and walls work normally; stairs are scenery.'),
                          'encounter_id':'showcase:'+family,'transition':{},'layout_presets':material_presets(family)}]})
     return sorted(result, key=lambda m: ('EDCBAS'.index(m['rank']), m['name']))
 
