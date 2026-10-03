@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## October 2: Generated pure overhead stone trial; integration pending
+
+Created separate polished/rough stone plan-view 4x4 candidates, preserved active packs and wood/metal. Rejected an initial limestone draft with frontal doors; revised doors/gates use narrow overhead leaves. Staging: staging-terrain/building-toolset-v5-topdown contains exact prompts, original sheets, 32 complete alpha-extracted pieces, extraction.json and preview.html. Checked camera and representative extracted corner/door/gate silhouettes. No runtime replacement or gameplay changes. Next: subjective review, separate optional stone profile calibration and actual-map comparison before choosing a default. Canonical reference: docs/art/MODULAR_WALL_GENERATION_GUIDE.md.
+
 ## Completed October 2: Limestone face matching and corner seating
 
 Corrected the supplied directional limestone corners' outward-face convention across perimeter bands, Ts and exposed posts. Matching straight bands extend into each existing built-in column; clipped foreground columns hide unequal source arm tips. Rejected a sideways inset after it visibly stepped the joins. No separate strategic pillars or image warping. Reviewed enlarged renders in all four directions and full limestone layouts; 131 frontend tests, build, seven targeted backend checks and enlarged/16-layout browser checks pass. Canonical rules: docs/design/WALL_BOUNDARIES.md and docs/art/MODULAR_WALL_GENERATION_GUIDE.md. Production unchanged; subjective approval pending. Remaining art limitation: legacy damaged limestone corner faces.

@@ -1,5 +1,11 @@
 # Modular wall art — current dev strategy
 
+## October 2: Pure overhead stone candidates (not active)
+
+Preserved every active kit and generated new polished-limestone and rough-fieldstone packs from scratch using the built-in image generator. Separate 4x4 packs live in staging-terrain/building-toolset-v5-topdown. Their strict plan-view prompt rejects visible vertical faces, perspective, raised columns and external cast shadows. Closed/open doors and gates are thin top-edge leaves in the ground plane. Rejected the first limestone draft because it still illustrated door fronts; retained it under an explicit rejected filename.
+
+Selected candidates, exact prompts, extraction report, 32 isolated sprites and a portable preview.html are saved in that folder. Requested 2048px output became 1254px; alpha-component extraction and relative cell positions recovered complete silhouettes. Current building-v4 selection, directional corners, registry, geometry, wood and metal remain unchanged. Visual review and optional in-map profile integration remain pending. These planar candidates must receive their own calibration; do not inherit v4's painted-side mirroring or corner-column assembly. Subtle border shading remains in the selected art, and generated mating points still require measurement.
+
 ## Supplied limestone corners: face and seating rules
 
 The current limestone directional images shade outward. Use material metadata `perimeter_face: outward` for their adjoining perimeter bands, perimeter-T bars and exposed posts; other kits retain their existing inward convention. Match the source corner rather than assuming a universal inward face. Centered dividers still face horizontal-down/vertical-left.

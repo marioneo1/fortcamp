@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Separate pure top-down stone generation trial
+
+User requested new pure-overhead polished/rough stone building sets while retaining the current art and leaving wood/metal intact. Generated separate packs with explicit architectural plan-view constraints. The first polished draft still showed upright door fronts, so it was rejected and regenerated with thin top-edge door leaves. Selected polished/rough outputs are 1254px square 4x4 packs, not the requested 2048px. Saved exact prompts and sources in staging-terrain/building-toolset-v5-topdown, recovered all 32 complete silhouettes with existing alpha-component extraction, normalized without warping and created a portable preview gallery. Inspected source sheets and extracted corner/door/gate examples.
+
+Active registry, geometry, building-v4 art, wood/metal, production and saves remain untouched. Candidate visual approval and optional in-map calibration are pending; subtle border shading remains. No game tests were required for staging-only media/docs; extraction verified transparency and 16 populated cells per sheet. Media need separate backup because Git excludes them.
+
 ## 2026-10-02: Correct missed limestone face mismatch and corner overlap
 
 User correctly identified that the preceding corner replacement still faced opposite to adjoining wall bands. Inspected the source art and enlarged actual-CSS renders instead of treating alignment tests as visual acceptance. Added a material-specific outward perimeter convention, including T bars and exposed caps. Rejected perpendicular wall inset because it created stepped edges. Extended matching bands 0.035 tile into existing corner columns and clipped the supplied directional image to its foreground column, eliminating protruding source arm tips without introducing separate pillars or changing source images. Preserved logical connections, collision, destruction and saves.
