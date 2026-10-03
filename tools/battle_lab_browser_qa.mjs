@@ -10,6 +10,7 @@ const call=(method,params={})=>new Promise((resolve,reject)=>{const id=++serial;
 const evaluate=async expression=>{const r=await call('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(r.exceptionDetails)throw Error(r.exceptionDetails.text+' '+JSON.stringify(r.exceptionDetails.exception));return r.result.value};
 const wait=()=>new Promise(r=>setTimeout(r,180));
 await call('Runtime.enable');
+await call('Network.enable');await call('Network.setCacheDisabled',{cacheDisabled:true});
 await call('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
 await call('Page.navigate',{url:'http://127.0.0.1:8766/staging-ui/battle-lab/preview.html'});
 for(let i=0;i<80;i++){if(await evaluate('Boolean(window.labFixtureReady)'))break;await wait()}
@@ -66,6 +67,11 @@ for(const family of ['timber','fieldstone','limestone','iron']){
   assert.ok((await evaluate('document.querySelector(".battle-lab-toolbar").textContent')).includes('MATERIAL TEST'));
   assert.ok(await evaluate('Boolean(document.querySelector(".lab-pieces"))'));
   if(['fieldstone','limestone'].includes(family))assert.ok(await evaluate("Array.from(document.querySelectorAll('.has-prop-art')).some(e=>e.style.getPropertyValue('--battle-prop').includes('building-v4'))"));
+  if(['fieldstone','limestone'].includes(family)&&index===1){
+   assert.equal(await evaluate("Array.from(document.querySelectorAll('.wall-cap')).every(e=>Number(getComputedStyle(e).zIndex)===4)"),true);
+   assert.equal(await evaluate("Array.from(document.querySelectorAll('.wall-connector:not(.wall-cap)')).every(e=>Number(getComputedStyle(e).zIndex)===(parseInt(e.style.getPropertyValue('--asset-rotation'))%180===0?3:2))"),true);
+   assert.ok(await evaluate("Array.from(document.querySelectorAll('.wall-cap')).some(e=>e.style.getPropertyValue('--asset-rotation')==='180deg'&&e.style.getPropertyValue('--asset-mirror-y')==='-1')"));
+  }
   await writeFile(`staging-terrain/building-toolset-v4/${family}-${index+1}-in-game.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
   await evaluate("document.querySelector('[data-lab-return]').click()");await wait();
  }

@@ -81,6 +81,12 @@ def main():
         if not top or not stem:raise ValueError(f'{family}: incomplete T junction')
         geometry[family]['junction_offset']=[round((.5-sum(stem)/len(stem)/384)*1.25,4),
             round(-geometry[family]['join_offset']-(sum(top)/len(top)/384-.5)*1.25,4)]
+        if version=='building-v4' and family in ('fieldstone','limestone'):
+            native=sprites['junction'].getchannel('A')
+            bar=[y for y in range(384) if sum(native.getpixel((x,y))>96 for x in range(384))>384*.65]
+            if not bar:raise ValueError(f'{family}: incomplete native T bar')
+            geometry[family]['native_junction_offset']=[0,round((.5-(min(bar)+max(bar))/2/384)*1.25,4)]
+            geometry[family]['native_junction_rotations']=[90]
         for piece,sprite in sprites.items():
             ident=f'{family}_{piece}'
             sprite.save(dest/f'{ident}.png',optimize=True)

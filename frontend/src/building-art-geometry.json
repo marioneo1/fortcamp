@@ -47,6 +47,13 @@
     "junction_offset": [
       -0.0002,
       -0.0466
+    ],
+    "native_junction_offset": [
+      0,
+      0.2881
+    ],
+    "native_junction_rotations": [
+      90
     ]
   },
   "limestone": {
@@ -73,6 +80,13 @@
     "junction_offset": [
       0.0161,
       0.0056
+    ],
+    "native_junction_offset": [
+      0,
+      0.2555
+    ],
+    "native_junction_rotations": [
+      90
     ]
   },
   "iron": {

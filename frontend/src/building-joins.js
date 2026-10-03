@@ -24,11 +24,13 @@ function matingPolygon(scale,left,right,[a,b,c]){
 }
 export function wallArtStyle(item,layout){
  const mirrorY=item.art_mirror_y??layout.mirrorY??1;
+ const match=matchPiece(item),band=match&&/^(wall|end|breach|window|door_(open|closed)|gate_(open|closed))$/.test(match[2]);
+ const layer=item.art_layer??layout.layer??(band&&rotationOf(item)%180===0?3:2);
  // CSS mirrors both the image and its clip. Reflect the clip first so that
  // mirroring the painted face never changes the physical mating plane.
  const clip=item.art_clip_polygon?'polygon('+item.art_clip_polygon.map(([x,y])=>`${x}% ${mirrorY===-1?100-y:y}%`).join(',')+')':
   item.art_clip?'inset('+item.art_clip.map(v=>v+'%').join(' ')+')':'none';
- return `--asset-mirror-y:${mirrorY};--asset-clip:${clip}`;
+ return `--asset-mirror-y:${mirrorY};--asset-clip:${clip};--wall-art-layer:${layer}`;
 }
 function offsetOf(item,g,piece){
  if(piece==='edge_junction')return [0,0];
@@ -105,6 +107,7 @@ export function structuralLayout(item,geometry,neighbors=[]){
    sprite:`structure:${family}_wall`,art_scale:scale,rotation:beamRotation,
    art_offset:[x+anchor[0],y+anchor[1]],
    art_mirror_y:armMirror,
+   art_layer:beamRotation%180===0?3:2,
    ...(cut?{art_clip_polygon:matingPolygon(scale,left,right,cut)}:{}),
    art_clip:[0,Math.max(0,(.5-right/scale)*100),0,Math.max(0,(.5+left/scale)*100)]};
  };
@@ -127,16 +130,23 @@ export function structuralLayout(item,geometry,neighbors=[]){
    const trim=g.cap_mode==='trim',[dx,dy]=turn([.5,0],p.rotation);
    return {id:`${item.id}_cap_${p.index}`,parent_id:item.id,wall_cap:true,x:item.x,y:item.y,
     sprite:`structure:${family}_${trim?'wall':'pillar'}`,rotation:p.rotation,
+    art_mirror_y:trim?1:faceMirror({...item,rotation:p.rotation}),
     art_scale:trim?scale:g.cap_scale||.4,
     art_offset:trim?[p.point[0]+dx,p.point[1]+dy]:p.point,
     ...(trim?{art_clip:[0,72,0,0]}:{})};
   });
  };
  let connectors,hideArt=false;
+ if(piece==='junction'&&g.native_junction_rotations?.includes(rotation)){
+  const [x,y]=turn(g.native_junction_offset,rotation);
+  // The dedicated stone T has the correct faces for this orientation.
+  // Its measured bar anchor keeps it on the existing divider centerline.
+  return {offset:[base[0]+x,base[1]+y],connectors:caps(),mirrorY:1,layer:3};
+ }
  if(piece==='end'){
   // This terminal occupies half a cell even if the generated source is longer.
   connectors=[...beam([0,0],0,0,.5),{id:`${item.id}_terminal_cap`,parent_id:item.id,wall_cap:true,
-   x:item.x,y:item.y,sprite:`structure:${family}_pillar`,rotation,art_scale:g.cap_scale||.4,art_offset:base}];hideArt=true;
+   x:item.x,y:item.y,sprite:`structure:${family}_pillar`,rotation,art_mirror_y:mirrorY,art_scale:g.cap_scale||.4,art_offset:base}];hideArt=true;
  }else if(piece==='wall'){
   connectors=g.cap_mode==='trim'?beam([0,0],0):[];hideArt=g.cap_mode==='trim';
  }else if(piece==='corner'){

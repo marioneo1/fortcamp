@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## Completed October 2: Foreground end posts
+
+Fixed the exposed stone branch post below the divided-hall gate: cap sprites draw in front of wall bands and mirror to match their attached face at opposite endpoints. Terminal posts follow the same rule, in combat and defense preparation. Canonical rules retained in docs/art/MODULAR_WALL_GENERATION_GUIDE.md and docs/design/WALL_BOUNDARIES.md. Validation: 127 frontend tests, build, seven targeted backend tests and all 16 Battle Lab layouts; browser assertions cover foreground layering and mirrored posts. Also made horizontal bands cover vertical bands at corners and branches, and selected the calibrated dedicated v4 stone T for the left-facing join above the gate. Other orientations retain face-correct assembly. Production untouched.
+
 ## Completed October 2: Consistent T/cross branch faces
 
 Matched rotated centered T/cross arms to neighboring divider faces; perimeter Ts keep their inward-facing boundary bar while their stem matches the interior wall. Half-turned centered runs/terminal bands use the same face convention. This addresses the upper T/gate, lower T and cross seams in the latest polished/rough-stone screenshots without altering placement or collision. Validation: 124 frontend tests, build and all 16 material-layout browser checks pass. Canonical reference: docs/design/WALL_BOUNDARIES.md. Production untouched; final visual review remains pending.

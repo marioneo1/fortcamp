@@ -1,5 +1,7 @@
 # Map Asset Layering
 
+Exposed wall caps use the `wall-cap` class: layer 4, above horizontal wall bands (3) and vertical bands (2), below character tokens (5). They remain non-interactive. Stone caps mirror to the attached wall face rather than reversing that face at the opposite endpoint. Both preparation and active battle use the same rule. Horizontal bands cover vertical bands at corner/T/cross joins; dedicated calibrated stone Ts use the horizontal foreground layer. See MODULAR_WALL_GENERATION_GUIDE.md for the required building assembly checklist.
+
 ## October 2: Wall face mirroring
 
 Painted perimeter faces now match their corner arms using boundary-aware texture mirroring independent of grid rotation. Opposite sides face inward; centered dividers keep their authored orientation. Mirrored breach calibration preserves its surviving beam anchor. Metal corner rims meet with complementary diagonal clips instead of an overlapping inner seam. Actual map objects, collision, health and saved placement are unchanged. See MODULAR_WALL_GENERATION_GUIDE.md and ../design/WALL_BOUNDARIES.md. Validation: 122 frontend tests, build, seven targeted backend tests and enlarged/full-layout browser checks pass; production untouched.

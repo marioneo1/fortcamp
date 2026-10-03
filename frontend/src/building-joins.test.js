@@ -156,7 +156,7 @@ test('metal corner textures meet at complementary diagonal cuts through the same
 });
 test('mirroring a painted face preserves a diagonal clip in map space',()=>{
  const item={art_mirror_y:-1,art_clip_polygon:[[20,30],[70,40],[60,80]]};
- assert.equal(wallArtStyle(item,{}),'--asset-mirror-y:-1;--asset-clip:polygon(20% 70%,70% 60%,60% 20%)');
+ assert.equal(wallArtStyle(item,{}),'--asset-mirror-y:-1;--asset-clip:polygon(20% 70%,70% 60%,60% 20%);--wall-art-layer:2');
 });
 test('mirrored breaches retain their surviving band alignment on the opposite perimeter',()=>{
  const g={timber:{join_offset:.4,breach_offset:[0,.04]}};
@@ -188,4 +188,29 @@ test('the lower perimeter T preserves its inward-facing bar while reversing only
  assert.equal(arms[0].rotation,180);assert.equal(arms[0].art_mirror_y,1);
  assert.equal(arms[1].rotation,270);assert.equal(arms[1].art_mirror_y,-1);
  assert.deepEqual(arms.map(c=>c.art_offset),[[0,.36],[0,0]]);
+});
+test('opposite stone end posts match the horizontal wall face instead of reversing it',()=>{
+ const caps=structuralConnectors([wall('branch',0)],modular).filter(c=>c.wall_cap);
+ assert.equal(caps.length,2);
+ assert.deepEqual(caps.map(c=>[c.rotation,c.art_mirror_y]),[[0,1],[180,-1]]);
+ const end=structuralLayout(wall('terminal',0,0,{sprite:'structure:fieldstone_end',rotation:180}),modular);
+ assert.equal(end.connectors.find(c=>c.id==='terminal_terminal_cap').art_mirror_y,-1);
+});
+test('horizontal corner and junction bands cover vertical bands in every rotation',()=>{
+ for(const piece of ['corner','junction','cross','edge_junction'])for(const rotation of [0,90,180,270]){
+  const arms=structuralLayout({id:'join',sprite:'structure:fieldstone_'+piece,rotation},modular).connectors.filter(c=>!c.wall_cap);
+  assert.ok(arms.some(c=>c.art_layer===3));assert.ok(arms.some(c=>c.art_layer===2));
+  for(const arm of arms)assert.equal(arm.art_layer,arm.rotation%180===0?3:2);
+ }
+});
+test('calibrated stone T uses its dedicated sprite without changing connection ports',()=>{
+ const g={fieldstone:{...modular.fieldstone,native_junction_offset:[0,.2881],native_junction_rotations:[90]}};
+ const item={id:'native',x:4,y:3,sprite:'structure:fieldstone_junction',rotation:90};
+ const layout=structuralLayout(item,g);
+ assert.equal(layout.hideArt,undefined);assert.equal(layout.layer,3);assert.equal(layout.mirrorY,1);
+ close(layout.offset[0],-.2881);close(layout.offset[1],0);
+ assert.ok(layout.connectors.every(c=>c.wall_cap));
+ assert.deepEqual(connectionPorts(item,g),connectionPorts(item,modular));
+ assert.equal(structuralLayout({...item,rotation:180},g).hideArt,true);
+ assert.deepEqual(structuralLayout({...item,destroyed:true},g).connectors,[]);
 });

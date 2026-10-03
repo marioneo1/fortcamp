@@ -1,8 +1,12 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Foreground stone posts
+
+The latest polished/rough-stone snips showed the exposed branch-end post below the gate covered by its adjoining band and facing the wrong way. Assigned caps an explicit layer above bands but below tokens and matched stone post mirroring to the attached face, including terminal posts. Updated both active/preparation rendering and the enlarged preview. 127 frontend tests, build and 16-layout browser checks pass, with explicit foreground/mirror assertions for both stone divided halls. Also made horizontal bands cover vertical bands at corners and branches, and selected the calibrated dedicated v4 stone T for the left-facing join above the gate. Other orientations retain face-correct assembly. Documented the reusable construction rules; production and saves unchanged.
+
 ## 2026-10-02: Finish stone T and cross orientation
 
-Reviewed refreshed polished/rough-stone screenshots. Rotated junction arms still reversed their painted face relative to ordinary divider runs. Normalized each interior arm separately; retained inward-facing perimeter bars and unchanged attachment geometry. Centered half-turn walls/terminal bands share the convention. Added rotation and bottom-perimeter-T regression checks. 124 frontend tests, build and all 16 actual Battle Lab material layouts pass. No asset generation, backend changes, save changes or production deployment.
+Reviewed refreshed polished/rough-stone screenshots. Rotated junction arms still reversed their painted face relative to ordinary divider runs. Normalized each interior arm separately; retained inward-facing perimeter bars and unchanged attachment geometry. Centered half-turn walls/terminal bands share the convention. Added rotation and bottom-perimeter-T regression checks. 124 frontend tests, build, seven targeted backend tests and all 16 actual Battle Lab material layouts pass. No asset generation, backend changes, save changes or production deployment.
 
 ## 2026-10-02: Match wall faces to corners
 

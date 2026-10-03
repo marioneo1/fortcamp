@@ -12,6 +12,20 @@ A connecting wall is a continuous painted band with flat, uncapped mating ends. 
 
 This is implemented for regenerated rough fieldstone and polished limestone (building-v4). Metal retains its v2 art: the renderer reuses only its post-free middle band for connected segments, and keeps an original terminal post at an exposed end. Timber keeps the previous rendering. It can adopt this scheme later if needed.
 
+## Required building assembly checklist
+
+- Perimeter bands face inward and match their corner arms; interior horizontal bands face down, vertical bands face left.
+- T/cross arms normalize their face independently. A perimeter T keeps its inward-facing bar and matches only its stem to the divider.
+- Preserve thickness and proportions; clip lengths and metal corner mating planes instead of stretching art.
+- Connected ports suppress terminal posts. Exposed posts match the attached face, including mirrored opposite endpoints.
+- Vertical bands use layer 2, horizontal bands layer 3, and exposed posts layer 4 below character tokens (5). This makes horizontal bands cover vertical ones at corners and T/cross joins. Keep posts non-interactive and separate from collision.
+- Mirroring must preserve attachment points, breach calibration and saved grid/boundary rotation.
+- Review all four material layouts, both endpoint directions, rotated joins and open/damaged neighbors using the real renderer.
+
+The dedicated v4 stone centered T is used for the left-branch orientation (90 degrees), where its painted faces match the divider convention. Its full bar/half stem are preserved at the existing scale, with a measured alpha-row anchor recorded in both geometry manifests by the installer. Other orientations retain assembly because rotating the whole source would reverse one of its faces.
+
+These are implemented renderer rules, not instructions to manually flip individual maps. Reuse the structural layout/connector helpers for future buildings and previews.
+
 ## Atlas specification
 
 Generate one material per transparent, evenly spaced 4×4 atlas. Never mix terrain or furniture into it. Use the established painted medieval palette, strict overhead orthographic viewpoint and consistent wall thickness/stone scale. Connecting bands must have no enlarged caps or pillars at either end or junction. Keep the masonry continuous around turns; no larger intersection block. Door/gate state pairs must share their jamb positions, scale and camera direction. Damage must preserve the surviving bands' centerlines.

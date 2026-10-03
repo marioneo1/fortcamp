@@ -1,5 +1,13 @@
 # Wall boundaries — implemented in dev
 
+## October 2: Exposed posts render in front of wall bands
+
+Stone end posts now match the attached band face when their endpoint orientation reverses; a right-hand horizontal end mirrors its half-turned pillar back to the downward-facing convention. Terminal-piece posts use the same rule. Caps have an explicit foreground layer above wall bands and below character tokens in active combat and defense preparation. Supporting bands remain behind the wall. This fixes the exposed branch post below the divided-hall gate without changing connections, cap count, collision or saved maps.
+
+Horizontal bands now cover vertical bands at corners and T/cross joins (layers 3/2), while exposed posts remain above both (4). The centered T above the divided-hall gate uses the dedicated v4 stone T sprite at its measured bar anchor. Only the matching left-branch orientation uses that whole sprite; other orientations retain face-correct assembly. Installation preserves this calibration. No bands are stretched.
+
+Validated 127 frontend tests, build, seven targeted backend tests and all 16 Battle Lab material layouts. Browser checks verify stone cap layer ordering and the mirrored opposite-end post in both divided halls. Source art and production remain unchanged.
+
 ## October 2: T/cross faces match centered divider runs
 
 The follow-up stone screenshots exposed painted faces reversing at rotated junctions. Each centered T/cross arm now follows the same face convention as its adjoining divider: horizontal faces point down and vertical faces point left, independent of whether its arm is authored forward or backward. Perimeter Ts retain the inward-facing outside bar and apply this convention only to their interior stem. Centered straight bands and terminal bands also normalize their face after half turns. Attachment offsets, arm lengths, clipping, saved rotation and collision are unchanged.
