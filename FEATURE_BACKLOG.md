@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## October 3: Polished side T refinement completed
+
+Map detail 2's side-facing interior T now uses user-authored part 17 with calibrated rotation/anchor; this rule applies throughout the polished kit. Part 20 remains the inward-corner source for map detail 3. Other T orientations and perimeter joints retain their original parts. Four furnished browser checks, 32 wall-rendering tests and frontend build pass; reviewed the refreshed enlarged map 2 image. Live seam review remains available in Battle Lab. See docs/art/MODULAR_WALL_GENERATION_GUIDE.md.
+
 ## October 3: Authored part 20 for inward polished joins
 
 The user supplied part_20.png and clarified the requested inward corner was in map detail 3, then accepted the shared pass. Replaced the previously adjusted inward-corner artwork with the supplied silhouette at the kit?s common scale, remeasured its horizontal/vertical anchors and fitted its surviving vertical arm. All four mirrored inward-corner facings derive from this source. Side-facing interior Ts also use its corner-shaped arm plus the existing part-19 upright upper continuation, preserving all three connections. These shared rules apply throughout the polished kit, not by mission-specific exceptions. Source overrides are recorded in installed.json and restored on reimport; the original source file is not modified.

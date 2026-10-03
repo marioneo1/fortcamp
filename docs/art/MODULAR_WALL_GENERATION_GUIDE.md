@@ -1,5 +1,11 @@
 # Modular wall art — current dev strategy
 
+## October 3: Part 17 for side-facing interior T joins
+
+After comparing map detail 2, side-facing interior Ts now use the complete three-arm part_17.png, rotated and anchored at the divider intersection. The opposite facing reflects the same source. This replaces the part-20 corner plus upright continuation used in the previous pass. Original part 3 remains on the other interior T orientations; part 15 remains on perimeter Ts. Part 20 stays on true inward corners, including map detail 3, and part 2 stays on ordinary corners. These orientation rules apply to every polished-stone map and survive reimport.
+
+Reviewed the refreshed enlarged map 2 render. Four furnished browser renders and asset checks, 32 wall-rendering tests and the frontend build pass. Collision, layouts and other materials remain unchanged. Small painted seams still require normal live review.
+
 ## October 3: Authored part 20 for inward polished joins
 
 The user supplied part_20.png and clarified the requested inward corner was in map detail 3, then accepted the shared pass. Replaced the previously adjusted inward-corner artwork with the supplied silhouette at the kit?s common scale, remeasured its horizontal/vertical anchors and fitted its surviving vertical arm. All four mirrored inward-corner facings derive from this source. Side-facing interior Ts also use its corner-shaped arm plus the existing part-19 upright upper continuation, preserving all three connections. These shared rules apply throughout the polished kit, not by mission-specific exceptions. Source overrides are recorded in installed.json and restored on reimport; the original source file is not modified.

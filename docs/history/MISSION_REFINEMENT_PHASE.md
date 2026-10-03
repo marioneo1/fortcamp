@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## October 3: Part 17 restored specifically for side-facing Ts
+
+Used the user's dedicated three-arm part 17 for map 2's side-facing divider join, with its opposite facing reflected from the same source. The shared installer now applies this choice to every polished map; part 20 remains exclusive to inward corners. Original corner, remaining T and perimeter T rules are retained. Refreshed and reviewed map detail 2; four furnished browser renders, asset loading checks, 32 wall-rendering tests and frontend build pass. No map footprints or collision changes.
+
 ## October 3: Authored part 20 for inward polished joins
 
 The user supplied part_20.png and clarified the requested inward corner was in map detail 3, then accepted the shared pass. Replaced the previously adjusted inward-corner artwork with the supplied silhouette at the kit?s common scale, remeasured its horizontal/vertical anchors and fitted its surviving vertical arm. All four mirrored inward-corner facings derive from this source. Side-facing interior Ts also use its corner-shaped arm plus the existing part-19 upright upper continuation, preserving all three connections. These shared rules apply throughout the polished kit, not by mission-specific exceptions. Source overrides are recorded in installed.json and restored on reimport; the original source file is not modified.

@@ -136,20 +136,24 @@ def main():
         local=profile['authored_'+part+'_offset']
         orientations[part]={'180':{'sprite':'structure:limestone_'+name,
                                   'offset':offset(local[0],-local[1]),'rotation':0}}
-    if path.exists():
-        # A side-facing T combines the native inward L with the upright upper
-        # arm. Its joint sits at the divider intersection, not at a tile edge.
-        side=inner.copy()
-        fit_stem(side,ix,round(iy+65),round(iy+160))
+    side_path=source/'part_17.png'
+    if side_path.exists():
+        # The user's dedicated T has all three arms. Use it for side-facing
+        # divider joins; part 20 stays exclusively on true inward corners.
+        cut=Image.open(side_path).convert('RGBA');bounds=cut.getchannel('A').getbbox()
+        if not bounds:raise ValueError('part_17.png: empty side T')
+        side=centered(cut.crop(bounds),scale)
+        a=side.getchannel('A');sy=row_anchor(side)
+        sx=mean([x for y in range(220,300) for x in range(110,275) if a.getpixel((x,y))>120])
+        fit_stem(side,sx,round(sy+65),round(sy+160))
+        side=side.rotate(-90,expand=False)
         canvas=Image.new('RGBA',(384,384))
-        upright=sprites['wall_vertical'].rotate(-90,expand=True)
-        canvas.alpha_composite(upright.crop((140,32,244,192)),(140,32))
-        canvas.alpha_composite(side,(round(192-ix),round(192-iy)))
+        canvas.alpha_composite(side,(round(sy-192),round(192-sx)))
         sprites['junction_facing_90']=canvas
         sprites['junction_facing_270']=ImageOps.mirror(canvas)
         orientations['junction']['90']={'sprite':'structure:limestone_junction_facing_90','offset':[0,0],'rotation':0}
         orientations['junction']['270']={'sprite':'structure:limestone_junction_facing_270','offset':[0,0],'rotation':0}
-        overrides['junction_side']='part_20.png'
+        overrides['junction_side']='part_17.png'
     profile['painted_orientations']=orientations
     dest=ROOT/'frontend/public/assets/combat-terrain/structures/building-v10-polished';dest.mkdir(exist_ok=True)
     path=ROOT/'frontend/src/map-prop-art.json';registry=json.loads(path.read_text())
