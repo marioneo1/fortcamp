@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## Completed October 2: Corner-consistent wall faces and metal corner joins
+
+Updated stone screenshots exposed opposite perimeter bands facing outward. Boundary-aware texture mirroring now matches the inward-facing corner arms across all building rotations; centered dividers retain their orientation, translated concave arms reverse their face, and breach calibration follows mirroring. Metal corner rims meet at a diagonal seam rather than overlap. No source art regeneration, save migration or gameplay changes. Canonical references: docs/design/WALL_BOUNDARIES.md and docs/art/MODULAR_WALL_GENERATION_GUIDE.md. Validation: 122 frontend tests, build, seven targeted backend boundary/showcase tests, four-material/four-rotation enlarged checks and all 16 Battle Lab layouts pass. Remaining: user visual review and previously documented door camera/stair work. Production untouched.
+
 ## Completed October 2: Regenerated stone and neighbor-aware wall columns
 
 Generated new rough/polished stone v4 kits with uncapped connecting bands and separate caps. Metal now uses its post-free middle texture at connected joins, preserving terminal columns at exposed ends. Matching rotated endpoints handles corners/branches, parallel walls, door states and destroyed neighbors; caps are visual only. New stone half ends have explicit half-cell length. Original packs preserved; timber unchanged. Canonical guidance: docs/art/MODULAR_WALL_GENERATION_GUIDE.md and docs/design/WALL_BOUNDARIES.md. Validation: 325 backend tests, 117 frontend tests, build, enlarged/16-layout browser checks and 99-preview art audit pass. Remaining: subjective live approval and stricter overhead door/gate art; stair gameplay remains deferred. Production untouched.

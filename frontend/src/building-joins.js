@@ -2,6 +2,33 @@
 function turn([x,y],rotation){for(let i=0;i<rotation/90;i++)[x,y]=[-y,x];return [x,y]}
 const matchPiece=item=>/^structure:(timber|fieldstone|limestone|iron)_(.+)$/.exec(item.sprite||'');
 const rotationOf=item=>((Number(item.rotation)||0)%360+360)%360;
+const inward={north:[0,1],east:[-1,0],south:[0,-1],west:[1,0]};
+function faceMirror(item){
+ const face=inward[item.wall_edges?.length===1?item.wall_edges[0]:null];
+ if(!face)return 1;
+ const normal=turn([0,1],rotationOf(item));
+ return normal[0]*face[0]+normal[1]*face[1]<0?-1:1;
+}
+// Clip the texture at a diagonal mating plane instead of drawing two rims
+// over one another. Coordinates remain local to each unscaled texture strip.
+function matingPolygon(scale,left,right,[a,b,c]){
+ let points=[[left,-scale/2],[right,-scale/2],[right,scale/2],[left,scale/2]];
+ const output=[];
+ for(let i=0;i<points.length;i++){
+  const p=points[i],q=points[(i+1)%points.length],dp=a*p[0]+b*p[1]-c,dq=a*q[0]+b*q[1]-c;
+  if(dp<=0)output.push(p);
+  if((dp<=0)!==(dq<=0)){const t=dp/(dp-dq);output.push([p[0]+t*(q[0]-p[0]),p[1]+t*(q[1]-p[1])]);}
+ }
+ return output.map(([x,y])=>[(x/scale+.5)*100,(y/scale+.5)*100]);
+}
+export function wallArtStyle(item,layout){
+ const mirrorY=item.art_mirror_y??layout.mirrorY??1;
+ // CSS mirrors both the image and its clip. Reflect the clip first so that
+ // mirroring the painted face never changes the physical mating plane.
+ const clip=item.art_clip_polygon?'polygon('+item.art_clip_polygon.map(([x,y])=>`${x}% ${mirrorY===-1?100-y:y}%`).join(',')+')':
+  item.art_clip?'inset('+item.art_clip.map(v=>v+'%').join(' ')+')':'none';
+ return `--asset-mirror-y:${mirrorY};--asset-clip:${clip}`;
+}
 function offsetOf(item,g,piece){
  if(piece==='edge_junction')return [0,0];
  if(item.edge_wall&&item.wall_edges?.length===1){
@@ -50,11 +77,12 @@ export function structuralLayout(item,geometry,neighbors=[]){
  const match=matchPiece(item);
  if(!match)return {offset:item.art_offset||[0,0],connectors:[]};
  const [,family,piece]=match,g=geometry[family];if(!g)return {offset:item.art_offset||[0,0],connectors:[]};
- const base=offsetOf(item,g,piece);
+ const base=offsetOf(item,g,piece),mirrorY=faceMirror(item);
  const rotation=rotationOf(item);
  if(piece==='breach'){
-  const [x,y]=turn(g.breach_offset||[0,0],rotation);
-  return {offset:[base[0]+x,base[1]+y],connectors:[]};
+  const [dx,dy]=g.breach_offset||[0,0];
+  const [x,y]=turn([dx,dy*mirrorY],rotation);
+  return {offset:[base[0]+x,base[1]+y],connectors:[],mirrorY};
  }
  if(item.destroyed)return {offset:base,connectors:[]};
  if(piece==='end'&&g.cap_mode!=='pillar'){
@@ -64,15 +92,17 @@ export function structuralLayout(item,geometry,neighbors=[]){
  const scale=item.art_scale||1.25,o=g.join_offset,half=g.wall_half_thickness||.09;
  const anchor=piece==='edge_junction'?[0,0]:base;
  let serial=0;
- const raw=(point,direction,left,right)=>{
+ const raw=(point,direction,left,right,cut)=>{
   const [x,y]=turn(point,rotation);
   return {id:`${item.id}_sleeve_${serial++}`,parent_id:item.id,x:item.x,y:item.y,
    sprite:`structure:${family}_wall`,art_scale:scale,rotation:(direction+rotation)%360,
    art_offset:[x+anchor[0],y+anchor[1]],
+   art_mirror_y:piece==='wall'?mirrorY:((piece==='corner'||piece==='corner_broken')&&base.some(v=>Math.abs(v)>.5)?-1:1),
+   ...(cut?{art_clip_polygon:matingPolygon(scale,left,right,cut)}:{}),
    art_clip:[0,Math.max(0,(.5-right/scale)*100),0,Math.max(0,(.5+left/scale)*100)]};
  };
- const beam=(point,direction,left=-scale/2,right=scale/2)=>{
-  if(g.cap_mode!=='trim')return [raw(point,direction,left,right)];
+ const beam=(point,direction,left=-scale/2,right=scale/2,cut)=>{
+  if(g.cap_mode!=='trim')return [raw(point,direction,left,right,cut)];
   // Reuse only the post-free center of the metal texture. Overlapping these
   // center strips fills the span without overlapping the baked terminal posts.
   left=Math.max(-.5,left);right=Math.min(.5,right);
@@ -80,7 +110,7 @@ export function structuralLayout(item,geometry,neighbors=[]){
    const l=Math.max(-scale*.25,left-shift),r=Math.min(scale*.25,right-shift);
    if(r<=l)return [];
    const [dx,dy]=turn([shift,0],direction);
-   return [raw([point[0]+dx,point[1]+dy],direction,l,r)];
+   return [raw([point[0]+dx,point[1]+dy],direction,l,r,cut?[cut[0],cut[1],cut[2]-cut[0]*shift]:undefined)];
   });
  };
  const caps=()=>{
@@ -103,7 +133,9 @@ export function structuralLayout(item,geometry,neighbors=[]){
  }else if(piece==='wall'){
   connectors=g.cap_mode==='trim'?beam([0,0],0):[];hideArt=g.cap_mode==='trim';
  }else if(piece==='corner'){
-  connectors=[...beam([0,-o],0,-scale/2,o+half),...beam([o,0],90,-o,scale/2)];hideArt=true;
+  const miter=g.cap_mode==='trim';
+  connectors=[...beam([0,-o],0,-scale/2,o+half,miter?[1,1,o]:undefined),
+   ...beam([o,0],90,-o-(miter?half:0),scale/2,miter?[-1,1,o]:undefined)];hideArt=true;
  }else if(piece==='edge_junction'){
   connectors=[...beam([0,-o],0),...beam([0,0],90,-o,scale/2)];hideArt=true;
  }else if(piece==='junction'||piece==='cross'){
@@ -111,8 +143,8 @@ export function structuralLayout(item,geometry,neighbors=[]){
  }else if(piece==='corner_broken'){
   const [x,y]=turn(g.broken_corner_offset||g.corner_offset||[0,0],rotation);
   return {offset:[base[0]+x,base[1]+y],connectors:[...beam([0,-o],0,-scale/2,-.24),...beam([o,0],90,.24,scale/2),...caps()]};
- }else return {offset:base,connectors:[]};
- return {offset:base,connectors:[...connectors,...caps()],...(hideArt?{hideArt:true}:{})};
+ }else return {offset:base,connectors:[],mirrorY};
+ return {offset:base,connectors:[...connectors,...caps()],mirrorY,...(hideArt?{hideArt:true}:{})};
 }
 
 export function structuralConnectors(terrain,geometry){

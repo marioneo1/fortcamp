@@ -1,5 +1,13 @@
 # Wall boundaries — implemented in dev
 
+## October 2: Inward-facing wall art and metal corner seams
+
+The updated polished/rough-stone snips showed opposite perimeter runs using identical artwork rotation. Painted front faces now point into the building, matching the rotated corner arms. The renderer compares the wall's rotated painted normal with its named boundary and mirrors the texture across its thickness when necessary. This handles all four building rotations; centered dividers retain their existing orientation. Concave corner arms reverse their face while preserving their translated attachment points. Mirrored breaches also mirror their measured alignment correction.
+
+Metal corners now use complementary diagonal clips at the shared joint instead of overlapping two complete rim surfaces. Both arms retain their original proportions and thickness. Texture mirroring and clipping are presentation only: saved rotations, boundary edges, movement, gate operations and collision are unchanged. No art regeneration was required. Review the same material tests after refreshing dev; existing battles receive the change.
+
+Validation: 122 frontend tests and build, seven targeted backend boundary/showcase tests, four-material/four-rotation enlarged browser checks and all 16 full Battle Lab layouts pass. Previous full backend baseline remains 325 tests. Production untouched; final subjective visual approval remains with the user.
+
 ## October 2: Neighbor-aware caps and regenerated stone kits
 
 Rough fieldstone and polished limestone now select new building-v4 atlases with plain connecting bands and separate end-cap pillars. End columns no longer repeat at every stone join. Metal keeps its source artwork but uses post-free center strips for the connected band; original terminal columns appear only at exposed endpoints. Timber is unchanged. This supersedes the earlier source selections below.

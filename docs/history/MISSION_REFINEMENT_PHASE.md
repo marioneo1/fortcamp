@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Match wall faces to corners
+
+Reviewed the updated metal corner and polished/rough-stone snips. Opposite perimeter bands shared grid rotations, making their painted face inconsistent with the adjoining corners. Added boundary-normal texture mirroring separately from movement geometry, preserved centered divider orientation, reversed concave corner faces and mirrored breach alignment corrections. Replaced metal corner overlap with complementary diagonal texture cuts without stretching the source or generating new art.
+
+Validated 122 frontend tests, frontend build, seven targeted backend boundary/showcase tests, enlarged previews for all materials/rotations and all 16 full Battle Lab layouts. Previous full backend baseline remains 325 tests. Updated canonical art/boundary docs and backlog. Existing dev battles receive the presentation fix on refresh; production and saves untouched. User subjective review remains pending.
+
 ## 2026-10-02: New stone art and exposed-end cap rules
 
 User identified repeated baked columns as the underlying source problem and requested regenerated stone plus connection-aware column removal. Built-in image generation produced separate rough-fieldstone/polished-limestone v4 atlases. Preserved sources/exact prompts in staging-terrain/building-toolset-v4 and selected complete extracted silhouettes under stable IDs. Old source/runtime packs remain retained.

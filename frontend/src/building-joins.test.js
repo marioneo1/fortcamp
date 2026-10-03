@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {structuralLayout,structuralConnectors,connectionPorts} from './building-joins.js';
+import {structuralLayout,structuralConnectors,connectionPorts,wallArtStyle} from './building-joins.js';
 const geometry={fieldstone:{join_offset:.36,corner_offset:[-.015,-.015]},timber:{join_offset:.4}};
 const close=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
 test('all four corners use the same beam thickness and follow both wall edges',()=>{
@@ -115,4 +115,53 @@ test('resolved metal strips stay visible and never recursively assemble themselv
   assert.deepEqual(layout.connectors,[]);
   assert.deepEqual(layout.offset,part.art_offset);
  }
+});
+
+test('perimeter faces point inside and match the adjoining corner in every rotation',()=>{
+ const edges=['north','east','south','west'],normals=[[0,1],[-1,0],[0,-1],[1,0]];
+ for(const family of ['fieldstone','iron'])for(let buildingTurn=0;buildingTurn<4;buildingTurn++)for(let side=0;side<4;side++){
+  const rotation=((side%2)*90+buildingTurn*90)%360,edge=edges[(side+buildingTurn)%4];
+  const item={id:'face',sprite:`structure:${family}_wall`,rotation,edge_wall:true,wall_edges:[edge]};
+  const layout=structuralLayout(item,modular),mirror=layout.mirrorY;
+  let normal=[0,mirror];for(let n=0;n<rotation/90;n++)normal=[-normal[1],normal[0]];
+  assert.deepEqual(normal.map(v=>v||0),normals[(side+buildingTurn)%4]);
+  assert.equal(item.rotation,rotation); // artwork must not rotate collision or saved placement
+  for(const part of layout.connectors.filter(p=>!p.wall_cap))assert.equal(part.art_mirror_y,mirror);
+ }
+});
+test('centered dividers retain their orientation; concave corners reverse their painted face',()=>{
+ assert.equal(structuralLayout(wall('divider',0,0,{rotation:90}),modular).mirrorY,1);
+ const inner=structuralLayout({id:'inner',sprite:'structure:fieldstone_corner',rotation:90,art_offset:[.72,.72]},modular);
+ assert.ok(inner.connectors.filter(c=>!c.wall_cap).every(c=>c.art_mirror_y===-1));
+});
+test('metal corner textures meet at complementary diagonal cuts through the same joint',()=>{
+ const o=modular.iron.join_offset;
+ for(const rotation of [0,90,180,270]){
+  const parts=structuralLayout({id:'corner',sprite:'structure:iron_corner',rotation},modular).connectors.filter(c=>!c.wall_cap);
+  let seams=0;
+  for(const part of parts){
+   assert.ok(part.art_clip_polygon.length>=3);
+   for(const [px,py] of part.art_clip_polygon){
+    let x=(px/100-.5)*part.art_scale,y=(py/100-.5)*part.art_scale;
+    for(let n=0;n<part.rotation/90;n++)[x,y]=[-y,x];
+    x+=part.art_offset[0];y+=part.art_offset[1];
+    for(let n=0;n<rotation/90;n++)[x,y]=[y,-x];
+    const sum=x+y,isHorizontal=part.rotation===rotation;
+    assert.ok(isHorizontal?sum<1e-8:sum>-1e-8);
+    if(Math.abs(sum)<1e-8&&Math.abs(x-o)<.15)seams++;
+   }
+  }
+  assert.ok(seams>=4,'both arms meet the diagonal near the corner');
+ }
+});
+test('mirroring a painted face preserves a diagonal clip in map space',()=>{
+ const item={art_mirror_y:-1,art_clip_polygon:[[20,30],[70,40],[60,80]]};
+ assert.equal(wallArtStyle(item,{}),'--asset-mirror-y:-1;--asset-clip:polygon(20% 70%,70% 60%,60% 20%)');
+});
+test('mirrored breaches retain their surviving band alignment on the opposite perimeter',()=>{
+ const g={timber:{join_offset:.4,breach_offset:[0,.04]}};
+ const north=structuralLayout({sprite:'structure:timber_breach',rotation:0,edge_wall:true,wall_edges:['north']},g);
+ const south=structuralLayout({sprite:'structure:timber_breach',rotation:0,edge_wall:true,wall_edges:['south']},g);
+ close(north.offset[1],-.36);close(south.offset[1],.36);
+ assert.equal(north.mirrorY,1);assert.equal(south.mirrorY,-1);
 });

@@ -1,5 +1,9 @@
 # Map Asset Layering
 
+## October 2: Wall face mirroring
+
+Painted perimeter faces now match their corner arms using boundary-aware texture mirroring independent of grid rotation. Opposite sides face inward; centered dividers keep their authored orientation. Mirrored breach calibration preserves its surviving beam anchor. Metal corner rims meet with complementary diagonal clips instead of an overlapping inner seam. Actual map objects, collision, health and saved placement are unchanged. See MODULAR_WALL_GENERATION_GUIDE.md and ../design/WALL_BOUNDARIES.md. Validation: 122 frontend tests, build, seven targeted backend tests and enlarged/full-layout browser checks pass; production untouched.
+
 ## October 2: v4 stone sources and exposed-end columns
 
 Current runtime selection is building-v4 for rough fieldstone/polished limestone and building-v2 for timber/metal. Generated two new stone atlases with uncapped connecting walls and a separate pillar/cap. Sources and exact prompts: staging-terrain/building-toolset-v4. Old atlases/runtime images are retained. Media are local and excluded from Git.

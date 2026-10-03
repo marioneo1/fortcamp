@@ -1,5 +1,11 @@
 # Modular wall art — current dev strategy
 
+## Face orientation and corner matching ? implemented
+
+The source horizontal band has its painted front face below its centerline. Outer corner arms establish the inward-facing convention: straight perimeter runs must match that face, including south and west walls. Use the rotated boundary normal to mirror the texture across its thickness independently of saved grid rotation. Do not rotate collision edges to fix an illustration. Centered dividers keep their authored orientation; translated concave corner arms reverse their painted side. Breach alignment corrections follow texture mirroring.
+
+Metal corner bands meet along complementary diagonal clips, avoiding doubled rims at the inner corner. The clip is reflected before a texture mirror so its map-space attachment remains unchanged. Stone and timber keep their current corner join geometry. The enlarged review now saves every material at every quarter turn under staging-terrain/building-toolset-v4; full Battle Lab layouts verify opposite sides in context. No new source images were generated for this pass.
+
 ## Separate the wall band from its terminal column
 
 A connecting wall is a continuous painted band with flat, uncapped mating ends. A cap/column is a separate sprite placed only at an exposed endpoint. Two connected walls consume their shared endpoint: neither adds a column there. Corners, Ts and crosses establish connectivity, rather than repeating the columns embedded in the source illustration. Deliberate architectural pillars remain separate placed props and do not follow this rule.
