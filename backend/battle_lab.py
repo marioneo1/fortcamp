@@ -110,11 +110,12 @@ def catalogue():
                        'description': mission.get('description', ''), 'form': mission.get('mission_form', 'combat'),
                        'source': source, 'faction': mission.get('faction', ''), 'follows': parents, 'variants': variants})
     for family,label in FAMILIES.items():
+        boxed=family=='limestone_boxed'
         result.append({'id':'material_'+family,'name':label+' building kit','rank':'E',
-            'description':'Four authored material test maps. Every kit piece appears across the four layouts. No rewards or save changes.',
+            'description':('Six generated wall pieces at one shared scale. Compare isolated pieces and connected runs; spans are not exact.' if boxed else 'Four authored material test maps. Every kit piece appears across the four layouts. No rewards or save changes.'),
             'form':'art test','source':'Building material tests','faction':'','follows':[],
             'variants':[{'id':'direct','label':'Material test','node':'Building kit inspection','outcome':'direct',
-                         'description':'Inspect walls, openings, damage states and supporting parts. Doors and walls work normally; stairs are scenery.',
+                         'description':('Inspect full/half straight walls and authored corner/T/cross connections. This candidate has no doors or gates.' if boxed else 'Inspect walls, openings, damage states and supporting parts. Doors and walls work normally; stairs are scenery.'),
                          'encounter_id':'showcase:'+family,'transition':{},'layout_presets':material_presets(family)}]})
     return sorted(result, key=lambda m: ('EDCBAS'.index(m['rank']), m['name']))
 
@@ -173,7 +174,7 @@ def start_session(identity, request, saved_state):
     if showcase:
         family=variant['encounter_id'].removeprefix('showcase:')
         board=compile_generated_battle_map('showcase_'+family,request.seed)
-        battle.update(board,name=mission['name'],log=['Material test map. No rewards or save changes. Doors and walls work normally; stairs and braces are scenery.'])
+        battle.update(board,name=mission['name'],log=[board['material_showcase']['notes']+' No rewards or save changes.'])
         for team in ('player','enemy'):
             for unit,tile in zip([u for u in battle['units'].values() if u['team']==team],board['spawn_zones'][team]):
                 unit.update(x=tile['x'],y=tile['y'])

@@ -4,7 +4,8 @@ from .location_maps import place_building, wall
 
 FAMILIES={'timber':'Timber','fieldstone':'Rough stone','limestone':'Polished stone','iron':'Metal',
           'limestone_plan':'Polished stone (Pure overhead)',
-          'fieldstone_plan':'Rough stone (Pure overhead)'}
+          'fieldstone_plan':'Rough stone (Pure overhead)',
+          'limestone_boxed':'Polished stone (Boxed six-piece trial)'}
 PARTS={'wall','corner','junction','cross','end','breach','door_closed','door_open',
        'gate_closed','gate_open','window','pillar','stairs','corner_broken','edge_junction','brace'}
 PLANS=[('gatehouse','Gatehouse and courtyard','workshop_forge_yard'),
@@ -14,12 +15,17 @@ PLANS=[('gatehouse','Gatehouse and courtyard','workshop_forge_yard'),
 
 
 def presets(family):
+    if family=='limestone_boxed':
+        return [{'id':f'{family}_{i+1}','label':label,'seed':f'boxed-walls-{i+1}'}
+                for i,label in enumerate(['Individual pieces','Connected straight runs',
+                                          'Connected pieces · 90 degrees','Connected pieces · 180 degrees'])]
     return [{'id':f'{family}_{ident}','label':label,'seed':f'material-layout-{i+1}'}
             for i,(ident,label,_) in enumerate(PLANS)]
 
 
 def blueprint(family,seed):
     if family not in FAMILIES:raise ValueError('Unknown showcase material')
+    if family=='limestone_boxed':return boxed_blueprint(seed)
     forced=next((i for i,p in enumerate(presets(family)) if p['seed']==seed),None)
     variant=forced if forced is not None else random.Random(f'{family}:{seed}').randrange(4)
     ident,label,building_id=PLANS[variant];anchor=(5,2)
@@ -83,3 +89,43 @@ def blueprint(family,seed):
             'building_templates':[{'id':building_id,'label':label,'anchor':list(anchor)}],
             'material_showcase':{'family':family,'label':FAMILIES[family], 'pieces':shown,
                 'notes':'Art test: stairs and braces are scenery; doors and walls use normal interactions.'}}
+
+
+def boxed_blueprint(seed):
+    """Actual six generated pieces; no procedural bands or legacy gate substitutes."""
+    family='limestone_boxed'
+    variant=next((i for i,p in enumerate(presets(family)) if p['seed']==seed),0)
+    rotation=[0,0,90,180][variant]
+    terrain=[]
+    def add(x,y,part,turn=0):
+        item=wall(x,y,f'boxed_{len(terrain)}',family=family,rotation=turn)
+        item.update(sprite=f'structure:{family}_{part}',name=part.replace('_',' ').title(),
+                    art_scale=640/397,destroyed_sprite=None)
+        terrain.append(item)
+    for part,x,y in [('wall',4,3),('half',8,3),('vertical',12,3),
+                     ('corner',4,8),('junction',8,8),('cross',12,8)]:
+        add(x,y,part,rotation)
+    if variant:
+        def point(x,y,dx,dy):
+            for _ in range(rotation//90):dx,dy=-dy,dx
+            return x+dx,y+dy
+        for x,y,offsets in [(4,3,[(-1,0),(1,0)]),(4,8,[(-1,0),(0,1)]),
+                            (8,8,[(-1,0),(1,0),(0,1)]),
+                            (12,8,[(-1,0),(1,0),(0,-1),(0,1)])]:
+            for dx,dy in offsets:
+                nx,ny=point(x,y,dx,dy)
+                add(nx,ny,'vertical' if dy else 'wall',rotation)
+    exits=[{'x':0,'y':y} for y in range(4,9)]
+    return {'name':FAMILIES[family]+' · '+presets(family)[variant]['label'],
+            'theme':'location-workshop','width':17,'height':13,'default_ground':'grass',
+            'paint':[{'material':'smithy_cobbles','rect':[2,1,13,10]}],
+            'terrain':terrain,'decorations':[],'elevation':[],'void_tiles':[],
+            'extraction':{'name':'Test exit','tiles':exits},
+            'enemy_extraction':{'name':'Test exit','tiles':exits},
+            'spawn_zones':{'player':[{'x':1,'y':y} for y in (5,4,6,7)],
+                           'enemy':[{'x':15,'y':y} for y in range(2,10)]},
+            'template_id':presets(family)[variant]['id'],'map_variation':variant+1,
+            'building_templates':[],
+            'material_showcase':{'family':family,'label':FAMILIES[family],
+                'pieces':['wall','half','vertical','corner','junction','cross'],
+                'notes':'Candidate: original shared scale. Generated spans differ; inspect joins. No gates in this six-piece pack.'}}

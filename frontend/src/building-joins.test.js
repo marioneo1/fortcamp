@@ -3,6 +3,18 @@ import assert from 'node:assert/strict';
 import {structuralLayout,structuralConnectors,connectionPorts,wallArtStyle} from './building-joins.js';
 const geometry={fieldstone:{join_offset:.36,corner_offset:[-.015,-.015]},timber:{join_offset:.4}};
 const close=(a,b)=>assert.ok(Math.abs(a-b)<1e-8,`${a} != ${b}`);
+
+test('boxed candidate uses generated junction artwork without assembled connectors',()=>{
+ const g={limestone_boxed:{native_pieces:true,plan_view:true,join_offset:0}};
+ for(const piece of ['wall','half','vertical','corner','junction','cross']){
+  for(const rotation of [0,90,180,270]){
+   const layout=structuralLayout({sprite:`structure:limestone_boxed_${piece}`,rotation},g);
+   assert.deepEqual(layout.connectors,[]);
+   assert.notEqual(layout.hideArt,true);
+   assert.equal(layout.mirrorY,1);
+  }
+ }
+});
 test('all four corners use the same beam thickness and follow both wall edges',()=>{
  for(const rotation of [0,90,180,270]){
   const result=structuralLayout({id:'c',sprite:'structure:fieldstone_corner',x:3,y:2,rotation,art_scale:1.25},geometry);

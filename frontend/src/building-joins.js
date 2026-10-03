@@ -1,6 +1,6 @@
 // Painted modular connections: plain mating ends, caps only at exposed ports.
 function turn([x,y],rotation){for(let i=0;i<rotation/90;i++)[x,y]=[-y,x];return [x,y]}
-const matchPiece=item=>/^structure:(timber|fieldstone_plan|limestone_plan|fieldstone|limestone|iron)_(.+)$/.exec(item.sprite||'');
+const matchPiece=item=>/^structure:(limestone_boxed|timber|fieldstone_plan|limestone_plan|fieldstone|limestone|iron)_(.+)$/.exec(item.sprite||'');
 const rotationOf=item=>((Number(item.rotation)||0)%360+360)%360;
 const inward={north:[0,1],east:[-1,0],south:[0,-1],west:[1,0]};
 function faceMirror(item,g={}){
@@ -82,6 +82,7 @@ export function structuralLayout(item,geometry,neighbors=[]){
  const match=matchPiece(item);
  if(!match)return {offset:item.art_offset||[0,0],connectors:[]};
  const [,family,piece]=match,g=geometry[family];if(!g)return {offset:item.art_offset||[0,0],connectors:[]};
+ if(g.native_pieces)return {offset:item.art_offset||[0,0],connectors:[],mirrorY:1,layer:3};
  const base=offsetOf(item,g,piece),mirrorY=faceMirror(item,g);
  const rotation=rotationOf(item);
  if(piece==='breach'){

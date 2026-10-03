@@ -36,7 +36,8 @@ class BuildingShowcaseTests(unittest.TestCase):
                             if (nx,ny) not in seen and _can_step(walking,x,y,nx,ny,{'id':'tester'}):
                                 seen.add((nx,ny));queue.append((nx,ny))
                     self.assertTrue(seen&exits,(family,preset['id'],spawn))
-            self.assertEqual(shown,PARTS,family)
+            expected={'wall','half','vertical','corner','junction','cross'} if family=='limestone_boxed' else PARTS
+            self.assertEqual(shown,expected,family)
             self.assertEqual(len({tuple(sorted(s)) for s in shapes}),4)
 
     def test_material_previews_are_owner_scoped_and_do_not_mutate_save(self):
