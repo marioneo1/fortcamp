@@ -15,6 +15,23 @@ test('boxed candidate uses generated junction artwork without assembled connecto
   }
  }
 });
+
+test('fitted native corners and perimeter Ts meet the next boundary and divider pieces',()=>{
+ const g={limestone_boxed:{native_pieces:true,join_offset:.38}};
+ const corner=connectionPorts({sprite:'structure:limestone_boxed_corner',x:4,y:2,
+                              art_offset:[.38,-.38]},g);
+ close(corner[0].x,3.5);close(corner[0].y,1.62);
+ close(corner[1].x,4.38);close(corner[1].y,2.5);
+ const left=connectionPorts({sprite:'structure:limestone_boxed_wall',x:3,y:2,
+                            art_offset:[0,-.38]},g);
+ close(left[1].x,corner[0].x);close(left[1].y,corner[0].y);
+ const below=connectionPorts({sprite:'structure:limestone_boxed_vertical',x:4,y:3,
+                             art_offset:[.38,0]},g);
+ close(below[0].x,corner[1].x);close(below[0].y,corner[1].y);
+ const t=connectionPorts({sprite:'structure:limestone_boxed_edge_junction',x:2,y:2,
+                         art_offset:[0,-.38]},g);
+ close(t[2].x,2);close(t[2].y,2.5);
+});
 test('all four corners use the same beam thickness and follow both wall edges',()=>{
  for(const rotation of [0,90,180,270]){
   const result=structuralLayout({id:'c',sprite:'structure:fieldstone_corner',x:3,y:2,rotation,art_scale:1.25},geometry);

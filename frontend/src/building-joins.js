@@ -46,9 +46,16 @@ function offsetOf(item,g,piece){
 export function connectionPorts(item,geometry){
  const match=matchPiece(item);if(!match||item.destroyed)return [];
  const [,family,piece]=match,g=geometry[family];if(!g)return [];
- const o=g.join_offset,rotation=rotationOf(item),base=offsetOf(item,g,piece);
+ const o=g.join_offset,rotation=rotationOf(item),base=g.native_pieces?(item.art_offset||[0,0]):offsetOf(item,g,piece);
  let ports;
- if(['corner','corner_broken'].includes(piece))ports=[[[-.5,-o],0],[[o,.5],270]];
+ if(g.native_pieces){
+  if(piece==='corner')ports=[[[-.5-o,0],0],[[0,.5+o],270]];
+  else if(piece==='edge_junction')ports=[[[-.5,0],0],[[.5,0],180],[[0,.5+o],270]];
+  else if(piece==='half')ports=[[[-.25,0],0],[[.25,0],180]];
+  else if(piece==='vertical')ports=[[[0,-.5],90],[[0,.5],270]];
+ }
+ if(ports){} // Dedicated-piece lengths above already include the boundary reach.
+ else if(['corner','corner_broken'].includes(piece))ports=[[[-.5,-o],0],[[o,.5],270]];
  else if(piece==='edge_junction')ports=[[[-.5,-o],0],[[.5,-o],180],[[0,.5],270]];
  else if(piece==='junction')ports=[[[-.5,0],0],[[.5,0],180],[[0,.5],270]];
  else if(piece==='cross')ports=[[[-.5,0],0],[[.5,0],180],[[0,-.5],90],[[0,.5],270]];

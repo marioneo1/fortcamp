@@ -36,7 +36,7 @@ class BuildingShowcaseTests(unittest.TestCase):
                             if (nx,ny) not in seen and _can_step(walking,x,y,nx,ny,{'id':'tester'}):
                                 seen.add((nx,ny));queue.append((nx,ny))
                     self.assertTrue(seen&exits,(family,preset['id'],spawn))
-            expected={'wall','half','vertical','corner','junction','cross'} if family=='limestone_boxed' else PARTS
+            expected={'wall','half','vertical','corner','junction','cross','edge_junction'} if family=='limestone_boxed' else PARTS
             self.assertEqual(shown,expected,family)
             self.assertEqual(len({tuple(sorted(s)) for s in shapes}),4)
 

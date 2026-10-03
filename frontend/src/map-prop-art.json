@@ -187,5 +187,6 @@
   "structure:limestone_boxed_vertical": "structures/building-v9-boxed/limestone_boxed_vertical.png",
   "structure:limestone_boxed_corner": "structures/building-v9-boxed/limestone_boxed_corner.png",
   "structure:limestone_boxed_junction": "structures/building-v9-boxed/limestone_boxed_junction.png",
-  "structure:limestone_boxed_cross": "structures/building-v9-boxed/limestone_boxed_cross.png"
+  "structure:limestone_boxed_cross": "structures/building-v9-boxed/limestone_boxed_cross.png",
+  "structure:limestone_boxed_edge_junction": "structures/building-v9-boxed/limestone_boxed_edge_junction.png"
 }

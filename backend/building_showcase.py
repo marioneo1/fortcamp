@@ -110,7 +110,7 @@ def boxed_blueprint(seed):
                 # Existing furnished room contents remain unchanged.
                 continue
             rotation=item.get('rotation',0)
-            item.pop('edge_wall',None);item.pop('wall_edges',None)
+            old_offset=item.get('art_offset',[0,0])
             item['art_offset']=[0,0]
             if part.startswith(('door_','gate_')):
                 # Deliberate wooden leaves in the stone shell, using existing
@@ -126,11 +126,27 @@ def boxed_blueprint(seed):
                 item.update(sprite='structure:wall_rubble',blocking=False,blocks_sight=False,
                             art_scale=.65,destructible=False,hp=0,name='Gap with loose stone debris')
                 kept.append(item);continue
-            mapped={'window':'wall','end':'half','edge_junction':'junction'}.get(part,part)
+            mapped={'window':'wall','end':'half'}.get(part,part)
+            offset=.38
+            def turned(point):
+                x,y=point
+                for _ in range(rotation//90):x,y=-y,x
+                return [x,y]
+            if mapped=='corner':
+                dx,dy=turned([offset,-offset])
+                item['art_offset']=[old_offset[0]*offset/.3118+dx,
+                                    old_offset[1]*offset/.3118+dy]
+            elif mapped=='edge_junction':
+                item['art_offset']=turned([0,-offset])
+            elif item.get('edge_wall') and len(item.get('wall_edges',[]))==1:
+                item['art_offset']={'north':[0,-offset],'south':[0,offset],
+                                    'east':[offset,0],'west':[-offset,0]}[item['wall_edges'][0]]
+            elif mapped=='half':
+                item['art_offset']=turned([.25,0])
             if mapped=='wall' and rotation%180==90:
                 mapped='vertical';rotation=(rotation-90)%360
             item.update(sprite=f'structure:{family}_{mapped}',rotation=rotation,
-                        art_scale=640/397,destroyed_sprite=None)
+                        art_scale=1024/397,destroyed_sprite=None)
             shown.add(mapped);kept.append(item)
         base[collection]=kept
     # Centered masonry occupies its tile. Spawn only on unobstructed room floors.
@@ -144,5 +160,5 @@ def boxed_blueprint(seed):
         if len(enemies)==8:break
     base['spawn_zones']['enemy']=enemies
     base['material_showcase']={'family':family,'label':FAMILIES[family],'pieces':sorted(shown),
-        'notes':'Full furnished building trial: generated stone walls/junctions, timber doors and gates, open breaches. Generated lengths still vary.'}
+        'notes':'Boundary-fitted stone walls and authored junctions, working timber doors/gates and traversable breaches. Painted texture transitions remain under review.'}
     return base

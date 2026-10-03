@@ -4,7 +4,10 @@ from PIL import Image, ImageChops, ImageFilter
 from install_building_toolset import ROOT
 from audit_catalogue_crops import components
 
-def main():
+def main(raw_only=False):
+    if not raw_only:
+        from fit_boxed_wall_ports import main as fit
+        return fit()
     source = ROOT / 'staging-terrain/building-toolset-v9-boxed-reference'
     image = Image.open(source / 'limestone_boxed_source.png').convert('RGBA')
     parts, labels = components(image, threshold=220)

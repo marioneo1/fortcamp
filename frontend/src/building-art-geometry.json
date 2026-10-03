@@ -195,7 +195,7 @@
   "limestone_boxed": {
     "native_pieces": true,
     "plan_view": true,
-    "join_offset": 0,
+    "join_offset": 0.38,
     "wall_half_thickness": 0.12
   }
 }
