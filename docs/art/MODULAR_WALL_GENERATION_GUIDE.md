@@ -1,5 +1,12 @@
 # Modular wall art — current dev strategy
 
+## October 3: Authored part 20 for inward polished joins
+
+The user supplied part_20.png and clarified the requested inward corner was in map detail 3, then accepted the shared pass. Replaced the previously adjusted inward-corner artwork with the supplied silhouette at the kit?s common scale, remeasured its horizontal/vertical anchors and fitted its surviving vertical arm. All four mirrored inward-corner facings derive from this source. Side-facing interior Ts also use its corner-shaped arm plus the existing part-19 upright upper continuation, preserving all three connections. These shared rules apply throughout the polished kit, not by mission-specific exceptions. Source overrides are recorded in installed.json and restored on reimport; the original source file is not modified.
+
+Reviewed enlarged map details 2 and 3; four furnished browser renders and asset loading checks pass. Doors, map footprints, collision and logical connection ports remain unchanged. Other material profiles, rough-stone assets, production and saves unchanged. Canonical installer: tools/install_polished_building_kit.py. Artwork still requires normal subjective live review.
+
+
 ## October 3: Apply sample placement rules to every polished-stone map
 
 Used the user?s `staging-terrain/building-toolset-v10-polished/SAMPLE-detail3.png` as a placement/painted-face reference. Polished convex corners (including damaged corners) now use reflected facings instead of quarter-turning horizontal paint into vertical paint: native NE, vertical reflection SE, both reflections SW, horizontal reflection NW. Each facing carries its measured reflected anchor; displayed artwork rotation is separate from the unchanged logical wall rotation. Lower T pieces use a vertical reflection of the native T; crosses preserve the original horizontal/upright painted faces in every orientation.

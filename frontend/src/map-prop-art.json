@@ -176,5 +176,7 @@
   "structure:limestone_corner_inner_facing_0": "structures/building-v10-polished/limestone_corner_inner_facing_0.png",
   "structure:limestone_corner_inner_facing_90": "structures/building-v10-polished/limestone_corner_inner_facing_90.png",
   "structure:limestone_corner_inner_facing_180": "structures/building-v10-polished/limestone_corner_inner_facing_180.png",
-  "structure:limestone_corner_inner_facing_270": "structures/building-v10-polished/limestone_corner_inner_facing_270.png"
+  "structure:limestone_corner_inner_facing_270": "structures/building-v10-polished/limestone_corner_inner_facing_270.png",
+  "structure:limestone_junction_facing_90": "structures/building-v10-polished/limestone_junction_facing_90.png",
+  "structure:limestone_junction_facing_270": "structures/building-v10-polished/limestone_junction_facing_270.png"
 }

@@ -103,22 +103,19 @@ def main():
             variants[str(rotation)]={'sprite':'structure:limestone_'+name,
                                      'offset':offset(local[0]*mx,local[1]*my),'rotation':0}
         orientations[part]=variants
-    # Concave vertices keep the same L geometry but reverse each arm's
-    # painted face to meet the outside-facing runs around an inset courtyard.
+    # User-authored inner corner replaces the locally reflected arm trial.
+    path=source/'part_20.png'
     inner=sprites['corner'].copy()
-    left=round(cx-35);lower=round(cy+40)
-    bar=inner.crop((0,0,left,192));bounds=bar.getchannel('A').getbbox()
-    x0,y0,x1,y1=bounds
-    inner.paste((0,0,0,0),(0,0,left,192))
-    inner.alpha_composite(ImageOps.flip(bar.crop(bounds)),(x0,y0))
-    arm=inner.crop((192,lower,384,384));bounds=arm.getchannel('A').getbbox()
-    x0,y0,x1,y1=bounds
-    inner.paste((0,0,0,0),(192,lower,384,384))
-    inner.alpha_composite(ImageOps.mirror(arm.crop(bounds)),(192+x0,lower+y0))
+    if path.exists():
+        cut=Image.open(path).convert('RGBA');bounds=cut.getchannel('A').getbbox()
+        if not bounds:raise ValueError('part_20.png: empty inner corner')
+        inner=centered(cut.crop(bounds),scale)
+        overrides['corner_inner']='part_20.png'
     a=inner.getchannel('A')
     iy=mean([y for x in range(45,115) for y in range(192) if a.getpixel((x,y))>120])
     ix=mean([x for y in range(250,325) for x in range(192,384) if a.getpixel((x,y))>120])
     local=offset(o-(ix/384-.5)*1.25,-o-(iy/384-.5)*1.25)
+    fit_stem(inner,ix,180,min(384,round(192+(.52-local[1])*384/1.25)))
     inner_variants={}
     for rotation,mx,my in [(0,1,1),(90,1,-1),(180,-1,-1),(270,-1,1)]:
         sprite=inner
@@ -139,6 +136,20 @@ def main():
         local=profile['authored_'+part+'_offset']
         orientations[part]={'180':{'sprite':'structure:limestone_'+name,
                                   'offset':offset(local[0],-local[1]),'rotation':0}}
+    if path.exists():
+        # A side-facing T combines the native inward L with the upright upper
+        # arm. Its joint sits at the divider intersection, not at a tile edge.
+        side=inner.copy()
+        fit_stem(side,ix,round(iy+65),round(iy+160))
+        canvas=Image.new('RGBA',(384,384))
+        upright=sprites['wall_vertical'].rotate(-90,expand=True)
+        canvas.alpha_composite(upright.crop((140,32,244,192)),(140,32))
+        canvas.alpha_composite(side,(round(192-ix),round(192-iy)))
+        sprites['junction_facing_90']=canvas
+        sprites['junction_facing_270']=ImageOps.mirror(canvas)
+        orientations['junction']['90']={'sprite':'structure:limestone_junction_facing_90','offset':[0,0],'rotation':0}
+        orientations['junction']['270']={'sprite':'structure:limestone_junction_facing_270','offset':[0,0],'rotation':0}
+        overrides['junction_side']='part_20.png'
     profile['painted_orientations']=orientations
     dest=ROOT/'frontend/public/assets/combat-terrain/structures/building-v10-polished';dest.mkdir(exist_ok=True)
     path=ROOT/'frontend/src/map-prop-art.json';registry=json.loads(path.read_text())
