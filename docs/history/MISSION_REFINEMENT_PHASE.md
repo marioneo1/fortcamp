@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## October 3: Restore previous side-facing T
+
+User preferred the previous map detail 2 T junction. Reverted only the part-17 side-T trial to the earlier part-20/part-19 artwork, reinstalled assets and refreshed their cache version. Part 20 true inward corners and other wall changes remain intact.
+
 ## October 3: Part 17 restored specifically for side-facing Ts
 
 Used the user's dedicated three-arm part 17 for map 2's side-facing divider join, with its opposite facing reflected from the same source. The shared installer now applies this choice to every polished map; part 20 remains exclusive to inward corners. Original corner, remaining T and perimeter T rules are retained. Refreshed and reviewed map detail 2; four furnished browser renders, asset loading checks, 32 wall-rendering tests and frontend build pass. No map footprints or collision changes.

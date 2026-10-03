@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## October 3: Side T trial reverted
+
+Restored map detail 2's previous side-facing T art and its shared orientation rule. Part 17 is inactive again; part 20 inward corners and all other wall work are retained. Assets reinstalled with a fresh cache version. See docs/art/MODULAR_WALL_GENERATION_GUIDE.md.
+
 ## October 3: Polished side T refinement completed
 
 Map detail 2's side-facing interior T now uses user-authored part 17 with calibrated rotation/anchor; this rule applies throughout the polished kit. Part 20 remains the inward-corner source for map detail 3. Other T orientations and perimeter joints retain their original parts. Four furnished browser checks, 32 wall-rendering tests and frontend build pass; reviewed the refreshed enlarged map 2 image. Live seam review remains available in Battle Lab. See docs/art/MODULAR_WALL_GENERATION_GUIDE.md.

@@ -1,5 +1,9 @@
 # Modular wall art — current dev strategy
 
+## October 3: Side-facing T choice reverted
+
+At the user's request, restored the previous side-facing interior T artwork: the part-20 inward arm plus part-19 upright continuation. The part-17 trial below is no longer active. This restores map detail 2's previous junction through the shared orientation rule; true inward corners, including map detail 3, retain part 20. Reinstalled the assets and changed the cache version. No other wall rules or layouts changed.
+
 ## October 3: Part 17 for side-facing interior T joins
 
 After comparing map detail 2, side-facing interior Ts now use the complete three-arm part_17.png, rotated and anchored at the divider intersection. The opposite facing reflects the same source. This replaces the part-20 corner plus upright continuation used in the previous pass. Original part 3 remains on the other interior T orientations; part 15 remains on perimeter Ts. Part 20 stays on true inward corners, including map detail 3, and part 2 stays on ordinary corners. These orientation rules apply to every polished-stone map and survive reimport.
