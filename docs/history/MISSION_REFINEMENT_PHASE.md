@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## October 3: First eight common-role male sheets
+
+Generated eight new 5×4 male race sheets using the built-in image tool, full production male prompt, authoritative style reference and male presentation reference. Saved all requested images and exact prompts in staging-portraits, with batch index and grid/size report. Halfling required a fresh second pass for adult proportions; first attempt retained. Inspected complete outputs; all decode at 1254×1254 with twenty slots. Some face repetition, youthful small-race faces and tight Tiefling horn clearance remain visual-review concerns. No live portraits, character assignments or production assets changed.
+
 ## October 3: Approved male Goblin portrait installation
 
 Installed the approved ranged sheet and earlier approved melee style test, twenty images per pool. Preserved staging references and copied canonical sheets into portraits. Verified all 120 full/thumb/original files decode, exact role selection chooses its matching pool, and Portrait Lab lists all forty additions. Inspected the installed thumbnail montage at data/portrait_audit/goblin_male_install/installed.jpg. Existing assigned portraits are not rerolled; production is unchanged.

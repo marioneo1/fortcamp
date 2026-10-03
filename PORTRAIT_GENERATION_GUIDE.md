@@ -1,5 +1,7 @@
 # Fortcamp portrait batch generation
 
+October 3 batch 001: eight male sheets generated with the full production male prompt and per-race biology blocks. See `staging-portraits/MALE_BATCH_001.md` for images and exact expanded prompts, and `docs/art/MALE_PORTRAIT_ROLLOUT.md` for remaining targets. All are staged, not installed. Final Halfling is a fresh second generation; v1 is retained. Current production prompts and legacy sections below remain intact.
+
 October 3 male restart: the user approved `staging-portraits/goblin_male_ranged.png`, generated using the production male prompt, authoritative art reference and male Human presentation reference only. Exact expanded prompt is beside it in `goblin_male_ranged.prompt.md`. Installed twenty ranged portraits and twenty melee portraits from the earlier approved `goblin_male_melee_style_test_v2.png`. Canonical source copies are `portraits/goblin_male_ranged.png` and `portraits/goblin_male_melee.png`. Each pool has square full/thumb assets and separate uncropped originals. Existing approved male/female prompts and legacy sections remain unchanged.
 
 Generate one contact sheet per portrait set, then use the importer to split it into twenty full portraits and twenty roster thumbnails. Keep one consistent visual style across every batch.

@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Male portrait rollout: [Batch progress and remaining targets](art/MALE_PORTRAIT_ROLLOUT.md) tracks installed males, staged sheets, generation prompts and visual-review concerns.
+
 Portrait review: [Portrait framing and Portrait Lab](art/PORTRAIT_FRAMING.md) covers the dev art browser, saved circle adjustments, automatic recommendations and per-character overrides.
 
 Current highway rollout: [Authored locations](design/AUTHORED_BATTLE_LOCATIONS.md) describes four Highway Ambush layouts, bank/flank rules and review captures. [Coverage audit](maps/BATTLE_LOCATION_AUDIT.md) lists the remaining generic encounters.
