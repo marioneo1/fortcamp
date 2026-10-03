@@ -629,3 +629,33 @@ Validation: 9 backend tests, including 400-map reachability, 8 focused frontend
 tests and frontend build pass. Both real rendered layouts were inspected; 40
 asset URLs load and no runtime exceptions occur. Full coverage: 249 encounters,
 19,571 prop references, no missing art. Production and player saves untouched.
+
+
+## October 3: Overhead garden toolkit and crop-edge props
+
+Created a separate transparent 6x4 overhead garden atlas with the built-in
+imagegen tool. Retained complete silhouettes for 24 props and added a separate
+connected-rail texture from the full fence's middle section. Native corner,
+T/cross, damaged rail and gate art are prepared for future layouts. Current
+crop borders use thin continuous rails at cell boundaries with small corner
+stakes; these are step-over scenery, not walls or new interactive gates.
+
+The reviewed garden layout now has fencing above its crop ground, potting bench
+with adjacent stool/tools, water pump, watering can, scarecrow, compost, potting
+soil, drying screen, round table/stool, herb basket, spare pots and an external
+wheelbarrow. The training yard gets repair tools, spare target straw, water and
+a stool. Furniture uses shared size profiles and deliberate offsets; long
+props use rectangular canvases to preserve scale without warping. Other layout
+variants and approved building materials are retained. No gardening income,
+training actions, gate actions or loot changes were introduced.
+
+Source/prompt/extraction gallery are in staging-terrain/garden-toolkit-v2;
+runtime has 25 new sprites. Added a scoped importer. Canonical documentation:
+docs/art/GARDEN_TOOLKIT_V2.md. Updated backlog, doc index, authored-location and
+prop-size references. Production and saves remain untouched.
+
+Validation: 9 backend tests, including 400-map reachability and low edging
+crossings; 9 focused frontend tests and frontend build pass. Two actual-render
+layouts inspected, 55 asset URLs loaded, no runtime exceptions. Full coverage:
+249 encounters, 19,705 prop references, zero missing art. Shared profiles cover
+131 non-modular sprites. Rechecked profile mirrors after long-canvas correction.

@@ -26,3 +26,7 @@ test('tree canopy can cover neighbouring ground without expanding its trunk coll
   const footprint=[1,1];assert.deepEqual(propVisualSpan({sprite:'oak_tree'},footprint),[2,2]);
   assert.deepEqual(footprint,[1,1]);assert.deepEqual(propVisualSpan({sprite:'wooden_bed'},[1,2]),[1,2]);
 });
+test('connected crop rails and corner stakes retain their explicit modular dimensions',()=>{
+ assert.equal(propArtScale({sprite:'horticulture_fence_joined',ground_edging:true,art_scale:1}),1);
+ assert.equal(propArtScale({sprite:'horticulture_fence_post',ground_edging:true,art_scale:.18}),.18);
+});

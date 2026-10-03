@@ -964,5 +964,230 @@
     "fill": 0.85,
     "category": "ordinary prop",
     "scale": 1.4904
+  },
+  "horticulture_fence_full": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.85,
+    "category": "prepared crop edging",
+    "scale": 1.3215
+  },
+  "horticulture_fence_half": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.85,
+    "category": "prepared crop edging",
+    "scale": 2.1195
+  },
+  "horticulture_fence_corner": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.85,
+    "category": "prepared crop edging",
+    "scale": 2.4
+  },
+  "horticulture_fence_junction": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.85,
+    "category": "prepared crop edging",
+    "scale": 1.5252
+  },
+  "horticulture_fence_cross": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.85,
+    "category": "prepared crop edging",
+    "scale": 1.6653
+  },
+  "horticulture_fence_post": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.85,
+    "category": "prepared crop edging",
+    "scale": 4.8716
+  },
+  "horticulture_gate_closed": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.85,
+    "category": "prepared crop edging",
+    "scale": 1.4571
+  },
+  "horticulture_gate_open": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.85,
+    "category": "prepared crop edging",
+    "scale": 1.5252
+  },
+  "horticulture_fence_damaged": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.85,
+    "category": "prepared crop edging",
+    "scale": 1.5181
+  },
+  "horticulture_scarecrow": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.85,
+    "category": "garden furniture",
+    "scale": 1.3488
+  },
+  "horticulture_hand_pump": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.55,
+    "category": "garden furniture",
+    "scale": 0.9345
+  },
+  "horticulture_round_stool": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.45,
+    "category": "small garden clutter",
+    "scale": 1.1917
+  },
+  "horticulture_round_table": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.85,
+    "category": "garden furniture",
+    "scale": 1.8651
+  },
+  "horticulture_potting_bench": {
+    "footprint": [
+      2,
+      1
+    ],
+    "fill": 0.85,
+    "category": "garden furniture",
+    "scale": 1.1102
+  },
+  "horticulture_watering_can": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.45,
+    "category": "small garden clutter",
+    "scale": 0.8075
+  },
+  "horticulture_wheelbarrow": {
+    "footprint": [
+      2,
+      1
+    ],
+    "fill": 0.85,
+    "category": "garden furniture",
+    "scale": 1.2179
+  },
+  "horticulture_tool_crate": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.45,
+    "category": "small garden clutter",
+    "scale": 0.8308
+  },
+  "horticulture_soil_sack": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.45,
+    "category": "small garden clutter",
+    "scale": 0.8772
+  },
+  "horticulture_clay_pots": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.45,
+    "category": "small garden clutter",
+    "scale": 0.8953
+  },
+  "horticulture_seedling_tray": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.45,
+    "category": "small garden clutter",
+    "scale": 0.8037
+  },
+  "horticulture_herb_basket": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.45,
+    "category": "small garden clutter",
+    "scale": 0.7749
+  },
+  "horticulture_compost_bin": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.85,
+    "category": "garden furniture",
+    "scale": 1.5543
+  },
+  "horticulture_drying_screen": {
+    "footprint": [
+      2,
+      1
+    ],
+    "fill": 0.85,
+    "category": "garden furniture",
+    "scale": 1.1027
+  },
+  "horticulture_hose_coil": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.45,
+    "category": "small garden clutter",
+    "scale": 0.864
+  },
+  "horticulture_fence_joined": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.85,
+    "category": "prepared crop edging",
+    "scale": 0.85
   }
 }

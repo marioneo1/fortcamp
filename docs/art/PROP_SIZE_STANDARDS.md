@@ -1,6 +1,8 @@
 # Map prop sizing and environment dressing
 
-Implemented in dev, October 3. The audit in [PROP_SIZE_AUDIT.md](PROP_SIZE_AUDIT.md) covers all 106 registered non-modular prop/state sprites across 249 isolated encounter previews. Modular architectural parts retain their existing material-specific joint geometry. Ground art is not a prop. Runtime alias and destroyed/open state resolution comes from the actual frontend resolver, not filename guesses. Prepared assets are counted and retained even when no current map uses them.
+New overhead garden props and step-over crop edging are covered in [GARDEN_TOOLKIT_V2.md](GARDEN_TOOLKIT_V2.md). Shared profiles now include the new kit; connected rails retain explicit modular dimensions.
+
+Implemented in dev, October 3. The audit in [PROP_SIZE_AUDIT.md](PROP_SIZE_AUDIT.md) covers all 131 registered non-modular prop/state sprites across 249 isolated encounter previews. Modular architectural parts retain their existing material-specific joint geometry. Ground art is not a prop. Runtime alias and destroyed/open state resolution comes from the actual frontend resolver, not filename guesses. Prepared assets are counted and retained even when no current map uses them.
 
 ## Shared sizes
 

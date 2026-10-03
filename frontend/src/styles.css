@@ -369,3 +369,6 @@ body.board-vfx-active .event-arcane .guild-event-art:after{display:none}
  background-position:var(--ground-x) var(--ground-y)!important;
  background-repeat:no-repeat!important;
 }
+
+/* Low overhead crop rails sit on the ground; no floating furniture shadow. */
+.battlefield.terrain-style-custom-painted .battle-decoration.ground-edging{filter:drop-shadow(0 1px 1px #0005);z-index:2}

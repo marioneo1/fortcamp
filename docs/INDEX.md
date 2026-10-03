@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Current garden props: [Overhead garden toolkit](art/GARDEN_TOOLKIT_V2.md) covers crop edging, clutter, shared sizes, the atlas importer and prepared versus active pieces.
+
 Current environment prototypes: [Garden and training yard dressing](art/ENVIRONMENT_DRESSING_V1.md) records the new overhead ground atlas, first-layout compositions, placement rules and review tools.
 
 Current prop sizes and environment dressing: [Prop size standards](art/PROP_SIZE_STANDARDS.md), [complete prop audit](art/PROP_SIZE_AUDIT.md) and [retired-copy manifest](art/PROP_CLEANUP_20261003.json) cover shared scaling, actual footprints, retirement of the rejected gardening atlas, proposed ground dressing and retained references.

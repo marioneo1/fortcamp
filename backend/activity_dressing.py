@@ -30,6 +30,27 @@ def dress_activity_site(board):
         if cells & occupied:raise ValueError(f'{location}: furniture overlaps at {x},{y}')
         (board['decorations'] if loose else board['terrain']).append(item)
 
+    def crop_border(x,y,w,h):
+        # Low step-over rails are scenery, not full-cell obstacles. A joined
+        # segment has no terminal posts; one small stake covers each corner.
+        def edge(kind,xx,yy,offset,rotation=0,scale=1):
+            board['decorations'].append({'id':f'crop_edge_{x}_{y}_{kind}_{xx}_{yy}',
+                'name':'Low Crop Edging · step-over border','sprite':'horticulture_fence_post' if kind=='post' else 'horticulture_fence_joined',
+                'x':xx,'y':yy,'footprint':[1,1],'art_offset':list(offset),
+                'rotation':rotation,'art_scale':scale,'ground_edging':True})
+        for xx in range(x,x+w):
+            edge('north',xx,y,(0,-.5));edge('south',xx,y+h-1,(0,.5))
+        for yy in range(y,y+h):
+            edge('west',x,yy,(-.5,0),90);edge('east',x+w-1,yy,(.5,0),90)
+        for xx,yy,offset in [(x,y,(-.5,-.5)),(x+w-1,y,(.5,-.5)),
+                             (x,y+h-1,(-.5,.5)),(x+w-1,y+h-1,(.5,.5))]:
+            # Include the corner offset in the ID: a one-row bed has two posts
+            # in the same cell, both of which still need stable unique identity.
+            board['decorations'].append({'id':f'crop_post_{x}_{y}_{xx}_{yy}_{offset[0]}_{offset[1]}',
+                'name':'Crop Border Stake','sprite':'horticulture_fence_post',
+                'x':xx,'y':yy,'footprint':[1,1],'art_offset':list(offset),
+                'art_scale':.18,'ground_edging':True})
+
     garden=location=='herb_garden'
     ground('garden_soil' if garden else 'practice_earth',4,1,10,8)
     # A road into the two gates also gets a coherent palette, rather than
@@ -47,11 +68,24 @@ def dress_activity_site(board):
         ground('garden_irrigation',8,6,1,1)
         ground('garden_weeds',5,7,1,1,1)
         ground('garden_leaf_litter',7,7,1,1,1)
-        furniture('food_prep_table',6,2,'Herbalist’s Worktable',offset=(0,-.2))
+        furniture('horticulture_potting_bench',5,2,'Herbalist’s Potting Bench',offset=(0,-.18))
+        furniture('horticulture_round_stool',7,2,'Potting Stool',offset=(-.2,0))
+        furniture('horticulture_tool_crate',8,2,'Gardening Tools',offset=(-.18,-.2),loose=True)
+        furniture('horticulture_hand_pump',10,2,'Garden Hand Pump',offset=(.18,-.18))
         furniture('bound_barrels',11,2,'Stored Garden Water',offset=(0,-.18))
         furniture('wash_tub',12,2,'Garden Wash Tub',offset=(.12,-.18))
+        furniture('horticulture_watering_can',12,3,'Watering Can',offset=(.2,-.18),loose=True)
         furniture('herb_planter',3,2,'Herbs Beside the Entrance',loose=True)
-        furniture('mess_bench',11,7,'Gardener’s Bench',offset=(0,.2))
+        furniture('horticulture_clay_pots',3,3,'Spare Plant Pots',offset=(.18,-.12),loose=True)
+        furniture('horticulture_scarecrow',6,3,'Garden Scarecrow',offset=(0,-.05))
+        furniture('horticulture_compost_bin',5,7,'Garden Compost',offset=(-.1,.18))
+        furniture('horticulture_soil_sack',6,7,'Potting Soil',offset=(.18,.2),loose=True)
+        furniture('horticulture_drying_screen',7,7,'Herbs Drying on a Screen',offset=(0,.18))
+        furniture('horticulture_round_table',11,7,'Garden Rest Table',offset=(0,.12))
+        furniture('horticulture_round_stool',12,7,'Garden Seat',offset=(-.08,.18))
+        furniture('horticulture_herb_basket',10,7,'Cut Herbs',offset=(.18,.15),loose=True)
+        furniture('horticulture_wheelbarrow',2,7,'Garden Wheelbarrow',offset=(0,-.08))
+        for bed in [(5,3,3,2),(10,3,3,2),(5,6,3,1),(10,6,3,1)]:crop_border(*bed)
         board['activity_areas']=['Four medicinal herb patches','Cross-path between planting areas','Water and potting corner','Rest bench']
     else:
         # Northern targets face long clear firing lanes. The west half has
@@ -72,6 +106,10 @@ def dress_activity_site(board):
         furniture('training_shield_rack',7,7,'Practice Shields',offset=(0,.18))
         furniture('mess_bench',10,7,'Rest Bench',offset=(0,.18))
         furniture('arrow_bundle',12,7,'Spare Practice Arrows',offset=(.18,.18),loose=True)
+        furniture('horticulture_tool_crate',6,7,'Equipment Repair Tools',offset=(.15,.2),loose=True)
+        furniture('hay_bale',8,7,'Spare Target Straw',offset=(.1,.18))
+        furniture('wash_tub',9,7,'Training Yard Water',offset=(0,.2))
+        furniture('horticulture_round_stool',11,7,'Rest Stool',offset=(0,.15))
         board['activity_areas']=['Worn sparring court','Dummy practice stations','Two archery lanes','Equipment and rest corner']
     board['ground_art']=list(art.values())
-    board['dressing_version']='activity-v1'
+    board['dressing_version']='activity-v2'

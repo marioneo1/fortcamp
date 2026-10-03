@@ -1,6 +1,6 @@
 # Map prop size audit
 
-Checked 106 registered non-modular sprites across 249 isolated encounter previews. Architectural wall kits keep their existing joint calibration.
+Checked 131 registered non-modular sprites across 249 isolated encounter previews. Architectural wall kits keep their existing joint calibration.
 
 Footprints reserve logical cells. Fill is the maximum visible silhouette fraction within its art box; it does not stretch the PNG. Prepared/unseen assets are retained rather than deleted merely for zero fixture use.
 
@@ -23,7 +23,7 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | fallen_branches | 1x1 | 85% | 2 | 1x1 |
 | scattered_stones | 1x1 | 85% | 1 | 1x1 |
 | rounded_boulder | 1x1 | 85% | 11 | 1x1 |
-| hay_bale | 1x1 | 85% | 15 | 1x1 |
+| hay_bale | 1x1 | 85% | 24 | 1x1 |
 | bound_barrels | 1x1 | 85% | 89 | 1x1 |
 | structure:palisade_straight | 1x1 | 85% | 89 | 1x1 |
 | structure:palisade_gate_closed | 1x1 | 85% | 0 | prepared / state art |
@@ -33,7 +33,7 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | structure:wooden_rescue_cage_closed | 2x2 | 90% | 1 | 2x2 |
 | structure:wooden_rescue_cage_open | 2x2 | 90% | 0 | prepared / state art |
 | structure:wooden_barricade | 1x1 | 85% | 0 | prepared / state art |
-| structure:wall_rubble | 1x1 | 85% | 1360 | 1x1, 2x2, 1x2 |
+| structure:wall_rubble | 1x1 | 85% | 1394 | 1x1, 2x2, 1x2, 2x1 |
 | alarm_bell_active | 1x1 | 85% | 31 | 1x1 |
 | alarm_bell_disabled | 1x1 | 85% | 0 | prepared / state art |
 | crate_closed | 1x1 | 85% | 96 | 1x1 |
@@ -97,11 +97,11 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | tribal_hide_bed | 1x2 | 92% | 5 | 1x2 |
 | reed_sleeping_mat | 1x2 | 92% | 30 | 1x2 |
 | camp_cooking_pot | 1x1 | 85% | 30 | 1x1 |
-| food_prep_table | 1x1 | 85% | 1 | 1x1 |
+| food_prep_table | 1x1 | 85% | 0 | prepared / state art |
 | grain_sacks | 1x1 | 85% | 40 | 1x1 |
 | water_trough | 1x1 | 85% | 40 | 1x1 |
-| wash_tub | 1x1 | 85% | 10 | 1x1 |
-| mess_bench | 1x1 | 85% | 10 | 1x1 |
+| wash_tub | 1x1 | 85% | 19 | 1x1 |
+| mess_bench | 1x1 | 85% | 9 | 1x1 |
 | herb_planter | 1x1 | 85% | 21 | 1x1 |
 | village_well | 2x2 | 90% | 5 | 2x2 |
 | ballista_loaded | 2x2 | 90% | 5 | 2x2 |
@@ -112,3 +112,28 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | dropped_coin_purse | 1x1 | 45% | 5 | 1x1 |
 | blanket_chest | 1x1 | 85% | 10 | 1x1 |
 | tribal_trophy_pole | 1x1 | 85% | 25 | 1x1 |
+| horticulture_fence_full | 1x1 | 85% | 0 | prepared / state art |
+| horticulture_fence_half | 1x1 | 85% | 0 | prepared / state art |
+| horticulture_fence_corner | 1x1 | 85% | 0 | prepared / state art |
+| horticulture_fence_junction | 1x1 | 85% | 0 | prepared / state art |
+| horticulture_fence_cross | 1x1 | 85% | 0 | prepared / state art |
+| horticulture_fence_post | 1x1 | 85% | 16 | 1x1 |
+| horticulture_gate_closed | 1x1 | 85% | 0 | prepared / state art |
+| horticulture_gate_open | 1x1 | 85% | 0 | prepared / state art |
+| horticulture_fence_damaged | 1x1 | 85% | 0 | prepared / state art |
+| horticulture_scarecrow | 1x1 | 85% | 1 | 1x1 |
+| horticulture_hand_pump | 1x1 | 55% | 1 | 1x1 |
+| horticulture_round_stool | 1x1 | 45% | 11 | 1x1 |
+| horticulture_round_table | 1x1 | 85% | 1 | 1x1 |
+| horticulture_potting_bench | 2x1 | 85% | 1 | 2x1 |
+| horticulture_watering_can | 1x1 | 45% | 1 | 1x1 |
+| horticulture_wheelbarrow | 2x1 | 85% | 1 | 2x1 |
+| horticulture_tool_crate | 1x1 | 45% | 10 | 1x1 |
+| horticulture_soil_sack | 1x1 | 45% | 1 | 1x1 |
+| horticulture_clay_pots | 1x1 | 45% | 1 | 1x1 |
+| horticulture_seedling_tray | 1x1 | 45% | 0 | prepared / state art |
+| horticulture_herb_basket | 1x1 | 45% | 1 | 1x1 |
+| horticulture_compost_bin | 1x1 | 85% | 1 | 1x1 |
+| horticulture_drying_screen | 2x1 | 85% | 1 | 2x1 |
+| horticulture_hose_coil | 1x1 | 45% | 0 | prepared / state art |
+| horticulture_fence_joined | 1x1 | 85% | 36 | 1x1 |

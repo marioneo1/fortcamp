@@ -1,5 +1,7 @@
 # Herb garden and training yard visual prototypes
 
+The garden now has additional overhead props and low crop edging; see [GARDEN_TOOLKIT_V2.md](GARDEN_TOOLKIT_V2.md). The first training-yard layout also has extra rest/repair clutter. This supersedes the initial furniture list below; ground composition and later-variant scope are unchanged.
+
 Implemented in dev, October 3. Review one composition of each setting before
 rolling the approach out to other variations. In Battle Lab, choose **Herbs
 Behind the Wall → Walled herb beds** or **A Promise Proven in Battle ? Sparring yard and archery lane** (layout 1). Start a fresh session: saved

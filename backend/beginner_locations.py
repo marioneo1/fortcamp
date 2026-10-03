@@ -151,7 +151,7 @@ def blueprint(location, variant, rng):
         from .activity_dressing import dress_activity_site
         dress_activity_site(board)
     occupied={cell for obj in t for cell in occupied_tiles(obj)}
-    scenery={cell for obj in d for cell in occupied_tiles(obj)}
+    scenery={cell for obj in d if not obj.get('ground_edging') for cell in occupied_tiles(obj)}
     gateways={(g['x']+dx,g['y']+dy) for g in t if g['kind']=='gate'
               for dx,dy in [(0,0),(1,0),(-1,0),(0,1),(0,-1)]}
     valid=candidate_floor-occupied-scenery-gateways

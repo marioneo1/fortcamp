@@ -1,5 +1,7 @@
 # Authored battle locations
 
+October 3 garden clutter follow-up: layout 1 now includes low crop edging, a scarecrow, pump, workbench/stools, compost/drying area and wheelbarrow. Training layout 1 receives modest rest/repair clutter. See ../art/GARDEN_TOOLKIT_V2.md.
+
 October 3 environment follow-up: herb-garden and training-yard layout 1 now have authored overhead ground patches, paths/lanes, equipment clusters and visual offsets. Remaining variants await review. See ../art/ENVIRONMENT_DRESSING_V1.md.
 
 ## October 3: Shared prop sizes; rejected garden kit retired

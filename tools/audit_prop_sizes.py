@@ -28,6 +28,14 @@ def profile(sprite):
     if name=='camp_lantern':fill=.38;category='small clutter'
     if name=='wagon_wheel':fill=.65
     if name=='marked_farm_chart':fill=.6
+    if name.startswith('horticulture_'):
+        category='garden furniture'
+        if name in {'horticulture_potting_bench','horticulture_drying_screen','horticulture_wheelbarrow'}:
+            footprint=[2,1];fill=.85
+        if name in {'horticulture_round_stool','horticulture_watering_can','horticulture_tool_crate','horticulture_soil_sack','horticulture_clay_pots','horticulture_seedling_tray','horticulture_herb_basket','horticulture_hose_coil'}:
+            fill=.45;category='small garden clutter'
+        if name=='horticulture_hand_pump':fill=.55
+        if 'fence_' in name or 'gate_' in name:fill=.85;category='prepared crop edging'
     result={'footprint':footprint,'fill':fill,'category':category}
     if name in {'oak_tree','pine_tree','birch_tree'}:
         result.update(category='tree canopy',art_span=[2,2])

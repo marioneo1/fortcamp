@@ -26,6 +26,15 @@ class BeginnerLocationTests(unittest.TestCase):
                     self.assertNotIn('blocking',tile)
                 furniture=[p for p in board['terrain']+board['decorations'] if p['id'].startswith(location+'_')]
                 self.assertTrue(any(p.get('art_offset') and any(p['art_offset']) for p in furniture))
+                if location=='herb_garden':
+                    edges=[p for p in board['decorations'] if p.get('ground_edging')]
+                    self.assertTrue(edges)
+                    self.assertEqual(len({p['id'] for p in edges}),len(edges))
+                    walking={**deepcopy(board),'units':{}}
+                    # Crossing a low edging rail leaves ordinary crop ground
+                    # walkable; the fence never becomes a full-cell obstacle.
+                    self.assertTrue(_can_step(walking,7,4,7,5,{'id':'walker'}))
+                    self.assertTrue(_can_step(walking,9,5,8,5,{'id':'walker'}))
 
     def test_current_dressing_keeps_every_spawn_connected_to_an_exit(self):
         locations={'provision_store','farm_clearing','herb_garden','purse_road','well_yard',
