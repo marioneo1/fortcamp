@@ -87,7 +87,33 @@
     ],
     "native_junction_rotations": [
       90
-    ]
+    ],
+    "directional_corners": {
+      "north_east": {
+        "offset": [
+          -0.0886,
+          0.1504
+        ]
+      },
+      "north_west": {
+        "offset": [
+          0.0918,
+          0.1504
+        ]
+      },
+      "south_east": {
+        "offset": [
+          -0.0886,
+          -0.1472
+        ]
+      },
+      "south_west": {
+        "offset": [
+          0.0918,
+          -0.1472
+        ]
+      }
+    }
   },
   "iron": {
     "join_offset": 0.3843,

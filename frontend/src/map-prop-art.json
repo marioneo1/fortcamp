@@ -145,5 +145,9 @@
   "structure:iron_pillar": "structures/building-v2/iron_pillar.png",
   "structure:iron_corner_broken": "structures/building-v2/iron_corner_broken.png",
   "structure:iron_edge_junction": "structures/building-v2/iron_edge_junction.png",
-  "structure:iron_brace": "structures/building-v2/iron_brace.png"
+  "structure:iron_brace": "structures/building-v2/iron_brace.png",
+  "structure:limestone_wall_north_east": "structures/building-v4/limestone_wall_north_east.png",
+  "structure:limestone_wall_north_west": "structures/building-v4/limestone_wall_north_west.png",
+  "structure:limestone_wall_south_east": "structures/building-v4/limestone_wall_south_east.png",
+  "structure:limestone_wall_south_west": "structures/building-v4/limestone_wall_south_west.png"
 }

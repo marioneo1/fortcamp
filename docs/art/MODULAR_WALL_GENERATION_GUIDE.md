@@ -1,6 +1,12 @@
 # Modular wall art — current dev strategy
 
-## Face orientation and corner matching - implemented
+## Directional limestone corners - current replacement
+
+The strategic connector-pillar experiment was reverted. Intact limestone corners instead use the user's four limestone_wall_north_east/north_west/south_east/south_west.png images from building-v4. Their built-in corner detail remains part of the image; no separate strategic pillars are added. Logical quarter turns select a matching directional file; the image itself stays at zero rotation with no mirroring. Each horizontal/vertical arm has a measured alignment offset, preserving scale and logical ports.
+
+Keep these custom files in frontend/public/assets/combat-terrain/structures/building-v4, not only frontend/dist, which builds replace. Originals are backed up in staging-terrain/building-toolset-v4/directional-limestone-corners. A complete optional directional set is detected and recalibrated by the material installer without re-extracting/overwriting it. Rough stone continues to use prior assembled corners. Visual approval is pending.
+
+## Face orientation and corner matching ? implemented
 
 The source horizontal band has its painted front face below its centerline. Outer corner arms establish the inward-facing convention: straight perimeter runs must match that face, including south and west walls. Use the rotated boundary normal to mirror the texture across its thickness independently of saved grid rotation. Do not rotate collision edges to fix an illustration. Centered dividers normalize half turns to keep horizontal faces down and vertical faces left. Each centered T/cross arm follows this convention independently; a perimeter T preserves its inward-facing boundary bar and normalizes only its divider stem. Translated concave corner arms reverse their painted side. Breach alignment corrections follow texture mirroring.
 
@@ -8,7 +14,7 @@ Metal corner bands meet along complementary diagonal clips, avoiding doubled rim
 
 ## Separate the wall band from its terminal column
 
-A connecting wall is a continuous painted band with flat, uncapped mating ends. A terminal cap is a separate sprite placed only at an exposed endpoint. Stone connector pillars also cover deliberate architectural joins under the rule below; they are distinct from terminal caps. Two connected walls consume their shared endpoint: neither adds a column there. Corners, Ts and crosses establish connectivity, rather than repeating the columns embedded in the source illustration. Deliberate architectural pillars remain separate placed props and do not follow this rule.
+A connecting wall is a continuous painted band with flat, uncapped mating ends. A cap/column is a separate sprite placed only at an exposed endpoint. Two connected walls consume their shared endpoint: neither adds a column there. Corners, Ts and crosses establish connectivity, rather than repeating the columns embedded in the source illustration. Deliberate architectural pillars remain separate placed props and do not follow this rule.
 
 This is implemented for regenerated rough fieldstone and polished limestone (building-v4). Metal retains its v2 art: the renderer reuses only its post-free middle band for connected segments, and keeps an original terminal post at an exposed end. Timber keeps the previous rendering. It can adopt this scheme later if needed.
 
@@ -17,7 +23,6 @@ This is implemented for regenerated rough fieldstone and polished limestone (bui
 - Perimeter bands face inward and match their corner arms; interior horizontal bands face down, vertical bands face left.
 - T/cross arms normalize their face independently. A perimeter T keeps its inward-facing bar and matches only its stem to the divider.
 - Preserve thickness and proportions; clip lengths and metal corner mating planes instead of stretching art.
-- Stone corners, T/cross intersections and connected native-T/gate/door seams receive matching connector pillars; omit them on plain straight runs and damaged centers, and deduplicate shared positions.
 - Connected ports suppress terminal posts. Exposed posts match the attached face, including mirrored opposite endpoints.
 - Vertical bands use layer 2, horizontal bands layer 3, and exposed posts layer 4 below character tokens (5). This makes horizontal bands cover vertical ones at corners and T/cross joins. Keep posts non-interactive and separate from collision.
 - Mirroring must preserve attachment points, breach calibration and saved grid/boundary rotation.

@@ -92,6 +92,24 @@ def main():
             sprite.save(dest/f'{ident}.png',optimize=True)
             registry['structure:'+ident]=f'structures/{version}/{ident}.png'
             report.append({'id':ident,'source':str(source.relative_to(ROOT)).replace('\\','/'),'source_box':cells[PARTS.index(piece)][1]})
+        # Optional user-authored directional corners are kept separately from
+        # generated atlas crops. Reinstalling a kit must not erase their anchors.
+        directions=['north_east','north_west','south_east','south_west']
+        if all((dest/f'{family}_wall_{direction}.png').exists() for direction in directions):
+            calibrated={}
+            for direction in directions:
+                file=dest/f'{family}_wall_{direction}.png'
+                alpha=Image.open(file).convert('RGBA').getchannel('A');w,h=alpha.size
+                xs=range(int(w*.15),int(w*.35)) if direction.endswith('east') else range(int(w*.65),int(w*.85))
+                ys=range(int(h*.65),int(h*.8)) if direction.startswith('north') else range(int(h*.2),int(h*.35))
+                rows=[y for y in range(h) if sum(alpha.getpixel((x,y))>96 for x in xs)>len(xs)*.8]
+                columns=[x for x in range(w) if sum(alpha.getpixel((x,y))>96 for y in ys)>len(ys)*.8]
+                if not rows or not columns:raise ValueError(f'{file.name}: missing connecting wall arms')
+                cx=(min(columns)+max(columns))/2/w;cy=(min(rows)+max(rows))/2/h;o=geometry[family]['join_offset']
+                calibrated[direction]={'offset':[round((o if direction.endswith('east') else -o)-(cx-.5)*1.25,4),
+                    round((-o if direction.startswith('north') else o)-(cy-.5)*1.25,4)]}
+                registry[f'structure:{family}_wall_{direction}']=f'structures/{version}/{file.name}'
+            geometry[family]['directional_corners']=calibrated
     aliases={'shed_wall_straight':'timber_wall','shed_wall_corner':'timber_corner','shed_wall_broken':'timber_breach',
              'shed_door_closed':'timber_door_closed','shed_door_open':'timber_door_open',
              'stone_wall_straight':'fieldstone_wall','cemetery_wall_corner':'fieldstone_corner',

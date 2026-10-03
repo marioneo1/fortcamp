@@ -1,8 +1,8 @@
 # Mission Refinement Phase
 
-## 2026-10-02: Cover marked stone joints with matching pillars
+## 2026-10-02: Revert strategic posts and select directional limestone corners
 
-Reviewed the red boxes in polished stone.png. Added matching-material connector pillars at architectural changes: intact corner/T/cross intersections and connected native-T/gate/door seams. Used the existing cap scale and foreground layer, with map-space deduplication and destruction cleanup. Excluded ordinary straight runs and damaged centers. Rough fieldstone uses the same rule with its own art. Updated canonical assembly rules and backlog. 130 frontend tests, build and 16-layout Battle Lab browser checks pass; production and saves untouched. Final subjective review remains with the user.
+User rejected c8dd76e's strategic pillars. Reverted that pass and inspected the supplied four limestone_wall_* directional corner PNGs, located in frontend/dist. Preserved them in frontend/public plus a staging backup before rebuilding. Calibrated horizontal/vertical arm anchors independently, selected one unrotated image for each logical corner direction and preserved connection ports/translation/destruction. Installer now detects complete optional directional sets without overwriting their source files. Earlier exposed caps, layer order, mirroring and native T remain; rough stone keeps previous corners. 128 frontend tests, build, seven targeted backend checks and all 16 Battle Lab layouts pass. Production/saves unchanged; subjective approval pending.
 
 ## 2026-10-02: Foreground stone posts
 

@@ -1,8 +1,8 @@
 # Fortcamp feature backlog
 
-## Completed October 2: Strategic stone connector pillars
+## Completed October 2: Revert connector pillars and try user-authored limestone corners
 
-Added matching limestone/fieldstone pillars at intact corners, perimeter/centered T and cross intersections, connected native-T arm seams and connected gate/door jamb seams. Plain straight runs stay free of extra columns; destroyed/damaged centers remain open. Foreground posts use material-calibrated size and deduplicate shared locations. Applies to every building using the shared renderer, including existing battles. Canonical rules: docs/art/MODULAR_WALL_GENERATION_GUIDE.md and docs/design/WALL_BOUNDARIES.md. Validation: 130 frontend tests, build and all 16 Battle Lab material layouts pass. Production and saves untouched; visual approval pending.
+Removed the strategic pillar rule after visual rejection. Limestone corners now use the four supplied directional images with independent measured alignment; earlier face/layer/end-post/T fixes remain. Preserved files from disposable frontend/dist into source assets and a staging backup. Installer keeps/calibrates optional directional sets; rough stone retains prior assembly. Canonical reference: docs/design/WALL_BOUNDARIES.md and docs/art/MODULAR_WALL_GENERATION_GUIDE.md. Validation: 128 frontend tests, build, seven targeted backend tests and all 16 Battle Lab layouts pass. Production untouched; subjective review pending.
 
 ## Completed October 2: Foreground end posts
 

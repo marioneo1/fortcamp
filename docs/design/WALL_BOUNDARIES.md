@@ -1,12 +1,14 @@
 # Wall boundaries — implemented in dev
 
-## October 2: Strategic stone connector pillars
+## October 2: Revert connector pillars; use directional limestone corners
 
-Limestone and rough fieldstone now share a renderer rule for covering structural seams with their own matching pillar sprite. Intact corners place one pillar at their rotated meeting point; perimeter Ts place one at the boundary/stem intersection; assembled centered Ts/crosses place one at the center. Dedicated whole T sprites instead cover their connected arm endpoints. Doors/gates cover connected jamb endpoints in either open or closed state. Ordinary straight-to-straight connections receive no extra pillar, and damaged/destroyed junctions do not gain a new intact center post.
+Removed the strategic connector-pillar pass at the user's request. Ordinary joins again use the earlier band assembly, foreground exposed-end posts, face mirroring and dedicated stone T. No new pillars are added at T/cross/gate seams.
 
-Pillars use the material's existing calibrated cap scale and the foreground cap layer (4). Translated inward corners preserve their actual attachment point. Coincident generated posts are deduplicated by sprite and map-space position. Placement is visual only: no collision, health, reward, gate-state or saved-map changes. This supersedes the earlier blanket statement that connecting joins never carry columns: terminal caps remain exposed-end-only, while these deliberate structural supports are separate exceptions.
+Intact limestone corners now select the user's four directional building-v4 images: north_east, south_east, south_west and north_west for logical rotations 0, 90, 180 and 270. Artwork is rendered unrotated/unmirrored; measured arm offsets align each image to existing boundary centerlines while preserving scale, inward-corner translation and logical connection ports. Destroyed corners remove their artwork normally. Rough stone retains its previous corner assembly because it has no matching directional replacements.
 
-Validation: 130 frontend tests, frontend build and all 16 actual Battle Lab material layouts pass. Rotation, inward-corner anchors, straight-run exclusion, connected gate states, destruction and shared-post deduplication are covered. Production untouched; live subjective review remains pending.
+The files were found in frontend/dist and preserved in frontend/public/assets/combat-terrain/structures/building-v4, with a staging backup. The installer detects complete optional directional sets and recalibrates their anchors without overwriting those files. Registry entries select stable filenames; saved geometry, collision and production are unchanged.
+
+Validation: 128 frontend tests, build, seven targeted backend boundary/showcase tests and all 16 Battle Lab material layouts pass. User visual approval of the replacement remains pending.
 
 ## October 2: Exposed posts render in front of wall bands
 

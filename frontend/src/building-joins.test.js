@@ -57,7 +57,7 @@ test('a breach aligns its surviving beam even after destruction and rotation',()
 
 const modular={fieldstone:{join_offset:.36,wall_half_thickness:.09,cap_mode:'pillar',cap_scale:.35},iron:{join_offset:.38,cap_mode:'trim'}};
 const wall=(id,x,y=0,extra={})=>({id,x,y,sprite:'structure:fieldstone_wall',art_scale:1.25,...extra});
-const capCount=items=>structuralConnectors(items,modular).filter(c=>c.wall_cap&&!c.wall_joint).length;
+const capCount=items=>structuralConnectors(items,modular).filter(c=>c.wall_cap).length;
 test('isolated walls cap both ends; connected runs cap only the outside ends',()=>{
  assert.equal(capCount([wall('alone',0)]),2);
  const run=[wall('first',0),wall('second',1),wall('third',2)];
@@ -71,7 +71,7 @@ test('corners and branch connections consume neighboring columns in every rotati
   const neighbors=ports.map((p,index)=>({id:'n'+index,x:p.x,y:p.y,sprite:'structure:fieldstone_end',rotation:(p.rotation+180)%360,art_offset:[0,0]}));
   // Put each neighbor's single attached port exactly against the corner port.
   neighbors.forEach((n,index)=>{const p=connectionPorts(n,modular)[0];n.x+=ports[index].x-p.x;n.y+=ports[index].y-p.y});
-  assert.equal(structuralLayout(c,modular,neighbors).connectors.filter(c=>c.wall_cap&&!c.wall_joint).length,0);
+  assert.equal(structuralLayout(c,modular,neighbors).connectors.filter(c=>c.wall_cap).length,0);
  }
 });
 test('door jambs keep wall ends connected, including open doors',()=>{
@@ -214,29 +214,16 @@ test('calibrated stone T uses its dedicated sprite without changing connection p
  assert.equal(structuralLayout({...item,rotation:180},g).hideArt,true);
  assert.deepEqual(structuralLayout({...item,destroyed:true},g).connectors,[]);
 });
-test('stone corners, perimeter Ts and crosses add one pillar at the actual rotated intersection',()=>{
- for(const [piece,point] of [['corner',[.36,-.36]],['edge_junction',[0,-.36]],['cross',[0,0]]])for(const rotation of [0,90,180,270]){
-  const item={id:'join',sprite:'structure:fieldstone_'+piece,rotation,art_offset:[.72,.72]};
-  const posts=structuralLayout(item,modular).connectors.filter(c=>c.wall_joint);
-  assert.equal(posts.length,1);
-  let [x,y]=point;for(let n=0;n<rotation/90;n++)[x,y]=[-y,x];
-  const base=piece==='edge_junction'?[0,0]:item.art_offset;
-  close(posts[0].art_offset[0],x+base[0]);close(posts[0].art_offset[1],y+base[1]);
-  assert.equal(posts[0].sprite,'structure:fieldstone_pillar');assert.equal(posts[0].wall_cap,true);
-  assert.deepEqual(structuralLayout({...item,destroyed:true},modular).connectors,[]);
+test('directional corners select their matching artwork without rotating or mirroring it',()=>{
+ const names=['north_east','south_east','south_west','north_west'];
+ const g={fieldstone:{...modular.fieldstone,directional_corners:Object.fromEntries(names.map((name,i)=>[name,{offset:[.01*i,.02*i]}]))}};
+ for(const [i,name] of names.entries()){
+  const item={id:'corner',x:4,y:3,sprite:'structure:fieldstone_corner',rotation:i*90,art_offset:[.72,.72]};
+  const layout=structuralLayout(item,g),art=layout.connectors.find(c=>!c.wall_cap);
+  assert.equal(layout.hideArt,true);assert.equal(art.sprite,'structure:fieldstone_wall_'+name);
+  assert.equal(art.rotation,0);assert.equal(art.art_mirror_y,1);
+  close(art.art_offset[0],.72+.01*i);close(art.art_offset[1],.72+.02*i);
+  assert.deepEqual(connectionPorts(item,g),connectionPorts(item,modular));
+  assert.deepEqual(structuralLayout({...item,destroyed:true},g).connectors,[]);
  }
-});
-test('gate seam pillars require connected neighbors and persist when the gate opens',()=>{
- const gate=wall('gate',1,0,{sprite:'structure:fieldstone_gate_closed'}),run=[wall('left',0),gate,wall('right',2)];
- const closed=structuralLayout(gate,modular,run).connectors.filter(c=>c.wall_joint);
- const opened=structuralLayout({...gate,sprite:'structure:fieldstone_gate_open'},modular,run).connectors.filter(c=>c.wall_joint);
- assert.equal(closed.length,2);assert.deepEqual(opened.map(c=>c.art_offset),closed.map(c=>c.art_offset));
- assert.equal(structuralLayout(gate,modular,[]).connectors.length,0);
- assert.equal(structuralConnectors([wall('a',0),wall('b',1)],modular).filter(c=>c.wall_joint).length,0);
-});
-test('shared gate seams produce a single pillar rather than overlapping posts',()=>{
- const gates=[wall('a',0,0,{sprite:'structure:fieldstone_gate_open'}),wall('b',1,0,{sprite:'structure:fieldstone_gate_closed'})];
- assert.equal(structuralConnectors(gates,modular).filter(c=>c.wall_joint).length,1);
- const iron={...gates[0],sprite:'structure:iron_corner'};
- assert.equal(structuralLayout(iron,modular).connectors.filter(c=>c.wall_joint).length,0);
 });
