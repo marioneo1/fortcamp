@@ -23,13 +23,17 @@ Bugbear, Lizardfolk, Minotaur and Dragonkin melee; Harpy, Centaur, Faun and Catf
 
 Female sheets were inspected for established species anatomy, but generation references remained the authoritative art reference and male Human presentation sheet. Some horn/ear tips approach edges. Harpy wing-arm anatomy is difficult to establish in the close crop; Centaur bodies are partly visible and their smaller faces will need careful circle framing. Complete generated sheets were inspected; file/grid validation does not establish anatomical correctness or perfect face diversity.
 
-## Remaining 20 generation targets
+## Batch 003 — staged for review
+
+Revenant, Vampire, Ogre and Troll melee; Alien ranged; Undead, Manaforged and Dreamkin magic. Eight fresh sheets, 160 portraits, with exact expanded prompts and review links in staging-portraits/MALE_BATCH_003.md. All decode at 1254×1254; five-column/four-row boundary evidence recorded in data/portrait_audit/male_batch_003/manifest.json. Not imported.
+
+Inspected all outputs. Face/crest repetition is notable in Alien; some Troll ears and Manaforged crystal tips approach or touch edges. Ogre faces lean angular; circle framing cannot recover clipped source pixels. Undead retains the existing preserved humanoid design. Validation covers file decoding and grid evidence, not perfect anatomy or unique face detection.
+
+## Remaining 12 generation targets
 
 | Common portrait role | Races |
 |---|---|
-| Melee | Revenant, Vampire, Ogre, Troll |
-| Ranged | Alien |
-| Magic | Undead, Manaforged, Dreamkin, Astral Elf, Voidsent, Dark Elf, Foxkin, Fairy, Banshee |
+| Magic | Astral Elf, Voidsent, Dark Elf, Foxkin, Fairy, Banshee |
 | Healer | Homunculus, Dryad, Merfolk |
 | Worker | Automaton |
 | General, no class suffix | Slimefolk, Werewolf |

@@ -1,5 +1,7 @@
 # Fortcamp portrait batch generation
 
+October 3 batch 003: eight additional male sheets staged (Revenant/Vampire/Ogre/Troll melee, Alien ranged, Undead/Manaforged/Dreamkin magic), with exact expanded prompts in staging-portraits/MALE_BATCH_003.md. Same full production male approach and style/presentation reference roles; no female counterpart generation references. Not imported. Current and legacy prompts remain intact.
+
 October 3 batch 002: eight additional male sheets staged for review (Bugbear/Lizardfolk/Minotaur/Dragonkin melee; Harpy/Centaur/Faun/Catfolk ranged). Images and exact expanded prompts are in staging-portraits/MALE_BATCH_002.md. Used the same full production male template and reference roles as approved batch 001, with species-specific anatomy. Not imported yet. Production and legacy prompts below remain intact.
 
 October 3 batch 001: eight male sheets generated with the full production male prompt and per-race biology blocks, approved by the user and installed in dev. See `staging-portraits/MALE_BATCH_001.md` for images and exact expanded prompts, and `docs/art/MALE_PORTRAIT_ROLLOUT.md` for remaining targets. Canonical source sheets are in portraits/. Final Halfling is a fresh second generation; v1 is retained only for comparison. Current production prompts and legacy sections below remain intact.

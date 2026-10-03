@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## October 3: Third common-role male batch staged
+
+Generated eight fresh sheets using the full approved production male template and specific race anatomy: Revenant/Vampire/Ogre/Troll melee, Alien ranged, Undead/Manaforged/Dreamkin magic. Saved all images and exact prompts under staging-portraits/MALE_BATCH_003.md. All eight decode at 1254×1254; grid boundary evidence recorded in data/portrait_audit/male_batch_003/manifest.json. Inspected every output and documented recurring Alien structures, edge clearance concerns and preserved humanoid Undead design. No imports, identity rerolls or production changes.
+
 ## October 3: Second common-role male batch staged
 
 Generated eight fresh beast-race male sheets using the full production male prompt and explicit species anatomy: Bugbear/Lizardfolk/Minotaur/Dragonkin melee, Harpy/Centaur/Faun/Catfolk ranged. Saved all sheets and exact prompts under staging-portraits with MALE_BATCH_002.md. All eight decode at 1254×1254; 5×4 boundary evidence recorded in data/portrait_audit/male_batch_002/manifest.json. Inspected outputs, with tight horn/ear clearance, ambiguous close-cropped Harpy wings and smaller Centaur faces noted for review. No runtime imports, existing identity changes or production changes.
