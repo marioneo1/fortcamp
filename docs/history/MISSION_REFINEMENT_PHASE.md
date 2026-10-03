@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## October 3: Second common-role male batch staged
+
+Generated eight fresh beast-race male sheets using the full production male prompt and explicit species anatomy: Bugbear/Lizardfolk/Minotaur/Dragonkin melee, Harpy/Centaur/Faun/Catfolk ranged. Saved all sheets and exact prompts under staging-portraits with MALE_BATCH_002.md. All eight decode at 1254×1254; 5×4 boundary evidence recorded in data/portrait_audit/male_batch_002/manifest.json. Inspected outputs, with tight horn/ear clearance, ambiguous close-cropped Harpy wings and smaller Centaur faces noted for review. No runtime imports, existing identity changes or production changes.
+
 ## October 3: Approved male batch 001 consumed
 
 Following user approval, imported all eight batch 001 male sheets into their matching pools. Copied canonical source sheets into portraits while retaining staging references and exact prompts. Each pool received twenty IDs (001–020) with square full/thumb images and separate uncropped originals. Verified all 480 assets decode at expected preview sizes, runtime role/fallback matching works, and Portrait Lab lists all 160 additions (1,504 total portraits). Inspected installed montage at data/portrait_audit/male_batch_001/installed.jpg. Existing character portrait assignments are preserved; production unchanged.

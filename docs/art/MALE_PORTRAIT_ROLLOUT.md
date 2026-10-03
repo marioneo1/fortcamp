@@ -17,12 +17,18 @@ Files and exact expanded prompts: staging-portraits/MALE_BATCH_001.md. All eight
 
 Review notes retained for future refinement: some Halfling/Gnome faces read youthful, some Tiefling horn tips sit close to source edges, and several related face structures recur despite the diversity prompt. The user approved these images. Do not claim perfect identity diversity or full horn clearance. Grid decode/boundaries were checked and complete outputs inspected.
 
-## Remaining 28 generation targets
+## Batch 002 — staged for review
+
+Bugbear, Lizardfolk, Minotaur and Dragonkin melee; Harpy, Centaur, Faun and Catfolk ranged. Eight fresh sheets, 160 portraits, saved with exact expanded prompts in staging-portraits/MALE_BATCH_002.md. Each decodes at 1254×1254 with five columns and four rows; boundary evidence is recorded in data/portrait_audit/male_batch_002/manifest.json. No runtime import yet.
+
+Female sheets were inspected for established species anatomy, but generation references remained the authoritative art reference and male Human presentation sheet. Some horn/ear tips approach edges. Harpy wing-arm anatomy is difficult to establish in the close crop; Centaur bodies are partly visible and their smaller faces will need careful circle framing. Complete generated sheets were inspected; file/grid validation does not establish anatomical correctness or perfect face diversity.
+
+## Remaining 20 generation targets
 
 | Common portrait role | Races |
 |---|---|
-| Melee | Bugbear, Revenant, Lizardfolk, Minotaur, Dragonkin, Vampire, Ogre, Troll |
-| Ranged | Harpy, Centaur, Alien, Faun, Catfolk |
+| Melee | Revenant, Vampire, Ogre, Troll |
+| Ranged | Alien |
 | Magic | Undead, Manaforged, Dreamkin, Astral Elf, Voidsent, Dark Elf, Foxkin, Fairy, Banshee |
 | Healer | Homunculus, Dryad, Merfolk |
 | Worker | Automaton |

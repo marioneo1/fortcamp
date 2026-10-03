@@ -1,5 +1,7 @@
 # Fortcamp feature backlog
 
+October 3 male batch 002: eight beast-race sheets staged with exact prompts and review index, 160 portraits (Bugbear/Lizardfolk/Minotaur/Dragonkin melee; Harpy/Centaur/Faun/Catfolk ranged). File decoding and 5×4 boundary evidence checked; horn clearance, Harpy wing anatomy and Centaur framing remain review concerns. Not imported. Twenty generic generation targets remain, plus the approved staged Aasimar installation. Canonical progress: docs/art/MALE_PORTRAIT_ROLLOUT.md.
+
 October 3 male batch 001 installed after approval: 160 portraits across eight male pools; all 480 full/thumb/original assets verified, matching-role and alternate-role fallback verified, and installed montage reviewed. Portrait Lab lists 1,504 images. Remaining 28 generic male generation targets are unchanged; existing portrait assignments and production saves/assets are untouched.
 
 October 3 male portrait batch 001: eight sheets (Half-Orc/Orc/Hobgoblin melee, Wood Elf/Halfling ranged, Tiefling/High Elf magic, Gnome worker), 160 portraits generated and staged with exact prompts. Halfling redrawn from scratch for stronger adult features. Review/import remains pending; remaining 28 generic male generation targets and staged Aasimar installation are tracked in docs/art/MALE_PORTRAIT_ROLLOUT.md.
