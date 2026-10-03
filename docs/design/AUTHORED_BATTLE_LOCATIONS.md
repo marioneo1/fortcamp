@@ -1,5 +1,37 @@
 # Authored battle locations
 
+## October 3: Finished materials rolled into mission locations
+
+Implemented in dev. New battles use the approved timber, rough-stone, polished-stone and metal kits through the same shared connection/orientation rules as the material tests. No art regeneration or material geometry changes in this pass.
+
+| Setting | Missions using it | Material and identity | Layouts |
+| --- | --- | --- | --- |
+| Chapel approach | The Chapel Patrol; The Chapel Gatekeepers | Polished stone, cracked chapel paving, altar, pews, fallen bell and memorial stone. | Nave; divided vestry; burial annex; twin chapels with memorial court. |
+| Toll post | The Unwanted Toll; The Ford Enforcers; A Watchman's Dispute; A Road Wide Enough for Everyone; Who Collects the Second Toll? | Rough stone, toll cobbles, ledger desk, inspection crates, guard equipment and operable gates. Existing story/roll routes remain unchanged; this applies when their tactical encounter starts. | Toll court; through-road customs hall; inspection wing; paired posts. |
+| Raider cache | The Road Raiders' Cache; Bandit Outpost | Timber storehouses, stolen crates/barrels, sorting table and escape breach. | Storehouse; divided hideout; annex yard; twin stores. |
+| Goblin armory | The Hidden Goblin Armory | Reinforced metal magazines, racks, ammunition and supply coffer. Replaces the two legacy timber enclosures. | Weapon store; divided magazine; loading yard; twin magazines. |
+| Salvage court | The Salvage Yard Court | Approved rough-stone workshop buildings with existing forge/repair vocabulary. | Uses the four existing workshop footprints. |
+
+Sixteen mission-specific building definitions reuse the eight approved footprints. Reuse is intentional, rather than claiming each skin is new geometry. Doors, breaches, furniture and enemy positions belong to the building template; mission rewards, rank budgets and objectives remain unchanged. Small patrols in twin buildings now occupy both buildings instead of putting every enemy in the first room.
+
+All building locations, including the existing shed/workshop, also have four seeded dressing choices independent of their four layout choices. Solid furniture swaps among authored slots; loose scenery may relocate to free floor. Doors, walls, spawn cells and other props are excluded. Choices reproduce from the encounter seed and stay stored in an active battle. Chests/coffers used as scenery do not gain a loot-opening interaction in this pass.
+
+Battle Lab automatically lists verified seeds and names for all four layouts on these missions and on story choices that lead to them. Start a new test/battle to see changes; existing saved encounters are not regenerated. Screenshots: `staging-terrain/location-rollout-v1`. The actual renderer QA tool is `tools/location_rollout_browser_qa.mjs`; `tools/audit_battle_locations.py` refreshes the [complete coverage audit](../maps/BATTLE_LOCATION_AUDIT.md).
+
+### Proposed next batches
+
+These are pending design work, not implemented by this rollout:
+
+1. **Roadblocks and command camps:** Break the Rival Warband, End the Old Command, Chieftain's Redoubt and The Ironcap Vanguard need actual fortified positions, guard lanes and supply/command areas. Add a reusable road-spanning blockade piece and camp perimeter, rather than another storehouse skin. Reuse current gates, timber/stone walls, tents and alarm bell.
+2. **Beginner sites and sparring yards:** Rats in the Storehouse, Wolves at the Fence, Herbs Behind the Wall and A Promise Proven in Battle need smaller sites and more direct routes. Sparring yards need training-dummy art; gardens need planted beds. Keep early fights compact instead of copying a large fort.
+3. **Tunnels and burial interiors:** Goblin Warren Purge, Knight without a Grave and Court of the Empty Crown need branching tunnels/crypts or ruined halls with their own chokepoints. Tunnel terrain, stairs and larger chamber pieces should be separate terrain/structure packs.
+4. **Convoys, investigation sites and the flooded bell:** The Tithe Convoy, missing patrol/wagon jobs and The Bell Beneath the Mud need road bends, wagon staging, waterlogged approaches or a submerged chapel/bell. The bell currently routes combat complications to existing undead encounters; a dedicated bell map requires deliberate story-routing changes. Preserve the existing bridge ground-layer approach.
+5. **Separate scenarios:** Goblin Warcamp, Captive Cart, investigation ambush and defense have authored generators already, but should receive a separate layout-variation review. Preserve their rescue objects, alarm logic, extraction rules and defense preparation.
+
+The audit currently identifies 17 authored contract encounter IDs and 44 generic ones, including six rank copies for each prisoner agreement route. Finish these in focused batches; do not turn roll-only missions into fights merely to give every mission a map.
+
+Validation: 35 focused backend tests pass (location routes/spawns over 40 seeds, material maps, normal battle maps, Battle Lab catalogue and save isolation). Actual browser checks render 20 new setting/layout combinations with no runtime errors; 50 distinct prop URLs load. Reviewed representative enlarged chapel/toll/armory/cache images. The complete art audit checks 145 isolated encounter previews and 7,877 references with no missing assignments/files. Long-term tactical pacing and player feedback remain follow-up work; identical enemy budgets do not guarantee identical difficulty after changing a map.
+
 ## Current wall rules and art (October 2)
 
 New building/enclosure perimeters now block crossing edges while leaving interior floor tiles usable. Centered dividers still occupy their tile; actual T-junctions connect them to the outer shell. Doors, attacks, enemy pursuit and escape use the same boundaries. Four complete material-specific structure packs supersede the mixed-material art below; original sources remain legacy. See WALL_BOUNDARIES.md and BUILDING_TEMPLATES.md. Existing saved maps are not regenerated.

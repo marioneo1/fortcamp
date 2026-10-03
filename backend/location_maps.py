@@ -29,6 +29,12 @@ MISSION_LOCATIONS = {
     'undead_bone_collectors': 'graveyard', 'bone_patrol': 'cemetery_road',
     'timber_creek': 'broken_creek_bridge', 'goblin_bridge': 'toll_bridge',
     'goblin_armory': 'open_armory',
+    'chapel_patrol': 'chapel_approach', 'chapel_gate': 'chapel_approach',
+    'roadside_toll': 'toll_post', 'ford_enforcers': 'toll_post',
+    'watch_negotiation': 'toll_post', 'titan_road_tolls': 'toll_post',
+    'lantern_toll_captain': 'toll_post',
+    'road_cache': 'raider_cache', 'bandit_outpost': 'raider_cache',
+    'salvage_court': 'salvage_court',
 }
 
 
@@ -178,7 +184,7 @@ def place_building(template_id, anchor, ident, rotation=0, family_override=None)
         terrain[:]=[t for t in terrain if t not in matches]
         xx,yy=position(x,y);prefix=f'structure:{family}_{type_}'
         gate=wall(xx,yy,f'{ident}_gate_{index}',family=='timber',family=family)
-        gate.update(name='Store Door' if type_=='door' else 'Workshop Gate',kind='gate',state='closed',
+        gate.update(name=template.get('door_name','Store Door') if type_=='door' else template.get('gate_name','Workshop Gate'),kind='gate',state='closed',
                     sprite=prefix+'_closed',closed_sprite=prefix+'_closed',open_sprite=prefix+'_open',
                     rotation=(turn+rotation)%360,art_offset=shifted(offset),hp=12,max_hp=12,armor=1)
         if (x,y) in boundary:
@@ -197,6 +203,31 @@ def place_building(template_id, anchor, ident, rotation=0, family_override=None)
     return {'id':template_id,'label':template['label'],'terrain':terrain,'decorations':decorations,'paint':paint,
             'enemies':[{'x':x,'y':y} for x,y in (position(x,y) for x,y in template['enemies'])],
             'width':height if rotation in (90,270) else width,'height':width if rotation in (90,270) else height}
+
+
+def dress_building(piece, rng):
+    """Vary contents without putting new blockers in doors or movement lanes.
+
+    Solid furniture swaps between authored furniture slots. Small loose scenery
+    can move onto free interior floor, never onto walls, spawns or other props.
+    Neither change invents rewards or interactions for decorative containers.
+    """
+    variation=rng.randrange(4)
+    piece['dressing_variation']=variation+1
+    furniture=[t for t in piece['terrain'] if t.get('kind')=='furniture']
+    if furniture:
+        contents=[(t['sprite'],t['name']) for t in furniture]
+        shift=variation % len(contents)
+        for item, (sprite,name) in zip(furniture,contents[shift:]+contents[:shift]):
+            item.update(sprite=sprite,name=name)
+    occupied={(t['x'],t['y']) for t in piece['terrain']+piece['enemies']+piece['decorations']}
+    floor={tuple(p) for layer in piece['paint'] for p in layer['tiles']}
+    free=sorted(floor-occupied)
+    rng.shuffle(free)
+    if variation and free and piece['decorations']:
+        # Use the existing loose prop instead of growing the clutter each visit.
+        item=piece['decorations'][0]
+        item['x'],item['y']=free[0]
 
 
 def location_blueprint(location, seed):
@@ -218,9 +249,13 @@ def location_blueprint(location, seed):
     if plan and plan.get('building'):
         ax,ay=plan['anchor'];anchor=(ax+rng.randrange(2),ay+rng.randrange(2))
         piece=place_building(plan['building'],anchor,'building')
+        dress_building(piece, rng)
         board['width']=max(14,anchor[0]+piece['width']+2)
         board['height']=max(11,anchor[1]+piece['height']+2)
-        board['theme']='location-shed' if location=='tool_shed' else 'location-workshop'
+        board['theme']=('location-graveyard' if location=='chapel_approach' else
+                        'location-shed' if location in {'tool_shed','raider_cache'} else 'location-workshop')
+        if location=='chapel_approach':board['default_ground']='forest_dark'
+        board['dressing_variation']=piece['dressing_variation']
         board['building_templates']=[{'id':piece['id'],'label':piece['label'],'anchor':list(anchor)}]
         p.append({'material':'dirt','rect':[0,4,anchor[0]+1,3]});p.extend(piece['paint'])
         t.extend(piece['terrain']);d.extend(piece['decorations'])

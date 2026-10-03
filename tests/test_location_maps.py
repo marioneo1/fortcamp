@@ -11,6 +11,45 @@ from backend.game import new_game
 
 
 class LocationMapTests(unittest.TestCase):
+    def test_mission_settings_use_matching_materials_and_landmarks(self):
+        for mid, family, landmark in [('chapel_patrol','limestone','chapel_altar'),
+                                      ('chapel_gate','limestone','chapel_altar'),
+                                      ('roadside_toll','fieldstone','toll_desk'),
+                                      ('ford_enforcers','fieldstone','toll_desk'),
+                                      ('road_cache','timber','crate_closed'),
+                                      ('bandit_outpost','timber','crate_closed'),
+                                      ('goblin_armory','iron','weapon_rack')]:
+            battle=create_contract_battle(new_game({'name':'Tester'}),['player'],'setting',mid,True)
+            self.assertEqual(battle['encounter_id'],'contract:'+mid)
+            self.assertTrue(any(t.get('sprite')==landmark for t in battle['terrain']),mid)
+            self.assertTrue(any(t.get('sprite','').startswith('structure:'+family+'_') for t in battle['terrain']),mid)
+            self.assertEqual(battle['units']['player']['team'],'player')
+
+    def test_dressing_changes_without_changing_a_building_shell(self):
+        samples={}
+        for i in range(40):
+            board=location_blueprint('chapel_approach',f'layout-{i}')
+            key=board['template_id']
+            samples.setdefault(key,{})[board['dressing_variation']]=board
+        self.assertEqual(len(samples),4)
+        self.assertTrue(all(len(variants)>1 for variants in samples.values()))
+        for variants in samples.values():
+            contents=set()
+            for board in variants.values():
+                anchor=board['building_templates'][0]['anchor']
+                contents.add(tuple((t['sprite'],t['x']-anchor[0],t['y']-anchor[1])
+                                   for t in board['terrain']+board['decorations'] if t.get('kind')=='furniture' or t['id'].startswith('building_decoration')))
+            self.assertGreater(len(contents),1)
+
+    def test_small_armory_patrol_occupies_both_magazines(self):
+        seed=next(f'layout-{i}' for i in range(40)
+                  if location_blueprint('open_armory',f'layout-{i}')['template_id']=='armory_4')
+        battle=create_contract_battle(new_game({'name':'Tester'}),['player'],seed,'goblin_armory',True)
+        ax=battle['building_templates'][0]['anchor'][0]
+        enemies=[u for u in battle['units'].values() if u['team']=='enemy']
+        self.assertTrue(any(u['x']<ax+4 for u in enemies))
+        self.assertTrue(any(u['x']>=ax+6 for u in enemies))
+
     def test_all_variants_have_clear_spawns_and_reachable_exits(self):
         for location in set(MISSION_LOCATIONS.values()):
             variants = set()

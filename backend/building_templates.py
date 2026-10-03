@@ -74,6 +74,10 @@ BUILDINGS = {
 }
 
 
+from .location_buildings import add_location_buildings
+add_location_buildings(BUILDINGS)
+
+
 def footprint(template):
     return {(x,y) for rx,ry,w,h in template['rooms'] for x in range(rx,rx+w) for y in range(ry,ry+h)}
 

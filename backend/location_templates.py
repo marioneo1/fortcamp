@@ -18,3 +18,14 @@ BUILDING_PLANS = {
          'exit':[(x,10) for x in range(4,10)]},
     ],
 }
+
+# The earlier two armory enclosures remain in docs/maps/archive; current maps
+# share calibrated building parts rather than the legacy enclosure assembler.
+for _location, _group in [('chapel_approach', 'chapel'), ('open_armory', 'armory'),
+                           ('raider_cache', 'cache'), ('toll_post', 'checkpoint')]:
+    BUILDING_PLANS[_location] = [
+        {'id': f'{_group}_{i}', 'building': f'{_group}_{i}', 'anchor': (5, 1)}
+        for i in range(1, 5)
+    ]
+# A reclaimed workshop uses the same four footprints with a different owner.
+BUILDING_PLANS['salvage_court'] = [dict(plan) for plan in BUILDING_PLANS['repair_yard']]

@@ -57,7 +57,9 @@ class BattleLabTests(unittest.TestCase):
 
     def test_named_layout_seeds_launch_each_actual_template(self):
         missions=lab.catalogue()
-        for mid,count in [('tool_shed',4),('workshop_intruders',4),('goblin_armory',2),('goblin_bridge',2)]:
+        for mid,count in [('tool_shed',4),('workshop_intruders',4),('goblin_armory',4),('goblin_bridge',2),
+                          ('chapel_patrol',4),('chapel_gate',4),('roadside_toll',4),
+                          ('ford_enforcers',4),('road_cache',4),('bandit_outpost',4),('salvage_court',4)]:
             mission=next(m for m in missions if m['id']==mid)
             direct=mission['variants'][0]
             presets=direct['layout_presets']

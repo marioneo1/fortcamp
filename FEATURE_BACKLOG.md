@@ -1,5 +1,13 @@
 # Fortcamp feature backlog
 
+## October 3: Mission building rollout completed; remaining maps audited
+
+Approved material kits now serve chapel patrol/gate, five toll/watch contracts, raider cache/outpost, Goblin Armory and Salvage Court encounters. Each building setting has four named layouts; all building locations have four deterministic dressing choices. Armory replaces its two legacy enclosures with four metal-magazine plans. Small twin-building patrols use both buildings. Mission modes, objectives, budgets, rewards and active saved maps are retained. See docs/design/AUTHORED_BATTLE_LOCATIONS.md for exact mapping and limitations.
+
+Remaining work is inventoried in docs/maps/BATTLE_LOCATION_AUDIT.md: fortified command camps/roadblocks; compact beginner sites/training yards; tunnels/crypts/royal halls; convoy and flooded-bell sites; named variants for the separate warcamp/cart/investigation/defense scenarios. These are proposed follow-up batches, not implemented. Roll-only missions do not need a battle map unless their encounter routing changes deliberately.
+
+Validation: 35 focused backend tests, 20 actual-renderer browser layouts and 145 encounter art coverage previews pass (7,877 references). Routes, spawn validity and saved-game isolation are covered. Tactical pacing still needs play feedback.
+
 ## October 3: Side T trial reverted
 
 Restored map detail 2's previous side-facing T art and its shared orientation rule. Part 17 is inactive again; part 20 inward corners and all other wall work are retained. Assets reinstalled with a fresh cache version. See docs/art/MODULAR_WALL_GENERATION_GUIDE.md.

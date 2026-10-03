@@ -1,5 +1,9 @@
 # Reusable building templates — implemented in dev
 
+## October 3: Mission skins and repeat-visit dressing
+
+`backend/location_buildings.py` adds sixteen chapel/armory/cache/checkpoint definitions using the existing eight tested footprints. Each setting has four named layouts with matching furniture, floors and entrances. `backend/location_maps.py` routes the appropriate missions to them and supplies four deterministic dressing choices without moving solid blockers into corridors or spawn cells. Salvage Court also uses the four existing workshop plans. The armory's original two enclosure definitions remain preserved as legacy source; new encounters use the calibrated metal kit. See [authored locations](AUTHORED_BATTLE_LOCATIONS.md) for mission mapping, limitations and next batches. Existing saves and material art remain unchanged.
+
 Current polished stone uses the complete v10 sixteen-piece atlas through stable `structure:limestone_*` IDs. All four Polished stone Battle Lab presets remain furnished and exercise the new doors/gates and native junctions. Removed unused polished overhead/boxed trial families. Rough-stone, timber and metal profiles remain unchanged. See [current art rules](../art/MODULAR_WALL_GENERATION_GUIDE.md).
 
 ## October 2: Two additional overhead material profiles

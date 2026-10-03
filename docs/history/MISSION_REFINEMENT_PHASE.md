@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## October 3: Approved buildings expanded into contract settings
+
+Added sixteen thematic chapel/armory/cache/checkpoint templates from the eight existing footprints, plus Salvage Court workshop routing. Current authored coverage is 17 contract encounter IDs; 44 remain generic, including repeated prison ranks. Added independent deterministic dressing choices and distributed small patrols across twin buildings. Battle Lab derives four named seeds per setting from the actual generator. Material art, collision rules, objectives, budgets, rewards, production and saves remain unchanged. Reviewed actual renderer screenshots across new settings; remaining specialized sites and proposed batches are documented in AUTHORED_BATTLE_LOCATIONS.md and the generated BATTLE_LOCATION_AUDIT.md.
+
+Validation: 35 focused backend tests; 20 furnished browser layout checks (50 prop URLs); full art audit of 145 previews and 7,877 references, no missing files or assignments. Representative enlarged renders reviewed. Tactical difficulty remains subject to player feedback despite preserved rank budgets.
+
 ## October 3: Restore previous side-facing T
 
 User preferred the previous map detail 2 T junction. Reverted only the part-17 side-T trial to the earlier part-20/part-19 artwork, reinstalled assets and refreshed their cache version. Part 20 true inward corners and other wall changes remain intact.
