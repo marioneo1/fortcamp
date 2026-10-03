@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Reject independently sized wall illustrations; restore painted-map priority
+
+User correctly criticized the new polished style and wasteful long L/cross silhouettes, emphasizing full/half grid lengths and consistent band widths. User withdrew strict overhead as the primary target. Preserved all active materials. Created a geometry reference and generated a new painted limestone material sheet referencing the existing v4 wall and actual map cobbles. Inspection/measurement showed it still failed the exact 2:1 ratio (276-281px full vs 171-174px half), despite a closer painted appearance. Explicitly rejected the independent half/join/door rows rather than presenting them as correct.
+
+Recovered the four full material bands and cropped exact 256px full / 128px half strips plus 48px joint patches, all sharing an 84px painted cross-section. No scaling/warping; terminal rim removal gives flush band ends. Saved twelve usable source parts, exact prompt/source, geometry report and an on-paving full/full/half/half preview under staging-terrain/building-toolset-v6-gridfit. Reviewed these visually and verified dimensions. No runtime changes or active asset replacements; door/gate generation and a grid-defined connection prototype remain pending. This is a material-source trial, not a completed corner/gate integration. Media remain excluded from Git.
+
 ## 2026-10-02: Install new overhead stones alongside original materials
 
 User requested playable comparisons, keeping old limestone. Added independent limestone_plan and fieldstone_plan profiles, 32 building-v5-topdown sprites and two named Pure overhead entries to dev Battle Lab. Reused all four showcase plans/layout seeds for direct comparisons. Implemented a dedicated additive installer with complete alpha extraction, shared scale, jamb-based state-pair anchors and separate joint/damage/end calibration. Planar sprites rotate without side-face flips or old column overlays. Original registry/geometry entries were programmatically compared with HEAD and confirmed unchanged; original material reinstallation retains additive profiles.

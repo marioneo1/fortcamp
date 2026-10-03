@@ -1,5 +1,15 @@
 # Modular wall art — current dev strategy
 
+## October 2: Painted grid-unit direction supersedes the pure-overhead experiment
+
+User rejected the planar polished material style and inconsistent generated lengths, and explicitly withdrew pure-top-down as the main requirement. PRIORITY: match existing painted terrain/props. Preserve all original and comparison materials. Do not interpret the prior overhead trial as the new art standard.
+
+Construction assets must be designed around one declared unit and its exact half, with one material cross-section and one stone scale. Do not request long independent L-corner sprites or full T/cross illustrations when the renderer uses straight bands. Corner/junction art covers only the local join; attached full/half segments supply arms. An atlas cell is packaging, not permission to inflate small parts to its size. Never normalize a half wall or small joint independently to full-wall width.
+
+New source trial: staging-terrain/building-toolset-v6-gridfit. References explicitly separate a measured geometry blueprint, existing v4 limestone wall style and actual smithy-cobble map style. The new generated sheet is closer to the painted direction but still failed dimensional constraints: full bands measured 276-281px, alleged halves 171-174px. Rejected its structural half/join/door rows. Do not claim the raw sheet is grid-correct.
+
+Prepared four full bands, their exact halves and compact joining texture patches by crop only from the same four source bands: 256px full unit, 128px half, shared 84px painted cross-section including the side face, 48px-wide joining patch. Cut away terminal rim pixels for flush ends. No resizing/warping or long L arms. limestone_gridfit_12.png, individual sprites, geometry_report.json and full_and_half_on_map_floor.png record the usable trial. Exact prompt and source preserved. This is staging only; gate/door approval and a prototype with construction ports defined by the grid rather than generated silhouette dimensions remain pending. Do not feed the 12-piece pack to the old 16-piece installer.
+
 ## October 2: Overhead stone profiles installed additively for comparison
 
 The two candidates below are now installed as separate limestone_plan and fieldstone_plan materials under structures/building-v5-topdown, with 32 new stable registry entries. No original registry entry, geometry profile, source image or default mission material was changed. Battle Lab > Building material tests exposes both Pure overhead entries alongside the four original kits, with the same four layout seeds.

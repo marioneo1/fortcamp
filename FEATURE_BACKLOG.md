@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## October 2: Correct wall source strategy - painted style and exact construction units
+
+User rejected the pure-overhead polished style and irregular generated lengths; strict overhead is no longer the priority. Preserve current six material profiles while returning to the existing painted-map style. Generated a measured-layout source trial using the current wall/paving references; rejected its inaccurate half/join/door geometry. Prepared twelve crop-only material parts with exact 256px full / 128px half lengths, common cross-section and compact 48px joints, without long L arms or independent rescaling. Verified dimensions and checked the two-full/two-half paving preview. Source/prompts/report: staging-terrain/building-toolset-v6-gridfit. Canonical rules: docs/art/MODULAR_WALL_GENERATION_GUIDE.md. Remaining: validate style with user, prototype grid-defined connection ports and doors/gates, then test an additive material before changing defaults. Current game art/registry/geometry and production unchanged.
+
 ## Completed October 2: Additive overhead stone material tests
 
 Installed both overhead candidates as additional materials (limestone_plan/fieldstone_plan), preserving every existing registry/geometry entry and all old art. Battle Lab now has six material entries and 24 comparable layouts. Separate top-down calibration, gate/door state anchors and no painted-face flips/extra columns; normal interactions, collision, damage and save isolation retained. Additive installer is tools/install_topdown_stone_toolsets.py; canonical controls: docs/design/BATTLE_LAB.md. Verified 132 frontend tests, build, eight targeted backend checks and all 24 material-layout browser checks. Remaining: user visual comparison and deciding whether any mission defaults should change. Production untouched.
