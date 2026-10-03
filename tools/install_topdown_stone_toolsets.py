@@ -21,7 +21,7 @@ def main():
     geometry = json.loads(geometry_path.read_text())
     DEST.mkdir(parents=True, exist_ok=True)
     report = []
-    for source_family in ('limestone', 'fieldstone'):
+    for source_family in ('fieldstone',):
         family = source_family + '_plan'
         cells = groups(Image.open(SOURCE / (source_family + '.png')).convert('RGBA'), 4, 4)
         scale = 320 / cells[0][0].width
@@ -73,7 +73,7 @@ def main():
     geometry_path.write_text(json.dumps(geometry, indent=2) + '\n')
     (ROOT / 'frontend/src/building-art-geometry.json').write_text(json.dumps(geometry, indent=2) + '\n')
     (SOURCE / 'installed.json').write_text(json.dumps(report, indent=2) + '\n')
-    print('Added 32 overhead stone parts; existing material registrations and profiles preserved.')
+    print('Added 16 rough-stone overhead parts; existing material registrations and profiles preserved.')
 
 
 if __name__ == '__main__':

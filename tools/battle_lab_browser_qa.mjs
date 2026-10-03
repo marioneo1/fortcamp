@@ -54,7 +54,7 @@ await evaluate("document.querySelector('[data-lab-new-seed]').click()");
 assert.equal(await evaluate("document.querySelector('[data-lab-layout]').value"),'');
 await evaluate("{const q=document.querySelector('[data-lab-query]');q.value='building kit';q.dispatchEvent(new Event('input'));}");
 assert.equal(await evaluate('document.querySelectorAll("[data-lab-mission]").length'),6);
-for(const family of ['timber','fieldstone','limestone','iron','limestone_plan','fieldstone_plan']){
+for(const family of ['timber','fieldstone','limestone','iron','fieldstone_plan']){
  await evaluate(`document.querySelector('[data-lab-mission="material_${family}"]').click()`);
  const layouts=await evaluate("Array.from(document.querySelectorAll('[data-lab-layout] option')).slice(1).map(o=>o.value)");
  assert.equal(layouts.length,4);

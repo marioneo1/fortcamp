@@ -1,6 +1,6 @@
 // Painted modular connections: plain mating ends, caps only at exposed ports.
 function turn([x,y],rotation){for(let i=0;i<rotation/90;i++)[x,y]=[-y,x];return [x,y]}
-const matchPiece=item=>/^structure:(limestone_boxed|timber|fieldstone_plan|limestone_plan|fieldstone|limestone|iron)_(.+)$/.exec(item.sprite||'');
+const matchPiece=item=>/^structure:(timber|fieldstone_plan|fieldstone|limestone|iron)_(.+)$/.exec(item.sprite||'');
 const rotationOf=item=>((Number(item.rotation)||0)%360+360)%360;
 const inward={north:[0,1],east:[-1,0],south:[0,-1],west:[1,0]};
 function faceMirror(item,g={}){
@@ -46,16 +46,9 @@ function offsetOf(item,g,piece){
 export function connectionPorts(item,geometry){
  const match=matchPiece(item);if(!match||item.destroyed)return [];
  const [,family,piece]=match,g=geometry[family];if(!g)return [];
- const o=g.join_offset,rotation=rotationOf(item),base=g.native_pieces?(item.art_offset||[0,0]):offsetOf(item,g,piece);
+ const o=g.join_offset,rotation=rotationOf(item),base=offsetOf(item,g,piece);
  let ports;
- if(g.native_pieces){
-  if(piece==='corner')ports=[[[-.5-o,0],0],[[0,.5+o],270]];
-  else if(piece==='edge_junction')ports=[[[-.5,0],0],[[.5,0],180],[[0,.5+o],270]];
-  else if(piece==='half')ports=[[[-.25,0],0],[[.25,0],180]];
-  else if(piece==='vertical')ports=[[[0,-.5],90],[[0,.5],270]];
- }
- if(ports){} // Dedicated-piece lengths above already include the boundary reach.
- else if(['corner','corner_broken'].includes(piece))ports=[[[-.5,-o],0],[[o,.5],270]];
+ if(['corner','corner_broken'].includes(piece))ports=[[[-.5,-o],0],[[o,.5],270]];
  else if(piece==='edge_junction')ports=[[[-.5,-o],0],[[.5,-o],180],[[0,.5],270]];
  else if(piece==='junction')ports=[[[-.5,0],0],[[.5,0],180],[[0,.5],270]];
  else if(piece==='cross')ports=[[[-.5,0],0],[[.5,0],180],[[0,-.5],90],[[0,.5],270]];
@@ -89,9 +82,21 @@ export function structuralLayout(item,geometry,neighbors=[]){
  const match=matchPiece(item);
  if(!match)return {offset:item.art_offset||[0,0],connectors:[]};
  const [,family,piece]=match,g=geometry[family];if(!g)return {offset:item.art_offset||[0,0],connectors:[]};
- if(g.native_pieces)return {offset:item.art_offset||[0,0],connectors:[],mirrorY:1,layer:3};
  const base=offsetOf(item,g,piece),mirrorY=faceMirror(item,g);
  const rotation=rotationOf(item);
+ if(g.authored_junctions){
+  const local=piece==='corner'?g.corner_offset:piece==='corner_broken'?g.broken_corner_offset:
+    g['authored_'+piece+'_offset'];
+  if(local){
+   const [dx,dy]=turn(local,rotation);
+   return {offset:[base[0]+dx,base[1]+dy],connectors:[],mirrorY:1,layer:3};
+  }
+  // The atlas provides a true half-wall rather than a synthesized terminal.
+  if(piece==='end'){
+   const [dx,dy]=turn([.25,0],rotation);
+   return {offset:[base[0]+dx,base[1]+dy],connectors:[],mirrorY:1};
+  }
+ }
  if(piece==='breach'){
   const [dx,dy]=g.breach_offset||[0,0];
   const [x,y]=turn([dx,dy*mirrorY],rotation);

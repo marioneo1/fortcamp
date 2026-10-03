@@ -14,13 +14,15 @@ try{
  assert.equal(await evaluate('Boolean(window.propCoverageReady)'),true);
  const plans=['gatehouse','divided_hall','breached_annex','twin_stores'];
  for(let i=1;i<=4;i++){
-  await evaluate(`window.propEncounter('limestone_boxed_${plans[i-1]}')`);
+  await evaluate(`window.propEncounter('limestone_${plans[i-1]}')`);
   await new Promise(r=>setTimeout(r,200));
-  const assets=await evaluate("Array.from(document.querySelectorAll('.has-prop-art')).map(e=>e.style.getPropertyValue('--battle-prop')).filter(s=>s.includes('building-v9-boxed'))");
+  const assets=await evaluate("Array.from(document.querySelectorAll('.has-prop-art')).map(e=>e.style.getPropertyValue('--battle-prop')).filter(s=>s.includes('building-v10-polished'))");
   assert.ok(assets.length>=6);
   assert.equal(await evaluate("document.querySelectorAll('.wall-connector').length"),0);
   for(const value of assets){const path=value.match(/url\(['\"]?([^'\")]+)/)?.[1];assert.equal((await fetch('http://127.0.0.1:8766'+path)).status,200)}
-  await writeFile(`staging-terrain/building-toolset-v9-boxed-reference/in-game-${i}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false})).data,'base64'));
+  const r=await evaluate("(()=>{const r=document.querySelector('.battle-cell').parentElement.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,scale:2}})()");
+  await writeFile(`staging-terrain/building-toolset-v10-polished/map-detail-${i}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip:r})).data,'base64'));
+  await writeFile(`staging-terrain/building-toolset-v10-polished/in-game-${i}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:false})).data,'base64'));
  }
- console.log('PASS: four full furnished buildings render candidate walls; assets load; no assembled wall connectors.');
+ console.log('PASS: four full polished-stone buildings render the new kit; assets load; native junctions retained.');
 }finally{await call('Browser.close');ws.close()}

@@ -19,6 +19,7 @@ def main():
     dest.mkdir(parents=True,exist_ok=True)
     report=[];geometry=json.loads((ROOT/'backend/building_art_geometry.json').read_text())
     for family in FAMILIES:
+        if family=='limestone' and (ROOT/'staging-terrain/building-toolset-v10-polished/limestone.png').exists():continue
         source=ROOT/'staging-terrain/building-toolset-v4'/f'{family}.png'
         version='building-v4'
         if not source.exists():
@@ -122,6 +123,9 @@ def main():
     (ROOT/'backend/building_art_geometry.json').write_text(json.dumps(geometry,indent=2)+'\n')
     (ROOT/'frontend/src/building-art-geometry.json').write_text(json.dumps(geometry,indent=2)+'\n')
     (SOURCE/'extraction.json').write_text(json.dumps(report,indent=2)+'\n')
+    if (ROOT/'staging-terrain/building-toolset-v10-polished/limestone.png').exists():
+        from install_polished_building_kit import main as install_polished
+        install_polished()
     print(f'Installed {len(report)} material-specific building parts; geometry: {geometry}')
 
 

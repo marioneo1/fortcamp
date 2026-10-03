@@ -110,12 +110,11 @@ def catalogue():
                        'description': mission.get('description', ''), 'form': mission.get('mission_form', 'combat'),
                        'source': source, 'faction': mission.get('faction', ''), 'follows': parents, 'variants': variants})
     for family,label in FAMILIES.items():
-        boxed=family=='limestone_boxed'
         result.append({'id':'material_'+family,'name':label+' building kit','rank':'E',
-            'description':('Four complete furnished buildings using the generated wall kit. Compare gatehouse, divided hall, breached annex and twin stores.' if boxed else 'Four authored material test maps. Every kit piece appears across the four layouts. No rewards or save changes.'),
+            'description':'Four authored material test maps. Every kit piece appears across the four layouts. No rewards or save changes.',
             'form':'art test','source':'Building material tests','faction':'','follows':[],
             'variants':[{'id':'direct','label':'Material test','node':'Building kit inspection','outcome':'direct',
-                         'description':('Inspect the generated stone shell in full buildings, with working timber doors/gates, furniture and open breaches.' if boxed else 'Inspect walls, openings, damage states and supporting parts. Doors and walls work normally; stairs are scenery.'),
+                         'description':'Inspect walls, openings, damage states and supporting parts. Doors and walls work normally; stairs are scenery.',
                          'encounter_id':'showcase:'+family,'transition':{},'layout_presets':material_presets(family)}]})
     return sorted(result, key=lambda m: ('EDCBAS'.index(m['rank']), m['name']))
 

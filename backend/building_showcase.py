@@ -3,9 +3,7 @@ import random
 from .location_maps import place_building, wall
 
 FAMILIES={'timber':'Timber','fieldstone':'Rough stone','limestone':'Polished stone','iron':'Metal',
-          'limestone_plan':'Polished stone (Pure overhead)',
-          'fieldstone_plan':'Rough stone (Pure overhead)',
-          'limestone_boxed':'Polished stone (Boxed six-piece trial)'}
+          'fieldstone_plan':'Rough stone (Pure overhead)'}
 PARTS={'wall','corner','junction','cross','end','breach','door_closed','door_open',
        'gate_closed','gate_open','window','pillar','stairs','corner_broken','edge_junction','brace'}
 PLANS=[('gatehouse','Gatehouse and courtyard','workshop_forge_yard'),
@@ -21,7 +19,6 @@ def presets(family):
 
 def blueprint(family,seed):
     if family not in FAMILIES:raise ValueError('Unknown showcase material')
-    if family=='limestone_boxed':return boxed_blueprint(seed)
     forced=next((i for i,p in enumerate(presets(family)) if p['seed']==seed),None)
     variant=forced if forced is not None else random.Random(f'{family}:{seed}').randrange(4)
     ident,label,building_id=PLANS[variant];anchor=(5,2)
@@ -85,80 +82,3 @@ def blueprint(family,seed):
             'building_templates':[{'id':building_id,'label':label,'anchor':list(anchor)}],
             'material_showcase':{'family':family,'label':FAMILIES[family], 'pieces':shown,
                 'notes':'Art test: stairs and braces are scenery; doors and walls use normal interactions.'}}
-
-
-def boxed_blueprint(seed):
-    """The same four furnished buildings, rebuilt using the generated wall kit."""
-    family='limestone_boxed'
-    # Keep former bookmarked lab seeds usable, now selecting real buildings.
-    aliases={f'boxed-walls-{i+1}':f'material-layout-{i+1}' for i in range(4)}
-    seed=aliases.get(seed,seed)
-    base=blueprint('limestone',seed)
-    variant=base['map_variation']-1
-    ident,label,_=PLANS[variant]
-    base.update(name=FAMILIES[family]+' ? '+label,template_id=f'{family}_{ident}')
-    shown=set()
-    for collection in ('terrain','decorations'):
-        kept=[]
-        for item in base[collection]:
-            sprite=item.get('sprite','')
-            if not sprite.startswith('structure:limestone_'):
-                kept.append(item);continue
-            part=sprite.removeprefix('structure:limestone_')
-            if part in {'pillar','stairs','brace'}:
-                # Decorative support samples are not part of the candidate atlas.
-                # Existing furnished room contents remain unchanged.
-                continue
-            rotation=item.get('rotation',0)
-            old_offset=item.get('art_offset',[0,0])
-            item['art_offset']=[0,0]
-            if part.startswith(('door_','gate_')):
-                # Deliberate wooden leaves in the stone shell, using existing
-                # working open/closed gate art; no substitute old stone masonry.
-                item.update(sprite='structure:timber_'+part,
-                            closed_sprite=item.get('closed_sprite','').replace('limestone_','timber_'),
-                            open_sprite=item.get('open_sprite','').replace('limestone_','timber_'),
-                            destroyed_sprite='structure:timber_breach',
-                            art_scale=1.25,name='Timber '+part.replace('_',' '))
-                kept.append(item);continue
-            if part in {'breach','corner_broken'}:
-                # Real gaps in the same authored broken-wall locations.
-                item.update(sprite='structure:wall_rubble',blocking=False,blocks_sight=False,
-                            art_scale=.65,destructible=False,hp=0,name='Gap with loose stone debris')
-                kept.append(item);continue
-            mapped={'window':'wall','end':'half'}.get(part,part)
-            offset=.38
-            def turned(point):
-                x,y=point
-                for _ in range(rotation//90):x,y=-y,x
-                return [x,y]
-            if mapped=='corner':
-                dx,dy=turned([offset,-offset])
-                item['art_offset']=[old_offset[0]*offset/.3118+dx,
-                                    old_offset[1]*offset/.3118+dy]
-            elif mapped=='edge_junction':
-                item['art_offset']=turned([0,-offset])
-            elif item.get('edge_wall') and len(item.get('wall_edges',[]))==1:
-                item['art_offset']={'north':[0,-offset],'south':[0,offset],
-                                    'east':[offset,0],'west':[-offset,0]}[item['wall_edges'][0]]
-            elif mapped=='half':
-                item['art_offset']=turned([.25,0])
-            if mapped=='wall' and rotation%180==90:
-                mapped='vertical';rotation=(rotation-90)%360
-            item.update(sprite=f'structure:{family}_{mapped}',rotation=rotation,
-                        art_scale=1024/397,destroyed_sprite=None)
-            shown.add(mapped);kept.append(item)
-        base[collection]=kept
-    # Centered masonry occupies its tile. Spawn only on unobstructed room floors.
-    blocked={(t['x'],t['y']) for t in base['terrain'] if t.get('blocking')}
-    floor=[tuple(cell) for layer in base['paint'] for cell in layer.get('tiles',[])]
-    candidates=[(p['x'],p['y']) for p in base['spawn_zones']['enemy']]+floor
-    enemies=[]
-    for x,y in candidates:
-        if (x,y) not in blocked and (x,y) not in {(e['x'],e['y']) for e in enemies}:
-            enemies.append({'x':x,'y':y})
-        if len(enemies)==8:break
-    base['spawn_zones']['enemy']=enemies
-    base['material_showcase']={'family':family,'label':FAMILIES[family],'pieces':sorted(shown),
-        'notes':'Boundary-fitted stone walls and authored junctions, working timber doors/gates and traversable breaches. Painted texture transitions remain under review.'}
-    return base

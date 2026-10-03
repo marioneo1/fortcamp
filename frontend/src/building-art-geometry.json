@@ -57,65 +57,41 @@
     ]
   },
   "limestone": {
-    "join_offset": 0.3118,
-    "wall_half_thickness": 0.1188,
-    "cap_mode": "pillar",
-    "cap_scale": 0.8721,
+    "join_offset": 0.3454,
+    "authored_junctions": true,
+    "wall_half_thickness": 0.1139,
     "corner_offset": [
-      -0.0627,
-      -0.0626
-    ],
-    "broken_corner_offset": [
-      -0.0615,
-      -0.0097
-    ],
-    "end_offset": [
-      0.002,
-      0
-    ],
-    "breach_offset": [
-      0,
-      0.0716
+      -0.0303,
+      -0.0303
     ],
     "junction_offset": [
-      0.0161,
-      0.0056
-    ],
-    "native_junction_offset": [
       0,
-      0.2555
+      0
     ],
-    "native_junction_rotations": [
-      90
+    "authored_junction_offset": [
+      0,
+      0.322
     ],
-    "directional_corners": {
-      "north_east": {
-        "offset": [
-          -0.0886,
-          0.1504
-        ]
-      },
-      "north_west": {
-        "offset": [
-          0.0918,
-          0.1504
-        ]
-      },
-      "south_east": {
-        "offset": [
-          -0.0886,
-          -0.1472
-        ]
-      },
-      "south_west": {
-        "offset": [
-          0.0918,
-          -0.1472
-        ]
-      }
-    },
-    "perimeter_face": "outward",
-    "corner_overlap": 0.035
+    "authored_cross_offset": [
+      0,
+      0.0
+    ],
+    "authored_edge_junction_offset": [
+      0,
+      -0.0191
+    ],
+    "authored_window_offset": [
+      0,
+      -0.0006
+    ],
+    "authored_breach_offset": [
+      0,
+      0.0646
+    ],
+    "broken_corner_offset": [
+      0.0462,
+      -0.0147
+    ]
   },
   "iron": {
     "join_offset": 0.3843,
@@ -142,31 +118,6 @@
       -0.0252
     ]
   },
-  "limestone_plan": {
-    "plan_view": true,
-    "join_offset": 0.3249,
-    "wall_half_thickness": 0.1058,
-    "corner_offset": [
-      -0.0595,
-      -0.0595
-    ],
-    "broken_corner_offset": [
-      -0.0608,
-      -0.0323
-    ],
-    "breach_offset": [
-      0,
-      0.0098
-    ],
-    "end_offset": [
-      0.1582,
-      0
-    ],
-    "junction_offset": [
-      0,
-      0
-    ]
-  },
   "fieldstone_plan": {
     "plan_view": true,
     "join_offset": 0.3006,
@@ -191,11 +142,5 @@
       0,
       0
     ]
-  },
-  "limestone_boxed": {
-    "native_pieces": true,
-    "plan_view": true,
-    "join_offset": 0.38,
-    "wall_half_thickness": 0.12
   }
 }

@@ -1,5 +1,7 @@
 # Reusable building templates — implemented in dev
 
+Current polished stone uses the complete v10 sixteen-piece atlas through stable `structure:limestone_*` IDs. All four Polished stone Battle Lab presets remain furnished and exercise the new doors/gates and native junctions. Removed unused polished overhead/boxed trial families. Rough-stone, timber and metal profiles remain unchanged. See [current art rules](../art/MODULAR_WALL_GENERATION_GUIDE.md).
+
 ## October 2: Two additional overhead material profiles
 
 Six materials can now skin the four material-showcase plans: the original timber/fieldstone/limestone/iron plus fieldstone_plan and limestone_plan. The new profiles use independent geometry and artwork, and are offered only through dev Battle Lab comparison entries. Existing mission templates retain their original families. Identical layout seeds retain terrain positions, dimensions and spawn locations, allowing direct comparisons. No saves are migrated and no existing limestone assets are removed. See BATTLE_LAB.md for controls and ../art/MODULAR_WALL_GENERATION_GUIDE.md for the additive installer.

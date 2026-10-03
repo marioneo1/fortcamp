@@ -36,7 +36,7 @@ class BuildingShowcaseTests(unittest.TestCase):
                             if (nx,ny) not in seen and _can_step(walking,x,y,nx,ny,{'id':'tester'}):
                                 seen.add((nx,ny));queue.append((nx,ny))
                     self.assertTrue(seen&exits,(family,preset['id'],spawn))
-            expected={'wall','half','vertical','corner','junction','cross','edge_junction'} if family=='limestone_boxed' else PARTS
+            expected=PARTS
             self.assertEqual(shown,expected,family)
             self.assertEqual(len({tuple(sorted(s)) for s in shapes}),4)
 
@@ -58,7 +58,7 @@ class BuildingShowcaseTests(unittest.TestCase):
 
     def test_overhead_profiles_are_additive_and_use_comparable_layouts(self):
         from backend.location_maps import ART_GEOMETRY
-        for old in ('limestone', 'fieldstone'):
+        for old in ('fieldstone',):
             new = old + '_plan'
             self.assertIn(old, FAMILIES)
             self.assertTrue(ART_GEOMETRY[new]['plan_view'])
@@ -71,21 +71,12 @@ class BuildingShowcaseTests(unittest.TestCase):
                                  [(t['x'], t['y']) for t in overhead['terrain']])
                 self.assertEqual(original['spawn_zones'], overhead['spawn_zones'])
 
-    def test_boxed_trial_uses_complete_furnished_buildings_and_working_gates(self):
-        for preset in presets('limestone_boxed'):
-            candidate=blueprint('limestone_boxed',preset['seed'])
-            original=blueprint('limestone',preset['seed'])
-            self.assertEqual(candidate['building_templates'],original['building_templates'])
-            self.assertEqual(candidate['paint'],original['paint'])
-            original_props=[t for t in original['terrain']+original['decorations']
-                            if not t.get('sprite','').startswith('structure:')]
-            candidate_props=[t for t in candidate['terrain']+candidate['decorations']
-                             if t.get('sprite') and not t['sprite'].startswith('structure:')]
-            self.assertTrue(all(t in candidate_props for t in original_props))
-            gates=[t for t in candidate['terrain'] if t.get('kind')=='gate']
+    def test_polished_kit_replaces_retired_trials_and_has_native_working_gates(self):
+        self.assertNotIn('limestone_plan',FAMILIES)
+        self.assertNotIn('limestone_boxed',FAMILIES)
+        for preset in presets('limestone'):
+            board=blueprint('limestone',preset['seed'])
+            gates=[t for t in board['terrain'] if t.get('kind')=='gate']
             self.assertTrue(gates)
-            self.assertTrue(all(t['closed_sprite'].startswith('structure:timber_') and
-                                t['open_sprite'].startswith('structure:timber_') for t in gates))
-            self.assertFalse(any(t.get('sprite','').startswith('structure:limestone_') and
-                                 not t['sprite'].startswith('structure:limestone_boxed_')
-                                 for t in candidate['terrain']+candidate['decorations']))
+            self.assertTrue(all(t['closed_sprite'].startswith('structure:limestone_') and
+                                t['open_sprite'].startswith('structure:limestone_') for t in gates))
