@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## 2026-10-02: Cover marked stone joints with matching pillars
+
+Reviewed the red boxes in polished stone.png. Added matching-material connector pillars at architectural changes: intact corner/T/cross intersections and connected native-T/gate/door seams. Used the existing cap scale and foreground layer, with map-space deduplication and destruction cleanup. Excluded ordinary straight runs and damaged centers. Rough fieldstone uses the same rule with its own art. Updated canonical assembly rules and backlog. 130 frontend tests, build and 16-layout Battle Lab browser checks pass; production and saves untouched. Final subjective review remains with the user.
+
 ## 2026-10-02: Foreground stone posts
 
 The latest polished/rough-stone snips showed the exposed branch-end post below the gate covered by its adjoining band and facing the wrong way. Assigned caps an explicit layer above bands but below tokens and matched stone post mirroring to the attached face, including terminal posts. Updated both active/preparation rendering and the enlarged preview. 127 frontend tests, build and 16-layout browser checks pass, with explicit foreground/mirror assertions for both stone divided halls. Also made horizontal bands cover vertical bands at corners and branches, and selected the calibrated dedicated v4 stone T for the left-facing join above the gate. Other orientations retain face-correct assembly. Documented the reusable construction rules; production and saves unchanged.

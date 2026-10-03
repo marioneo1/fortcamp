@@ -1,5 +1,13 @@
 # Wall boundaries — implemented in dev
 
+## October 2: Strategic stone connector pillars
+
+Limestone and rough fieldstone now share a renderer rule for covering structural seams with their own matching pillar sprite. Intact corners place one pillar at their rotated meeting point; perimeter Ts place one at the boundary/stem intersection; assembled centered Ts/crosses place one at the center. Dedicated whole T sprites instead cover their connected arm endpoints. Doors/gates cover connected jamb endpoints in either open or closed state. Ordinary straight-to-straight connections receive no extra pillar, and damaged/destroyed junctions do not gain a new intact center post.
+
+Pillars use the material's existing calibrated cap scale and the foreground cap layer (4). Translated inward corners preserve their actual attachment point. Coincident generated posts are deduplicated by sprite and map-space position. Placement is visual only: no collision, health, reward, gate-state or saved-map changes. This supersedes the earlier blanket statement that connecting joins never carry columns: terminal caps remain exposed-end-only, while these deliberate structural supports are separate exceptions.
+
+Validation: 130 frontend tests, frontend build and all 16 actual Battle Lab material layouts pass. Rotation, inward-corner anchors, straight-run exclusion, connected gate states, destruction and shared-post deduplication are covered. Production untouched; live subjective review remains pending.
+
 ## October 2: Exposed posts render in front of wall bands
 
 Stone end posts now match the attached band face when their endpoint orientation reverses; a right-hand horizontal end mirrors its half-turned pillar back to the downward-facing convention. Terminal-piece posts use the same rule. Caps have an explicit foreground layer above wall bands and below character tokens in active combat and defense preparation. Supporting bands remain behind the wall. This fixes the exposed branch post below the divided-hall gate without changing connections, cap count, collision or saved maps.

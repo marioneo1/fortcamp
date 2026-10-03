@@ -136,12 +136,29 @@ export function structuralLayout(item,geometry,neighbors=[]){
     ...(trim?{art_clip:[0,72,0,0]}:{})};
   });
  };
+ const jointPosts=()=>{
+  if(g.cap_mode!=='pillar')return [];
+  let points=[];
+  if(piece==='corner')points=[turn([o,-o],rotation).map((v,i)=>v+base[i])];
+  else if(piece==='edge_junction')points=[turn([0,-o],rotation)];
+  else if(piece==='cross'||(piece==='junction'&&!g.native_junction_rotations?.includes(rotation)))points=[base];
+  // Dedicated T/gate artwork has its own seam positions. Cover its shared
+  // endpoints without adding a column at every ordinary straight-wall join.
+  const nativeT=piece==='junction'&&g.native_junction_rotations?.includes(rotation);
+  if(nativeT||/^(door|gate)_(open|closed)$/.test(piece)){
+   const index=neighbors instanceof Map?neighbors:portIndex(neighbors,geometry);
+   points.push(...connectionPorts(item,geometry).filter(p=>connected(p,index)).map(p=>p.point));
+  }
+  return points.map((point,index)=>({id:`${item.id}_joint_${index}`,parent_id:item.id,
+   wall_cap:true,wall_joint:true,x:item.x,y:item.y,sprite:`structure:${family}_pillar`,
+   rotation:0,art_mirror_y:1,art_scale:g.cap_scale||.4,art_offset:point}));
+ };
  let connectors,hideArt=false;
  if(piece==='junction'&&g.native_junction_rotations?.includes(rotation)){
   const [x,y]=turn(g.native_junction_offset,rotation);
   // The dedicated stone T has the correct faces for this orientation.
   // Its measured bar anchor keeps it on the existing divider centerline.
-  return {offset:[base[0]+x,base[1]+y],connectors:caps(),mirrorY:1,layer:3};
+  return {offset:[base[0]+x,base[1]+y],connectors:[...caps(),...jointPosts()],mirrorY:1,layer:3};
  }
  if(piece==='end'){
   // This terminal occupies half a cell even if the generated source is longer.
@@ -160,11 +177,16 @@ export function structuralLayout(item,geometry,neighbors=[]){
  }else if(piece==='corner_broken'){
   const [x,y]=turn(g.broken_corner_offset||g.corner_offset||[0,0],rotation);
   return {offset:[base[0]+x,base[1]+y],connectors:[...beam([0,-o],0,-scale/2,-.24),...beam([o,0],90,.24,scale/2),...caps()]};
- }else return {offset:base,connectors:[],mirrorY};
- return {offset:base,connectors:[...connectors,...caps()],mirrorY,...(hideArt?{hideArt:true}:{})};
+ }else return {offset:base,connectors:jointPosts(),mirrorY};
+ return {offset:base,connectors:[...connectors,...caps(),...jointPosts()],mirrorY,...(hideArt?{hideArt:true}:{})};
 }
 
 export function structuralConnectors(terrain,geometry){
  const index=portIndex(terrain,geometry);
- return terrain.flatMap(item=>structuralLayout(item,geometry,index).connectors);
+ const posts=new Set();
+ return terrain.flatMap(item=>structuralLayout(item,geometry,index).connectors).filter(part=>{
+  if(!part.wall_cap)return true;
+  const key=`${part.sprite}:${Math.round((part.x+part.art_offset[0])*1000)},${Math.round((part.y+part.art_offset[1])*1000)}`;
+  if(posts.has(key))return false;posts.add(key);return true;
+ });
 }

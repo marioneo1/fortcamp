@@ -1,5 +1,7 @@
 # Map Asset Layering
 
+Strategic stone connector pillars also use the foreground cap layer (4), the matching material pillar and calibrated cap size. The shared renderer covers intact corner/T/cross intersections and connected native-T/gate/door seams, removes duplicates and skips destroyed/damaged centers. Plain straight runs keep their existing bands. Canonical placement rules: MODULAR_WALL_GENERATION_GUIDE.md.
+
 Exposed wall caps use the `wall-cap` class: layer 4, above horizontal wall bands (3) and vertical bands (2), below character tokens (5). They remain non-interactive. Stone caps mirror to the attached wall face rather than reversing that face at the opposite endpoint. Both preparation and active battle use the same rule. Horizontal bands cover vertical bands at corner/T/cross joins; dedicated calibrated stone Ts use the horizontal foreground layer. See MODULAR_WALL_GENERATION_GUIDE.md for the required building assembly checklist.
 
 ## October 2: Wall face mirroring

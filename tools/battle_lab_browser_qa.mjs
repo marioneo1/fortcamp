@@ -73,6 +73,11 @@ for(const family of ['timber','fieldstone','limestone','iron']){
    assert.ok(await evaluate("Array.from(document.querySelectorAll('.wall-cap')).some(e=>e.style.getPropertyValue('--asset-rotation')==='180deg'&&e.style.getPropertyValue('--asset-mirror-y')==='-1')"));
   }
   await writeFile(`staging-terrain/building-toolset-v4/${family}-${index+1}-in-game.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
+  if(['fieldstone','limestone'].includes(family)&&index===1){
+   await evaluate("{const map=document.querySelector('.battlefield').cloneNode(true);map.id='qa-wall-closeup';map.style.cssText+=';position:absolute;left:0;top:0;width:1500px!important;height:1000px!important;max-width:none;min-width:0;z-index:99999';document.body.append(map);}");
+   await writeFile(`staging-terrain/building-toolset-v4/${family}-joint-pillars-closeup.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip:{x:0,y:0,width:1500,height:1000,scale:1}})).data,'base64'));
+   await evaluate("document.querySelector('#qa-wall-closeup').remove()");
+  }
   await evaluate("document.querySelector('[data-lab-return]').click()");await wait();
  }
  assert.equal(shown.size,16,family);

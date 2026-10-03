@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## Completed October 2: Strategic stone connector pillars
+
+Added matching limestone/fieldstone pillars at intact corners, perimeter/centered T and cross intersections, connected native-T arm seams and connected gate/door jamb seams. Plain straight runs stay free of extra columns; destroyed/damaged centers remain open. Foreground posts use material-calibrated size and deduplicate shared locations. Applies to every building using the shared renderer, including existing battles. Canonical rules: docs/art/MODULAR_WALL_GENERATION_GUIDE.md and docs/design/WALL_BOUNDARIES.md. Validation: 130 frontend tests, build and all 16 Battle Lab material layouts pass. Production and saves untouched; visual approval pending.
+
 ## Completed October 2: Foreground end posts
 
 Fixed the exposed stone branch post below the divided-hall gate: cap sprites draw in front of wall bands and mirror to match their attached face at opposite endpoints. Terminal posts follow the same rule, in combat and defense preparation. Canonical rules retained in docs/art/MODULAR_WALL_GENERATION_GUIDE.md and docs/design/WALL_BOUNDARIES.md. Validation: 127 frontend tests, build, seven targeted backend tests and all 16 Battle Lab layouts; browser assertions cover foreground layering and mirrored posts. Also made horizontal bands cover vertical bands at corners and branches, and selected the calibrated dedicated v4 stone T for the left-facing join above the gate. Other orientations retain face-correct assembly. Production untouched.
