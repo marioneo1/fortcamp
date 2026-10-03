@@ -20,6 +20,8 @@ Battle Lab automatically lists verified seeds and names for all four layouts on 
 
 ### Proposed next batches
 
+The [complete remaining-location review](../maps/GENERIC_CONTRACT_LOCATION_REVIEW.md) supersedes broad setting assumptions below. In particular, Knight without a Grave's own premise places it on the royal road; crypt/chapel settings should follow the origin of its reused story encounters. The review contains brief proposed maps for every remaining generic mission title and records additional bridge/chapel placement issues.
+
 These are pending design work, not implemented by this rollout:
 
 1. **Roadblocks and command camps:** Break the Rival Warband, End the Old Command, Chieftain's Redoubt and The Ironcap Vanguard need actual fortified positions, guard lanes and supply/command areas. Add a reusable road-spanning blockade piece and camp perimeter, rather than another storehouse skin. Reuse current gates, timber/stone walls, tents and alarm bell.

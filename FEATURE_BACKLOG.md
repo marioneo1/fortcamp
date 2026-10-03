@@ -1,5 +1,11 @@
 # Fortcamp feature backlog
 
+## October 3: Remaining generic locations reviewed (proposal)
+
+Reviewed all 29 distinct generic mission titles (44 encounter IDs with prison-rank copies) against runtime premises and faction openings. Proposed map descriptions, existing-asset reuse, specialized art gaps and implementation order are in docs/maps/GENERIC_CONTRACT_LOCATION_REVIEW.md. First recommended batch: road blockade, old-command camp, layered chieftain redoubt and disciplined vanguard camp. No maps changed in this review.
+
+Corrections to earlier proposals: Knight without a Grave belongs on the royal road in its own quest, with origin-specific chapel/crypt maps for reused story encounters; the Missing Governor is a pump component at a guarded salvage yard; prisoner proof is a real reclamation fight. Follow-up authored-map fixes: bridge under the titan-road toll gate and exterior staging for Chapel Patrol.
+
 ## October 3: Obsolete map art cleared from dev
 
 Archived 54 obsolete map-art/cache targets outside dev after automatic approval review rejected permanent deletion. Archive uses NTFS compression; exact paths and space measurements are in docs/art/MAP_ART_CLEANUP_20261003.json. Approved sources, current map templates, latest screenshots and required legacy pilot prop source retained. Fixed the legacy building installer to recognize current source versions. All 171 registered runtime assets remain byte-for-byte unchanged; 145-encounter/7,877-reference asset audit passes. No game data or production changes.

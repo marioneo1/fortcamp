@@ -2,6 +2,8 @@
 
 Current map rollout and remaining coverage: [Combat location audit](maps/BATTLE_LOCATION_AUDIT.md) lists authored and generic contract encounters from runtime content; [authored locations](design/AUTHORED_BATTLE_LOCATIONS.md) records the chapel/toll/cache/armory rollout and proposed next batches.
 
+Proposed map designs: [Generic contract location review](maps/GENERIC_CONTRACT_LOCATION_REVIEW.md) reviews all 29 remaining mission titles, matching maps to their premises, proposed variations, asset gaps and story-origin routing. These plans are not implemented.
+
 Current wall generation/connection strategy: [Modular wall art](art/MODULAR_WALL_GENERATION_GUIDE.md) documents the active sixteen-part painted polished-stone kit, equal-cell generation guide, native junction calibration and four full-building comparisons. Rejected polished trials have been retired and archived. Rough stone, timber and metal remain unchanged.
 
 Current building collision/art: [Wall boundaries](design/WALL_BOUNDARIES.md) explains walkable edge-wall floors, blocked crossing/sight, gates and T-junctions; [Building templates](design/BUILDING_TEMPLATES.md) lists the eight reusable plans and four material-specific art kits.
