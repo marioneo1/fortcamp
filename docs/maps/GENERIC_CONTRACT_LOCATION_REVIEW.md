@@ -1,5 +1,7 @@
 # Generic contract location review
 
+Status update October 3: roadblocks/command camps and the seven compact beginner/training settings below are implemented in dev. The original review is preserved; read AUTHORED_BATTLE_LOCATIONS.md for the final maps. Highway/convoy/watch, tunnels and later story locations remain proposed. Runtime audit currently lists 43 authored and 18 generic encounter IDs.
+
 Current status: the first roadblock/command-position batch below is implemented in dev, with four variants per setting and compact E/D old-command posts. See ../design/AUTHORED_BATTLE_LOCATIONS.md for exact behavior and validation. All later batches below remain proposals. The original review counts and assessments are preserved as the planning baseline; BATTLE_LOCATION_AUDIT.md contains current coverage.
 
 Reviewed October 3, 2026 against runtime mission premises, faction openings and the current `_contract_blueprint`. This is a proposed design pass; it changes no battle maps, mission outcomes or rewards. Coverage: all 29 distinct mission titles currently represented by 44 generic contract encounter IDs. Three prisoner agreement titles each have six rank copies.

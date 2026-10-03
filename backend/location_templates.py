@@ -34,3 +34,6 @@ from .command_locations import COMMAND_SETTINGS, ROAD_PLANS, CAMP_PLANS
 for _location in COMMAND_SETTINGS:
     _plans=ROAD_PLANS if _location=='road_blockade' else CAMP_PLANS
     BUILDING_PLANS[_location]=[{'id':f'{_location}_{name}','label':label} for name,label in _plans]
+from .beginner_locations import BEGINNER_SETTINGS
+for _location, _labels in BEGINNER_SETTINGS.items():
+    BUILDING_PLANS[_location]=[{'id':f'{_location}_{i}','label':label} for i,label in enumerate(_labels,1)]

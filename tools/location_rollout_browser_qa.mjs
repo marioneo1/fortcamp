@@ -3,7 +3,8 @@
 import assert from 'node:assert/strict';
 import {mkdir, writeFile} from 'node:fs/promises';
 const commandCamps=process.argv.includes('--command-camps');
-const out=commandCamps?'staging-terrain/command-locations-v1':'staging-terrain/location-rollout-v1';await mkdir(out,{recursive:true});
+const beginnerSites=process.argv.includes('--beginner-sites');
+const out=beginnerSites?'staging-terrain/beginner-locations-v1':commandCamps?'staging-terrain/command-locations-v1':'staging-terrain/location-rollout-v1';await mkdir(out,{recursive:true});
 const tabs=await(await fetch('http://127.0.0.1:9229/json')).json();
 const ws=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);
 await new Promise(r=>ws.onopen=r);
@@ -18,13 +19,14 @@ try{
  for(let i=0;i<100;i++){if(await evaluate('Boolean(window.propCoverageReady)'))break;await new Promise(r=>setTimeout(r,100))}
  assert.equal(await evaluate('Boolean(window.propCoverageReady)'),true);
  const seen=new Set();let maps=0;
- for(const mid of commandCamps?['prison_rival_d','prison_former_e','prison_former_c','goblin_chieftain','hobgoblin_vanguard']:
+ for(const mid of beginnerSites?['rats_storehouse','wolves_fence','herbs_wall','goblin_pickpockets','ruined_well','supply_watch','prison_proof_d']:
+                 commandCamps?['prison_rival_d','prison_former_e','prison_former_c','goblin_chieftain','hobgoblin_vanguard']:
                               ['chapel_patrol','roadside_toll','road_cache','goblin_armory','salvage_court']){
   for(let variant=1;variant<=4;variant++){
    const key=`${mid}_v${variant}`;
    await evaluate(`window.propEncounter('${key}')`);await new Promise(r=>setTimeout(r,120));
    const props=await evaluate("Array.from(document.querySelectorAll('.has-prop-art')).map(e=>e.style.getPropertyValue('--battle-prop'))");
-   assert.ok(props.length>=10,key);
+   assert.ok(props.length>=(mid==='goblin_pickpockets'?6:10),key);
    for(const value of props){const path=value.match(/url\(['\"]?([^'\")]+)/)?.[1];if(path&&!seen.has(path)){assert.equal((await fetch('http://127.0.0.1:8766'+path)).status,200,path);seen.add(path)}}
    const clip=await evaluate("(()=>{const r=document.querySelector('.battle-cell').parentElement.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,scale:1.5}})()");
    await writeFile(`${out}/${key}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png',captureBeyondViewport:true,clip})).data,'base64'));

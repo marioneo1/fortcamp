@@ -78,6 +78,8 @@ from .location_buildings import add_location_buildings
 add_location_buildings(BUILDINGS)
 from .command_locations import add_command_buildings
 add_command_buildings(BUILDINGS)
+from .beginner_locations import add_beginner_buildings
+add_beginner_buildings(BUILDINGS)
 
 
 def footprint(template):

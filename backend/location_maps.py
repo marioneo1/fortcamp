@@ -36,10 +36,14 @@ MISSION_LOCATIONS = {
     'road_cache': 'raider_cache', 'bandit_outpost': 'raider_cache',
     'salvage_court': 'salvage_court',
     'goblin_chieftain': 'timber_redoubt', 'hobgoblin_vanguard': 'vanguard_camp',
+    'rats_storehouse':'provision_store', 'wolves_fence':'farm_clearing',
+    'herbs_wall':'herb_garden', 'goblin_pickpockets':'purse_road',
+    'ruined_well':'well_yard', 'supply_watch':'supply_stop',
 }
 for _rank in 'edcbas':
     MISSION_LOCATIONS[f'prison_rival_{_rank}']='road_blockade'
     MISSION_LOCATIONS[f'prison_former_{_rank}']='command_post' if _rank in 'ed' else 'command_camp'
+    MISSION_LOCATIONS[f'prison_proof_{_rank}']='occupied_training_yard'
 
 
 def wall(x, y, ident, wood=False, rotation=0, family=None):
@@ -242,6 +246,9 @@ def location_blueprint(location, seed):
     from .command_locations import COMMAND_SETTINGS, blueprint as command_blueprint
     if location in COMMAND_SETTINGS:
         return command_blueprint(location,variant,rng)
+    from .beginner_locations import BEGINNER_SETTINGS, blueprint as beginner_blueprint
+    if location in BEGINNER_SETTINGS:
+        return beginner_blueprint(location,variant,rng)
     width, height = 14, 11
     board = {'name': location, 'theme': f'location-{location}', 'width':width, 'height':height,
              'default_ground':'grass', 'paint':[], 'void_tiles':[], 'elevation':[],

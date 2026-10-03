@@ -1,5 +1,15 @@
 # Fortcamp feature backlog
 
+## October 3: Beginner maps and full-camp clutter completed
+
+Seven compact settings each have four named layouts: provision stores, farm paddocks, herb gardens, purse roads, well yards, supply stops and occupied training yards (all prisoner-proof ranks). Existing encounter counts, mission paths and rewards retained. Full command compounds/redoubts/vanguard camps now contain training/archery props, bedding, cooking and supplies, with reserved deployment/door lanes and complete furniture footprints.
+
+New separate 32-sprite prop atlas includes all seven requested beds, reed mat, training equipment, camp supplies, well/herbs/purse and siege states. Camp extraction preserves whole silhouettes and previous assets. Stored ballista is scenery/obstacle; ballista operation and gate-mounted oil hazards remain WIP, as do training interactions and additional dedicated sleeping quarters. The original small Goblin Warcamp map has not been changed. Canonical: docs/design/AUTHORED_BATTLE_LOCATIONS.md and docs/art/CAMP_PROP_PACK.md.
+
+Current coverage: 43 authored, 18 generic encounter IDs. Next: convoy/highway/watch sites, then tunnels and origin-specific story encounters. No production or player data changes.
+
+Validation: 43 focused backend tests, 48 actual-renderer layout checks, frontend build and 249-preview/19,555-reference asset coverage pass. Final camp dressing additionally checked across 400 current map seeds for escape routes.
+
 ## October 3: Roadblocks and command camps completed
 
 First reviewed batch implemented for all ranks of Break the Rival Warband and End the Old Command, plus Chieftain's Redoubt and The Ironcap Vanguard. Five settings each have four named layouts; early old-command posts are compact, full camps use nested defenses, and roadblocks have actual gates/flank routes. Approved assets cover this batch; no new art generation. Alarm bell remains scenery. Enemy budgets, rewards and existing battles retained.

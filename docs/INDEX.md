@@ -1,8 +1,10 @@
 # Fortcamp documentation map
 
+Camp/training/bedding and siege artwork: [Camp prop pack](art/CAMP_PROP_PACK.md) records the new 32-sprite atlas, installation, silhouette recovery and prepared versus functional assets. [Authored locations](design/AUTHORED_BATTLE_LOCATIONS.md) records seven new compact settings and full-camp clutter.
+
 Current map rollout and remaining coverage: [Combat location audit](maps/BATTLE_LOCATION_AUDIT.md) lists authored and generic contract encounters from runtime content; [authored locations](design/AUTHORED_BATTLE_LOCATIONS.md) records the chapel/toll/cache/armory rollout and proposed next batches.
 
-Proposed map designs: [Generic contract location review](maps/GENERIC_CONTRACT_LOCATION_REVIEW.md) reviews all 29 remaining mission titles, matching maps to their premises, proposed variations, asset gaps and story-origin routing. These plans are not implemented.
+Map review: [Generic contract location review](maps/GENERIC_CONTRACT_LOCATION_REVIEW.md) preserves the original 29-title review, proposed variations, asset gaps and story-origin routing. Roadblocks/command camps and compact beginner sites are now implemented; the remaining sections are proposals.
 
 Current wall generation/connection strategy: [Modular wall art](art/MODULAR_WALL_GENERATION_GUIDE.md) documents the active sixteen-part painted polished-stone kit, equal-cell generation guide, native junction calibration and four full-building comparisons. Rejected polished trials have been retired and archived. Rough stone, timber and metal remain unchanged.
 

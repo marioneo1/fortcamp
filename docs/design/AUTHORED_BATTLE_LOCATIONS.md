@@ -1,5 +1,31 @@
 # Authored battle locations
 
+## October 3: Beginner locations and camp activity areas
+
+Implemented in dev. Seven settings have four named seed-selectable layouts each:
+
+| Mission | Map identity |
+| --- | --- |
+| Rats in the Storehouse | Provision shed, twin stores, annex store or delivery court; sacks, barrels, bedding chest, door and damaged opening. Two-store fights place the two opponents in separate rooms. |
+| Wolves at the Fence | Four timber paddocks with gates/broken rails, hay, water trough and brush. Grass floor, clear approach. |
+| Herbs Behind the Wall | Four stone-walled soil gardens with planters inside and an accessible patch outside; wash tub and operable gate. Only its existing combat branch uses this map. |
+| The Goblin Pickpockets | Bend, fork, narrow track or passing place; dropped purse, verge/ditch texture, brush and occasional abandoned cart/branches. |
+| Movement at the Old Well | Four ruined-store/cottage arrangements beside an open cobbled well courtyard, wash tub and damaged stone boundaries. |
+| The Small Supply Watch | Four provision-post plans with sacks, barrels, delivery cart, shelter and water trough. |
+| A Promise Proven in Battle (E–S) | Four occupied practice yards with training dummies, weapon/shield racks, bedding and archery lanes. A real reclamation fight, not a practice combat. |
+
+`backend/beginner_locations.py` supplies eight reusable store/yard pieces and these settings. Common 16x13 bounds keep approach distances short while retaining deployment and exits. Farm yards use grass; gardens/training courts use dirt. Existing encounter counts, rank stats, drop tables and roll-only paths are unchanged. Landmarks such as the purse, well and herbs do not introduce new collection actions.
+
+`backend/camp_dressing.py` dresses the three existing full command-camp settings with archery targets, practice dummies, weapon racks, sleeping places, cooking pot, water trough, food stores and signal drum. Goblin redoubts use hide beds/trophy poles; other camps select ordinary bedding deterministically. Doors and their adjacent staging cells, player/enemy spawns and the main approach remain clear. Solid beds use 1x2 footprints; stored vanguard ballistas use 2x2. Full outlines determine collision. Props are placed in authored activity regions with nearby safe-slot fallback, not scattered over arbitrary map tiles.
+
+Thirty-two new sprites are installed from one separate transparent prop atlas. All seven requested bed variants exist, plus a reed mat. Siege art includes loaded/empty ballista, bolts and upright/tipped oil cauldron. **Siege operation remains proposed:** the stored ballista is an ordinary obstacle, not a firing action; oil cauldrons are prepared assets only. Dummies do not grant training, beds do not heal and supplies are not extra loot. The original small `goblin_warcamp` encounter remains unchanged; the larger Chieftain's Redoubt and command compounds receive this dressing.
+
+Source, prompt, extracted gallery and report: `staging-terrain/camp-props-v1`; runtime: `frontend/public/assets/combat-terrain/props/camp-v1`. Built-in imagegen created the atlas using approved prop sheets as style references. The installer preserves whole connected silhouettes across nominal cell borders, detached details and aspect ratio. Earlier assets and wall kits remain untouched. See [Camp prop pipeline](../art/CAMP_PROP_PACK.md).
+
+Battle Lab exposes all named layouts and verified seeds automatically. Existing saved battles keep their previous map; create a new session to see these changes. Coverage now spans 43 authored contract IDs, with 18 generic IDs remaining. Next reviewed batch: highway/convoy/watch routes, then tunnels and story-origin-specific settings. Siege controls, larger dedicated living quarters and additional training interactions need separate design.
+
+Validation: 43 focused backend tests pass, including the existing every-location 40-seed route check and a fresh 400-map reverse reachability check after the final dressing changes. Browser checks cover 28 beginner and 20 command-camp layouts with loading prop assets and no runtime exceptions; representative renders reviewed and outdoor floor correction verified. Latest coverage audit: 249 encounter previews, 19,555 prop/state references, no missing assignments/files. Thirty-four frontend map/wall tests and the production frontend build pass. Test footage uses isolated fixtures; some fixture character portraits are unavailable locally, separate from prop rendering. Production and player saves are untouched.
+
 ## October 3: Roadblocks and command camps implemented
 
 The first batch from GENERIC_CONTRACT_LOCATION_REVIEW.md is now live in dev. `backend/command_locations.py` defines reusable road barriers, four small command-post buildings, four outdoor compound perimeters and a separate barracks. All use existing approved art; no new generation or material edits were needed.

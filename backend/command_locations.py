@@ -143,6 +143,8 @@ def blueprint(location, variant, rng):
         board['spawn_zones']['enemy']=[command['enemies'][0],
             *[{'x':x,'y':y} for x,y in [(7,5),(8,5),(9,5),(7,6),(8,6),(9,6),(10,8)]]]
         board['enemy_extraction']=deepcopy(board['extraction'])
+        from .camp_dressing import dress_camp
+        dress_camp(board,rng)
     # Decorations define coherent edges without closing deployment/exit lanes.
     for i,(x,y) in enumerate([(3,1),(3,height-2),(width-2,height-2)]):
         d.append(prop(f'camp_edge_{i}','Roadside Tree','pine_tree' if i%2 else 'oak_tree',x,y,False))
