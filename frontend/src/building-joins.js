@@ -85,6 +85,8 @@ export function structuralLayout(item,geometry,neighbors=[]){
  const base=offsetOf(item,g,piece),mirrorY=faceMirror(item,g);
  const rotation=rotationOf(item);
  if(g.authored_junctions){
+  if(piece==='wall'&&g.vertical_wall_sprite&&rotation%180===90)
+   return {offset:base,connectors:[],mirrorY,artSprite:g.vertical_wall_sprite};
   const local=piece==='corner'?g.corner_offset:piece==='corner_broken'?g.broken_corner_offset:
     g['authored_'+piece+'_offset'];
   if(local){

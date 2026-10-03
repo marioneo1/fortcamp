@@ -161,5 +161,6 @@
   "structure:fieldstone_plan_stairs": "structures/building-v5-topdown/fieldstone_plan_stairs.png",
   "structure:fieldstone_plan_corner_broken": "structures/building-v5-topdown/fieldstone_plan_corner_broken.png",
   "structure:fieldstone_plan_edge_junction": "structures/building-v5-topdown/fieldstone_plan_edge_junction.png",
-  "structure:fieldstone_plan_brace": "structures/building-v5-topdown/fieldstone_plan_brace.png"
+  "structure:fieldstone_plan_brace": "structures/building-v5-topdown/fieldstone_plan_brace.png",
+  "structure:limestone_wall_vertical": "structures/building-v10-polished/limestone_wall_vertical.png"
 }

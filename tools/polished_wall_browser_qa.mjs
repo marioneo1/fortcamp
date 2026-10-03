@@ -18,6 +18,7 @@ try{
   await new Promise(r=>setTimeout(r,200));
   const assets=await evaluate("Array.from(document.querySelectorAll('.has-prop-art')).map(e=>e.style.getPropertyValue('--battle-prop')).filter(s=>s.includes('building-v10-polished'))");
   assert.ok(assets.length>=6);
+  assert.ok(assets.some(value=>value.includes('limestone_wall_vertical.png')),'upright part 19 is used in the actual map');
   assert.equal(await evaluate("document.querySelectorAll('.wall-connector').length"),0);
   for(const value of assets){const path=value.match(/url\(['\"]?([^'\")]+)/)?.[1];assert.equal((await fetch('http://127.0.0.1:8766'+path)).status,200)}
   const r=await evaluate("(()=>{const r=document.querySelector('.battle-cell').parentElement.getBoundingClientRect();return {x:r.x,y:r.y,width:r.width,height:r.height,scale:2}})()");

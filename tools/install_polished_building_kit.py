@@ -30,17 +30,9 @@ def main():
     cells=groups(Image.open(source/'limestone.png').convert('RGBA'),4,4)
     scale=320/cells[0][0].width
     sprites={name:centered(cut,scale) for name,(cut,_) in zip(PARTS,cells)}
-    # User-authored replacements remain separate from the original atlas.
+    # Restore original corners/Ts; use the matching authored upright straight
+    # from part 19 only for vertical runs. Retain part 1 for horizontal runs.
     overrides={}
-    for filename,parts in [('part_17.png',['junction','edge_junction']),('part_18.png',['corner'])]:
-        path=source/filename
-        if path.exists():
-            cut=Image.open(path).convert('RGBA')
-            bounds=cut.getchannel('A').getbbox()
-            if not bounds:raise ValueError(f'{filename}: empty replacement')
-            for part in parts:
-                sprites[part]=centered(cut.crop(bounds),scale)
-                overrides[part]=filename
     # State pairs share both scale and the fixed jamb band anchor, not their
     # complete silhouette height (the open leaf is deliberately below it).
     for prefix in ['door','gate']:
@@ -54,9 +46,7 @@ def main():
     alpha=sprites['corner'].getchannel('A')
     cy=mean([y for x in range(45,115) for y in range(192) if alpha.getpixel((x,y))>120])
     cx=mean([x for y in range(250,325) for x in range(192,384) if alpha.getpixel((x,y))>120])
-    # Keep existing wall/door boundary seating when swapping a corner.
-    old=json.loads((ROOT/'backend/building_art_geometry.json').read_text())['limestone']
-    o=old['join_offset'] if overrides else round(((cx-192)+(192-cy))/384*1.25/2,4)
+    o=round(((cx-192)+(192-cy))/384*1.25/2,4)
     offset=lambda x,y:[round(x,4),round(y,4)]
     profile={'join_offset':o,'authored_junctions':True,
              'wall_half_thickness':round((sprites['wall'].getchannel('A').getbbox()[3]-sprites['wall'].getchannel('A').getbbox()[1])/384*1.25/2,4),
@@ -80,10 +70,24 @@ def main():
     # axes and fit only the straight stem beyond the joint to the next tile.
     for part,center,local,start in [
         ('corner',cx,profile['corner_offset'],180),
+        ('corner_broken',192-profile['broken_corner_offset'][0]*384/1.25+o*384/1.25,profile['broken_corner_offset'],180),
         ('edge_junction',192-profile['authored_edge_junction_offset'][0]*384/1.25,profile['authored_edge_junction_offset'],180),
         ('junction',192-profile['authored_junction_offset'][0]*384/1.25,profile['authored_junction_offset'],155)]:
         tip=round(192+(.52-local[1])*384/1.25)
         fit_stem(sprites[part],center,start,min(384,tip))
+    vertical_path=source/'part_19.png'
+    if vertical_path.exists():
+        vertical=Image.open(vertical_path).convert('RGBA')
+        bounds=vertical.getchannel('A').getbbox()
+        if not bounds:raise ValueError('part_19.png: empty upright wall')
+        vertical=vertical.crop(bounds)
+        # Same transverse scale as the native arms; fit length to the full
+        # wall span. Store counter-rotated so existing orientation/mirror rules
+        # also handle rotations of the complete building without changing physics.
+        vertical=vertical.resize((round(vertical.width*scale),320),Image.Resampling.LANCZOS)
+        sprites['wall_vertical']=centered(vertical.rotate(90,expand=True),1)
+        profile['vertical_wall_sprite']='structure:limestone_wall_vertical'
+        overrides['wall_vertical']='part_19.png'
     dest=ROOT/'frontend/public/assets/combat-terrain/structures/building-v10-polished';dest.mkdir(exist_ok=True)
     path=ROOT/'frontend/src/map-prop-art.json';registry=json.loads(path.read_text())
     for part,sprite in sprites.items():

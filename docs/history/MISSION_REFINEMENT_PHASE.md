@@ -1,5 +1,12 @@
 # Mission Refinement Phase
 
+## October 2: Original joints restored; part 19 supplies matching upright runs
+
+Disabled the part 17/18 overrides and restored original part 2 corners, part 3 interior Ts and part 15 perimeter Ts. Part 1 remains the horizontal straight wall. The alpha silhouette of part 19 is installed as a dedicated upright straight: its thickness uses the same scale as native vertical arms, its length fits one full wall span, and it is counter-rotated on export so existing whole-building rotation and face-mirroring rules still work. The renderer selects it for vertical straight runs; collision, movement edges, IDs and connection ports are unchanged. This addresses the painted-face mismatch when joining the vertical arms of parts 2, 3, 4, 14 and 15. The original damaged corner's surviving stem is also fitted to its neighboring run without filling the broken area.
+
+Installer records only the active part 19 override; parts 17/18 remain as inactive source files. Reviewed all four furnished layouts and checked asset loading. Wall rendering tests cover all four orientations and verify unchanged face/port rules. Source and screenshots: staging-terrain/building-toolset-v10-polished. Rough stone, timber, metal, production and saves remain unchanged. Painted joins are still subject to live visual review.
+
+
 ## October 2: User-authored polished T and corner replacements
 
 Installed `staging-terrain/building-toolset-v10-polished/part_17.png` for both centered and perimeter T walls, and `part_18.png` for intact corners. Original atlas remains unchanged. The dedicated polished installer reapplies these overrides, records filenames in installed.json, measures the new horizontal/vertical anchors and fits their stems to the adjoining tile. Existing straight-wall boundary offset is preserved; rotations carry calibrated anchors to each corner and T orientation. Native artwork is retained, without assembled corner overlays. Damaged corner, cross, doors and other pieces remain from the existing kit. Asset cache version changed so refreshed clients load the replacement sprites.

@@ -284,3 +284,18 @@ test('overhead material profiles rotate planar joins without side-face mirroring
   assert.equal(structuralLayout(edge,g).mirrorY,1);
  }
 });
+
+
+test('upright polished wall art follows vertical runs without changing connection ports or face rules',()=>{
+ const original={limestone:{join_offset:.3454,authored_junctions:true}};
+ const upright={limestone:{...original.limestone,vertical_wall_sprite:'structure:limestone_wall_vertical'}};
+ for(const rotation of [0,90,180,270])for(const edge of ['north','east','south','west']){
+  const item={sprite:'structure:limestone_wall',rotation,edge_wall:true,wall_edges:[edge]};
+  const a=structuralLayout(item,original),b=structuralLayout(item,upright);
+  assert.deepEqual(connectionPorts(item,original),connectionPorts(item,upright));
+  assert.deepEqual(a.offset,b.offset);assert.equal(a.mirrorY,b.mirrorY);
+  assert.equal(b.artSprite,rotation%180===90?'structure:limestone_wall_vertical':undefined);
+ }
+ const broken={sprite:'structure:limestone_breach',rotation:90};
+ assert.equal(structuralLayout(broken,upright).artSprite,undefined);
+});
