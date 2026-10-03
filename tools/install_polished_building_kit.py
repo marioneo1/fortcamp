@@ -1,6 +1,6 @@
 """Install only the complete v10 polished-stone atlas; other families are untouched."""
 import json
-from PIL import Image
+from PIL import Image, ImageOps
 from install_building_toolset import ROOT, groups, centered
 from install_material_building_toolsets import PARTS
 
@@ -88,6 +88,58 @@ def main():
         sprites['wall_vertical']=centered(vertical.rotate(90,expand=True),1)
         profile['vertical_wall_sprite']='structure:limestone_wall_vertical'
         overrides['wall_vertical']='part_19.png'
+    # Corner orientation comes from reflections of the authored piece, not
+    # quarter-turning its painted horizontal face into a vertical face.
+    orientations={}
+    for part in ['corner','corner_broken']:
+        local=profile['corner_offset' if part=='corner' else 'broken_corner_offset']
+        variants={}
+        for rotation,mx,my in [(0,1,1),(90,1,-1),(180,-1,-1),(270,-1,1)]:
+            sprite=sprites[part]
+            if mx<0:sprite=ImageOps.mirror(sprite)
+            if my<0:sprite=ImageOps.flip(sprite)
+            name=f'{part}_facing_{rotation}'
+            sprites[name]=sprite
+            variants[str(rotation)]={'sprite':'structure:limestone_'+name,
+                                     'offset':offset(local[0]*mx,local[1]*my),'rotation':0}
+        orientations[part]=variants
+    # Concave vertices keep the same L geometry but reverse each arm's
+    # painted face to meet the outside-facing runs around an inset courtyard.
+    inner=sprites['corner'].copy()
+    left=round(cx-35);lower=round(cy+40)
+    bar=inner.crop((0,0,left,192));bounds=bar.getchannel('A').getbbox()
+    x0,y0,x1,y1=bounds
+    inner.paste((0,0,0,0),(0,0,left,192))
+    inner.alpha_composite(ImageOps.flip(bar.crop(bounds)),(x0,y0))
+    arm=inner.crop((192,lower,384,384));bounds=arm.getchannel('A').getbbox()
+    x0,y0,x1,y1=bounds
+    inner.paste((0,0,0,0),(192,lower,384,384))
+    inner.alpha_composite(ImageOps.mirror(arm.crop(bounds)),(192+x0,lower+y0))
+    a=inner.getchannel('A')
+    iy=mean([y for x in range(45,115) for y in range(192) if a.getpixel((x,y))>120])
+    ix=mean([x for y in range(250,325) for x in range(192,384) if a.getpixel((x,y))>120])
+    local=offset(o-(ix/384-.5)*1.25,-o-(iy/384-.5)*1.25)
+    inner_variants={}
+    for rotation,mx,my in [(0,1,1),(90,1,-1),(180,-1,-1),(270,-1,1)]:
+        sprite=inner
+        if mx<0:sprite=ImageOps.mirror(sprite)
+        if my<0:sprite=ImageOps.flip(sprite)
+        name=f'corner_inner_facing_{rotation}';sprites[name]=sprite
+        inner_variants[str(rotation)]={'sprite':'structure:limestone_'+name,
+            'offset':offset(local[0]*mx,local[1]*my),'rotation':0}
+    orientations['corner_inner']=inner_variants
+    # Cross geometry is invariant under quarter turns. Keep its painted
+    # horizontal and upright faces aligned with the surrounding straight runs.
+    orientations['cross']={str(rotation):{'sprite':'structure:limestone_cross',
+        'offset':profile['authored_cross_offset'],'rotation':0} for rotation in (0,90,180,270)}
+    # A lower T is reflected vertically: its bar's front face stays aligned
+    # with the lower horizontal run, and the stem points back into the room.
+    for part in ['junction','edge_junction']:
+        name=part+'_facing_180';sprites[name]=ImageOps.flip(sprites[part])
+        local=profile['authored_'+part+'_offset']
+        orientations[part]={'180':{'sprite':'structure:limestone_'+name,
+                                  'offset':offset(local[0],-local[1]),'rotation':0}}
+    profile['painted_orientations']=orientations
     dest=ROOT/'frontend/public/assets/combat-terrain/structures/building-v10-polished';dest.mkdir(exist_ok=True)
     path=ROOT/'frontend/src/map-prop-art.json';registry=json.loads(path.read_text())
     for part,sprite in sprites.items():

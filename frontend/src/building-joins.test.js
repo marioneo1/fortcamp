@@ -299,3 +299,25 @@ test('upright polished wall art follows vertical runs without changing connectio
  const broken={sprite:'structure:limestone_breach',rotation:90};
  assert.equal(structuralLayout(broken,upright).artSprite,undefined);
 });
+
+
+test('painted corner reflections keep geometry while choosing each facing and concave anchor',()=>{
+ const facings=Object.fromEntries([0,90,180,270].map((r,i)=>[r,{sprite:'corner_'+r,offset:[[.02,-.03],[.02,.03],[-.02,.03],[-.02,-.03]][i],rotation:0}]));
+ const inner=Object.fromEntries([0,90,180,270].map(r=>[r,{sprite:'inner_'+r,offset:[.01,.02],rotation:0}]));
+ const plain={limestone:{join_offset:.3454,authored_junctions:true,corner_offset:[.02,-.03]}};
+ const reflected={limestone:{...plain.limestone,painted_orientations:{corner:facings,corner_inner:inner}}};
+ for(const rotation of [0,90,180,270]){
+  const item={sprite:'structure:limestone_corner',rotation};
+  const result=structuralLayout(item,reflected);
+  assert.equal(result.artRotation,0);assert.equal(result.artSprite,'corner_'+rotation);
+  assert.deepEqual(result.offset,facings[rotation].offset);
+  assert.deepEqual(connectionPorts(item,reflected),connectionPorts(item,plain));
+  const inset={...item,art_offset:[-.69,.69]};
+  const inside=structuralLayout(inset,reflected);
+  assert.equal(inside.artSprite,'inner_'+rotation);
+  close(inside.offset[0],-.68);close(inside.offset[1],.71);
+  assert.deepEqual(connectionPorts(inset,reflected),connectionPorts(inset,plain));
+  assert.equal(item.rotation,rotation);
+ }
+ assert.equal(structuralLayout({sprite:'structure:timber_corner',rotation:90},reflected).artRotation,undefined);
+});

@@ -92,7 +92,165 @@
       0.0462,
       -0.0147
     ],
-    "vertical_wall_sprite": "structure:limestone_wall_vertical"
+    "vertical_wall_sprite": "structure:limestone_wall_vertical",
+    "painted_orientations": {
+      "corner": {
+        "0": {
+          "sprite": "structure:limestone_corner_facing_0",
+          "offset": [
+            -0.0303,
+            -0.0303
+          ],
+          "rotation": 0
+        },
+        "90": {
+          "sprite": "structure:limestone_corner_facing_90",
+          "offset": [
+            -0.0303,
+            0.0303
+          ],
+          "rotation": 0
+        },
+        "180": {
+          "sprite": "structure:limestone_corner_facing_180",
+          "offset": [
+            0.0303,
+            0.0303
+          ],
+          "rotation": 0
+        },
+        "270": {
+          "sprite": "structure:limestone_corner_facing_270",
+          "offset": [
+            0.0303,
+            -0.0303
+          ],
+          "rotation": 0
+        }
+      },
+      "corner_broken": {
+        "0": {
+          "sprite": "structure:limestone_corner_broken_facing_0",
+          "offset": [
+            0.0462,
+            -0.0147
+          ],
+          "rotation": 0
+        },
+        "90": {
+          "sprite": "structure:limestone_corner_broken_facing_90",
+          "offset": [
+            0.0462,
+            0.0147
+          ],
+          "rotation": 0
+        },
+        "180": {
+          "sprite": "structure:limestone_corner_broken_facing_180",
+          "offset": [
+            -0.0462,
+            0.0147
+          ],
+          "rotation": 0
+        },
+        "270": {
+          "sprite": "structure:limestone_corner_broken_facing_270",
+          "offset": [
+            -0.0462,
+            -0.0147
+          ],
+          "rotation": 0
+        }
+      },
+      "corner_inner": {
+        "0": {
+          "sprite": "structure:limestone_corner_inner_facing_0",
+          "offset": [
+            -0.0153,
+            -0.029
+          ],
+          "rotation": 0
+        },
+        "90": {
+          "sprite": "structure:limestone_corner_inner_facing_90",
+          "offset": [
+            -0.0153,
+            0.029
+          ],
+          "rotation": 0
+        },
+        "180": {
+          "sprite": "structure:limestone_corner_inner_facing_180",
+          "offset": [
+            0.0153,
+            0.029
+          ],
+          "rotation": 0
+        },
+        "270": {
+          "sprite": "structure:limestone_corner_inner_facing_270",
+          "offset": [
+            0.0153,
+            -0.029
+          ],
+          "rotation": 0
+        }
+      },
+      "cross": {
+        "0": {
+          "sprite": "structure:limestone_cross",
+          "offset": [
+            0.0,
+            0.0
+          ],
+          "rotation": 0
+        },
+        "90": {
+          "sprite": "structure:limestone_cross",
+          "offset": [
+            0.0,
+            0.0
+          ],
+          "rotation": 0
+        },
+        "180": {
+          "sprite": "structure:limestone_cross",
+          "offset": [
+            0.0,
+            0.0
+          ],
+          "rotation": 0
+        },
+        "270": {
+          "sprite": "structure:limestone_cross",
+          "offset": [
+            0.0,
+            0.0
+          ],
+          "rotation": 0
+        }
+      },
+      "junction": {
+        "180": {
+          "sprite": "structure:limestone_junction_facing_180",
+          "offset": [
+            -0.0007,
+            -0.322
+          ],
+          "rotation": 0
+        }
+      },
+      "edge_junction": {
+        "180": {
+          "sprite": "structure:limestone_edge_junction_facing_180",
+          "offset": [
+            -0.0044,
+            0.0191
+          ],
+          "rotation": 0
+        }
+      }
+    }
   },
   "iron": {
     "join_offset": 0.3843,

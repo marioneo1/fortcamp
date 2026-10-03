@@ -162,5 +162,19 @@
   "structure:fieldstone_plan_corner_broken": "structures/building-v5-topdown/fieldstone_plan_corner_broken.png",
   "structure:fieldstone_plan_edge_junction": "structures/building-v5-topdown/fieldstone_plan_edge_junction.png",
   "structure:fieldstone_plan_brace": "structures/building-v5-topdown/fieldstone_plan_brace.png",
-  "structure:limestone_wall_vertical": "structures/building-v10-polished/limestone_wall_vertical.png"
+  "structure:limestone_wall_vertical": "structures/building-v10-polished/limestone_wall_vertical.png",
+  "structure:limestone_corner_facing_0": "structures/building-v10-polished/limestone_corner_facing_0.png",
+  "structure:limestone_corner_facing_90": "structures/building-v10-polished/limestone_corner_facing_90.png",
+  "structure:limestone_corner_facing_180": "structures/building-v10-polished/limestone_corner_facing_180.png",
+  "structure:limestone_corner_facing_270": "structures/building-v10-polished/limestone_corner_facing_270.png",
+  "structure:limestone_corner_broken_facing_0": "structures/building-v10-polished/limestone_corner_broken_facing_0.png",
+  "structure:limestone_corner_broken_facing_90": "structures/building-v10-polished/limestone_corner_broken_facing_90.png",
+  "structure:limestone_corner_broken_facing_180": "structures/building-v10-polished/limestone_corner_broken_facing_180.png",
+  "structure:limestone_corner_broken_facing_270": "structures/building-v10-polished/limestone_corner_broken_facing_270.png",
+  "structure:limestone_junction_facing_180": "structures/building-v10-polished/limestone_junction_facing_180.png",
+  "structure:limestone_edge_junction_facing_180": "structures/building-v10-polished/limestone_edge_junction_facing_180.png",
+  "structure:limestone_corner_inner_facing_0": "structures/building-v10-polished/limestone_corner_inner_facing_0.png",
+  "structure:limestone_corner_inner_facing_90": "structures/building-v10-polished/limestone_corner_inner_facing_90.png",
+  "structure:limestone_corner_inner_facing_180": "structures/building-v10-polished/limestone_corner_inner_facing_180.png",
+  "structure:limestone_corner_inner_facing_270": "structures/building-v10-polished/limestone_corner_inner_facing_270.png"
 }

@@ -1,5 +1,14 @@
 # Mission Refinement Phase
 
+## October 3: Apply sample placement rules to every polished-stone map
+
+Used the user?s `staging-terrain/building-toolset-v10-polished/SAMPLE-detail3.png` as a placement/painted-face reference. Polished convex corners (including damaged corners) now use reflected facings instead of quarter-turning horizontal paint into vertical paint: native NE, vertical reflection SE, both reflections SW, horizontal reflection NW. Each facing carries its measured reflected anchor; displayed artwork rotation is separate from the unchanged logical wall rotation. Lower T pieces use a vertical reflection of the native T; crosses preserve the original horizontal/upright painted faces in every orientation.
+
+Concave corners preserve the existing L-shaped collision and arm geometry. Their horizontal and vertical arm faces are reflected locally and remeasured so they meet the outside-facing wall runs around a courtyard; the original joint stays in place. Part 1 horizontal / part 19 upright straight rules remain. The installer exports these variants from existing art and records them in the shared polished geometry profile; renderer selects by piece/orientation and inward-corner offset. There are no map-3-specific placement overrides: every dev map using this polished kit follows the same rules. Door/gate placements, furniture, layouts, interaction edges and movement/sight rules remain unchanged. Rough stone, timber, metal, production and saves unchanged.
+
+Reviewed the four complete furnished layouts, particularly the annex?s inset join and outer corners. Small painted seams remain subject to live review. Browser checks confirm current assets load; rendering tests verify reflected art does not alter connection ports or logical rotation. Canonical implementation: tools/install_polished_building_kit.py and frontend/src/building-joins.js.
+
+
 ## October 2: Original joints restored; part 19 supplies matching upright runs
 
 Disabled the part 17/18 overrides and restored original part 2 corners, part 3 interior Ts and part 15 perimeter Ts. Part 1 remains the horizontal straight wall. The alpha silhouette of part 19 is installed as a dedicated upright straight: its thickness uses the same scale as native vertical arms, its length fits one full wall span, and it is counter-rotated on export so existing whole-building rotation and face-mirroring rules still work. The renderer selects it for vertical straight runs; collision, movement edges, IDs and connection ports are unchanged. This addresses the painted-face mismatch when joining the vertical arms of parts 2, 3, 4, 14 and 15. The original damaged corner's surviving stem is also fitted to its neighboring run without filling the broken area.
