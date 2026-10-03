@@ -35,7 +35,11 @@ MISSION_LOCATIONS = {
     'lantern_toll_captain': 'toll_post',
     'road_cache': 'raider_cache', 'bandit_outpost': 'raider_cache',
     'salvage_court': 'salvage_court',
+    'goblin_chieftain': 'timber_redoubt', 'hobgoblin_vanguard': 'vanguard_camp',
 }
+for _rank in 'edcbas':
+    MISSION_LOCATIONS[f'prison_rival_{_rank}']='road_blockade'
+    MISSION_LOCATIONS[f'prison_former_{_rank}']='command_post' if _rank in 'ed' else 'command_camp'
 
 
 def wall(x, y, ident, wood=False, rotation=0, family=None):
@@ -235,6 +239,9 @@ def location_blueprint(location, seed):
         raise ValueError(f'Unknown authored location: {location}')
     rng = random.Random(f'location:{location}:{seed}')
     variant = rng.randrange(len(BUILDING_PLANS.get(location, [None,None])))
+    from .command_locations import COMMAND_SETTINGS, blueprint as command_blueprint
+    if location in COMMAND_SETTINGS:
+        return command_blueprint(location,variant,rng)
     width, height = 14, 11
     board = {'name': location, 'theme': f'location-{location}', 'width':width, 'height':height,
              'default_ground':'grass', 'paint':[], 'void_tiles':[], 'elevation':[],

@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## October 3: Roadblocks and military compounds
+
+Implemented the first four mission families from the location review, including all six prisoner-rival/former rank copies. Added four roadblock layouts, four small-post footprints, four compound perimeters and a separate barracks; the same compound plans support timber command/redoubt and rough-stone/metal vanguard sites. Preserved gate mechanics, rank budgets, rewards, active saved maps and production isolation. Existing approved art sufficed. Verified 39 focused backend tests, 20 rendered layout cases and 201-preview/14,615-reference asset audit. Current authored/generic coverage: 31/30 encounter IDs. Remaining specialized sites stay documented as proposals.
+
 ## October 3: Map art cleanup
 
 Moved 54 obsolete art/cache targets (about 799.5 MiB logical size) outside dev and compressed the archive, including the earlier rejected polished trials. Permanent deletion was rejected by automatic approval review; originals remain recoverable in fortcamp-art-archive. Active source atlases/user parts and all map templates remain. Verified all 171 registered runtime asset hashes and the complete 145-preview/7,877-reference asset audit. Updated the old installer shortcut to detect the active sources across versions. The cleanup manifest records exact paths and measured allocated-space recovery.

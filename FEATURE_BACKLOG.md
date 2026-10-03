@@ -1,5 +1,11 @@
 # Fortcamp feature backlog
 
+## October 3: Roadblocks and command camps completed
+
+First reviewed batch implemented for all ranks of Break the Rival Warband and End the Old Command, plus Chieftain's Redoubt and The Ironcap Vanguard. Five settings each have four named layouts; early old-command posts are compact, full camps use nested defenses, and roadblocks have actual gates/flank routes. Approved assets cover this batch; no new art generation. Alarm bell remains scenery. Enemy budgets, rewards and existing battles retained.
+
+39 focused backend tests, 20 actual-renderer layout checks and art coverage of 201 previews/14,615 references pass. Current coverage: 31 authored encounter IDs, 30 generic. Next: compact beginner sites/reclaimed training yards, then convoy/watch routes. Details in docs/design/AUTHORED_BATTLE_LOCATIONS.md; remaining proposals in docs/maps/GENERIC_CONTRACT_LOCATION_REVIEW.md.
+
 ## October 3: Remaining generic locations reviewed (proposal)
 
 Reviewed all 29 distinct generic mission titles (44 encounter IDs with prison-rank copies) against runtime premises and faction openings. Proposed map descriptions, existing-asset reuse, specialized art gaps and implementation order are in docs/maps/GENERIC_CONTRACT_LOCATION_REVIEW.md. First recommended batch: road blockade, old-command camp, layered chieftain redoubt and disciplined vanguard camp. No maps changed in this review.

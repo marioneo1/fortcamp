@@ -29,3 +29,8 @@ for _location, _group in [('chapel_approach', 'chapel'), ('open_armory', 'armory
     ]
 # A reclaimed workshop uses the same four footprints with a different owner.
 BUILDING_PLANS['salvage_court'] = [dict(plan) for plan in BUILDING_PLANS['repair_yard']]
+
+from .command_locations import COMMAND_SETTINGS, ROAD_PLANS, CAMP_PLANS
+for _location in COMMAND_SETTINGS:
+    _plans=ROAD_PLANS if _location=='road_blockade' else CAMP_PLANS
+    BUILDING_PLANS[_location]=[{'id':f'{_location}_{name}','label':label} for name,label in _plans]

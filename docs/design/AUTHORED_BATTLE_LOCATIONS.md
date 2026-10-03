@@ -1,5 +1,25 @@
 # Authored battle locations
 
+## October 3: Roadblocks and command camps implemented
+
+The first batch from GENERIC_CONTRACT_LOCATION_REVIEW.md is now live in dev. `backend/command_locations.py` defines reusable road barriers, four small command-post buildings, four outdoor compound perimeters and a separate barracks. All use existing approved art; no new generation or material edits were needed.
+
+| Mission | Setting and tactical identity |
+| --- | --- |
+| Break the Rival Warband (all six ranks) | Four roadblock layouts: straight barrier with flank track; bent-road checkpoint; staggered barriers; two checkpoints with opposite flank openings. Timber barriers span the road/map edge deliberately, and gates open/break normally. A guardhouse and supply pull-off identify who holds the road. |
+| End the Old Command (E/D) | Four compact posts: single room; through-door post; rear annex; twin stores. 14x10 battlefield avoids making early two/three-opponent fights a march through a large fort. |
+| End the Old Command (C–S) | Four timber compound plans with protected command house, supply tent, stores and multiple entrances/breach routes. |
+| Chieftain's Redoubt | Same four compound footprints in timber, with the chief inside a second defensive layer. Gates require actual opening/breaking; one plan has a rear breach. Existing 112-HP chief and rank budget unchanged. |
+| The Ironcap Vanguard | Four compound footprints with rough-stone perimeter and metal command/barracks buildings. Open drill yard separates stores from command positions. |
+
+The compound plans are gate court, offset annex, paired barracks and deep camp with a damaged rear wall. These are different footprints/entrance arrangements, not just reflected maps. Reuse across factions is deliberate; materials and contents vary without pretending that every skin is another structural plan. Full compounds are 21x15; roadblocks are 19x12. Building fragments have independent IDs, and tents block their full 2x2 footprint. Furniture uses the existing seeded safe-slot dressing rule. Alarm bells are decorative in these contract maps; this pass adds no alarm reinforcements or objective interaction.
+
+Battle Lab exposes verified names/seeds for all 20 setting/layout combinations, including small versus full old-command posts. Existing mission identities, choices, rewards and enemy budgets remain. Existing saved battles retain their maps. No production or player-save changes.
+
+Validation: 39 focused backend tests pass, including 40-seed route/spawn validation for every authored location, four structurally different choices per new setting, non-overlapping solid footprints, the chief behind two gates, preserved budgets, Battle Lab layout selection and save isolation. Twenty actual-renderer screenshots/assets pass (25 unique prop URLs); representative roadblock/small-post/redoubt/vanguard images reviewed. Full art coverage: 201 previews and 14,615 references, no missing files/assignments. Screenshots: staging-terrain/command-locations-v1; run the isolated browser checker with `node tools/location_rollout_browser_qa.mjs --command-camps`. Tactical pacing remains subject to play feedback.
+
+Coverage now includes 31 authored contract encounter IDs; 30 remain generic. Next recommended batch: compact beginner sites and reclaimed training yards, followed by convoy/watch roads. The remaining-location review retains later specialized tunnels, court, machinery and ward plans.
+
 ## October 3: Finished materials rolled into mission locations
 
 Implemented in dev. New battles use the approved timber, rough-stone, polished-stone and metal kits through the same shared connection/orientation rules as the material tests. No art regeneration or material geometry changes in this pass.

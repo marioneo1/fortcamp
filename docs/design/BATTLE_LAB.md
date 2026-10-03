@@ -1,5 +1,9 @@
 # Battle Lab — implemented development tool
 
+## October 3: Named command-location variants
+
+Break the Rival Warband, End the Old Command, Chieftain's Redoubt and The Ironcap Vanguard now expose four verified layout presets through their actual encounter. E/D old-command jobs use compact posts; C–S use full compounds. Labels come from the generated map's template label, so roadside/camp assembly plans display readable names even when they contain multiple buildings. Start a new lab session to see the map; live saved battles are not rebuilt. This extends the existing mission/approach/seed controls without adding another launcher.
+
 ## October 2: Fit candidate stone corners and lengths to actual building boundaries
 
 Restored the template's edge-wall collision convention. Candidate perimeter bands now sit 0.38 tile from cell centre; the generated corner's bend sits at the rotated boundary intersection rather than the tile centre. Concave joins retain their template seating. Full bands span one unit, half bands half a unit; corner arms and perimeter T stems extend 0.88 units to meet the neighbouring boundary/divider ports. Centre T/cross arms reach half-unit ports. Dedicated authored corner/T/cross centres remain intact. Only outer arms use uncapped cropped sections of the matching straight/vertical material from the SAME generation; sections repeat at unchanged pixel scale. No image stretching, foreign wall art, centre patches, synthetic overlapping junction bands or extra posts. Added a separate perimeter-T export. Sprites use shared 1024px canvases and port-based anchors.

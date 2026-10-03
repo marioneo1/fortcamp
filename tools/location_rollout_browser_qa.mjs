@@ -2,7 +2,8 @@
 // and a dedicated headless Chrome CDP session :9229; never accesses live saves.
 import assert from 'node:assert/strict';
 import {mkdir, writeFile} from 'node:fs/promises';
-const out='staging-terrain/location-rollout-v1';await mkdir(out,{recursive:true});
+const commandCamps=process.argv.includes('--command-camps');
+const out=commandCamps?'staging-terrain/command-locations-v1':'staging-terrain/location-rollout-v1';await mkdir(out,{recursive:true});
 const tabs=await(await fetch('http://127.0.0.1:9229/json')).json();
 const ws=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);
 await new Promise(r=>ws.onopen=r);
@@ -17,7 +18,8 @@ try{
  for(let i=0;i<100;i++){if(await evaluate('Boolean(window.propCoverageReady)'))break;await new Promise(r=>setTimeout(r,100))}
  assert.equal(await evaluate('Boolean(window.propCoverageReady)'),true);
  const seen=new Set();let maps=0;
- for(const mid of ['chapel_patrol','roadside_toll','road_cache','goblin_armory','salvage_court']){
+ for(const mid of commandCamps?['prison_rival_d','prison_former_e','prison_former_c','goblin_chieftain','hobgoblin_vanguard']:
+                              ['chapel_patrol','roadside_toll','road_cache','goblin_armory','salvage_court']){
   for(let variant=1;variant<=4;variant++){
    const key=`${mid}_v${variant}`;
    await evaluate(`window.propEncounter('${key}')`);await new Promise(r=>setTimeout(r,120));

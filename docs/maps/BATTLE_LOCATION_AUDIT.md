@@ -3,7 +3,7 @@
 Generated from runtime content with `.venv\Scripts\python.exe tools/audit_battle_locations.py`.
 This inventories existing tactical encounters, including combat branches of roll/story missions. It does not propose converting roll-only contracts to combat.
 
-17 contract encounter IDs use authored locations; 44 still use generic road/camp/ruin/court layouts. Prison rank copies are grouped below. Generic maps have seeded dressing but no named, mission-specific building plans.
+31 contract encounter IDs use authored locations; 30 still use generic road/camp/ruin/court layouts. Prison rank copies are grouped below. Generic maps have seeded dressing but no named, mission-specific building plans.
 
 ## Authored contract locations
 
@@ -14,11 +14,25 @@ This inventories existing tactical encounters, including combat branches of roll
 | Bandit Outpost | C | raider_cache | 4 |
 | Bone Collectors | D | graveyard | 2 |
 | Bone Patrol | D | cemetery_road | 2 |
+| Break the Rival Warband | A | road_blockade | 4 |
+| Break the Rival Warband | B | road_blockade | 4 |
+| Break the Rival Warband | C | road_blockade | 4 |
+| Break the Rival Warband | D | road_blockade | 4 |
+| Break the Rival Warband | E | road_blockade | 4 |
+| Break the Rival Warband | S | road_blockade | 4 |
+| Chieftain's Redoubt | B | timber_redoubt | 4 |
+| End the Old Command | A | command_camp | 4 |
+| End the Old Command | B | command_camp | 4 |
+| End the Old Command | C | command_camp | 4 |
+| End the Old Command | D | command_post | 4 |
+| End the Old Command | E | command_post | 4 |
+| End the Old Command | S | command_camp | 4 |
 | Intruders at the Workshop | D | repair_yard | 4 |
 | The Chapel Gatekeepers | C | chapel_approach | 4 |
 | The Chapel Patrol | D | chapel_approach | 4 |
 | The Ford Enforcers | C | toll_post | 4 |
 | The Hidden Goblin Armory | C | open_armory | 4 |
+| The Ironcap Vanguard | B | vanguard_camp | 4 |
 | The Locked Tool Shed | E | tool_shed | 4 |
 | The Narrow Bridge Gang | D | toll_bridge | 2 |
 | The Road Raiders’ Cache | D | raider_cache | 4 |
@@ -34,10 +48,7 @@ This inventories existing tactical encounters, including combat branches of roll
 | A Light on This Side | B | camp |
 | A Promise Proven in Battle | E / D / C / B / A / S | camp |
 | Boar-Rider Patrol | D | road |
-| Break the Rival Warband | E / D / C / B / A / S | camp |
-| Chieftain's Redoubt | B | camp |
 | Court of the Empty Crown | A | court |
-| End the Old Command | E / D / C / B / A / S | camp |
 | Goblin Warren Purge | C | ruin |
 | Herbs Behind the Wall | E | road |
 | Highway Ambush | D | road |
@@ -47,7 +58,6 @@ This inventories existing tactical encounters, including combat branches of roll
 | The Caravan’s False Account | D | road |
 | The Custodian Who Would Not Stop | B | camp |
 | The Goblin Pickpockets | E | road |
-| The Ironcap Vanguard | B | camp |
 | The Last Collection Order | C | road |
 | The Meridian Calibration | C | camp |
 | The Missing Governor | C | camp |

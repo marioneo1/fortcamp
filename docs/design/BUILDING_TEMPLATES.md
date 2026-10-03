@@ -1,5 +1,9 @@
 # Reusable building templates — implemented in dev
 
+## October 3: Reusable command compounds
+
+`backend/command_locations.py` adds four outdoor compound shells, four compact command-post footprints and a separate barracks. The map assembler stamps these as separate instances inside a battlefield, with full-ID isolation, approved material overrides and ordinary operable gates. Compound plans connect an outer gate/yard to a separate protected command building; these are not another workshop furniture skin. Roadblock pieces define complete barrier runs with intentional gates/flank gaps. See AUTHORED_BATTLE_LOCATIONS.md for missions, sizes and validation. No new art was necessary.
+
 ## October 3: Mission skins and repeat-visit dressing
 
 `backend/location_buildings.py` adds sixteen chapel/armory/cache/checkpoint definitions using the existing eight tested footprints. Each setting has four named layouts with matching furniture, floors and entrances. `backend/location_maps.py` routes the appropriate missions to them and supplies four deterministic dressing choices without moving solid blockers into corridors or spawn cells. Salvage Court also uses the four existing workshop plans. The armory's original two enclosure definitions remain preserved as legacy source; new encounters use the calibrated metal kit. See [authored locations](AUTHORED_BATTLE_LOCATIONS.md) for mission mapping, limitations and next batches. Existing saves and material art remain unchanged.

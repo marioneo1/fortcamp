@@ -65,7 +65,7 @@ def layout_presets(encounter):
         board=location_blueprint(location,seed)
         variant=board['map_variation'];ident=board['template_id']
         if variant not in found:
-            label=BUILDINGS.get(ident,{}).get('label') or LAYOUT_LABELS.get(ident,ident.replace('_',' ').title())
+            label=board.get('template_label') or BUILDINGS.get(ident,{}).get('label') or LAYOUT_LABELS.get(ident,ident.replace('_',' ').title())
             if location in {'broken_creek_bridge','toll_bridge'}:
                 family='Stone' if '_stone_' in ident else 'Wood'
                 label=f'{family} bridge · {"upper" if ident.endswith("_4") else "lower"} crossing'
