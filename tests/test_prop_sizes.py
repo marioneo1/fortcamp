@@ -34,16 +34,14 @@ class PropSizeTests(unittest.TestCase):
         self.assertLess(PROP_SIZES['dropped_coin_purse']['fill'],PROP_SIZES['village_well']['fill'])
         self.assertEqual(PROP_SIZES,json.loads((ROOT/'frontend/src/map-prop-sizes.json').read_text()))
 
-    def test_garden_has_multi_cell_beds_without_blocking_cross_aisles(self):
+    def test_garden_restores_approved_art_in_all_layouts(self):
         variants={}
         for i in range(40):
             board=location_blueprint('herb_garden',f'layout-{i}')
             variants[board['map_variation']]=board
         for board in variants.values():
-            beds=[t for t in board['terrain'] if t.get('size_variant')=='raised-bed']
-            self.assertGreaterEqual(len(beds),3)
-            self.assertTrue(all(t['footprint']==[2,2] for t in beds))
-            self.assertFalse(any(y==5 or x in (8,9) for t in beds for x,y in occupied_tiles(t)))
-            self.assertTrue(any(t['sprite']=='garden_potting_bench' for t in board['terrain']))
+            sprites={t['sprite'] for t in board['terrain']+board['decorations']}
+            self.assertIn('herb_planter',sprites)
+            self.assertFalse(any(s.startswith('garden_') for s in sprites))
 
 if __name__=='__main__':unittest.main()

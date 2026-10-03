@@ -1,6 +1,8 @@
 # Fortcamp feature backlog
 
-## October 3: Prop sizing audit and gardening atlas integrated
+October 3 follow-up: rejected supplied gardening kit retired from runtime and source staging; earlier herb props restored. Saved battle art has approved replacement aliases. Proposed next pass: overhead ground vegetation, paths/scuffed training ground, purposeful work/rest clusters and sub-cell visual placement. Review one garden and one training yard before expanding variants.
+
+## October 3: Earlier prop sizing audit (garden import superseded above)
 
 Audited all 138 registered non-modular prop/state sprites across 249 encounters; shared alpha-calibrated presentation and new-object footprint defaults now distinguish small clutter, ordinary furniture and multi-cell objects. New wells/wagons/cages/tents/ballistas use 2x2 defaults; carts and long furniture use two cells. Existing saved occupancy is retained; walls preserve material join calibration. Captive Cart courier moved outside the enlarged logical wagon footprint.
 

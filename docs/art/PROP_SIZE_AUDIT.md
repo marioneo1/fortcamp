@@ -1,6 +1,6 @@
 # Map prop size audit
 
-Checked 138 registered non-modular sprites across 249 isolated encounter previews. Architectural wall kits keep their existing joint calibration.
+Checked 106 registered non-modular sprites across 249 isolated encounter previews. Architectural wall kits keep their existing joint calibration.
 
 Footprints reserve logical cells. Fill is the maximum visible silhouette fraction within its art box; it does not stretch the PNG. Prepared/unseen assets are retained rather than deleted merely for zero fixture use.
 
@@ -33,7 +33,7 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | structure:wooden_rescue_cage_closed | 2x2 | 90% | 1 | 2x2 |
 | structure:wooden_rescue_cage_open | 2x2 | 90% | 0 | prepared / state art |
 | structure:wooden_barricade | 1x1 | 85% | 0 | prepared / state art |
-| structure:wall_rubble | 1x1 | 85% | 1364 | 1x1, 2x2, 1x2, 2x2 (raised-bed), 2x1 |
+| structure:wall_rubble | 1x1 | 85% | 1352 | 1x1, 2x2, 1x2 |
 | alarm_bell_active | 1x1 | 85% | 31 | 1x1 |
 | alarm_bell_disabled | 1x1 | 85% | 0 | prepared / state art |
 | crate_closed | 1x1 | 85% | 96 | 1x1 |
@@ -100,9 +100,9 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | food_prep_table | 1x1 | 85% | 0 | prepared / state art |
 | grain_sacks | 1x1 | 85% | 40 | 1x1 |
 | water_trough | 1x1 | 85% | 40 | 1x1 |
-| wash_tub | 1x1 | 85% | 5 | 1x1 |
+| wash_tub | 1x1 | 85% | 10 | 1x1 |
 | mess_bench | 1x1 | 85% | 0 | prepared / state art |
-| herb_planter | 1x1 | 85% | 0 | prepared / state art |
+| herb_planter | 1x1 | 85% | 25 | 1x1 |
 | village_well | 2x2 | 90% | 5 | 2x2 |
 | ballista_loaded | 2x2 | 90% | 5 | 2x2 |
 | ballista_empty | 2x2 | 90% | 0 | prepared / state art |
@@ -112,35 +112,3 @@ Footprints reserve logical cells. Fill is the maximum visible silhouette fractio
 | dropped_coin_purse | 1x1 | 45% | 5 | 1x1 |
 | blanket_chest | 1x1 | 85% | 10 | 1x1 |
 | tribal_trophy_pole | 1x1 | 85% | 25 | 1x1 |
-| garden_basil_pot | 1x1 | 38% | 2 | 1x1 |
-| garden_lavender_pot | 1x1 | 38% | 0 | prepared / state art |
-| garden_empty_pots | 1x1 | 45% | 3 | 1x1 |
-| garden_mixed_herb_bowl | 1x1 | 85% | 0 | prepared / state art |
-| garden_white_flower_box | 1x1 | 94% | 3 | 2x2 (raised-bed) |
-| garden_yellow_flower_box | 1x1 | 94% | 5 | 2x2 (raised-bed) |
-| garden_lavender_barrel | 1x1 | 94% | 5 | 1x1 |
-| garden_herb_basket | 1x1 | 85% | 0 | prepared / state art |
-| garden_watering_can | 1x1 | 45% | 4 | 1x1 |
-| garden_wooden_bucket | 1x1 | 45% | 0 | prepared / state art |
-| garden_water_barrel | 1x1 | 85% | 5 | 1x1 |
-| garden_stone_water_trough | 2x1 | 88% | 5 | 2x1 |
-| garden_soil_sack | 1x1 | 85% | 3 | 1x1 |
-| garden_compost_bin | 1x1 | 85% | 4 | 1x1 |
-| garden_herb_wheelbarrow | 2x1 | 88% | 0 | prepared / state art |
-| garden_potting_bench | 2x1 | 88% | 5 | 2x1 |
-| garden_shovel | 1x1 | 85% | 0 | prepared / state art |
-| garden_rake | 1x1 | 85% | 0 | prepared / state art |
-| garden_garden_fork | 1x1 | 85% | 0 | prepared / state art |
-| garden_tool_caddy | 1x1 | 45% | 2 | 1x1 |
-| garden_mixed_herb_box | 1x1 | 94% | 10 | 1x1, 2x2 (raised-bed) |
-| garden_cut_herb_box | 1x1 | 94% | 5 | 2x2 (raised-bed) |
-| garden_garden_stool | 1x1 | 45% | 5 | 1x1 |
-| garden_seed_crate | 1x1 | 85% | 0 | prepared / state art |
-| garden_white_flower_trellis | 1x1 | 94% | 0 | prepared / state art |
-| garden_purple_flower_trellis | 1x1 | 94% | 0 | prepared / state art |
-| garden_herb_drying_rack | 2x1 | 88% | 0 | prepared / state art |
-| garden_bundled_stakes | 1x1 | 85% | 0 | prepared / state art |
-| garden_pruning_basket | 1x1 | 45% | 0 | prepared / state art |
-| garden_stacked_empty_pots | 1x1 | 45% | 0 | prepared / state art |
-| garden_mixed_herb_barrel | 1x1 | 94% | 0 | prepared / state art |
-| garden_supply_crate | 1x1 | 85% | 0 | prepared / state art |

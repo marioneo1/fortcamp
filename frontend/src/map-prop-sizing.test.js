@@ -1,6 +1,17 @@
 import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {propArtScale,propVisualSpan} from './map-prop-sizing.js';
+import aliases from './retired-prop-aliases.json' with {type:'json'};
+import registry from './map-prop-art.json' with {type:'json'};
+
+test('retired garden artwork falls back to existing approved sprites without changing saved occupancy',()=>{
+  for(const [oldSprite,replacement] of Object.entries(aliases)){
+    assert.ok(registry[replacement]);assert.equal(registry[oldSprite],undefined);
+    assert.equal(propArtScale({sprite:oldSprite}),propArtScale({sprite:replacement}));
+    assert.deepEqual(propVisualSpan({sprite:oldSprite},[2,2]),[2,2]);
+  }
+  assert.ok(Object.values(registry).every(path=>!path.includes('garden-v1')));
+});
 
 test('registered small clutter overrides old enlarged art settings',()=>{
   assert.ok(propArtScale({sprite:'dropped_coin_purse',art_scale:2})<1);

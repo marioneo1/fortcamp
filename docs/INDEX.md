@@ -1,6 +1,6 @@
 # Fortcamp documentation map
 
-Current prop sizes and garden import: [Prop size standards](art/PROP_SIZE_STANDARDS.md), [complete prop audit](art/PROP_SIZE_AUDIT.md) and [retired-copy manifest](art/PROP_CLEANUP_20261003.json) cover shared scaling, actual footprints, the supplied gardening atlas and retained references.
+Current prop sizes and environment dressing: [Prop size standards](art/PROP_SIZE_STANDARDS.md), [complete prop audit](art/PROP_SIZE_AUDIT.md) and [retired-copy manifest](art/PROP_CLEANUP_20261003.json) cover shared scaling, actual footprints, retirement of the rejected gardening atlas, proposed ground dressing and retained references.
 
 Camp/training/bedding and siege artwork: [Camp prop pack](art/CAMP_PROP_PACK.md) records the new 32-sprite atlas, installation, silhouette recovery and prepared versus functional assets. [Authored locations](design/AUTHORED_BATTLE_LOCATIONS.md) records seven new compact settings and full-camp clutter.
 

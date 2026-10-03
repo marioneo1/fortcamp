@@ -1,10 +1,10 @@
 # Authored battle locations
 
-## October 3: Shared prop sizes and fuller herb gardens
+## October 3: Shared prop sizes; rejected garden kit retired
 
-The current presentation uses alpha-calibrated size rules across 138 non-modular sprites. New village wells and prison wagons reserve 2x2; the Captive Cart courier starts outside its western side. Existing saved battles retain occupancy. Handcarts/bedding/long garden furniture use two-cell defaults, and walls retain their approved join rules. See ../art/PROP_SIZE_STANDARDS.md for exact categories and exceptions.
+Current presentation uses alpha-calibrated size rules across 106 approved non-modular sprites. Village wells and prison wagons reserve 2x2; the Captive Cart courier starts outside the wagon. Saved battles retain occupancy; walls retain approved join rules. See ../art/PROP_SIZE_STANDARDS.md.
 
-The supplied gardening atlas is now split into 32 separate sprites. All four herb layouts have cross aisles, three/four 2x2 raised beds, a potting bench, barrel/trough, compost and smaller tools/pots. The annex keeps fewer beds to respect its footprint. Existing combat branches, reward rolls and objectives are unchanged; no harvesting or farming mechanics were added. Original atlas and proposed garden mockup remain available as references. Thirty-four obsolete runtime copies with versioned replacements were archived; current and reference assets remain.
+The supplied 32-sprite gardening atlas and its extra garden dressing have been removed from use after user review. All four herb layouts again use the approved camp-kit planters and wash tub. Retired saved-sprite IDs fall back to approved art. Ground-detail and more natural edge placement are proposals for the next review, not implemented changes. Other maps and the approved camp pack are unchanged.
 
 ## October 3: Beginner locations and camp activity areas
 

@@ -592,3 +592,12 @@ Paused new map rollout to audit 138 registered non-modular prop/state sprites ac
 Imported the user's 32-object garden atlas with complete-silhouette extraction. Four herb gardens now contain three/four large raised beds and potting/watering/compost areas around clear aisles, using the supplied mockup as reference. Larger beds are explicit size variants. Archived 34 replaced runtime copies outside dev; active images, style comparison files and prepared artwork retained. No new image generation, farming rewards or siege interactions. Canonical: docs/art/PROP_SIZE_STANDARDS.md and PROP_SIZE_AUDIT.md; cleanup manifest PROP_CLEANUP_20261003.json.
 
 Validation: 140 distinct backend tests across map, prop, beginner and mission suites; 37 frontend map/size/wall tests; frontend build; art coverage 249 previews/19,603 references with no missing assets. Twenty-eight general beginner layouts and seven targeted size/garden renders checked in browser; targeted checks verify real cart/well 2-column spans and wait for 145 background-image URLs before capture. Existing saves and production untouched.
+
+
+## October 3: Rejected gardening atlas retired; environment composition proposal
+
+Removed the supplied 32-sprite garden kit from active runtime art, registry and shared size profiles. Retired its source, extraction outputs, importer and extra dressing module to the external `fortcamp-art-archive/rejected-garden-20261003` archive. Earlier camp-kit herb planters/wash tub are restored in all four garden layouts. Explicit retired-sprite aliases preserve saved encounter positions/occupancy while displaying approved replacements. Other prop standards, approved wall materials and production remain unchanged.
+
+Proposed next pass, not implemented: coherent planting areas and worn paths instead of a checkerboard of dirt; true overhead herb ground detail; scuffed sparring areas and archery lanes; equipment clustered by activity, with visual offsets against walls/edges independent of logical collision. Review one garden and one training yard before generating more variations. Retained the user's separate layout mockup as a composition reference.
+
+Validation: 8 backend tests, including 400-map reachability; 6 focused frontend tests; frontend build. Refreshed 249 encounter previews and 19,555 sprite references with no missing art. Seven isolated scenes rendered, 117 asset URLs loaded, no runtime exceptions; restored garden screenshot inspected. No player saves accessed or modified.

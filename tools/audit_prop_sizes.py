@@ -25,18 +25,12 @@ def profile(sprite):
         footprint=[2,1];fill=.88;category='long object'
     if any(term in name for term in ('satchel','purse','pruning_basket','bucket','watering_can','empty_pots','garden_stool','garden_tool_caddy','arrow_bundle','ballista_bolts')):
         fill=.45;category='small clutter'
-    if name in {'camp_lantern','garden_basil_pot','garden_lavender_pot'}:fill=.38;category='small clutter'
+    if name=='camp_lantern':fill=.38;category='small clutter'
     if name=='wagon_wheel':fill=.65
     if name=='marked_farm_chart':fill=.6
-    if name in {'garden_potting_bench','garden_stone_water_trough','garden_herb_wheelbarrow','garden_herb_drying_rack'}:
-        footprint=[2,1];fill=.88;category='garden work furniture'
-    if name.startswith('garden_') and any(term in name for term in ('herb_box','flower_box','flower_trellis','herb_barrel','lavender_barrel')):
-        fill=.94;category='garden planting'
     result={'footprint':footprint,'fill':fill,'category':category}
     if name in {'oak_tree','pine_tree','birch_tree'}:
         result.update(category='tree canopy',art_span=[2,2])
-    if name in {'garden_mixed_herb_box','garden_cut_herb_box','garden_white_flower_box','garden_yellow_flower_box'}:
-        result['variants']={'raised-bed':{'footprint':[2,2],'description':'Larger planted bed; ordinary boxes remain one cell.'}}
     return result
 
 def main():

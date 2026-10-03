@@ -36,7 +36,7 @@ class BeginnerLocationTests(unittest.TestCase):
 
     def test_locations_have_matching_landmarks_and_four_distinct_layouts(self):
         cases=[('rats_storehouse','grain_sacks'),('wolves_fence','water_trough'),
-               ('herbs_wall','garden_mixed_herb_box'),('goblin_pickpockets','dropped_coin_purse'),
+               ('herbs_wall','herb_planter'),('goblin_pickpockets','dropped_coin_purse'),
                ('ruined_well','village_well'),('supply_watch','wooden_handcart'),
                ('prison_proof_d','straw_training_dummy')]
         for mid,landmark in cases:
