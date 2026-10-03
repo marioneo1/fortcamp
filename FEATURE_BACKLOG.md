@@ -1,5 +1,7 @@
 # Fortcamp feature backlog
 
+October 3 portrait follow-up: restored square full/thumb previews, recovered separate uncropped originals for all 1,080 generic portraits, and added an image-source switch to framing editors. Portrait Lab opens the uncropped image by default. Saved manual frames remember which source they use; automatic square frames stay inside image bounds to avoid black borders. Existing portrait IDs and character assignments remain unchanged.
+
 October 3 portrait framing: implemented per-character circle editor and dev-only Portrait Lab with search/set filters, sixty previews per page and persistent shared image defaults. First automatic audit covers 1,304 portraits; visually inspect uncertain nonhuman faces in the Lab. Manual library corrections survive re-audits; source images and identity order remain unchanged. Updated twenty Aasimar female healer images in place. See docs/art/PORTRAIT_FRAMING.md. Future work: review remaining detector estimates and reimport sources whose heads were already clipped.
 
 October 3 road rollout: Highway Ambush now has four authored road/bank/flank layouts with stolen-supply pull-offs and verified Battle Lab seeds. Existing enemies, objectives and rewards retained. Next road review: Boar-Rider Patrol and The Tithe Convoy; other generic road, tunnel and later facility maps remain pending. See docs/design/AUTHORED_BATTLE_LOCATIONS.md.

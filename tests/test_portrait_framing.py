@@ -24,7 +24,7 @@ class PortraitFramingTests(unittest.TestCase):
                 self.assertEqual(framing.resolve_frame(character),corrected)
                 character.update(portrait_frame_source='manual',portrait_frame_key=key,portrait_frame={'x':.7,'y':.4,'size':.9})
                 self.assertEqual(framing.resolve_frame(character)['x'],.7)
-                self.assertEqual(framing.save_default(key)['x'],.6)
+                self.assertEqual(framing.save_default(key)['x'],.5)
                 character['portrait']='/api/portrait-pools/test/full/002.webp'
                 self.assertEqual(framing.resolve_frame(character)['x'],.5)
         framing._cache_stamp=None

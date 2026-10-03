@@ -159,10 +159,12 @@ def _render_cells(
         cell = sheet.crop((
             round(left + dx), round(top + dy), round(right - dx), round(bottom - dy),
         ))
-        # Keep the complete source cell. Circle framing is a separate, editable
-        # presentation step; a square fit here permanently removed headroom.
-        full = ImageOps.pad(cell, (768, 768), Image.Resampling.LANCZOS, color=(23,27,25))
-        thumb = ImageOps.pad(cell, (192, 192), Image.Resampling.LANCZOS, color=(23,27,25))
+        # Keep an uncropped source alongside square presentation images.
+        original = cell.copy()
+        original.thumbnail((1200,1200),Image.Resampling.LANCZOS)
+        original.save(staging / f"original-{name}", "WEBP", quality=90, method=0)
+        full = ImageOps.fit(cell, (768, 768), Image.Resampling.LANCZOS, centering=(.5,.35))
+        thumb = ImageOps.fit(cell, (192, 192), Image.Resampling.LANCZOS, centering=(.5,.35))
         full.save(staging / f"full-{name}", "WEBP", quality=90, method=0)
         thumb.save(staging / f"thumb-{name}", "WEBP", quality=84, method=0)
     return x_bounds, y_bounds, evidence
@@ -206,6 +208,8 @@ def refresh_sheet(sheet_path: Path, pool: str) -> dict:
     if len(names) != columns * rows:
         raise ValueError(f"The previous import tracks {len(names)} files; expected {columns * rows}")
     full_dir, thumb_dir = POOL_ROOT / pool / "full", POOL_ROOT / pool / "thumb"
+    original_dir = POOL_ROOT / pool / "original"
+    original_dir.mkdir(parents=True,exist_ok=True)
     targets = [directory / name for name in names for directory in (full_dir, thumb_dir)]
     missing = [path.name for path in targets if not path.is_file()]
     if missing:
@@ -219,7 +223,8 @@ def refresh_sheet(sheet_path: Path, pool: str) -> dict:
     if METADATA_PATH.is_file():
         shutil.copy2(METADATA_PATH, backup / "portrait_metadata.json")
     for name in names:
-        for kind, directory in (("full", full_dir), ("thumb", thumb_dir)):
+        for kind, directory in (("full", full_dir), ("thumb", thumb_dir), ("original", original_dir)):
+            if not (directory / name).is_file():continue
             destination = backup / kind
             destination.mkdir(exist_ok=True)
             shutil.copy2(directory / name, destination / name)
@@ -238,10 +243,10 @@ def refresh_sheet(sheet_path: Path, pool: str) -> dict:
             )
             print(f"[{pool}] Rendered {len(names)} full portraits and thumbnails.", flush=True)
             for name in names:
-                for prefix, directory in (("full", full_dir), ("thumb", thumb_dir)):
+                for prefix, directory in (("full", full_dir), ("thumb", thumb_dir), ("original", original_dir)):
                     with Image.open(staging / f"{prefix}-{name}") as check:
                         expected = (768, 768) if prefix == "full" else (192, 192)
-                        if check.size != expected:
+                        if prefix != "original" and check.size != expected:
                             raise ValueError(f"Generated {prefix} image for {name} has size {check.size}")
                     os.replace(staging / f"{prefix}-{name}", directory / name)
                     replaced.append((prefix, name))
@@ -269,8 +274,10 @@ def refresh_sheet(sheet_path: Path, pool: str) -> dict:
         print(f"[{pool}] Manifest update complete.", flush=True)
     except Exception:
         for kind, name in replaced:
-            directory = full_dir if kind == "full" else thumb_dir
-            shutil.copy2(backup / kind / name, directory / name)
+            directory = {"full":full_dir,"thumb":thumb_dir,"original":original_dir}[kind]
+            saved = backup / kind / name
+            if saved.is_file():shutil.copy2(saved, directory / name)
+            else:(directory / name).unlink(missing_ok=True)
         if replaced:
             shutil.copy2(backup / "import_manifest.json", MANIFEST_PATH)
             if (backup / "portrait_metadata.json").is_file():
@@ -328,8 +335,10 @@ def import_sheet(
 
     full_dir = POOL_ROOT / pool / "full"
     thumb_dir = POOL_ROOT / pool / "thumb"
+    original_dir = POOL_ROOT / pool / "original"
     full_dir.mkdir(parents=True, exist_ok=True)
     thumb_dir.mkdir(parents=True, exist_ok=True)
+    original_dir.mkdir(parents=True,exist_ok=True)
     sequence = next_index(full_dir, thumb_dir, pool)
     sheet = normalized_sheet(sheet_path)
     names = [f"{pool}_{sequence + index:03d}.webp" for index in range(columns * rows)]
@@ -350,7 +359,7 @@ def import_sheet(
             if any(path.exists() for path in targets):
                 raise FileExistsError("A generated portrait filename already exists; no files were changed")
             for name in names:
-                for prefix, directory in (("full", full_dir), ("thumb", thumb_dir)):
+                for prefix, directory in (("full", full_dir), ("thumb", thumb_dir), ("original", original_dir)):
                     target = directory / name
                     os.replace(staging / f"{prefix}-{name}", target)
                     moved.append(target)

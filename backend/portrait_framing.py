@@ -13,7 +13,7 @@ _cache = {}
 def portrait_key(url):
     path = unquote(urlsplit(str(url or '')).path)
     if path.startswith('/api/portrait-pools/'):
-        return path.replace('/thumb/', '/full/')
+        return path.replace('/thumb/', '/full/').replace('/original/', '/full/')
     if path.startswith('/api/champion-portraits/'):
         return path.replace('/thumb.webp', '/full.webp')
     if path.startswith('/api/portraits/'):
@@ -28,6 +28,7 @@ def clean_frame(frame):
         try:value = float(frame.get(key,default))
         except (TypeError, ValueError):value = default
         result[key] = round(max(low,min(high,value if math.isfinite(value) else default)),5)
+    result['image'] = 'original' if frame.get('image') == 'original' else 'square'
     return result
 
 
@@ -37,6 +38,13 @@ def defaults():
     if stamp != _cache_stamp:
         try:_cache = json.loads(REGISTRY_PATH.read_text(encoding='utf-8')).get('portraits',{})
         except (OSError, ValueError):_cache = {}
+        # Automatic estimates must stay within the square so icons have no
+        # empty borders. Manual original-image framing remains unrestricted.
+        for key, value in list(_cache.items()):
+            f = clean_frame(value); f['size'] = min(1,f['size'])
+            radius = f['size']/2
+            for axis in ('x','y'):f[axis] = max(radius,min(1-radius,f[axis]))
+            _cache[key] = f
         try:_cache.update(json.loads(OVERRIDES_PATH.read_text(encoding='utf-8')).get('portraits',{}))
         except (OSError, ValueError):pass
         _cache_stamp = stamp

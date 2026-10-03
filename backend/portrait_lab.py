@@ -1,5 +1,6 @@
 """Development art browser. Edits framing defaults, never portrait identities."""
 from urllib.parse import quote
+from typing import Literal
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from .auth import IdentityDep
@@ -37,6 +38,7 @@ class DefaultFrameRequest(BaseModel):
     y: float = Field(default=.5,ge=0,le=1,allow_inf_nan=False)
     size: float = Field(default=1,ge=.25,le=2.5,allow_inf_nan=False)
     reset: bool = False
+    image: Literal['square','original'] = 'square'
 
 
 @router.get('')
@@ -50,5 +52,5 @@ async def update_default(req: DefaultFrameRequest, identity: IdentityDep):
     authorize(identity)
     if req.key not in {row['key'] for row in catalogue()}:
         raise HTTPException(404,'Portrait not found in the art library')
-    frame = save_default(req.key,None if req.reset else req.model_dump(include={'x','y','size'}))
+    frame = save_default(req.key,None if req.reset else req.model_dump(include={'x','y','size','image'}))
     return {'portrait_frame':frame}

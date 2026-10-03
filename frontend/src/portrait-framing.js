@@ -2,7 +2,13 @@ import './portrait-framing.css';
 
 export function normalizeFrame(frame={}){
   const clamp=(value,fallback,lo,hi)=>Number.isFinite(Number(value))?Math.max(lo,Math.min(hi,Number(value))):fallback;
-  return {x:clamp(frame.x,.5,0,1),y:clamp(frame.y,.5,0,1),size:clamp(frame.size,1,.25,2.5)};
+  return {x:clamp(frame.x,.5,0,1),y:clamp(frame.y,.5,0,1),size:clamp(frame.size,1,.25,2.5),image:frame.image==='original'?'original':'square'};
+}
+
+export function originalPortraitSrc(src){
+  if(src.includes('/portrait-pools/'))return src.replace('/thumb/','/original/').replace('/full/','/original/');
+  if(src.includes('/portrait_pools/'))return src.replace('/thumb/','/original/').replace('/full/','/original/');
+  return src.replace('/thumb.webp','/full.webp').replace('.thumb.webp','.webp');
 }
 
 // The source image keeps its aspect ratio; only the containing circle clips it.
@@ -14,6 +20,7 @@ export function frameGeometry(frame,width,height){
 
 export function framedImage(src,frame,esc,classes='',attributes=''){
   const f=normalizeFrame(frame);
+  if(f.image==='original')src=originalPortraitSrc(src);
   return `<span class="portrait-crop ${classes}" ${attributes}><img class="portrait-framed-image" src="${esc(src)}" alt="" data-face-x="${f.x}" data-face-y="${f.y}" data-face-size="${f.size}"></span>`;
 }
 
@@ -30,6 +37,11 @@ export function openPortraitFraming({character,src,onSave,onReset,onError}){
   dialog.innerHTML=`<header><div><small>PORTRAIT FRAMING</small><h2>Adjust character icon</h2></div><button type="button" data-close aria-label="Close">×</button></header><p>Drag the circle onto the face. A larger circle includes more hair and headroom.</p><div class="portrait-framing-workspace"><canvas data-editor width="420" height="420" aria-label="Drag to position the portrait circle"></canvas><aside><canvas data-preview width="180" height="180" aria-label="Battle icon preview"></canvas><b>Battle icon preview</b><small>The full photo stays intact. The icon frame keeps its current size.</small></aside></div><div class="portrait-framing-controls"><label>Horizontal position<input type="range" data-axis="x" min="0" max="1" step=".005"></label><label>Vertical position<input type="range" data-axis="y" min="0" max="1" step=".005"></label><label>Circle size<input type="range" data-axis="size" min=".25" max="2.5" step=".01"></label></div><p data-error class="portrait-framing-error" role="status"></p><footer><button type="button" data-reset>Use recommended framing</button><div><button type="button" data-close>Cancel</button><button type="button" data-save class="primary">Save framing</button></div></footer>`;
   document.body.append(dialog);dialog.showModal();
   let frame=normalizeFrame(character.portrait_frame),ready=false,busy=false;
+  const squareSrc=src.includes('/api/portraits/')&&character.portrait_thumbnail?character.portrait_thumbnail:src,originalSrc=originalPortraitSrc(src);
+  const sourceControl=document.createElement('label');sourceControl.className='portrait-framing-source';sourceControl.innerHTML='<span>Image source</span><select><option value="original">Original image (uncropped)</option><option value="square">Square crop</option></select>';dialog.querySelector('.portrait-framing-workspace').before(sourceControl);
+  const sourceSelect=sourceControl.querySelector('select');sourceSelect.value='original';
+  let initialSquareFrame=frame.image!=='original'?{...frame}:null;
+  if(initialSquareFrame)frame={...frame,image:'original'};
   const image=new Image(),editor=dialog.querySelector('[data-editor]'),preview=dialog.querySelector('[data-preview]');
   const bounds=()=>{const scale=Math.min(editor.width/image.naturalWidth,editor.height/image.naturalHeight);return {w:image.naturalWidth*scale,h:image.naturalHeight*scale,x:(editor.width-image.naturalWidth*scale)/2,y:(editor.height-image.naturalHeight*scale)/2}};
   function draw(){
@@ -44,7 +56,8 @@ export function openPortraitFraming({character,src,onSave,onReset,onError}){
     const g=frameGeometry(frame,image.naturalWidth,image.naturalHeight);p.drawImage(image,g.left*1.8,g.top*1.8,g.width*1.8,g.height*1.8);p.restore();
     p.strokeStyle='#c9ad70';p.lineWidth=2;p.beginPath();p.arc(90,90,89,0,Math.PI*2);p.stroke();
   }
-  image.onload=()=>{ready=true;draw()};image.onerror=()=>dialog.querySelector('[data-error]').textContent='The photo could not be loaded.';image.src=src;
+  image.onload=()=>{if(initialSquareFrame&&sourceSelect.value==='original'){const w=image.naturalWidth,h=image.naturalHeight,d=Math.min(w,h);frame={x:((w-d)*.5+initialSquareFrame.x*d)/w,y:((h-d)*.35+initialSquareFrame.y*d)/h,size:initialSquareFrame.size,image:'original'};initialSquareFrame=null}ready=true;draw()};image.onerror=()=>{if(sourceSelect.value==='original'&&originalSrc!==squareSrc){sourceSelect.value='square';sourceSelect.querySelector('[value="original"]').disabled=true;initialSquareFrame=null;frame={x:.5,y:.5,size:1,image:'square'};image.src=squareSrc;dialog.querySelector('[data-error]').textContent='Uncropped source is unavailable; showing the square crop.'}else dialog.querySelector('[data-error]').textContent='The photo could not be loaded.'};image.src=originalSrc;
+  sourceSelect.onchange=()=>{ready=false;frame={x:.5,y:.5,size:1,image:sourceSelect.value};image.src=sourceSelect.value==='original'?originalSrc:squareSrc;draw()};
   const close=()=>{if(!busy){dialog.close();dialog.remove()}};
   dialog.querySelectorAll('[data-close]').forEach(button=>button.onclick=close);
   dialog.addEventListener('cancel',event=>{event.preventDefault();close()});
@@ -54,6 +67,6 @@ export function openPortraitFraming({character,src,onSave,onReset,onError}){
   editor.onpointerdown=event=>{editor.setPointerCapture(event.pointerId);point(event)};editor.onpointermove=event=>{if(editor.hasPointerCapture(event.pointerId))point(event)};
   editor.onpointerup=event=>{if(editor.hasPointerCapture(event.pointerId))editor.releasePointerCapture(event.pointerId)};
   editor.onwheel=event=>{event.preventDefault();if(!busy){frame.size=Math.max(.25,Math.min(2.5,frame.size+event.deltaY*.001));draw()}};
-  async function save(reset){if(busy||!ready)return;busy=true;dialog.querySelectorAll('button,input').forEach(e=>e.disabled=true);try{await(reset?onReset():onSave(frame));busy=false;close()}catch(error){busy=false;dialog.querySelectorAll('button,input').forEach(e=>e.disabled=false);dialog.querySelector('[data-error]').textContent=error.message;onError?.(error)}}
+  async function save(reset){if(busy||!ready)return;busy=true;dialog.querySelectorAll('button,input,select').forEach(e=>e.disabled=true);try{await(reset?onReset():onSave(frame));busy=false;close()}catch(error){busy=false;dialog.querySelectorAll('button,input,select').forEach(e=>e.disabled=false);dialog.querySelector('[data-error]').textContent=error.message;onError?.(error)}}
   dialog.querySelector('[data-save]').onclick=()=>save(false);dialog.querySelector('[data-reset]').onclick=()=>save(true);draw();
 }

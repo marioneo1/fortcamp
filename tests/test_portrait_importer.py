@@ -10,6 +10,17 @@ from tools.portrait_grid import detect_grid_bounds
 
 
 class PortraitImportTests(unittest.TestCase):
+    def test_square_previews_keep_uncropped_rectangular_source(self):
+        with tempfile.TemporaryDirectory() as directory:
+            image=Image.new('RGB',(80,160),(110,150,90))
+            importer._render_cells(image,['001.webp'],Path(directory),1,1,0)
+            with Image.open(Path(directory)/'original-001.webp') as source:
+                self.assertEqual(source.size,(80,160))
+            for kind,expected in [('full',(768,768)),('thumb',(192,192))]:
+                with Image.open(Path(directory)/f'{kind}-001.webp') as preview:
+                    self.assertEqual(preview.size,expected)
+                    self.assertGreater(preview.getpixel((0,0))[1],100)
+
     def test_detects_uneven_dark_grid_separators(self):
         image = Image.new("RGB", (403, 397), "white")
         pixels = image.load()

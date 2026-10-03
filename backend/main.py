@@ -10,7 +10,7 @@ import uuid
 from contextlib import asynccontextmanager
 from copy import deepcopy
 from pathlib import Path
-from typing import Any
+from typing import Any, Literal
 from urllib.parse import urlparse
 
 import httpx
@@ -225,6 +225,7 @@ class PortraitUploadRequest(BaseModel):
 
 
 class PortraitFrameRequest(BaseModel):
+    image: Literal['square','original'] = 'square'
     x: float = Field(default=.5, ge=0, le=1, allow_inf_nan=False)
     y: float = Field(default=.5, ge=0, le=1, allow_inf_nan=False)
     size: float = Field(default=1, ge=.25, le=2.5, allow_inf_nan=False)
@@ -683,8 +684,7 @@ def _resize_portrait(raw: bytes) -> tuple[bytes, bytes]:
         raise ValueError("Portrait image could not be decoded safely") from exc
     full = image.copy()
     full.thumbnail((1200, 1200), Image.Resampling.LANCZOS)
-    thumb = image.copy()
-    thumb.thumbnail((192,192),Image.Resampling.LANCZOS)
+    thumb = ImageOps.fit(image,(192,192),Image.Resampling.LANCZOS,centering=(.5,.35))
     full_buffer, thumb_buffer = io.BytesIO(), io.BytesIO()
     full.save(full_buffer, format="WEBP", quality=90, method=6)
     thumb.save(thumb_buffer, format="WEBP", quality=84, method=6)

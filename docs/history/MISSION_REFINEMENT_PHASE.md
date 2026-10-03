@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## October 3: Square portraits and separate originals
+
+Restored square generic previews and square thumbnails for new uploads; recovered all 1,080 uncropped generic cells into separate original folders without changing IDs. Reimported the padded Aasimar sheet as square previews with uncropped originals and a backup. Both editors offer Original/Square source selection and default to Original for manual editing; source choice persists with framing. Automatic recommendations remain inside square bounds. Ten framing/importer tests and frontend build passed. Browser QA confirmed original-source selection and saved source-aware frames with no script errors.
+
 ## October 3: Portrait framing and Portrait Lab
 
 Added a saved per-character circle editor and searchable dev art browser for all 1,304 installed generic/Champion portraits. Drag/resize previews preserve image proportions. Library defaults are stored separately from automatic estimates, individual overrides take priority, and production access is explicitly blocked. Updated the Aasimar healer sheet with stable IDs and backups; future imports preserve full rectangular cells with padding. Nine framing/importer tests passed; production frontend build passed. Headless Chrome checked 60-card pagination, Aasimar filtering, editor preview and save payload with no browser errors. Review captures live under data/portrait_audit/lab_preview. Automatic face recommendations are not a guarantee of perfect framing and cannot restore pixels missing from original sources.
