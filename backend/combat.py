@@ -18,6 +18,7 @@ from .equipment_rules import collect_rules,equipped_skills
 from .combat_pacing import enemy_budget
 from .combat_supplies import sync_supplies, remaining_uses
 from . import combat_conditions as conditions
+from . import concealment
 
 
 STATUS_DEFINITIONS = {
@@ -725,6 +726,8 @@ def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission
         if spec.get('creature'):
             unit.update(name=f"{spec['creature']} {index+1}",portrait='',weapon='Bite',corpse_item=None,corpse_item_chance=0,boss=False,creature=True)
             unit['corpse_gold']=(0,0)
+        if index in board.get('ambush_enemy_indices', []):
+            unit['bush_ambusher'] = True
         units[uid] = unit
     commander = units["contract_enemy_0"]
     return_battle = {**board,"version":1,"encounter_id":f"contract:{mission_id}","name":mission["name"],
@@ -839,6 +842,7 @@ def _blocked(
         return True
     return any(
         unit["id"] != ignore_unit and _combat_active(unit)
+        and not (battle.get('units', {}).get(ignore_unit, {}).get('team') == 'player' and concealment.unseen(unit))
         and unit["x"] == x and unit["y"] == y
         for unit in battle["units"].values()
     )
@@ -956,6 +960,7 @@ def _attack_preview(battle: dict, attacker: dict, target: dict, rule: str) -> di
 
 
 def _attack_hits(battle: dict, attacker: dict, target: dict, rule: str) -> tuple[bool, dict, int]:
+    concealment.reveal(battle, attacker)
     _wake_ambush(battle, target)
     preview = _attack_preview(battle, attacker, target, rule)
     counter = int(battle.get("roll_counter", 0))
@@ -965,6 +970,8 @@ def _attack_hits(battle: dict, attacker: dict, target: dict, rule: str) -> tuple
 
 
 def _can_attack(battle: dict, attacker: dict, target: dict, attack_range: int | None = None) -> bool:
+    if attacker.get('team') == 'player' and concealment.unseen(target):
+        return False
     reach = int(attack_range if attack_range is not None else attacker["attack_range"])
     return (_distance(attacker, target) <= reach
             and not any(wall.get('id') != target.get('id') for wall in crossed_walls(battle, (attacker['x'], attacker['y']), (target['x'], target['y']), sight=True))
@@ -1058,6 +1065,7 @@ def _apply_attack_approach(battle, unit, target, attack_range, command):
     actor = {**unit, 'x': x, 'y': y}
     if (x, y) not in costs or not _can_attack(battle, actor, target, attack_range):
         raise ValueError('That approach cannot reach the target within this turn')
+    desired = (x, y)
     path = _movement_path(parents, costs, (x, y))
     origin = unit.get('movement_origin') or {'x': unit['x'], 'y': unit['y']}
     points = [{'x': unit['x'], 'y': unit['y']}]
@@ -1069,15 +1077,22 @@ def _apply_attack_approach(battle, unit, target, attack_range, command):
         if (points[-1]['x'], points[-1]['y']) != (origin['x'], origin['y']):
             points.append(origin)
         points.extend(path)
+    route = _scout_path(battle, unit, [(p['x'],p['y']) for p in points[1:]])
+    if route:
+        x, y = route[-1]
+    else:
+        x, y = unit['x'], unit['y']
+    points = [points[0]] + [{'x':px,'y':py} for px,py in route]
     if (unit['x'], unit['y']) != (x, y):
         unit['exit_ready'] = False
         battle.setdefault('animation_events', []).append({'type': 'movement', 'unit_id': unit['id'], 'points': points})
     unit['movement_origin'] = origin
-    unit['movement_path'] = path
+    unit['movement_path'] = _movement_path(parents, costs, (x, y))
     unit['x'], unit['y'] = x, y
     unit['moved'] = (x, y) != (origin['x'], origin['y'])
     if unit.get('carrying') in battle['units']:
         battle['units'][unit['carrying']].update(x=x, y=y)
+    return (x, y) != desired
 
 
 def _apply_tile_entry(battle: dict, unit: dict) -> None:
@@ -1309,6 +1324,7 @@ def _capture_attempt(battle: dict, actor: dict, target: dict) -> None:
         raise ValueError('Equip a capture weapon to attempt Subdue')
     if not _combat_active(target) or not _can_attack(battle, actor, target):
         raise ValueError('Choose an active target within capture range')
+    concealment.reveal(battle, actor)
     preview = _capture_preview(battle, actor, target)
     counter = int(battle.get('roll_counter', 0))
     battle['roll_counter'] = counter + 1
@@ -1598,6 +1614,42 @@ def _finish_turn(battle: dict) -> None:
     _check_end(battle)
 
 
+def _scout_path(battle, unit, path):
+    """Stop provisional guild movement when new opposition is discovered."""
+    if not concealment.cover_cells(battle):
+        return path
+    accepted = []
+    original = (unit['x'], unit['y'])
+    try:
+        for x, y in path:
+            if any(_combat_active(other) and other['id'] != unit['id']
+                   and (other['x'], other['y']) == (x, y) for other in battle['units'].values()):
+                break
+            unit['x'], unit['y'] = x, y
+            accepted.append((x, y))
+            spotted = concealment.refresh(battle, _line_of_sight)
+            if spotted and unit.get('team') == 'player':
+                break
+    finally:
+        unit['x'], unit['y'] = original
+    return accepted
+
+
+def _visible_enemies(battle):
+    return [u for u in _living(battle, 'enemy') if not concealment.unseen(u)]
+
+
+def _search_brush(battle, unit):
+    covers = concealment.cover_cells(battle)
+    searched = {tuple(p) for p in battle.get('searched_bushes', [])}
+    choices = [{'x':x, 'y':y} for x,y in sorted(covers-searched)
+               if not _blocked(battle,x,y,unit['id'],unit.get('movement_type'))]
+    if choices:
+        _move_to_nearest_tile(battle, unit, choices)
+    _guard(battle, unit)
+    _finish_turn(battle)
+
+
 def _record_movement(battle: dict, unit: dict, start: tuple[int, int], path: list[tuple[int, int]]) -> None:
     if not path:
         return
@@ -1606,6 +1658,7 @@ def _record_movement(battle: dict, unit: dict, start: tuple[int, int], path: lis
         "unit_id": unit["id"],
         "points": [{"x": start[0], "y": start[1]}] + [{"x": x, "y": y} for x, y in path],
         "extracted": False,
+        "concealed": concealment.unseen(unit),
     })
 
 
@@ -1684,7 +1737,7 @@ def _move_toward(battle: dict, unit: dict, target: dict) -> None:
     first_gate=next((i for i,p in enumerate(path) if p in gates),len(path))
     path=path[:first_gate]
     if path:
-        reachable_path = [point for point in path if costs[point] <= _movement_limit(unit)]
+        reachable_path = _scout_path(battle, unit, [point for point in path if costs[point] <= _movement_limit(unit)])
         if reachable_path:
             x,y=reachable_path[-1];unit['exit_ready']=False
             unit['x'],unit['y'],unit['moved']=x,y,True
@@ -1727,7 +1780,7 @@ def _move_to_nearest_tile(battle: dict, unit: dict, destinations: list[dict]) ->
         path.append(goal)
         goal = parents[goal]
     path.reverse()
-    reachable = [point for point in path if costs[point] <= _movement_limit(unit)]
+    reachable = _scout_path(battle, unit, [point for point in path if costs[point] <= _movement_limit(unit)])
     if reachable:
         unit["exit_ready"] = False
         unit["x"], unit["y"] = reachable[-1]
@@ -1808,6 +1861,7 @@ def _should_party_panic(battle: dict, unit: dict) -> bool:
 
 
 def _enemy_turn(battle: dict, unit: dict) -> None:
+    concealment.refresh(battle, _line_of_sight)
     if any(s.get("id") == "ambush_sleep" for s in unit.get("statuses", [])):
         battle["log"].append(f"{unit['name']} is still asleep.")
         _finish_turn(battle)
@@ -1837,7 +1891,15 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
     targets = conditions.hostile_units(battle, unit, _living(battle))
     if not targets:
         _finish_turn(battle); return
+    targets = [target for target in targets if unit.get('team') != 'player' or not concealment.unseen(target)]
+    if not targets:
+        _search_brush(battle, unit)
+        return
     target = min(targets, key=lambda candidate: (_distance(unit, candidate), candidate["hp"]))
+    if unit.get('bush_ambusher') and concealment.unseen(unit) and _distance(unit, target) > _movement_limit(unit) + unit['attack_range']:
+        _guard(battle, unit)
+        _finish_turn(battle)
+        return
     if _auto_open_gate(battle, unit, target):
         return
     snared = int(unit.get("snared_until_round", 0)) >= int(battle.get("round", 1))
@@ -1865,8 +1927,10 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
 
 
 def _advance_to_player(battle: dict) -> None:
+    concealment.refresh(battle, _line_of_sight)
     safety = 0
     while battle["status"] == "active" and safety < 100:
+        concealment.refresh(battle, _line_of_sight)
         unit = _current_unit(battle)
         if not unit:
             return
@@ -1910,7 +1974,7 @@ def _independent_turn(battle: dict,unit: dict) -> None:
         return
     if behavior in {"guardian","survival"}:
         allies=[u for u in _living(battle,"player") if u["id"]!=unit["id"]]
-        enemies=_living(battle,"enemy")
+        enemies=_visible_enemies(battle)
         reachable=_reachable(battle,unit,unit["move"])
         if reachable:
             if behavior=="guardian" and allies:
@@ -1922,7 +1986,7 @@ def _independent_turn(battle: dict,unit: dict) -> None:
         _guard(battle,unit);unit["acted"]=True;_finish_turn(battle)
         return
     if behavior=="merciful":
-        enemies=_living(battle,"enemy")
+        enemies=_visible_enemies(battle)
         if enemies and unit.get("nonlethal_capable"):
             target=min(enemies,key=lambda u:(_distance(unit,u),u["hp"]))
             if not _can_attack(battle,unit,target,unit["attack_range"]):_move_toward(battle,unit,target)
@@ -1999,11 +2063,11 @@ def _auto_support(battle, unit):
 
 
 def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
-    enemies = _living(battle, 'enemy')
+    enemies = _visible_enemies(battle)
     if enemies and _auto_open_gate(battle, unit, min(enemies, key=lambda u: _distance(unit, u))):
         return
     if battle.get('ambush_sleep_until_round'):
-        target = next((u for u in _living(battle, 'enemy') if u.get('boss') or u.get('kind') == 'chieftain'), None)
+        target = next((u for u in _visible_enemies(battle) if u.get('boss') or u.get('kind') == 'chieftain'), None)
         if target:
             # Reach an open firing/assault position rather than waking the camp from the entry.
             destinations = [{'x': x, 'y': y} for x in range(battle['width']) for y in range(battle['height'])
@@ -2033,8 +2097,9 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
             return
         _move_toward(battle, unit, objective)
         pursuing_objective = True
-    targets = _living(battle, "enemy")
+    targets = _visible_enemies(battle)
     if not targets:
+        _search_brush(battle, unit)
         return
     if tactic == "objective" and world_has_active_objects:
         non_chiefs = [candidate for candidate in targets if candidate.get("kind") != "chieftain"]
@@ -2394,7 +2459,24 @@ def _context_actions(battle: dict, unit: dict) -> list[dict]:
 
 
 def battle_view(battle: dict) -> dict:
+    concealment.refresh(battle, _line_of_sight)
     view = deepcopy(battle)
+    hidden = {uid for uid, unit in view['units'].items() if concealment.unseen(unit)}
+    hidden_names = [view['units'][uid]['name'] for uid in hidden]
+    view['log'] = [line for line in view.get('log', []) if not any(name in line for name in hidden_names)]
+    view['units'] = {uid:unit for uid,unit in view['units'].items() if uid not in hidden}
+    if 'spawn_zones' in view:
+        view['spawn_zones'].pop('enemy', None)
+    # Filter initiative without advancing a hidden enemy activation in the view copy.
+    current_id = view['turn_order'][view['turn_index'] % len(view['turn_order'])] if view['turn_order'] else None
+    view['turn_order'] = [uid for uid in view['turn_order'] if uid not in hidden]
+    view['turn_index'] = view['turn_order'].index(current_id) if current_id in view['turn_order'] else 0
+    view['animation_events'] = [event for event in view.get('animation_events', [])
+                                if event.get('unit_id') not in hidden and event.get('target_id') not in hidden
+                                and not event.get('concealed')]
+    view['concealment_help'] = concealment.HELP if concealment.cover_cells(view) else None
+    view.pop('searched_bushes', None)
+    view.pop('ambush_enemy_indices', None)
     from .portrait_framing import resolve_frame
     from .portraits import version_pool_url
     for unit in view.get('units',{}).values():
@@ -2618,6 +2700,7 @@ def _apply_preparation_command(battle: dict, command: dict) -> dict:
 
 def apply_player_command(battle: dict, command: dict) -> dict:
     _ensure_battle_schema(battle)
+    concealment.refresh(battle, _line_of_sight)
     battle["animation_events"] = []
     if battle.get("status") == "preparing":
         return _apply_preparation_command(battle, command)
@@ -2664,6 +2747,12 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         reachable, parents = _movement_tree(battle, unit)
         if (x, y) not in reachable:
             raise ValueError("That tile is outside this unit's movement range")
+        path = _movement_path(parents, reachable, (x, y))
+        route = _scout_path(battle, unit, [(p['x'],p['y']) for p in path])
+        if route:
+            x, y = route[-1]
+        else:
+            x, y = unit['x'], unit['y']
         origin = unit["movement_origin"]
         if (x, y) != (unit["x"], unit["y"]):
             unit["exit_ready"] = False
@@ -2710,7 +2799,8 @@ def apply_player_command(battle: dict, command: dict) -> dict:
                 raise ValueError("Only a standard attack can target this terrain")
             if conditions.has(unit, 'mute') and unit['attack_elevation_rule'] == 'ignore':
                 raise ValueError('Mute prevents this spell')
-            _apply_attack_approach(battle, unit, terrain_target, unit["attack_range"], command)
+            if _apply_attack_approach(battle, unit, terrain_target, unit["attack_range"], command):
+                return battle_view(battle)
             if not _can_attack(battle, unit, terrain_target):
                 raise ValueError("Terrain target is outside attack range")
             _commit_player_movement(battle, unit)
@@ -2718,7 +2808,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             unit["acted"] = True
         else:
             target = battle["units"].get(target_id)
-            if not target or not _combat_active(target) or target["team"] != "enemy":
+            if not target or not _combat_active(target) or target["team"] != "enemy" or concealment.unseen(target):
                 raise ValueError("Choose a living enemy or destructible terrain target")
             if action == "attack" and unit.get("capture_weapon"):
                 raise ValueError("Capture weapons can only use Subdue instead of Attack")
@@ -2729,7 +2819,8 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             attack_range = int(unit["special"]["range"] if action == "skill" else unit["attack_range"])
             if action == "skill" and unit.get("special_used"):
                 raise ValueError("This unit's special skill has already been used")
-            _apply_attack_approach(battle, unit, target, attack_range, command)
+            if _apply_attack_approach(battle, unit, target, attack_range, command):
+                return battle_view(battle)
             if not _can_attack(battle, unit, target, attack_range):
                 raise ValueError("Target is outside attack range")
             _commit_player_movement(battle, unit)
@@ -2840,6 +2931,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         _commit_player_movement(battle, unit)
     if action == "end_turn" or action in {"attack", "skill", "subdue", "drop", "drop_object", "throw", "guard", "use_item"}:
         _finish_turn(battle)
+    concealment.refresh(battle, _line_of_sight)
     _check_end(battle)
     _advance_to_player(battle)
     if action != "move":

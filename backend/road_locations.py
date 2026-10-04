@@ -1,8 +1,8 @@
 """Authored road pieces: readable lanes, climbable banks and reserved approaches."""
 ROAD_SETTINGS = {'highway_cut': [
-    'Sunken straight road and northern shoulder',
+    'Brush ambush along the northern shoulder',
     'Descending bend and stolen-supply pull-off',
-    'Road fork around a wooded ridge',
+    'Brush ambush at the wooded fork',
     'Passing place and southern back trail',
 ]}
 
@@ -36,6 +36,8 @@ def blueprint(location, variant, rng):
     enemies = [(10, centres[10]), (11, centres[11]-2), (9, centres[9]+1),
                (11, centres[11]-1), (12, centres[12]), (9, centres[9]),
                (12, centres[12]+1), (13, centres[13]-1)]
+    if variant in (0, 2):
+        enemies[2] = (9, centres[9]+2)
     west = [{'x':0, 'y':y} for y in range(centres[0]-1, centres[0]+2)]
     east = [{'x':width-1, 'y':y} for y in range(centres[-1]-1, centres[-1]+2)]
     board = {'name':location, 'theme':'location-highway', 'width':width, 'height':height,
@@ -96,5 +98,12 @@ def blueprint(location, variant, rng):
         board['terrain'][-1]['blocks_sight'] = index%3 != 0
     for x,y in [(1,1),(2,9),(0,9),(15,1),(15,9)]:
         item(rng.choice(['dense_shrub','thorny_bramble']),x,y,'Roadside Brush',False)
+    if variant in (0, 2):
+        board['ambush_enemy_indices'] = [1, 2]
+        for index in board['ambush_enemy_indices']:
+            x, y = enemies[index]
+            brush = item('dense_shrub', x, y, 'Concealing Brush', False)
+            brush.update(kind='bush', conceals_units=True,
+                         description='Conceals enemies until spotted nearby, leaving cover, or attacking.')
     board['road_areas'] = ['Highway lane','Climbable low banks','Rejoining flank trail','Stolen-supply pull-off']
     return board

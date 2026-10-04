@@ -30,6 +30,7 @@ Current building collision/art: [Wall boundaries](design/WALL_BOUNDARIES.md) exp
 - [Relationships](design/CHARACTER_RELATIONSHIPS.md): loyalty, personality, records, conversations and staged roadmap.
 - [Prison recruitment proposal](design/PRISON_RECRUITMENT_PROPOSAL.md): original warden, conversation and boss pacing proposals; see the implemented reference below.
 - [Prison recruitment](design/PRISON_RECRUITMENT.md): implemented first pass; the proposal above retains deferred ideas.
+- [Bush concealment](design/BUSH_CONCEALMENT.md): first sightings, roadside ambush presets and map authoring.
 - [Combat](design/COMBAT_DESIGN.md): combat rules and outstanding mechanics.
 - [Battle Lab](design/BATTLE_LAB.md): dev-only mission/map picker, real approach outcomes, repeatable seeds and isolated test parties.
 - [Authored battle locations](design/AUTHORED_BATTLE_LOCATIONS.md): saved workshop/armory/shed plans, bridge variations, door-aware AI, wall alignment, separate art packs and remaining locations.

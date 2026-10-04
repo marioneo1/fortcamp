@@ -319,3 +319,8 @@ Validation: a deterministic real-command test uses three preparation rounds and 
 ## October 2 combat tools and wider pacing
 
 See [Combat tools and rank pacing](../gameplay/COMBAT_TOOLS_AND_PACING.md) for the implemented rank budget table, quiet automatic ambush preparation, owned battle supplies, healing/cleansing techniques and condition rules. Custom encounters retain their authored budgets. The companion [faction pass](FACTIONS_AND_ROTATING_TRADE.md) describes mission choices that resume after a victorious fight. Existing saves and production are preserved.
+
+
+## October 3: bush concealment and roadside ambushes
+
+Implemented persistent first sightings for enemies in walkable bush cover. Spot within two tiles with clear sight, or reveal on leaving cover/attacking; bodies are visible. Server views omit unseen units, initiative, targets and animations; direct targeting is rejected. Provisional movement pauses on discovery without spending the main action. Auto/independent party AI uses spotted enemies and searches brush. Two Highway Ambush presets put two escorts in brush with waiting AI; other two presets and rank budgets stay intact. No new art or dependencies. Production remains unchanged. Full stealth, friendly concealment and re-hiding remain deferred. Canonical: docs/design/BUSH_CONCEALMENT.md.
