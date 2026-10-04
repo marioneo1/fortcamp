@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {wallSegments,wallConnections,snapAnchor,rotatePlacement,validPlacement,wallPieces,availableWallPieces,wallLibraryEntries,wallLibraryPiece,wallPosts,nudgePlacement,placementError,constructionStepAllowed} from './construction-geometry.js';
+import {defaultWallAnchor,propBounds,wallSegments,wallConnections,snapAnchor,rotatePlacement,validPlacement,wallPieces,availableWallPieces,wallLibraryEntries,wallLibraryPiece,wallPosts,nudgePlacement,placementError,constructionStepAllowed} from './construction-geometry.js';
 import {constructionSVG} from './construction-render.js';
 const wall=(extra={})=>({id:'wall',x:2,y:2,shape:'straight',anchor:'center',material:'timber',rotation:0,posts:'auto',...extra});
 test('shared cell edges have identical ports; T and cross use exact half-cell segments',()=>{
@@ -116,4 +116,22 @@ test('full corner boundary arms and shifted interior arms use their real world p
  assert.ok(!constructionStepAllowed(plan,size,1,2,2,2));
  assert.ok(!constructionStepAllowed(plan,size,2,1,2,2));
  plan.walls[0].anchor='east';assert.ok(!constructionStepAllowed(plan,size,3,2,2,2));
+});
+
+
+test('visible prop fits between three edge walls but cannot cross a center wall',()=>{
+ const p={id:'crate',asset:'crate_closed',x:2,y:2,w:1,h:1,rotation:0};
+ const walls=[wall({piece:'horizontal_plain',anchor:'north'}),wall({id:'left',piece:'vertical_plain',anchor:'west'}),wall({id:'right',piece:'vertical_plain',anchor:'east'})];
+ assert.equal(placementError(p,'props',{w:8,h:8},{props:[],walls}),'');
+ assert.match(placementError(p,'props',{w:8,h:8},{props:[],walls:[wall({piece:'horizontal_plain',anchor:'center'})]}),/overlaps/);
+ assert.match(placementError({...p,offset_y:-.3},'props',{w:8,h:8},{props:[],walls}),/overlaps/);
+ const bottom=wall({piece:'horizontal_plain',anchor:'south'});
+ assert.equal(placementError(p,'props',{w:8,h:8},{props:[],walls:[bottom]}),'');
+ assert.match(placementError({...p,w:2,h:2},'props',{w:8,h:8},{props:[],walls:[wall({piece:'vertical_plain',anchor:'east'})]}),/overlaps/);
+ const bounds=propBounds({...p,w:2,h:1,rotation:90});assert.ok(bounds[2]-bounds[0]<bounds[3]-bounds[1]);
+});
+test('new wall defaults put straight pieces at edges and corners at center',()=>{
+ assert.equal(defaultWallAnchor('horizontal_left_post'),'north');
+ assert.equal(defaultWallAnchor('vertical_top_post'),'west');
+ assert.equal(defaultWallAnchor('corner_north_west'),'center');
 });

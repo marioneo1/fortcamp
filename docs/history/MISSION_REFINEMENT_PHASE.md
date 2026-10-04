@@ -951,3 +951,27 @@ cover rectangular fill/shrinking, straight runs, rotated corner commit, invalid
 run rejection, layer-specific removal over shared cells, magnification, undo,
 palette dragging and outside cancellations. Saves used an in-memory fixture;
 production and real player data were untouched. No artwork changed.
+
+
+## October 4: props sharing wall cells and default wall anchors
+
+Wall ownership of a cell does not reserve its interior. Collision now measures
+visible artwork (alpha at least 32/255) after the same aspect-preserving sizing,
+rotation and offset as the renderer. A small prop can fit inside top/bottom/side
+walls; larger props still cannot cross a wall. Frontend previews and backend save
+validation share construction-prop-bounds.json. Existing placements and artwork
+are unchanged. Wall clearance remains 0.08 cell. Bounds are conservative boxes:
+transparent holes inside a silhouette are not usable gaps.
+
+New horizontal brushes default to the top edge; native vertical brushes default
+to the left edge. Corners default to center so their full arms follow cell edges.
+Choosing another piece resets its default anchor; arrows/Home and smart snapping
+can still change it. Existing saved wall positions are preserved.
+
+Rebuild measurements after replacing/adding artwork with:
+`.venv\Scripts\python.exe tools\measure_construction_props.py`.
+The tool reads sources without modifying them; unmeasured assets use the previous
+viewport fallback. 237 existing sprites measured. Validation: 175 frontend tests,
+16 backend construction tests and build pass, including three-sided enclosure,
+center collision, shifted collisions, multicell size and rotated art bounds.
+Production and player saves were not changed.

@@ -1,5 +1,12 @@
 # Fortcamp feature backlog
 
+October 4 wall/prop sharing: visible sprite bounds replace transparent viewport
+collision padding; footprint, rotation and offsets match rendering on client and
+server. Edge walls leave usable interior space, actual wall crossings remain
+blocked. New H walls default top, V walls left, corners center; saved positions
+retained. 175 frontend/16 backend tests and build pass. Dev only. Measurement
+tool and limitations: docs/design/BASE_CONSTRUCTION.md.
+
 October 4 construction drag QoL: exact rotated snapped-corner commit, rectangular
 floor fill and single row/column wall runs with matching native art. Remove [Del]
 preserves floors; Shift+Remove previews a floor rectangle preserving objects.

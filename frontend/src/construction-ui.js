@@ -1,5 +1,5 @@
 import './construction-ui.css';
-import {anchors,wallPieces,availableWallPieces,wallLibraryPiece,wallLibraryEntries,placementError,rotatePlacement,nudgePlacement,newPlan} from './construction-geometry.js';
+import {anchors,defaultWallAnchor,wallPieces,availableWallPieces,wallLibraryPiece,wallLibraryEntries,placementError,rotatePlacement,nudgePlacement,newPlan} from './construction-geometry.js';
 import {constructionSVG} from './construction-render.js';
 import {confirmAction} from './confirmation-ui.js';
 import {snapWall,rotateSnappedWall} from './construction-snapping.js';
@@ -12,7 +12,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
  let plan=structuredClone(data.plan),revision=data.plan.revision,saved=JSON.stringify(plan),selected='',mode=debugLab?'walls':'ground',rotation=0,zoom=debugLab?.5:1,query='',ghost=null,busy=false;
  const size=data.size,cat=data.catalogue,undo=[],redo=[];let wallKit=debugLab&&data.kits?.plain_wood_v1?'plain_wood_v1':'placeholder';
  let snapping=true,snapLock=null;try{snapping=localStorage.getItem('fortcamp.construction.snapping')!=='off'}catch{}
- const brush={ground:cat.ground.grass_short?'grass_short':Object.keys(cat.ground)[0],props:cat.props.crate_closed?'crate_closed':Object.keys(cat.props)[0],piece:'horizontal_plain',shape:'straight',anchor:'center',material:'timber',posts:'none',w:1,h:1,offset_x:0,offset_y:0,blocking:false,open:false,broken:false};
+ const brush={ground:cat.ground.grass_short?'grass_short':Object.keys(cat.ground)[0],props:cat.props.crate_closed?'crate_closed':Object.keys(cat.props)[0],piece:'horizontal_plain',shape:'straight',anchor:'north',material:'timber',posts:'none',w:1,h:1,offset_x:0,offset_y:0,blocking:false,open:false,broken:false};
  const dialog=document.createElement('dialog');dialog.className='construction-dialog';
  dialog.innerHTML=`<header><div><div class="eyebrow">YOUR SETTLEMENT · CONSTRUCTION</div><h2>${debugLab?'Wall Kit Lab':'Make this camp your own'}</h2><small>${debugLab?'DEBUG ONLY - Temporary layout. Changes here never alter your camp or player save.':'Ground, movable props and snapping walls. Decorations are free in this first pass; they do not grant loot, production or defense bonuses.'}</small></div><button data-close aria-label="Close construction">×</button></header>
  <nav class="construction-tools">${[['ground','Floors & terrain [F]'],['props','Props [P]'],['walls','Walls [W]'],['select','Select / move [V]'],['erase','Remove [Del]']].map(([id,label])=>`<button data-tool="${id}">${label}</button>`).join('')}<button data-snap aria-pressed="${snapping}">Snapping [S]: ${snapping?'On':'Off'}</button><span></span><button data-undo>Undo</button><button data-redo>Redo</button></nav>
@@ -73,7 +73,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
  }
  function schedulePreview(){if(!previewFrame)previewFrame=requestAnimationFrame(drawPreview)}
  function chooseAsset(id){
-  if(mode==='walls'){brush.piece=id;brush.shape=wallPieces[id].shape;rotation=0}
+  if(mode==='walls'){brush.piece=id;brush.shape=wallPieces[id].shape;brush.anchor=defaultWallAnchor(id);rotation=0}
   else{brush[mode]=id;if(mode==='props'){[brush.w,brush.h]=cat.props[id].footprint;if(rotation%180)[brush.w,brush.h]=[brush.h,brush.w]}}
   selected='';find('[data-palette]').querySelectorAll('[data-asset]').forEach(b=>b.classList.toggle('active',b.dataset.asset===id));inspector();
  }
@@ -107,7 +107,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
   if(layer==='walls'&&['tee','cross'].includes(item.shape)){find('[data-rotate]').disabled=true;const field=find('[data-field=piece]');field.insertAdjacentHTML('afterbegin',`<option value="${esc(item.piece||'')}" selected disabled>Retired junction (saved placement)</option>`);}
   find('[data-inspector]').querySelectorAll('[data-field]').forEach(input=>{let rangeEditing=false;input.addEventListener('change',()=>{if(input.type==='range')rangeEditing=false});input.addEventListener(input.type==='range'?'input':'change',()=>{
    showPlacementError('');const key=input.dataset.field,value=input.type==='checkbox'?input.checked:['w','h','x','y','offset_x','offset_y'].includes(key)?Number(input.value):input.value;
-   let next={...item,[key]:value};if(key==='piece')next={...next,rotation:0,shape:wallPieces[value].shape,posts:'none'};
+   let next={...item,[key]:value};if(key==='piece')next={...next,anchor:defaultWallAnchor(value),rotation:0,shape:wallPieces[value].shape,posts:'none'};
    if(selection&&!gesture){const error=placementError(next,layer,size,plan);if(error){find('[data-error]').textContent=error;syncInspector();return}if(input.type!=='range'||!rangeEditing)remember();rangeEditing=input.type==='range';Object.assign(selection.item,next);if(['x','y','w','h'].includes(key))renderMap();else renderObject(selection.item,layer)}
    else{Object.assign(gesture?.item||brush,next);if(key==='piece')rotation=0;updatePointer(lastPointer);schedulePreview()}
    syncInspector();if(key==='material')refreshWallThumbnails();

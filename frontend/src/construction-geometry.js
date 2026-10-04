@@ -1,6 +1,8 @@
 // Shared camp/map-authoring geometry. One unit is one square cell.
 import pieces from './construction-wall-pieces.json' with {type:'json'};
 import legacyPieces from './construction-wall-pieces-legacy.json' with {type:'json'};
+import propArtBounds from './construction-prop-bounds.json' with {type:'json'};
+export function defaultWallAnchor(piece){return piece.startsWith('corner_')?'center':piece.startsWith('vertical_')?'west':'north'}
 export const availableWallPieces=pieces;
 // Direction/facing is placement state, not a second library icon.
 export function wallLibraryPiece(piece){
@@ -55,6 +57,14 @@ export function segmentsOverlap([a,b],[c,d]){
  return c[other]===d[other]&&a[other]===c[other]&&Math.min(Math.max(a[axis],b[axis]),Math.max(c[axis],d[axis]))-Math.max(Math.min(a[axis],b[axis]),Math.min(c[axis],d[axis]))>1e-7;
 }
 export function propBounds(p){
+ const art=propArtBounds[p.asset];
+ if(art){
+  const [iw,ih]=art.size,[l,t,r,b]=art.bounds;
+  const w=p.rotation%180?p.h:p.w,h=p.rotation%180?p.w:p.h,scale=Math.min(w*.92/iw,h*.92/ih);
+  const cx=p.x+p.w/2+(p.offset_x||0),cy=p.y+p.h/2+(p.offset_y||0);
+  const points=[[l,t],[r,t],[r,b],[l,b]].map(([x,y])=>{let dx=(x-iw/2)*scale,dy=(y-ih/2)*scale;for(let turn=0;turn<(p.rotation||0)/90;turn++)[dx,dy]=[-dy,dx];return [cx+dx,cy+dy]});
+  return [Math.min(...points.map(p=>p[0])),Math.min(...points.map(p=>p[1])),Math.max(...points.map(p=>p[0])),Math.max(...points.map(p=>p[1]))];
+ }
  return [p.x+p.w*.04+(p.offset_x||0),p.y+p.h*.04+(p.offset_y||0),p.x+p.w*.96+(p.offset_x||0),p.y+p.h*.96+(p.offset_y||0)];
 }
 export function wallHitsProp(w,p){

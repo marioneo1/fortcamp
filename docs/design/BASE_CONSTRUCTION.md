@@ -188,9 +188,11 @@ not. Existing untouched conflicts in old saves are grandfathered by the save API
 new or moved conflicts are rejected. No player data is rewritten.
 
 Props cannot overlap walls, including open gates and broken-wall objects. The
-check uses the shifted, rotated prop image viewport (92% of its footprint), plus
-0.08 cell clearance for wall thickness. This is a conservative rectangle, not
-pixel-perfect silhouette detection: nudging a small prop away can make it fit.
+check uses the visible artwork bounds inside its aspect-preserving image viewport,
+including footprint size, rotation and offsets, plus 0.08 cell wall clearance.
+Transparent padding no longer reserves space. This is a conservative silhouette
+bounding rectangle, not pixel-perfect detection; narrow gaps inside artwork
+still count as occupied. Unknown artwork falls back to its image viewport.
 The same rule applies when placing/moving either the wall or the prop. Floors
 remain placeable under walls. Invalid placements show a reason and do not commit;
 rotations, arrow adjustments and inspector edits respect the same checks.
@@ -279,3 +281,27 @@ cover rectangular fill/shrinking, straight runs, rotated corner commit, invalid
 run rejection, layer-specific removal over shared cells, magnification, undo,
 palette dragging and outside cancellations. Saves used an in-memory fixture;
 production and real player data were untouched. No artwork changed.
+
+
+## October 4: props sharing wall cells and default wall anchors
+
+Wall ownership of a cell does not reserve its interior. Collision now measures
+visible artwork (alpha at least 32/255) after the same aspect-preserving sizing,
+rotation and offset as the renderer. A small prop can fit inside top/bottom/side
+walls; larger props still cannot cross a wall. Frontend previews and backend save
+validation share construction-prop-bounds.json. Existing placements and artwork
+are unchanged. Wall clearance remains 0.08 cell. Bounds are conservative boxes:
+transparent holes inside a silhouette are not usable gaps.
+
+New horizontal brushes default to the top edge; native vertical brushes default
+to the left edge. Corners default to center so their full arms follow cell edges.
+Choosing another piece resets its default anchor; arrows/Home and smart snapping
+can still change it. Existing saved wall positions are preserved.
+
+Rebuild measurements after replacing/adding artwork with:
+`.venv\Scripts\python.exe tools\measure_construction_props.py`.
+The tool reads sources without modifying them; unmeasured assets use the previous
+viewport fallback. 237 existing sprites measured. Validation: 175 frontend tests,
+16 backend construction tests and build pass, including three-sided enclosure,
+center collision, shifted collisions, multicell size and rotated art bounds.
+Production and player saves were not changed.

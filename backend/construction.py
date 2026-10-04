@@ -13,6 +13,7 @@ ARMS = {'straight':[(-.5,0),(.5,0)],'half':[(.5,0)],'corner':[(.5,0),(0,.5)],
 AVAILABLE_WALL_PIECES = json.loads((ROOT/'frontend/src/construction-wall-pieces.json').read_text())
 WALL_PIECES = {**json.loads((ROOT/'frontend/src/construction-wall-pieces-legacy.json').read_text()),**AVAILABLE_WALL_PIECES}
 MATERIALS = ['timber','fieldstone','limestone','iron']
+PROP_ART_BOUNDS = json.loads((ROOT/'frontend/src/construction-prop-bounds.json').read_text())
 
 
 def empty_plan():
@@ -49,11 +50,27 @@ def wall_segments(wall):
     return segments
 
 
+def prop_bounds(prop):
+    art = PROP_ART_BOUNDS.get(prop.get('asset'))
+    if not art:
+        return (prop['x']+prop['w']*.04+prop.get('offset_x',0), prop['y']+prop['h']*.04+prop.get('offset_y',0),
+                prop['x']+prop['w']*.96+prop.get('offset_x',0), prop['y']+prop['h']*.96+prop.get('offset_y',0))
+    iw, ih = art['size']; l, t, r, b = art['bounds']
+    w, h = (prop['h'], prop['w']) if prop['rotation'] % 180 else (prop['w'], prop['h'])
+    scale = min(w*.92/iw, h*.92/ih)
+    cx = prop['x']+prop['w']/2+prop.get('offset_x',0)
+    cy = prop['y']+prop['h']/2+prop.get('offset_y',0)
+    points = []
+    for x, y in [(l,t),(r,t),(r,b),(l,b)]:
+        dx, dy = (x-iw/2)*scale, (y-ih/2)*scale
+        for _ in range(prop['rotation']//90): dx, dy = -dy, dx
+        points.append((cx+dx,cy+dy))
+    return min(x for x,y in points), min(y for x,y in points), max(x for x,y in points), max(y for x,y in points)
+
+
 def wall_hits_prop(wall,prop):
-    left=prop['x']+prop['w']*.04+prop.get('offset_x',0)-.08
-    right=prop['x']+prop['w']*.96+prop.get('offset_x',0)+.08
-    top=prop['y']+prop['h']*.04+prop.get('offset_y',0)-.08
-    bottom=prop['y']+prop['h']*.96+prop.get('offset_y',0)+.08
+    left,top,right,bottom=prop_bounds(prop)
+    left-=.08;top-=.08;right+=.08;bottom+=.08
     return any((top<=a[1]<=bottom and max(a[0],b[0])>left and min(a[0],b[0])<right)
                if a[1]==b[1] else (left<=a[0]<=right and max(a[1],b[1])>top and min(a[1],b[1])<bottom)
                for a,b in wall_segments(wall))

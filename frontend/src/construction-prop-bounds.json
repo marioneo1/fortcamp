@@ -1,0 +1,2846 @@
+{
+  "treasure_chest_bronze_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      65,
+      90,
+      321,
+      296
+    ]
+  },
+  "treasure_chest_bronze_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      54,
+      60,
+      332,
+      326
+    ]
+  },
+  "campfire_lit": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      59,
+      59,
+      325,
+      325
+    ]
+  },
+  "cut_log_pile": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      44,
+      62,
+      342,
+      323
+    ]
+  },
+  "mossy_boulder": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      48,
+      54,
+      336,
+      332
+    ]
+  },
+  "canvas_tent": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      37,
+      41,
+      349,
+      346
+    ]
+  },
+  "oak_tree": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      43,
+      34,
+      343,
+      352
+    ]
+  },
+  "pine_tree": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      42,
+      35,
+      343,
+      349
+    ]
+  },
+  "birch_tree": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      35,
+      38,
+      349,
+      346
+    ]
+  },
+  "dead_tree": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      38,
+      35,
+      346,
+      350
+    ]
+  },
+  "dense_shrub": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      46,
+      54,
+      337,
+      329
+    ]
+  },
+  "thorny_bramble": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      34,
+      68,
+      349,
+      316
+    ]
+  },
+  "leafy_sapling": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      72,
+      73,
+      311,
+      310
+    ]
+  },
+  "tree_stump": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      43,
+      59,
+      340,
+      325
+    ]
+  },
+  "fallen_branches": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      39,
+      65,
+      344,
+      320
+    ]
+  },
+  "scattered_stones": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      63,
+      84,
+      323,
+      300
+    ]
+  },
+  "rounded_boulder": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      45,
+      62,
+      339,
+      323
+    ]
+  },
+  "hay_bale": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      39,
+      79,
+      346,
+      305
+    ]
+  },
+  "bound_barrels": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      43,
+      101,
+      342,
+      283
+    ]
+  },
+  "structure:palisade_straight": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      35,
+      100,
+      350,
+      283
+    ]
+  },
+  "structure:palisade_gate_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      34,
+      99,
+      350,
+      286
+    ]
+  },
+  "structure:palisade_gate_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      35,
+      94,
+      350,
+      290
+    ]
+  },
+  "structure:palisade_breached": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      35,
+      92,
+      349,
+      292
+    ]
+  },
+  "structure:wooden_watch_platform": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      42,
+      47,
+      342,
+      337
+    ]
+  },
+  "structure:wooden_rescue_cage_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      45,
+      63,
+      339,
+      321
+    ]
+  },
+  "structure:wooden_rescue_cage_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      43,
+      34,
+      340,
+      349
+    ]
+  },
+  "structure:wooden_barricade": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      35,
+      77,
+      349,
+      308
+    ]
+  },
+  "structure:stone_wall_straight": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      163,
+      352,
+      221
+    ]
+  },
+  "structure:wall_rubble": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      34,
+      95,
+      350,
+      289
+    ]
+  },
+  "alarm_bell_active": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      41,
+      64,
+      344,
+      321
+    ]
+  },
+  "alarm_bell_disabled": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      44,
+      62,
+      340,
+      323
+    ]
+  },
+  "crate_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      63,
+      65,
+      323,
+      320
+    ]
+  },
+  "crate_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      35,
+      68,
+      351,
+      317
+    ]
+  },
+  "treasure_chest_silver_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      47,
+      80,
+      338,
+      306
+    ]
+  },
+  "treasure_chest_silver_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      50,
+      55,
+      336,
+      330
+    ]
+  },
+  "treasure_chest_gold_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      43,
+      79,
+      342,
+      308
+    ]
+  },
+  "treasure_chest_gold_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      48,
+      54,
+      339,
+      332
+    ]
+  },
+  "military_supply_coffer_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      44,
+      78,
+      342,
+      308
+    ]
+  },
+  "military_supply_coffer_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      49,
+      50,
+      337,
+      335
+    ]
+  },
+  "ancient_reliquary_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      37,
+      72,
+      350,
+      314
+    ]
+  },
+  "ancient_reliquary_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      42,
+      55,
+      344,
+      331
+    ]
+  },
+  "floor_lever_off": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      64,
+      84,
+      322,
+      300
+    ]
+  },
+  "floor_lever_on": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      82,
+      57,
+      303,
+      327
+    ]
+  },
+  "prison_wagon": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      34,
+      85,
+      350,
+      300
+    ]
+  },
+  "prison_wagon_broken": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      35,
+      51,
+      349,
+      332
+    ]
+  },
+  "dispatch_satchel": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      35,
+      74,
+      348,
+      310
+    ]
+  },
+  "wagon_wheel": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      60,
+      57,
+      323,
+      327
+    ]
+  },
+  "marked_farm_chart": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      35,
+      61,
+      350,
+      323
+    ]
+  },
+  "spike_trap": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      50,
+      52,
+      334,
+      331
+    ]
+  },
+  "spike_trap_spent": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      50,
+      59,
+      334,
+      323
+    ]
+  },
+  "iron_jaw_trap": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      45,
+      63,
+      338,
+      320
+    ]
+  },
+  "iron_jaw_trap_spent": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      56,
+      100,
+      329,
+      284
+    ]
+  },
+  "wooden_handcart": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      34,
+      75,
+      350,
+      309
+    ]
+  },
+  "campfire_cold": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      52,
+      52,
+      332,
+      331
+    ]
+  },
+  "wooden_table": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      35,
+      75,
+      349,
+      308
+    ]
+  },
+  "repair_workbench": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      34,
+      88,
+      350,
+      295
+    ]
+  },
+  "iron_anvil": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      52,
+      72,
+      332,
+      311
+    ]
+  },
+  "carpenter_tool_rack": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      45,
+      44,
+      338,
+      339
+    ]
+  },
+  "small_coal_forge": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      52,
+      44,
+      332,
+      340
+    ]
+  },
+  "mossy_gravestone": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      66,
+      61,
+      317,
+      323
+    ]
+  },
+  "fallen_gravestone": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      41,
+      66,
+      342,
+      317
+    ]
+  },
+  "grave_cross": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      72,
+      50,
+      312,
+      333
+    ]
+  },
+  "old_bone_pile": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      53,
+      72,
+      331,
+      311
+    ]
+  },
+  "carpenter_sawhorse": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      34,
+      77,
+      349,
+      306
+    ]
+  },
+  "stacked_planks": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      34,
+      72,
+      350,
+      312
+    ]
+  },
+  "camp_lantern": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      105,
+      59,
+      279,
+      325
+    ]
+  },
+  "open_toolbox": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      44,
+      74,
+      341,
+      309
+    ]
+  },
+  "structure:shed_wall_straight": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      163,
+      352,
+      222
+    ]
+  },
+  "structure:shed_wall_corner": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      42,
+      352,
+      342
+    ]
+  },
+  "structure:shed_door_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      156,
+      352,
+      229
+    ]
+  },
+  "structure:shed_door_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      45,
+      156,
+      339,
+      327
+    ]
+  },
+  "structure:yard_gate_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      103,
+      352,
+      282
+    ]
+  },
+  "structure:yard_gate_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      40,
+      103,
+      343,
+      327
+    ]
+  },
+  "structure:shed_wall_broken": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      131,
+      352,
+      254
+    ]
+  },
+  "structure:cemetery_wall_corner": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      54,
+      75,
+      331,
+      310
+    ]
+  },
+  "weapon_rack": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      37,
+      34,
+      346,
+      349
+    ]
+  },
+  "shield_rack": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      34,
+      86,
+      350,
+      298
+    ]
+  },
+  "armor_stand": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      75,
+      35,
+      309,
+      350
+    ]
+  },
+  "arrow_crate": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      35,
+      57,
+      350,
+      325
+    ]
+  },
+  "chapel_altar": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      34,
+      89,
+      350,
+      295
+    ]
+  },
+  "chapel_pew": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      34,
+      100,
+      350,
+      284
+    ]
+  },
+  "fallen_church_bell": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      59,
+      34,
+      325,
+      350
+    ]
+  },
+  "toll_desk": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      34,
+      64,
+      350,
+      319
+    ]
+  },
+  "structure:timber_wall": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      163,
+      352,
+      222
+    ]
+  },
+  "structure:timber_corner": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      42,
+      352,
+      342
+    ]
+  },
+  "structure:timber_junction": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      55,
+      352,
+      330
+    ]
+  },
+  "structure:timber_end": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      80,
+      147,
+      304,
+      237
+    ]
+  },
+  "structure:timber_breach": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      131,
+      352,
+      254
+    ]
+  },
+  "structure:timber_stairs": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      120,
+      119,
+      264,
+      264
+    ]
+  },
+  "structure:fieldstone_wall": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      163,
+      352,
+      221
+    ]
+  },
+  "structure:fieldstone_corner": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      54,
+      75,
+      331,
+      310
+    ]
+  },
+  "structure:fieldstone_junction": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      26,
+      75,
+      358,
+      310
+    ]
+  },
+  "structure:fieldstone_end": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      35,
+      150,
+      349,
+      234
+    ]
+  },
+  "structure:fieldstone_breach": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      17,
+      131,
+      367,
+      252
+    ]
+  },
+  "structure:fieldstone_stairs": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      92,
+      78,
+      292,
+      307
+    ]
+  },
+  "structure:limestone_wall": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      157,
+      352,
+      227
+    ]
+  },
+  "structure:limestone_corner": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      47,
+      59,
+      336,
+      361
+    ]
+  },
+  "structure:limestone_junction": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      37,
+      59,
+      348,
+      253
+    ]
+  },
+  "structure:limestone_end": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      110,
+      157,
+      274,
+      227
+    ]
+  },
+  "structure:limestone_breach": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      31,
+      129,
+      352,
+      256
+    ]
+  },
+  "structure:limestone_stairs": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      97,
+      102,
+      287,
+      283
+    ]
+  },
+  "structure:iron_wall": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      158,
+      352,
+      227
+    ]
+  },
+  "structure:iron_corner": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      45,
+      32,
+      338,
+      352
+    ]
+  },
+  "structure:iron_junction": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      49,
+      352,
+      335
+    ]
+  },
+  "structure:iron_end": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      98,
+      148,
+      286,
+      236
+    ]
+  },
+  "structure:iron_breach": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      132,
+      352,
+      251
+    ]
+  },
+  "structure:iron_stairs": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      88,
+      101,
+      297,
+      282
+    ]
+  },
+  "structure:timber_door_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      156,
+      352,
+      229
+    ]
+  },
+  "structure:timber_door_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      45,
+      156,
+      339,
+      327
+    ]
+  },
+  "structure:timber_gate_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      151,
+      352,
+      234
+    ]
+  },
+  "structure:timber_gate_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      48,
+      151,
+      336,
+      314
+    ]
+  },
+  "structure:fieldstone_door_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      57,
+      88,
+      327,
+      296
+    ]
+  },
+  "structure:fieldstone_door_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      56,
+      88,
+      327,
+      367
+    ]
+  },
+  "structure:fieldstone_gate_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      103,
+      352,
+      282
+    ]
+  },
+  "structure:fieldstone_gate_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      40,
+      103,
+      343,
+      327
+    ]
+  },
+  "structure:limestone_door_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      37,
+      149,
+      348,
+      235
+    ]
+  },
+  "structure:limestone_door_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      35,
+      148,
+      349,
+      326
+    ]
+  },
+  "structure:limestone_gate_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      29,
+      144,
+      355,
+      241
+    ]
+  },
+  "structure:limestone_gate_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      29,
+      145,
+      355,
+      317
+    ]
+  },
+  "structure:iron_door_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      148,
+      352,
+      236
+    ]
+  },
+  "structure:iron_door_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      42,
+      148,
+      342,
+      316
+    ]
+  },
+  "structure:iron_gate_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      34,
+      150,
+      349,
+      235
+    ]
+  },
+  "structure:iron_gate_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      150,
+      352,
+      296
+    ]
+  },
+  "structure:timber_cross": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      32,
+      352,
+      352
+    ]
+  },
+  "structure:timber_window": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      158,
+      352,
+      227
+    ]
+  },
+  "structure:timber_pillar": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      141,
+      138,
+      244,
+      245
+    ]
+  },
+  "structure:timber_corner_broken": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      42,
+      32,
+      342,
+      352
+    ]
+  },
+  "structure:timber_edge_junction": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      64,
+      352,
+      320
+    ]
+  },
+  "structure:timber_brace": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      77,
+      80,
+      307,
+      305
+    ]
+  },
+  "structure:fieldstone_cross": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      37,
+      43,
+      346,
+      342
+    ]
+  },
+  "structure:fieldstone_window": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      17,
+      161,
+      367,
+      222
+    ]
+  },
+  "structure:fieldstone_pillar": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      133,
+      126,
+      251,
+      258
+    ]
+  },
+  "structure:fieldstone_corner_broken": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      46,
+      54,
+      338,
+      331
+    ]
+  },
+  "structure:fieldstone_edge_junction": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      17,
+      83,
+      367,
+      301
+    ]
+  },
+  "structure:fieldstone_brace": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      96,
+      85,
+      289,
+      299
+    ]
+  },
+  "structure:limestone_cross": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      34,
+      44,
+      349,
+      339
+    ]
+  },
+  "structure:limestone_window": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      47,
+      155,
+      336,
+      230
+    ]
+  },
+  "structure:limestone_pillar": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      146,
+      128,
+      238,
+      257
+    ]
+  },
+  "structure:limestone_corner_broken": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      70,
+      53,
+      314,
+      356
+    ]
+  },
+  "structure:limestone_edge_junction": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      34,
+      57,
+      351,
+      358
+    ]
+  },
+  "structure:limestone_brace": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      79,
+      77,
+      304,
+      307
+    ]
+  },
+  "structure:iron_cross": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      37,
+      32,
+      348,
+      352
+    ]
+  },
+  "structure:iron_window": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      152,
+      352,
+      232
+    ]
+  },
+  "structure:iron_pillar": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      108,
+      108,
+      275,
+      277
+    ]
+  },
+  "structure:iron_corner_broken": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      53,
+      32,
+      332,
+      352
+    ]
+  },
+  "structure:iron_edge_junction": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      51,
+      352,
+      333
+    ]
+  },
+  "structure:iron_brace": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      88,
+      83,
+      296,
+      301
+    ]
+  },
+  "structure:fieldstone_plan_wall": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      159,
+      352,
+      225
+    ]
+  },
+  "structure:fieldstone_plan_corner": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      55,
+      79,
+      330,
+      304
+    ]
+  },
+  "structure:fieldstone_plan_junction": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      38,
+      78,
+      346,
+      306
+    ]
+  },
+  "structure:fieldstone_plan_cross": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      41,
+      38,
+      344,
+      346
+    ]
+  },
+  "structure:fieldstone_plan_end": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      95,
+      160,
+      289,
+      225
+    ]
+  },
+  "structure:fieldstone_plan_breach": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      30,
+      133,
+      355,
+      252
+    ]
+  },
+  "structure:fieldstone_plan_door_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      33,
+      160,
+      351,
+      226
+    ]
+  },
+  "structure:fieldstone_plan_door_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      160,
+      352,
+      304
+    ]
+  },
+  "structure:fieldstone_plan_gate_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      36,
+      159,
+      348,
+      226
+    ]
+  },
+  "structure:fieldstone_plan_gate_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      161,
+      352,
+      296
+    ]
+  },
+  "structure:fieldstone_plan_window": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      40,
+      160,
+      345,
+      225
+    ]
+  },
+  "structure:fieldstone_plan_pillar": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      154,
+      153,
+      230,
+      232
+    ]
+  },
+  "structure:fieldstone_plan_stairs": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      74,
+      96,
+      310,
+      288
+    ]
+  },
+  "structure:fieldstone_plan_corner_broken": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      67,
+      62,
+      318,
+      322
+    ]
+  },
+  "structure:fieldstone_plan_edge_junction": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      25,
+      77,
+      359,
+      307
+    ]
+  },
+  "structure:fieldstone_plan_brace": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      115,
+      147,
+      270,
+      237
+    ]
+  },
+  "structure:limestone_wall_vertical": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      32,
+      166,
+      352,
+      219
+    ]
+  },
+  "structure:limestone_corner_facing_0": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      47,
+      59,
+      336,
+      361
+    ]
+  },
+  "structure:limestone_corner_facing_90": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      47,
+      23,
+      336,
+      325
+    ]
+  },
+  "structure:limestone_corner_facing_180": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      48,
+      23,
+      337,
+      325
+    ]
+  },
+  "structure:limestone_corner_facing_270": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      48,
+      59,
+      337,
+      361
+    ]
+  },
+  "structure:limestone_corner_broken_facing_0": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      70,
+      53,
+      314,
+      356
+    ]
+  },
+  "structure:limestone_corner_broken_facing_90": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      70,
+      28,
+      314,
+      331
+    ]
+  },
+  "structure:limestone_corner_broken_facing_180": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      70,
+      28,
+      314,
+      331
+    ]
+  },
+  "structure:limestone_corner_broken_facing_270": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      70,
+      53,
+      314,
+      356
+    ]
+  },
+  "structure:limestone_junction_facing_180": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      37,
+      131,
+      348,
+      325
+    ]
+  },
+  "structure:limestone_edge_junction_facing_180": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      34,
+      26,
+      351,
+      327
+    ]
+  },
+  "structure:limestone_corner_inner_facing_0": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      25,
+      59,
+      359,
+      362
+    ]
+  },
+  "structure:limestone_corner_inner_facing_90": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      25,
+      22,
+      359,
+      325
+    ]
+  },
+  "structure:limestone_corner_inner_facing_180": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      25,
+      22,
+      359,
+      325
+    ]
+  },
+  "structure:limestone_corner_inner_facing_270": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      25,
+      59,
+      359,
+      362
+    ]
+  },
+  "structure:limestone_junction_facing_90": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      0,
+      32,
+      221,
+      352
+    ]
+  },
+  "structure:limestone_junction_facing_270": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      163,
+      32,
+      384,
+      352
+    ]
+  },
+  "straw_training_dummy": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      95,
+      89,
+      289,
+      295
+    ]
+  },
+  "armored_training_dummy": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      99,
+      89,
+      285,
+      295
+    ]
+  },
+  "archery_target": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      108,
+      92,
+      275,
+      291
+    ]
+  },
+  "hay_archery_butt": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      104,
+      99,
+      280,
+      285
+    ]
+  },
+  "practice_weapon_rack": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      91,
+      85,
+      293,
+      298
+    ]
+  },
+  "training_shield_rack": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      85,
+      102,
+      299,
+      282
+    ]
+  },
+  "arrow_bundle": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      113,
+      94,
+      269,
+      290
+    ]
+  },
+  "war_drum": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      95,
+      98,
+      288,
+      285
+    ]
+  },
+  "sleeping_bag": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      105,
+      95,
+      278,
+      289
+    ]
+  },
+  "straw_bed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      103,
+      94,
+      281,
+      290
+    ]
+  },
+  "canvas_cot": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      106,
+      88,
+      276,
+      296
+    ]
+  },
+  "wooden_bed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      109,
+      88,
+      275,
+      296
+    ]
+  },
+  "stone_bed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      102,
+      86,
+      282,
+      299
+    ]
+  },
+  "luxurious_bed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      103,
+      82,
+      281,
+      302
+    ]
+  },
+  "tribal_hide_bed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      95,
+      87,
+      290,
+      296
+    ]
+  },
+  "reed_sleeping_mat": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      115,
+      107,
+      267,
+      276
+    ]
+  },
+  "camp_cooking_pot": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      106,
+      99,
+      279,
+      284
+    ]
+  },
+  "food_prep_table": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      84,
+      114,
+      300,
+      270
+    ]
+  },
+  "grain_sacks": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      98,
+      98,
+      286,
+      286
+    ]
+  },
+  "water_trough": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      87,
+      127,
+      298,
+      256
+    ]
+  },
+  "wash_tub": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      99,
+      103,
+      283,
+      281
+    ]
+  },
+  "mess_bench": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      80,
+      131,
+      303,
+      252
+    ]
+  },
+  "herb_planter": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      100,
+      109,
+      284,
+      275
+    ]
+  },
+  "village_well": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      89,
+      95,
+      295,
+      288
+    ]
+  },
+  "ballista_loaded": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      87,
+      82,
+      296,
+      301
+    ]
+  },
+  "ballista_empty": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      88,
+      84,
+      296,
+      301
+    ]
+  },
+  "oil_cauldron": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      101,
+      97,
+      282,
+      286
+    ]
+  },
+  "oil_cauldron_tipped": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      96,
+      102,
+      287,
+      284
+    ]
+  },
+  "ballista_bolts": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      87,
+      113,
+      295,
+      271
+    ]
+  },
+  "dropped_coin_purse": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      101,
+      128,
+      282,
+      257
+    ]
+  },
+  "blanket_chest": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      91,
+      108,
+      293,
+      275
+    ]
+  },
+  "tribal_trophy_pole": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      118,
+      83,
+      266,
+      302
+    ]
+  },
+  "horticulture_fence_full": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      68,
+      163,
+      316,
+      221
+    ]
+  },
+  "horticulture_fence_half": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      115,
+      164,
+      269,
+      219
+    ]
+  },
+  "horticulture_fence_corner": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      123,
+      125,
+      259,
+      258
+    ]
+  },
+  "horticulture_fence_junction": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      84,
+      127,
+      299,
+      256
+    ]
+  },
+  "horticulture_fence_cross": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      94,
+      94,
+      290,
+      290
+    ]
+  },
+  "horticulture_fence_post": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      165,
+      158,
+      219,
+      225
+    ]
+  },
+  "horticulture_gate_closed": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      80,
+      148,
+      304,
+      236
+    ]
+  },
+  "horticulture_gate_open": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      85,
+      125,
+      299,
+      258
+    ]
+  },
+  "horticulture_fence_damaged": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      84,
+      163,
+      299,
+      220
+    ]
+  },
+  "horticulture_scarecrow": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      71,
+      107,
+      313,
+      276
+    ]
+  },
+  "horticulture_hand_pump": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      79,
+      118,
+      305,
+      266
+    ]
+  },
+  "horticulture_round_stool": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      119,
+      128,
+      264,
+      255
+    ]
+  },
+  "horticulture_round_table": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      105,
+      104,
+      278,
+      279
+    ]
+  },
+  "horticulture_potting_bench": {
+    "size": [
+      384,
+      192
+    ],
+    "bounds": [
+      85,
+      22,
+      300,
+      169
+    ]
+  },
+  "horticulture_watering_can": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      85,
+      107,
+      299,
+      277
+    ]
+  },
+  "horticulture_wheelbarrow": {
+    "size": [
+      384,
+      192
+    ],
+    "bounds": [
+      71,
+      29,
+      313,
+      163
+    ]
+  },
+  "horticulture_tool_crate": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      88,
+      110,
+      296,
+      274
+    ]
+  },
+  "horticulture_soil_sack": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      93,
+      109,
+      290,
+      276
+    ]
+  },
+  "horticulture_clay_pots": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      95,
+      98,
+      289,
+      287
+    ]
+  },
+  "horticulture_seedling_tray": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      84,
+      127,
+      299,
+      256
+    ]
+  },
+  "horticulture_herb_basket": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      81,
+      98,
+      304,
+      285
+    ]
+  },
+  "horticulture_compost_bin": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      87,
+      91,
+      297,
+      293
+    ]
+  },
+  "horticulture_drying_screen": {
+    "size": [
+      384,
+      192
+    ],
+    "bounds": [
+      99,
+      22,
+      284,
+      170
+    ]
+  },
+  "horticulture_hose_coil": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      97,
+      92,
+      287,
+      292
+    ]
+  },
+  "horticulture_fence_joined": {
+    "size": [
+      384,
+      384
+    ],
+    "bounds": [
+      0,
+      173,
+      384,
+      211
+    ]
+  }
+}

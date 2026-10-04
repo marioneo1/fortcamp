@@ -96,6 +96,23 @@ class ConstructionRulesTests(unittest.TestCase):
         prop.update(x=1,w=2,offset_x=0)
         with self.assertRaisesRegex(ValueError,'overlaps a wall'):validate_plan(plan,self.size)
 
+    def test_visible_art_fits_inside_edge_walls_and_retains_real_collisions(self):
+        from backend.construction import wall_hits_prop, prop_bounds
+        prop = self.prop(); prop.update(asset='crate_closed',w=1,h=1,offset_x=0,offset_y=0)
+        walls = [self.wall(piece='horizontal_plain',anchor='north'),
+                 self.wall(piece='vertical_plain',anchor='west'),
+                 self.wall(piece='vertical_plain',anchor='east'),
+                 self.wall(piece='horizontal_plain',anchor='south')]
+        self.assertTrue(all(not wall_hits_prop(w,prop) for w in walls))
+        self.assertTrue(wall_hits_prop(self.wall(piece='horizontal_plain',anchor='center'),prop))
+        prop['offset_y']=-.3
+        self.assertTrue(wall_hits_prop(walls[0],prop))
+        prop.update(offset_y=0,w=2,h=2)
+        self.assertTrue(wall_hits_prop(walls[2],prop))
+        prop.update(w=2,h=1,rotation=90)
+        l,t,r,b=prop_bounds(prop)
+        self.assertLess(r-l,b-t)
+
     def test_unchanged_legacy_conflicts_can_save_but_new_or_moved_conflicts_cannot(self):
         wall=self.wall(piece='vertical_plain',shape='straight',anchor='west',posts='none',broken=False,open=False)
         prop=self.prop();prop.update(w=1,h=1,offset_x=0,offset_y=0)
