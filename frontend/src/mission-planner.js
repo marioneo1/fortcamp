@@ -1,7 +1,8 @@
+import {staminaView} from './stamina.js';
 // Pure roster helpers: keep unavailable units out and ranking stable across polls.
 export function rankedCandidates(characters, score, query='') {
   const terms=query.toLowerCase().trim().split(/\s+/).filter(Boolean);
-  return characters.filter(c=>c.status==='idle'&&terms.every(term=>`${c.name} ${c.race} ${c.specialty||''} ${c.series||''}`.toLowerCase().includes(term)))
+  return characters.filter(c=>c.status==='idle'&&staminaView(c).eligible&&terms.every(term=>`${c.name} ${c.race} ${c.specialty||''} ${c.series||''}`.toLowerCase().includes(term)))
     .map(c=>({character:c,score:Number(score(c))||0}))
     .sort((a,b)=>b.score-a.score||a.character.name.localeCompare(b.character.name)||a.character.id.localeCompare(b.character.id));
 }

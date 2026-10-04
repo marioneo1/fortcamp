@@ -30,7 +30,7 @@ Current building collision/art: [Wall boundaries](design/WALL_BOUNDARIES.md) exp
 - [Relationships](design/CHARACTER_RELATIONSHIPS.md): loyalty, personality, records, conversations and staged roadmap.
 - [Prison recruitment proposal](design/PRISON_RECRUITMENT_PROPOSAL.md): original warden, conversation and boss pacing proposals; see the implemented reference below.
 - [Prison recruitment](design/PRISON_RECRUITMENT.md): implemented first pass; the proposal above retains deferred ideas.
-- [Fatigue pacing proposal](design/FATIGUE_PACING_PROPOSAL.md): borrowing math, recovery options and timestamp-based implementation; not implemented.
+- [Expedition stamina](gameplay/STAMINA.md): implemented 100-point capacity, gradual recovery, borrowing, deployment costs and UI. [Earlier fatigue proposals](design/FATIGUE_PACING_PROPOSAL.md) retain alternative balance profiles and future quest unlock ideas.
 - [Bush concealment](design/BUSH_CONCEALMENT.md): first sightings, roadside ambush presets and map authoring.
 - [Combat](design/COMBAT_DESIGN.md): combat rules and outstanding mechanics.
 - [Battle Lab](design/BATTLE_LAB.md): dev-only mission/map picker, real approach outcomes, repeatable seeds and isolated test parties.

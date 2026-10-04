@@ -1,6 +1,9 @@
 # Character stamina / fatigue pacing proposal
 
-**Proposal only. No stamina costs, recovery or mission restrictions are implemented.**
+**Historical proposals. The user selected 100 capacity / 100 recovery per 30 minutes,
+with E1 / D3 / C5 / B10 / A50 / S100 and borrowing. That profile is now implemented
+in dev; see [Expedition stamina](../gameplay/STAMINA.md). Other profiles and recovery
+unlocks below remain proposals.**
 User discussion: 100 starting points, gradual recovery totaling 200 per pool,
 rank costs E1 / D3 / C5 / B10 / A50 / S100; a character may start a mission with
 at least one point and borrow the rest, entering negative points. These are

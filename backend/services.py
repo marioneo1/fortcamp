@@ -503,6 +503,7 @@ async def analyze_instance(
     # Hidden criteria remain hidden before resolution. Players get truthful rates, not the secret recipe.
     return {
         "mercenary_fee": sum(quote(o,contract_rank(mission))["fee"] for o in offers), "mercenary_penalty": -min(4,len(offers)),
+        "stamina": analysis["stamina"],
         "party_size_ok": analysis["party_size_ok"], "availability_ok": analysis["availability_ok"],
         "requirements": analysis["requirements"], "claimable": analysis["claimable"],
         "lead": analysis["lead"], "lead_stat": analysis["lead_stat"], "stat": analysis["stat"],
@@ -573,6 +574,8 @@ async def claim_instance(
                 missing.append("Every selected character must be idle")
             if not analysis["bodyguards_ok"]:
                 missing.append("Bodyguards must be idle, unique, and within the available bodyguard slots")
+            if not analysis["stamina"]["eligible"]:
+                missing.append("Every selected character needs at least 1 stamina point")
             raise ValueError("Cannot claim: " + "; ".join(missing or ["party is not eligible"]))
 
         claimed_at = now_ts()
@@ -589,6 +592,8 @@ async def claim_instance(
             if branch_triggered:
                 combat_definition = branch_definition
         deployed_party_ids = [*resolved_party_ids, *analysis.get("bodyguard_ids", [])]
+        from .stamina import spend as spend_stamina
+        analysis["stamina"] = spend_stamina(state, deployed_party_ids, template.get("rank", "E"))
         from .relationships import record_mission_start
         record_mission_start(state,deployed_party_ids)
         analysis["service_record_started"]=True

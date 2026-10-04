@@ -22,6 +22,7 @@ from .races import RACE_CATALOG, RACE_FAMILIES, RACE_GAMEPLAY, REGIONAL_RECRUIT_
 
 from .outcome_balance import CRITICAL_SOFT_CAPS, CRITICAL_STAT_LIMITS, classify_roll, outcome_probabilities
 
+from .stamina import initialize as initialize_stamina, preview as stamina_preview
 from .relationships import ensure_character, record_mission, PERSONALITIES
 from .prison_recruitment import initialize_prisoner, prisoner_interaction, credit_allegiance
 
@@ -309,6 +310,7 @@ def normalize_state(state: dict) -> dict:
             char.pop("recovers_at", None)
             char.pop("recovery_location", None)
         ensure_character(char)
+        initialize_stamina(char)
         char.setdefault("attributes", {attribute: 5 for attribute in ATTRIBUTE_NAMES})
         char.setdefault("portrait_thumbnail", char.get("portrait", ""))
         char.setdefault("portrait_source", "override" if char.get("portrait") else "none")
@@ -592,6 +594,7 @@ def analyze_mission(
     required_size = int(mission["party_size"])
     party_size_ok = len(party) == required_size and len(set(party_ids)) == len(party_ids) and role_assignments_ok
     availability_ok = all(c.get("status") == "idle" for c in party)
+    stamina = stamina_preview(party + bodyguards, mission.get("rank", "E"))
     reqs = claim_requirements(state, mission, party)
 
     stat = mission["stat"]
@@ -666,7 +669,8 @@ def analyze_mission(
         "party_size_ok": party_size_ok,
         "availability_ok": availability_ok,
         "requirements": reqs,
-        "claimable": party_size_ok and availability_ok and bodyguards_ok and all(x["met"] for x in reqs),
+        "claimable": party_size_ok and availability_ok and bodyguards_ok and stamina["eligible"] and all(x["met"] for x in reqs),
+        "stamina": stamina,
         "party_ids": list(party_ids), "role_assignments": assignments,
         "mission_party_ids": list(party_ids), "bodyguard_ids": bodyguard_ids,
         "bodyguards_ok": bodyguards_ok, "bodyguard_slots": bodyguard_slots,

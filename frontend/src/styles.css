@@ -372,3 +372,8 @@ body.board-vfx-active .event-arcane .guild-event-art:after{display:none}
 
 /* Low overhead crop rails sit on the ground; no floating furniture shadow. */
 .battlefield.terrain-style-custom-painted .battle-decoration.ground-edging{filter:drop-shadow(0 1px 1px #0005);z-index:2}
+
+/* Expedition stamina: compact live text, no layout-wide redraw on recovery. */
+.stamina-readout{display:block;color:#b9c9a2;font-size:.75rem;line-height:1.5;font-variant-numeric:tabular-nums;white-space:normal}
+.planner-stamina-help,.planner-stamina-summary{padding:.75rem 1rem;border:1px solid #64755166;border-radius:8px;background:#27302466;color:#d1d9be;font-size:.8rem;line-height:1.5}
+.planner-stamina-summary{margin-top:.7rem;display:grid;gap:.25rem}.planner-stamina-summary small{display:block}

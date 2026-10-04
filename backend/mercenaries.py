@@ -29,6 +29,7 @@ def quote(offer, quest_rank="E"):
 def market(state, seed, quest_rank="E"):
     from .game import _make_generic, mission_rank
     from .relationships import ensure_character
+    from .stamina import initialize, view as stamina_view
     offers = state.setdefault('mercenaries', [])
     maximum = RANKS.index(mission_rank(state))
     serial = state.get('mercenary_serial', 0)
@@ -49,9 +50,11 @@ def market(state, seed, quest_rank="E"):
             weapon = {'fighter':'knight_blade', 'scout':'short_bow', 'adept':'ember_staff', 'medic':'knotted_staff', 'builder':'warhammer'}[archetype]
         offers.append({'id':c['id'], 'character':c, 'rank':RANKS[tier], 'weapon':weapon,
                        'relationship':0, 'busy_mission_id':None, 'recovering_until':0})
+    for offer in offers: initialize(offer['character'])
     state['mercenary_serial'] = serial
     return [{'id':o['id'], 'rank':o['rank'], 'relationship':o['relationship'], **quote(o, quest_rank),
-             'available':not o.get('busy_mission_id') and o.get('recovering_until', 0) <= time.time(),
+             'available':not o.get('busy_mission_id') and o.get('recovering_until', 0) <= time.time() and stamina_view(o['character'])['eligible'],
+             'stamina':stamina_view(o['character']),
              'recovering_until':o.get('recovering_until', 0),
              'character':{**deepcopy(o['character']), 'temporary_mercenary':True, 'mercenary_weapon':o['weapon']}}
             for o in offers]
