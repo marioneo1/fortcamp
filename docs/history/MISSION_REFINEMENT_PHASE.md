@@ -1070,3 +1070,9 @@ save and table docking/occlusion. Screenshots inspected. Saves were in-memory
 fixtures; production and real player saves are untouched.
 
 Validation: 420 backend tests and 183 frontend tests passed; Vite build passed (existing large-chunk warning). Isolated Chrome check confirmed cooldown labels, independent selection and action-button availability without JavaScript errors. No live API/database used for browser review.
+
+## October 4 - tactical ability dependencies
+
+Implemented finite Barrier, owned Mark, modern expiry/control recovery, one shared interception/counter reaction, straight displacement, resistance and opt-in shallow/deep/lethal pit resolution. Pilots use existing Tower Shield, Duelist Gloves, Precision Shot, Hook Thrust and Titan Thrust. Tooltips/previews explain actual rules; lost bodies do not become loot. No new Jobs, summons, forms, zones or maps published. Existing wall auto-pathfinding stalls remain tracked.
+
+Validation: 432 full backend tests plus 74 final focused tests; 185 frontend tests; final build and isolated battle UI check pass. Production and live saves untouched. Canonical: docs/design/COMBAT_ABILITIES.md.

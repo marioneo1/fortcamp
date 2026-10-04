@@ -1,3 +1,4 @@
+import {statusDetails,tacticalPreviewText} from './combat-status-ui.js';
 import {openConstruction} from './construction-ui.js';
 import {constructionSVG} from './construction-render.js';
 import {staminaHTML,staminaLabel} from './stamina.js';
@@ -554,17 +555,18 @@ function mapAssetLayout(item){const footprint=Array.isArray(item.footprint)?item
 function terrainVariant(mapId,material,x,y){const choices={grass:[0,0,0,0,0,1,1,2],dirt:[0,0,0,0,0,0,1],mud:[0,0,0,1],stone:[0,0,0,0,1],water:[0,0,0,1],timber:[0]}[material]||[0],patchX=Math.floor(x/2),patchY=Math.floor(y/2),key=`${mapId||'map'}:${material}:${patchX}:${patchY}`;let hash=2166136261;for(let i=0;i<key.length;i++){hash^=key.charCodeAt(i);hash=Math.imul(hash,16777619)}return choices[(hash>>>0)%choices.length]}
 function combatActionArt(name){return `<span class="combat-action-art action-${name}" aria-hidden="true"></span>`}
 function battleToken(unit,current,battle){
+  if(unit.lost_in_pit)return '';
   const face=unit.portrait?framedImage(portraitSrc(unit.portrait),unit.portrait_frame,esc):`<span>${initials(unit.name)}</span>`;
   const boss=unit.boss||unit.kind==='chieftain';
   const height=battle.elevation?.find(tile=>tile.x===unit.x&&tile.y===unit.y)?.height||0,preview=battle.attack_previews?.[unit.id]?.[selectedCombatAction];
   const accuracy=preview?.support?` · Treatment available${preview.heal?` · restores up to ${preview.heal} HP`:''}`:preview?` · ${preview.chance}% ${preview.capture?'capture chance':'accuracy'}${preview.damage_bonus?` · +${preview.damage_bonus} height damage`:''}`:'';
-  const statuses=(unit.statuses||[]).map(status=>{const d=battle.status_definitions?.[status.id]||{name:title(status.id),icon:'•',description:'Status effect'},duration=status.rounds??status.turns??status.duration,durationUnit=status.rounds!=null?'round':'activation';return `<span class="status-icon" tabindex="0">${esc(d.icon)}<span class="status-tooltip"><b>${esc(d.name)}</b><small>${esc(d.description)}</small>${duration!=null?`<em>${duration} ${durationUnit}${duration===1?'':'s'} remaining</em>`:''}</span></span>`}).join('');
+  const statuses=(unit.statuses||[]).map(status=>{const d=statusDetails(status,battle.status_definitions);return `<span class="status-icon" tabindex="0">${esc(d.icon)}<span class="status-tooltip"><b>${esc(d.name)}</b><small>${esc(d.description)}</small>${d.details.map(line=>`<em>${esc(line)}</em>`).join('')}</span></span>`}).join('');
   const condition=unit.condition||(!unit.alive?'dead':'active'),bodyLabel=condition==='unconscious'?'UNCONSCIOUS':condition==='dead'?'CORPSE':'';
   const throwTarget=(battle.throw_profile?.target_ids||[]).includes(unit.id);
   const support=selectedCombatAction==='skill'&&battle.units?.[battle.current_unit_id]?.special?.target==='ally';
   const targeting=['attack','subdue','skill','throw'].includes(selectedCombatAction)&&(support?unit.team==='player':unit.team==='enemy'),validTarget=selectedCombatAction==='throw'?throwTarget:!!preview;
   const occupiedAbove=condition!=='active'&&Object.values(battle.units||{}).some(other=>other.id!==unit.id&&other.x===unit.x&&other.y===unit.y&&other.alive&&other.conscious!==false&&!other.extracted&&!other.carried_by);
-  return `<button class="battle-token ${unit.team} ${current?'current':''} ${boss?'boss':''} ${throwTarget?'throw-target':''} ${targeting?(validTarget?'valid-target':'invalid-target'):''} ${unit.extracted?'extracted':''} ${unit.carried_by?'carried':''} ${occupiedAbove?'body-under-unit':''} ${condition}" data-battle-unit="${unit.id}" style="grid-column:${unit.x+1};grid-row:${unit.y+1}" title="${esc(unit.name)} · ${unit.hp}/${unit.max_hp} HP · ${title(condition)} · elevation ${height}${boss?' · BOSS':''}${targeting?validTarget?' · valid target':' · out of range or line of sight':''}${throwTarget?` · ${battle.throw_profile.damage} throw damage`:''}${accuracy}">${boss?'<strong class="boss-label">BOSS</strong>':''}${height?`<strong class="height-badge">▲${height}</strong>`:''}${face}${condition==='active'?`<i><b>${unit.hp}</b><small>HP</small></i>`:''}${bodyLabel?`<em class="body-label">${condition==='dead'?'† CORPSE':'ZZZ · UNCONSCIOUS'}</em>`:''}${statuses?`<span class="status-row">${statuses}</span>`:''}</button>`;
+  return `<button class="battle-token ${unit.team} ${current?'current':''} ${boss?'boss':''} ${throwTarget?'throw-target':''} ${targeting?(validTarget?'valid-target':'invalid-target'):''} ${unit.extracted?'extracted':''} ${unit.carried_by?'carried':''} ${occupiedAbove?'body-under-unit':''} ${condition}" data-battle-unit="${unit.id}" style="grid-column:${unit.x+1};grid-row:${unit.y+1}" title="${esc(unit.name)} · ${unit.hp}/${unit.max_hp} HP · ${title(condition)} · elevation ${height}${boss?' · BOSS':''}${targeting?validTarget?' · valid target':' · out of range or line of sight':''}${throwTarget?` · ${battle.throw_profile.damage} throw damage`:''}${accuracy}${tacticalPreviewText(preview)?` | ${esc(tacticalPreviewText(preview))}`:''}">${boss?'<strong class="boss-label">BOSS</strong>':''}${height?`<strong class="height-badge">▲${height}</strong>`:''}${face}${condition==='active'?`<i><b>${unit.hp}</b><small>HP</small></i>`:''}${bodyLabel?`<em class="body-label">${condition==='dead'?'† CORPSE':'ZZZ · UNCONSCIOUS'}</em>`:''}${statuses?`<span class="status-row">${statuses}</span>`:''}</button>`;
 }
 
 function tileActionsForBattle(b,x,y){
@@ -681,7 +683,7 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       if(offset)frames[0].transform=`translate(${offset.x}px,${offset.y}px) scale(${baseScale})`;
       token.classList.remove('extracted');
       token.classList.add('is-walking');
-      const duration=Math.max(220,Math.min(850,Math.max(1,points.length-1)*155));
+      const duration=event.forced?220:Math.max(220,Math.min(850,Math.max(1,points.length-1)*155));
       const animation=token.animate(frames,{duration,delay,easing:'ease-in-out',fill:'both'});
       trackBattleAnimation(token,animation,'is-walking',()=>{if(event.extracted)token.classList.add('extracted')});
       delay+=duration+70;

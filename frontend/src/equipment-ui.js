@@ -24,6 +24,7 @@ export function describeGear(item, perks={}) {
   for(const [key,value] of Object.entries(item.bonuses||{}))lines.push(`${value>=0?'+':''}${value} ${label(key)} capability`);
   if(item.element)lines.push(`${label(item.element)} attacks: racial resistance −25%, weakness +25% damage. Nonlethal strikes ignore enchantments.`);
   if(item.combat_skill)lines.push(`Grants ${item.combat_skill.name}: ${item.combat_skill.description} Uses ${(item.combat_skill.scaling||item.weapon_scaling||'str').toUpperCase()}.`);
+  if(item.combat_reaction)lines.push(`Reaction — ${item.combat_reaction.name}: ${item.combat_reaction.description}`);
   if(item.on_hit){
     const effects={burn:'4% maximum HP at activation start (2–5 damage).',poison:'4% maximum HP at activation start (2–5 damage).',
       bleed:'Moving or attacking physically causes one 2–4 damage tick at activation end.',stun:'Cannot act.',sleep:'Cannot act; direct damage wakes the target.',

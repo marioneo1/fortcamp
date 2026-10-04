@@ -434,3 +434,5 @@ win by a different damage coefficient.
 
 The original proposal was based on read-only inspection. Its first dependency
 pass is now implemented and tested; COMBAT_ABILITIES.md documents live scope.
+
+October 4 progress: dependency steps 1 and 2 are implemented for the pilot equipment and shared tactical vocabulary, documented in COMBAT_ABILITIES.md. Steps 3-6 and all twelve Job catalogues remain proposed; no starter selection migration has shipped.

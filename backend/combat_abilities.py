@@ -4,7 +4,7 @@ import math
 
 VERSION = 1
 STATUSES = {'stun','sleep','poison','bleed','charm','confuse','berserk','freeze',
-            'burn','blind','bind','slow','paralyze','mute','fear','vulnerable','regeneration'}
+            'burn','blind','bind','slow','paralyze','mute','fear','vulnerable','regeneration','braced'}
 RULES = {'melee','ballistic','ignore','line_of_effect','physical_care'}
 
 
@@ -41,7 +41,9 @@ def validate(skill):
             raise ValueError('Ability effect must be an object')
         kind = effect.get('type')
         allowed = {'attack': {'damage_bonus','armor_pierce'}, 'heal': {'amount'},
-                   'cleanse': {'statuses'}, 'guard': set(), 'status': {'status','turns','chance'}}
+                   'cleanse': {'statuses'}, 'guard': set(), 'status': {'status','turns','chance'},
+                   'barrier': {'amount','turns'}, 'mark': {'turns','accuracy'},
+                   'displace': {'mode','distance','collision_damage'}}
         if kind not in allowed or set(effect) - (allowed[kind] | {'type','conditions'}):
             raise ValueError('Unsupported ability effect')
         if kind == 'attack':
@@ -49,8 +51,17 @@ def validate(skill):
                 raise ValueError('Only one enemy attack is supported')
             _integer(effect.get('damage_bonus',0), -30, 30)
             _integer(effect.get('armor_pierce',0), 0, 30)
-        if kind in {'heal','cleanse','guard'} and skill['target'] != 'ally':
+        if kind in {'heal','cleanse','guard','barrier'} and skill['target'] != 'ally':
             raise ValueError('Support effects require an ally target')
+        if kind in {'mark','displace'} and skill['target'] != 'enemy':
+            raise ValueError('Hostile tactical effects require an enemy target')
+        if kind in {'barrier','mark'}:
+            _integer(effect.get('turns'),1,3)
+            _integer(effect.get('amount') if kind=='barrier' else effect.get('accuracy',10),1,200 if kind=='barrier' else 15)
+        if kind=='displace':
+            if effect.get('mode') not in {'push','pull'}:raise ValueError('Unsupported displacement mode')
+            _integer(effect.get('distance'),1,2)
+            _integer(effect.get('collision_damage',0),0,10)
         if kind == 'heal':
             _integer(effect['amount'], 1, 200)
         if kind == 'cleanse':
@@ -89,7 +100,7 @@ def snapshot(skills, intelligence):
     for original in skills:
         skill=deepcopy(original)
         skill.update(ability_version=VERSION,target=skill.get('target','enemy'))
-        cooldown={'precision_shot':2,'arc_bolt':2,'field_care':3}.get(skill['id'],0)
+        cooldown={'precision_shot':2,'arc_bolt':2,'field_care':3,'shield_cover':3}.get(skill['id'],0)
         skill['cost']={'cooldown':cooldown,'charges':None if cooldown else 1}
         if skill['target']=='ally':
             effects=[]
@@ -103,6 +114,15 @@ def snapshot(skills, intelligence):
         else:
             effects=[{'type':'attack','damage_bonus':skill.get('damage_bonus',3),
                       'armor_pierce':skill.get('armor_pierce',2 if skill['id']=='precision_shot' else 0)}]
+        if skill.get('barrier'):
+            effects.append({'type':'barrier','amount':skill['barrier'],'turns':1})
+        if skill['id'] in {'hook_thrust','titan_thrust'}:
+            mode='pull' if skill['id']=='hook_thrust' else 'push'
+            effects.append({'type':'displace','mode':mode,'distance':1,'conditions':[{'type':'hit'}]})
+            skill['description']=skill.get('description','')+f' On hit, {mode} the target one cell if terrain and resistance allow. No collision damage.'
+        if skill['id']=='precision_shot':
+            effects.append({'type':'mark','turns':2,'accuracy':10,'conditions':[{'type':'hit'}]})
+            skill['description']=skill.get('description','')+' On hit, Mark for two target activations. Your first successful hit each activation gains 10 accuracy; allies do not inherit it.'
         skill['effects']=effects
         timing=(f'Ready again in {cooldown} of your turns.' if cooldown else 'One use of this technique per battle.')
         # Replace outdated availability wording; preserve actual technique description.
@@ -157,7 +177,8 @@ def resolve(skill, target, handlers):
     validate(skill)
     context={}
     for effect in skill['effects']:
-        if target.get('hp',0)<=0 or not target.get('conscious',True):break
+        target=context.get('target',target)
+        if context.get('interrupted') or target.get('hp',0)<=0 or not target.get('conscious',True):break
         if all(matches(c,target,context) for c in effect.get('conditions',[])):
             context.update(handlers[effect['type']](effect) or {})
     return context

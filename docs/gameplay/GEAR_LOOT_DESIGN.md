@@ -82,3 +82,5 @@ Character Equipment excludes non-wearable items; party Inventory has all gear, m
 ## October 2 combat supplies and agreement keepsakes
 
 Three owned consumables now have battle actions; four existing nonweapon items grant selectable ally treatments. Six existing weapons gain distinct status procs. Fourteen private-agreement keepsakes grant defensive/support techniques and bounded equipment rules, with independent discovery rolls rather than guaranteed rewards. They remain excluded from general/event/trade stock. Existing icon art is reused for this initial content pass; a dedicated keepsake art sheet remains optional. See [Combat tools](COMBAT_TOOLS_AND_PACING.md) and [rotating trade](../design/FACTIONS_AND_ROTATING_TRADE.md) for costs, conditions and scopes.
+
+October 4 tactical pilots (dev): existing Guild Tower Shield grants finite Shield Cover and Intercept; Duelist Gloves grant bounded Riposte; Precision Shot marks, Hook Thrust pulls and Titan Thrust pushes on hit. No new drop pools or items. Full rules and validation: ../design/COMBAT_ABILITIES.md.

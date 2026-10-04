@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Implemented tactical dependencies: [Combat ability foundation](design/COMBAT_ABILITIES.md) now also covers Barrier/Mark, control timing, shared reactions, knockback resistance and authored pit outcomes. Jobs, loadouts, summons, forms and zones remain future work.
+
 Implemented first dependency: [Combat ability foundation](design/COMBAT_ABILITIES.md) covers per-technique costs, ordered effects, activation timing and legacy saves. Twelve starting Jobs remain proposed.
 
 Starting Jobs — proposal: [Twelve Jobs and initial skill catalogues](design/STARTING_JOBS_AND_SKILLS_V1.md)

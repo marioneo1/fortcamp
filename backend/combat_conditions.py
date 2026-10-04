@@ -1,7 +1,9 @@
 """Small persistent status rules; random choices are seeded by activation."""
 import random
+from copy import deepcopy
 
 CONTROL = {'stun', 'sleep', 'freeze', 'paralyze'}
+RECOVERY = CONTROL | {'bind'}
 
 def has(unit, sid):
     return any(s.get('id') == sid for s in unit.get('statuses', []))
@@ -10,16 +12,21 @@ def remove(unit, *ids):
     unit['statuses'] = [s for s in unit.get('statuses', []) if s.get('id') not in ids]
 
 def apply(unit, sid, turns, source=None):
-    if sid in CONTROL and unit.get('control_immunity', 0) > 0:
+    if sid in (RECOVERY if unit.get('status_version') else CONTROL) and unit.get('control_immunity', 0) > 0:
+        return False
+    if unit.get('status_version') and sid in RECOVERY and any(has(unit,s) for s in RECOVERY):
         return False
     remove(unit, sid)
     status = {'id': sid, 'turns': max(1, min(3, int(turns))),
               'applied_activation': unit.get('status_activation')}
     if unit.get('boss') or unit.get('kind') == 'chieftain':
-        if sid in CONTROL:
+        if sid in (RECOVERY if unit.get('status_version') else CONTROL):
             status['turns'] = 1
     if source:
         status.update(source_id=source.get('id'), source_name=source.get('name'), source_weapon=source.get('weapon'))
+    if unit.get('status_version'):
+        status['expiry'] = 'target_start' if sid in {'poison','burn'} else 'target_end'
+        status['applied_activation'] = deepcopy(unit.get('status_activation'))
     unit.setdefault('statuses', []).append(status)
     return True
 
@@ -28,6 +35,8 @@ def start_activation(battle, unit):
     unit.pop('paralyzed_move', None)
     unit.pop('forced_skip', None)
     unit['control_immunity'] = max(0, int(unit.get('control_immunity', 0)) - 1)
+    if unit.get('status_version'):
+        unit['reaction_ready'] = True
     if has(unit, 'stun') or has(unit, 'sleep'):
         unit['forced_skip'] = True
     if has(unit, 'paralyze'):
@@ -43,6 +52,10 @@ def start_activation(battle, unit):
             battle['log'].append(f"{unit['name']} recovers {amount} HP from regeneration.")
 
 def finish_activation(unit):
+    stamp=unit.get('status_activation')
+    if unit.get('status_version') and stamp is not None:
+        if unit.get('status_finished_stamp')==stamp:return
+        unit['status_finished_stamp']=deepcopy(stamp)
     for status in list(unit.get('statuses', [])):
         if status.get('id') in {'burn', 'poison', 'ambush_sleep'} or 'turns' not in status:
             continue
@@ -51,8 +64,42 @@ def finish_activation(unit):
         status['turns'] -= 1
         if status['turns'] <= 0:
             unit['statuses'].remove(status)
-            if status['id'] in CONTROL:
+            if status['id'] in (RECOVERY if unit.get('status_version') else CONTROL):
                 unit['control_immunity'] = 2
+
+
+def barrier(unit, amount, turns, source):
+    """One finite shield. A smaller recast cannot extend a stronger shield."""
+    current=next((s for s in unit.get('statuses',[]) if s['id']=='barrier'),None)
+    if current and current.get('amount',0)>amount:
+        return False
+    apply(unit,'barrier',turns,source)
+    next(s for s in unit['statuses'] if s['id']=='barrier')['amount']=amount
+    return True
+
+
+def absorb(unit, damage):
+    shield=next((s for s in unit.get('statuses',[]) if s['id']=='barrier'),None)
+    absorbed=min(damage,shield.get('amount',0)) if shield else 0
+    if absorbed:
+        shield['amount']-=absorbed
+        if shield['amount']<=0:remove(unit,'barrier')
+    return damage-absorbed,absorbed
+
+
+def mark(battle, source, target, turns, accuracy=10):
+    # One target per owner; different owners can mark the same target.
+    for unit in battle['units'].values():
+        unit['statuses']=[s for s in unit.get('statuses',[]) if not (s['id']=='mark' and s.get('source_id')==source['id'])]
+    target.setdefault('statuses',[]).append({'id':'mark','source_id':source['id'],'source_name':source['name'],
+        'turns':turns,'accuracy':accuracy,'expiry':'target_end',
+        'applied_activation':deepcopy(target.get('status_activation'))})
+
+
+def mark_bonus(attacker,target):
+    if attacker.get('reaction_attack') or ('mark_hit_activation' in attacker and attacker['mark_hit_activation']==attacker.get('status_activation')):
+        return 0
+    return max((s.get('accuracy',10) for s in target.get('statuses',[]) if s['id']=='mark' and s.get('source_id')==attacker.get('id')),default=0)
 
 def hostile_units(battle, unit, living):
     others = [u for u in living if u['id'] != unit['id']]

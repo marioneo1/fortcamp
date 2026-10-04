@@ -1,6 +1,6 @@
 # Combat ability foundation
 
-Implemented in dev, October 4, 2026. The twelve starting Jobs, loadouts, new passives/reactions, summons, forms and zones remain proposed. See STARTING_JOBS_AND_SKILLS_V1.md.
+Implemented in dev, October 4, 2026. The twelve starting Jobs, loadouts, Job passives, summons, forms and zones remain proposed. See STARTING_JOBS_AND_SKILLS_V1.md.
 
 ## Player rules
 
@@ -16,9 +16,9 @@ New battles have no universal twenty-round defeat. Existing reinforcements and o
 
 backend/combat_abilities.py owns the validated version-1 vocabulary. Abilities are snapshotted into units; clients submit IDs, never definitions. Equipment supplies source, scaling, elements and procs. No parallel character database or combat engine.
 
-Definitions declare enemy/ally target, explicit elevation rule, range, cooldown/charges and one to four ordered effects. Effects: attack, heal, cleanse, Guard, status. Conditions: earlier attack hit, target has status, HP below fraction. Unknown effects/conditions and invalid numbers are rejected before effects run. Fixed data, not a scripting language.
+Definitions declare enemy/ally target, explicit elevation rule, range, cooldown/charges and one to four ordered effects. Effects: attack, heal, cleanse, Guard, status, Barrier, Mark and straight push/pull. Conditions: earlier attack hit, target has status, HP below fraction. Unknown effects/conditions and invalid numbers are rejected before effects run. Fixed data, not a scripting language.
 
-Later effects observe earlier results and stop on death/unconsciousness. Resolution reuses accuracy, armor, resistances, elements, procs, defeat, animations and records. Statuses reuse control recovery and racial resistance, including poison immunity. Barrier/Mark and new ownership/expiry semantics remain future work.
+Later effects observe earlier results and stop on death/unconsciousness. Resolution reuses accuracy, armor, resistances, elements, procs, defeat, animations and records. Statuses reuse control recovery and racial resistance, including poison immunity. Modern status timing and Barrier/Mark ownership are implemented below.
 
 Owners persist ability_activation, ability_stamp and ability_state keyed by skill ID (uses, ready_at) in existing battle JSON. Cooldown 2 used at activation N is ready at N+2. Real activations tick once; polling/reopening never starts activations or ticks damage. Concealment first sightings remain persistent on view refresh so revealed enemies stay visible.
 
@@ -26,10 +26,28 @@ Saved battles without versioned skills retain legacy shared use and round/action
 
 ## Validation and remaining work
 
-Tests cover JSON reload, repeated views, independent charges, misses, invalid commands, ordered conditions, physical care while muted, lethal termination, poison immunity, capture restrictions, legacy saves and auto/manual consistency. All 45 authored gear techniques validate, including negative damage bonuses. Frontend checks cover selection, timing and legacy fallback.
+Tests cover JSON reload, repeated views, independent charges, misses, invalid commands, ordered conditions, physical care while muted, lethal termination, poison immunity, capture restrictions, legacy saves and auto/manual consistency. All 46 authored gear techniques validate, including negative damage bonuses. Frontend checks cover selection, timing and legacy fallback.
 
 Removing forced defeat exposed existing auto pathfinding stalls at walls in Locked Tool Shed and the former-command prison encounter. Auto pauses these fights; boundary-aware approach/pathfinding needs follow-up. Do not claim all maps complete automatically.
 
-Next: status ownership/expiry and Barrier/Mark, displacement and bounded reactions; then zones/forms/summons, regular five-slot loadouts and Job UI/AI. Publish all twelve starters together after planned encounter checks.
+Next: zones/forms/summons, regular five-slot loadouts and Job UI/AI. Publish all twelve starters together after planned encounter checks.
 
 Validation: 420 backend tests and 183 frontend tests passed; Vite build passed (existing large-chunk warning). Isolated Chrome check confirmed cooldown labels, independent selection and action-button availability without JavaScript errors. No live API/database used for browser review.
+
+## Tactical dependency pass - October 4
+
+Implemented in dev. Guild Tower Shield grants Shield Cover (6 Barrier, cooldown 3) and adjacent-ally interception. Duelist Gloves grant a half-strength melee Riposte after a hit. Precision Shot applies an owned Mark; Hook Thrust pulls one tile and Titan Thrust pushes one tile after a successful hit. Existing item IDs, artwork and drop pools stay intact.
+
+Barrier absorbs a finite amount after mitigation. Smaller shields cannot refresh a stronger remaining shield; equal/stronger applications replace rather than add. It expires at the recipient's activation end. Mark provides its owner up to 10 accuracy on the first successful hit each activation; misses preserve it. An owner marks only one target at a time. Reactions cannot consume that bonus.
+
+Poison/Burn tick at activation start. Other timed effects expire at activation end; newly applied effects do not immediately expire on the same activation. Control and Bind cannot be refreshed or switched into another disabling effect while active. Their expiry grants recovery protection. Repeated finish calls and polling do not double-tick durations.
+
+Interception and counters share one reaction per unit activation. Incapacitated, carried, extracted, panicked or otherwise disabled units cannot react. Interception checks adjacency, range and sight and redirects subsequent effects to the actual recipient. Capture bypasses interception/counters. Counters cannot trigger counters; throws and damage ticks do not trigger these reactions. Forced movement resolves before counter range is checked. Returning Hand is supported but not published as new content.
+
+Push/pull follows a straight cardinal path, at most two tiles, without routing around obstacles. Walls, occupied cells and excessive elevation stop it. Boss/chieftain displacement resistance defaults to 25%; authored resistance and Braced can modify it. Previews show destination, resistance, collision and pit risk. Collision damage is optional and zero for the current pilot techniques. Forced movement clears exit readiness and moves a carried body with its carrier.
+
+Authored shallow pits inflict fall damage and Slow; deep pits also require a main-action Climb Out onto a legal adjacent tile. Explicit lethal pits kill and prevent body/gear recovery, including carried bodies. Flying units bypass these falls. Old untyped pits default to shallow; untyped void remains blocked, not secretly lethal. Maps must author recoverable exits and lethal hazards deliberately. No new pit maps were added in this pass.
+
+The battle UI explains remaining Barrier, Mark ownership, reaction availability, displacement resistance and durations. Lost-in-pit bodies are not displayed as recoverable corpse tokens. Equipment descriptions show their reactions.
+
+Validation: full backend regression 432 tests passed, followed by 74 focused tests covering final changes. Frontend suite 185 tests passed; final status tests and Vite build passed (existing large-chunk warning). Isolated actual battle UI check confirmed Barrier, Mark, resistance, reactions and skill previews without JavaScript errors. Live saves and production were untouched.

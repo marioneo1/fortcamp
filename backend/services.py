@@ -1328,7 +1328,7 @@ async def _finish_battle(
     loot_rng = random.Random(f"{mission.id}:corpse-loot")
     for unit_id in sorted(recovered_ids):
         unit = battle.get("units", {}).get(unit_id)
-        if not unit or unit.get("team") != "enemy" or unit.get("condition") != "dead":
+        if not unit or unit.get("team") != "enemy" or unit.get("condition") != "dead" or unit.get('lost_in_pit'):
             continue
         kind = unit.get("kind", "raider")
         gold_low, gold_high = (6, 12) if kind == "chieftain" else (1, 5) if kind == "archer" else (0, 4)
