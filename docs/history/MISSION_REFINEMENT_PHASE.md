@@ -920,3 +920,34 @@ in read-only debug comparison; permanent painted player selection remains deferr
 168 frontend tests, 18 backend construction/extraction tests, build and browser
 controls/collision/material checks pass. Six room comparisons inspected. No prod
 changes or player save writes. Canonical reference: docs/art/CONSTRUCTION_MATERIAL_KITS.md.
+
+
+## October 4: construction drag and removal refinement
+
+Clicking a rotated snapped corner now commits the exact hovered orientation and
+anchor. Starting a drag snapshots that preview instead of clearing its rotation
+choice and snapping again.
+
+Floors preview an inclusive rectangle between the start and current cells. Moving
+back toward the start shrinks it; skipped cells are filled automatically. Walls
+preview one row or column along the dominant drag direction, never a room fill.
+Straight walls select matching native H/V artwork. A corner appears once at the
+start, followed by plain walls extending its appropriate arm. All pieces retain
+the material and facing. Some offset corner arms cannot extend with the current
+five anchors: the UI asks to center the corner. Invalid runs place nothing.
+
+Remove [Del] targets only props/walls under the pointer. Hold Shift before starting
+a drag to remove a floor rectangle instead; its layer stays fixed until release.
+Hover enlarges an object by 10%, dims its original and adds a warm red outline;
+floors receive cell outlines. This identifies the layer without removing it early.
+
+Every drag stays in the preview layer until release inside the map. Release
+outside cancels the entire operation. Each completed drag is one undo entry.
+Library-to-map dragging follows the same rules, starting at the first entered
+map cell. Pointer updates do not write saves or rebuild the committed scene.
+
+Validation: 173 frontend tests and production build pass. Isolated browser checks
+cover rectangular fill/shrinking, straight runs, rotated corner commit, invalid
+run rejection, layer-specific removal over shared cells, magnification, undo,
+palette dragging and outside cancellations. Saves used an in-memory fixture;
+production and real player data were untouched. No artwork changed.

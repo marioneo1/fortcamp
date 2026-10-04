@@ -1,5 +1,13 @@
 # Fortcamp feature backlog
 
+October 4 construction drag QoL: exact rotated snapped-corner commit, rectangular
+floor fill and single row/column wall runs with matching native art. Remove [Del]
+preserves floors; Shift+Remove previews a floor rectangle preserving objects.
+Hover highlights/enlarges the target; all drags commit on inside release only,
+outside drops cancel, and undo restores each drag. 173 frontend tests, build and
+isolated browser checks pass. No production or real save changes. Repeated prop
+placement remains deferred. Canonical: docs/design/BASE_CONSTRUCTION.md.
+
 October 4 construction finishing pass: Delete selects Erase; F/P/W/V switch tools;
 wheel zoom stays under the cursor with Shift+wheel scrolling; optional S snapping
 persists in the browser. Corners choose connected facing/anchor automatically;

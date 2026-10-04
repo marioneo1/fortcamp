@@ -6,13 +6,14 @@ not the dev Battle Lab or a replacement for existing functional facilities.
 
 ## Workflow
 
-Choose Floors & terrain, Props, Walls, Select / move, or Erase. Search filters
+Choose Floors & terrain, Props, Walls, Select / move, or Remove. Search filters
 that layer's asset library. Drag an asset from the library into the map, or drag
 on the map using the current brush. **Release inside the map to place it.**
 Releasing outside the visible map viewport cancels the entire operation,
 including a painted floor stroke or moving an existing object. Escape cancels
 an active drag; otherwise it requests closing the editor. Losing window focus
-also cancels the preview. Floor strokes interpolate skipped cells.
+also cancels the preview. Floors fill the rectangle between the first and last
+cells; walls extend a single row or column. See the drag refinement below.
 
 R rotates the brush, selected object, or object being dragged. It works with a
 button, slider or closed dropdown focused; typing in text/number fields remains
@@ -147,9 +148,9 @@ vertical both-post, corner, horizontal gate and vertical gate. Permitted mirrors
 supply other facings, post positions and corners; horizontal artwork is never
 rotated into vertical artwork. Full-length corner arms remain. R cycles through native horizontal and vertical variants (see the October 4 refinement below). A nine-original plain-wood atlas is now available in the
 isolated debug Wall Kit Lab; permanent player art selection remains deferred.
-See docs/art/CONSTRUCTION_PLAIN_WOOD_KIT.md for generation, mapping and validation. Rectangle fill/repeated-footprint
-placement and separate Remove / Remove floors tools also remain pending from the
-interaction discussion. No art was generated in this simplification.
+See docs/art/CONSTRUCTION_PLAIN_WOOD_KIT.md for generation, mapping and validation.
+Rectangle floor fill and separate layer removal are implemented below; repeated
+prop placement remains deferred. No art was generated in this simplification.
 
 ## Debug wall artwork trial
 
@@ -216,7 +217,8 @@ change when their message changes. No production deployment or real saves used.
 | Key / gesture | Action |
 |---|---|
 | F / P / W / V | Floors / Props / Walls / Select and move |
-| Delete | Switch to Erase; does not immediately delete an object |
+| Delete | Switch to Remove; does not immediately delete an object |
+| Shift held before a Remove drag | Remove floors as a rectangle, preserving props/walls |
 | S | Toggle wall snapping; preference saved in this browser |
 | R | Rotate; while snapped, keep joins and skip rotations that cannot fit |
 | Arrows / Shift+arrows | Position / fine prop positioning |
@@ -246,3 +248,34 @@ Validation: 168 frontend tests, 18 construction/extraction backend tests, build
 and browser controls/material checks pass. Seven painted kits switch 44 sample
 walls and load all 63 native sprites. Room captures visually inspected. Production
 and real player saves untouched. Base character walking remains deferred.
+
+
+## October 4: construction drag and removal refinement
+
+Clicking a rotated snapped corner now commits the exact hovered orientation and
+anchor. Starting a drag snapshots that preview instead of clearing its rotation
+choice and snapping again.
+
+Floors preview an inclusive rectangle between the start and current cells. Moving
+back toward the start shrinks it; skipped cells are filled automatically. Walls
+preview one row or column along the dominant drag direction, never a room fill.
+Straight walls select matching native H/V artwork. A corner appears once at the
+start, followed by plain walls extending its appropriate arm. All pieces retain
+the material and facing. Some offset corner arms cannot extend with the current
+five anchors: the UI asks to center the corner. Invalid runs place nothing.
+
+Remove [Del] targets only props/walls under the pointer. Hold Shift before starting
+a drag to remove a floor rectangle instead; its layer stays fixed until release.
+Hover enlarges an object by 10%, dims its original and adds a warm red outline;
+floors receive cell outlines. This identifies the layer without removing it early.
+
+Every drag stays in the preview layer until release inside the map. Release
+outside cancels the entire operation. Each completed drag is one undo entry.
+Library-to-map dragging follows the same rules, starting at the first entered
+map cell. Pointer updates do not write saves or rebuild the committed scene.
+
+Validation: 173 frontend tests and production build pass. Isolated browser checks
+cover rectangular fill/shrinking, straight runs, rotated corner commit, invalid
+run rejection, layer-specific removal over shared cells, magnification, undo,
+palette dragging and outside cancellations. Saves used an in-memory fixture;
+production and real player data were untouched. No artwork changed.

@@ -63,3 +63,12 @@ corner placement on a raised row, R retaining joins, text editing, prior collisi
 controls, seven painted kits, 63 native images, 44 walls per switch, no save writes
 and dialog bounds at 1600/800/430px. Six connected-room captures were inspected.
 Production and real player saves were not used.
+
+
+## Drag controls follow-up
+
+All seven kits share the same geometry-based rectangular floor fill, straight
+wall runs and layer-specific Remove controls. Corner runs use one corner followed
+by native plain H/V pieces; no atlas changes or bitmap quarter-turns are needed.
+Rotated snapped previews retain their placement on click. See
+[Base construction](../design/BASE_CONSTRUCTION.md) for controls and limitations.
