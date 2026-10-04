@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {wallSegments,wallConnections,snapAnchor,rotatePlacement,validPlacement,wallPieces,wallPosts,nudgePlacement} from './construction-geometry.js';
+import {wallSegments,wallConnections,snapAnchor,rotatePlacement,validPlacement,wallPieces,availableWallPieces,wallPosts,nudgePlacement} from './construction-geometry.js';
 import {constructionSVG} from './construction-render.js';
 const wall=(extra={})=>({id:'wall',x:2,y:2,shape:'straight',anchor:'center',material:'timber',rotation:0,posts:'auto',...extra});
 test('shared cell edges have identical ports; T and cross use exact half-cell segments',()=>{
@@ -57,4 +57,12 @@ test('full-cell T branches connect at their midpoint; nudges respect wall sides 
  const p={offset_x:.44,offset_y:0};assert.equal(nudgePlacement(p,'props','ArrowRight').offset_x,.45);
  assert.equal(nudgePlacement(p,'props','ArrowDown',true).offset_y,.01);
  assert.deepEqual(nudgePlacement(p,'props','Home'),{offset_x:0,offset_y:0});
+});
+
+
+test('junctions are retired from brushes but saved native junctions remain renderable',()=>{
+ assert.ok(Object.values(availableWallPieces).every(p=>!['tee','cross','half'].includes(p.shape)));
+ const saved=wall({piece:'tee_north',shape:'tee'});
+ assert.equal(wallSegments(saved).length,2);
+ assert.deepEqual(rotatePlacement(saved,'walls'),saved);
 });

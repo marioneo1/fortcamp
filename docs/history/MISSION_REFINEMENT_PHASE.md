@@ -840,3 +840,19 @@ Canonical: docs/design/BASE_CONSTRUCTION.md. Validation: 26 backend regressions,
 1440/800/430px bounds, stable scene during 80 pointer updates, stable ground during
 selected prop adjustment, and visually reviewed capture. Dev only; no real save
 or production changes.
+
+
+## October 4: simplify player construction wall kit (dev)
+
+Removed T and + junctions from the construction palette and wall-asset selector;
+half walls were already absent. Saved junctions retain render/save compatibility
+through separate legacy definitions, with rotation disabled. Future agreed kit:
+24 selectable variants / 9 generated originals per material, with permitted
+mirrors and separately generated horizontal/vertical art. Full-cell corners
+remain. Rectangle fill and Remove / Remove floors, mirrored artwork and limiting
+straight-wall rotation to its orientation family remain pending. Canonical:
+docs/design/BASE_CONSTRUCTION.md. Production and player saves untouched.
+
+Validation: 9 backend construction checks (including old/native retired junction
+save/reload and active catalogue filtering), 8 frontend geometry/render checks,
+production build and whitespace checks passed.

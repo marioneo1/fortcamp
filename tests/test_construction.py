@@ -95,11 +95,13 @@ class ConstructionPersistenceTests(unittest.IsolatedAsyncioTestCase):
     async def test_owner_save_survives_reload_without_changing_other_data(self):
         plan=empty_plan()
         plan['walls']=[dict(id='native',piece='horizontal_right_post_south',x=2,y=2,shape='straight',anchor='north',material='iron',rotation=0,posts='none'),
-                       dict(id='legacy',x=4,y=2,shape='corner',anchor='center',material='timber',rotation=0,posts='auto')]
+                       dict(id='legacy',x=4,y=2,shape='tee',anchor='center',material='timber',rotation=0,posts='auto'),
+                       dict(id='retired_native',piece='cross_north',x=5,y=3,shape='cross',anchor='center',material='timber',rotation=0,posts='none')]
         saved=await construction_api.save_construction(construction_api.SaveConstruction(revision=0,plan=plan),self.identity)
         self.assertEqual(saved['plan']['revision'],1)
         read=await construction_api.get_construction(self.identity)
         self.assertEqual(read['plan'],saved['plan'])
+        self.assertTrue(all(p['shape'] not in ('tee','cross','half') for p in read['catalogue']['wall_pieces'].values()))
         self.assertEqual(saved['state']['resources']['gold'],42)
         self.assertEqual(saved['state']['characters'],[{'id':'player'}])
         async with self.sessions() as session:

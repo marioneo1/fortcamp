@@ -10,7 +10,8 @@ ANCHORS = {'center':(.5,.5),'north':(.5,0),'east':(1,.5),'south':(.5,1),'west':(
 ARMS = {'straight':[(-.5,0),(.5,0)],'half':[(.5,0)],'corner':[(.5,0),(0,.5)],
         'tee':[(-.5,0),(.5,0),(0,.5)],'cross':[(-.5,0),(.5,0),(0,-.5),(0,.5)],
         'gate':[(-.5,0),(.5,0)]}
-WALL_PIECES = json.loads((ROOT/'frontend/src/construction-wall-pieces.json').read_text())
+AVAILABLE_WALL_PIECES = json.loads((ROOT/'frontend/src/construction-wall-pieces.json').read_text())
+WALL_PIECES = {**json.loads((ROOT/'frontend/src/construction-wall-pieces-legacy.json').read_text()),**AVAILABLE_WALL_PIECES}
 MATERIALS = ['timber','fieldstone','limestone','iron']
 
 
@@ -31,7 +32,7 @@ def catalogue():
                 'footprint':sizes.get(key,{}).get('footprint',[1,1])}
            for key,file in props.items() if (file.startswith('props/') or any(s in key for s in ['cage','wagon','tent','stocks']))
            and (asset_root/file).is_file()}
-    return {'ground':ground,'props':props,'wall_pieces':WALL_PIECES,'wall_shapes':list(ARMS),'wall_materials':MATERIALS}
+    return {'ground':ground,'props':props,'wall_pieces':AVAILABLE_WALL_PIECES,'wall_shapes':['straight','corner','gate'],'wall_materials':MATERIALS}
 
 
 def wall_segments(wall):

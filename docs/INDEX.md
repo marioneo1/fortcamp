@@ -27,7 +27,7 @@ Current building collision/art: [Wall boundaries](design/WALL_BOUNDARIES.md) exp
 - [Capture and starting roles](design/CAPTURE_AND_STARTING_ROLES.md): live capture weapons, starter kits, balance rules, and the separate proposed level system.
 - [Mercenaries and early pacing](design/MERCENARIES.md): persistent hiring, betrayal, rare encounters, starter kits, and quieter regional events.
 - [Camp and roster UI](design/CAMP_INTERFACE.md): base sections, inventory, prisoner navigation and item selling.
-- [Player base construction](design/BASE_CONSTRUCTION.md): drag/drop terrain painting, arrow-key prop offsets, named directional wall/post/junction assets, preview optimization, undo/redo and player-owned saved layouts; reusable geometry for a later dev map editor.
+- [Player base construction](design/BASE_CONSTRUCTION.md): drag/drop terrain painting, arrow-key prop offsets, named directional wall/post/corner/gate assets (T/+ retired), preview optimization, undo/redo and player-owned saved layouts; reusable geometry for a later dev map editor.
 - [Relationships](design/CHARACTER_RELATIONSHIPS.md): loyalty, personality, records, conversations and staged roadmap.
 - [Prison recruitment proposal](design/PRISON_RECRUITMENT_PROPOSAL.md): original warden, conversation and boss pacing proposals; see the implemented reference below.
 - [Prison recruitment](design/PRISON_RECRUITMENT.md): implemented first pass; the proposal above retains deferred ideas.

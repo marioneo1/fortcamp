@@ -1,5 +1,5 @@
 import './construction-ui.css';
-import {anchors,wallPieces,validPlacement,rotatePlacement,nudgePlacement,newPlan} from './construction-geometry.js';
+import {anchors,wallPieces,availableWallPieces,validPlacement,rotatePlacement,nudgePlacement,newPlan} from './construction-geometry.js';
 import {constructionSVG} from './construction-render.js';
 import {confirmAction} from './confirmation-ui.js';
 
@@ -56,7 +56,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError}){
  }
  function palette(){
   dialog.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===mode));
-  const entries=mode==='walls'?Object.entries(wallPieces):Object.entries(cat[mode]||{});
+  const entries=mode==='walls'?Object.entries(availableWallPieces):Object.entries(cat[mode]||{});
   find('[data-palette]').innerHTML=entries.filter(([,item])=>item.name.toLowerCase().includes(query)).map(([id,item])=>`<button draggable="false" data-asset="${esc(id)}" class="${(mode==='walls'?brush.piece:brush[mode])===id?'active':''}">${item.file?`<img draggable="false" src="/assets/combat-terrain/${esc(item.file)}" alt="" loading="lazy">`:`<svg class="wall-palette-preview" viewBox="-.15 -.15 1.3 1.3" aria-hidden="true">${constructionSVG({ground:{},props:[],walls:[{id:'palette',x:0,y:0,rotation:0,piece:id,shape:item.shape,anchor:'center',material:brush.material,posts:'none'}]},{w:1,h:1},cat,{grid:false,background:false})}</svg>`}<small>${esc(item.name)}</small></button>`).join('')||'<p>Select a placed object to adjust it, or choose a construction layer.</p>';
   find('[data-help]').textContent={ground:'Drag to paint; release inside the map to apply the stroke. Drop outside to cancel.',props:'Drag an asset into the map, or drag on the map with your brush. Arrows adjust its position; Shift gives finer steps. Drop outside to cancel.',walls:'Choose the exact wall and post variant. R cycles its native direction. Arrows position it at a cell edge; Home centers it. Corners have two full-cell arms. Drag and drop to place.',select:'Drag a placed object to move it. R rotates, arrows adjust its position. Dropping outside cancels the move. Click empty ground to deselect.',erase:'Drag over objects or floors to erase. Release inside to confirm; outside cancels. Undo restores the edit.'}[mode];
   find('[data-palette]').querySelectorAll('[data-asset]').forEach(b=>{
@@ -73,9 +73,10 @@ export async function openConstruction({api,esc,definitions,onSave,onError}){
   const check=(key,label)=>`<label class="construction-check"><input data-field="${key}" type="checkbox" ${item[key]?'checked':''}>${label}</label>`;
   let html=`<p data-piece-label>${esc(layer==='props'?cat.props[item.asset||brush.props]?.name||'Prop':layer==='walls'?wallPieces[item.piece]?.name||'Legacy wall':'Terrain')} | <span data-angle>${layer==='walls'&&item.piece?'native facing':selection?item.rotation:rotation+' deg'}</span></p><button data-rotate>Rotate [R]</button><small>Arrows position | Shift+Arrows fine | Home center</small>`;
   if(layer==='props')html+=select('w','Footprint width',[1,2,3,4].map(v=>[String(v),`${v} cell${v===1?'':'s'}`]),String(item.w))+select('h','Footprint height',[1,2,3,4].map(v=>[String(v),`${v} cell${v===1?'':'s'}`]),String(item.h))+range('offset_x','Position left / right',item.offset_x)+range('offset_y','Position up / down',item.offset_y)+check('blocking','Reserve this footprint')+'<small>Offsets move the artwork, not the reserved cells.</small>';
-  if(layer==='walls')html+=select('piece','Wall asset',Object.entries(wallPieces).map(([id,p])=>[id,p.name]),item.piece)+select('anchor','Position',Object.keys(anchors).map(v=>[v,v==='center'?'Center':{north:'Top edge',east:'Right edge',south:'Bottom edge',west:'Left edge'}[v]]),item.anchor)+select('material','Material',cat.wall_materials.map(v=>[v,v]),item.material)+check('broken','Broken variation')+check('open','Gate open (gates only)');
+  if(layer==='walls')html+=select('piece','Wall asset',Object.entries(availableWallPieces).map(([id,p])=>[id,p.name]),item.piece)+select('anchor','Position',Object.keys(anchors).map(v=>[v,v==='center'?'Center':{north:'Top edge',east:'Right edge',south:'Bottom edge',west:'Left edge'}[v]]),item.anchor)+select('material','Material',cat.wall_materials.map(v=>[v,v]),item.material)+check('broken','Broken variation')+check('open','Gate open (gates only)');
   if(selection)html+=`<label>Cell X<input data-field="x" type="number" min="0" max="${size.w-1}" value="${item.x}"></label><label>Cell Y<input data-field="y" type="number" min="0" max="${size.h-1}" value="${item.y}"></label><button data-delete>Remove object</button>`;
   find('[data-inspector]').innerHTML=html;find('[data-rotate]').onclick=rotate;
+  if(layer==='walls'&&['tee','cross'].includes(item.shape)){find('[data-rotate]').disabled=true;const field=find('[data-field=piece]');field.insertAdjacentHTML('afterbegin',`<option value="${esc(item.piece||'')}" selected disabled>Retired junction (saved placement)</option>`);}
   find('[data-inspector]').querySelectorAll('[data-field]').forEach(input=>{let rangeEditing=false;input.addEventListener('change',()=>{if(input.type==='range')rangeEditing=false});input.addEventListener(input.type==='range'?'input':'change',()=>{
    const key=input.dataset.field,value=input.type==='checkbox'?input.checked:['w','h','x','y','offset_x','offset_y'].includes(key)?Number(input.value):input.value;
    let next={...item,[key]:value};if(key==='piece')next={...next,rotation:0,shape:wallPieces[value].shape,posts:'none'};

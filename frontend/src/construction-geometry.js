@@ -1,6 +1,9 @@
 // Shared camp/map-authoring geometry. One unit is one square cell.
 import pieces from './construction-wall-pieces.json' with {type:'json'};
-export const wallPieces=pieces;
+import legacyPieces from './construction-wall-pieces-legacy.json' with {type:'json'};
+export const availableWallPieces=pieces;
+// Retired junctions remain readable in saved layouts, but cannot be selected as brushes.
+export const wallPieces={...legacyPieces,...pieces};
 export const anchors={center:[.5,.5],north:[.5,0],east:[1,.5],south:[.5,1],west:[0,.5]};
 export const wallArms={straight:[[-.5,0],[.5,0]],half:[[.5,0]],corner:[[.5,0],[0,.5]],tee:[[-.5,0],[.5,0],[0,.5]],cross:[[-.5,0],[.5,0],[0,-.5],[0,.5]],gate:[[-.5,0],[.5,0]]};
 export function wallSegments(wall){
@@ -39,6 +42,7 @@ export function validPlacement(item,layer,size){
  return wallSegments(item).every(segment=>segment.every(([x,y])=>x>=0&&y>=0&&x<=size.w&&y<=size.h));
 }
 export function rotatePlacement(item,layer){
+ if(layer==='walls'&&['tee','cross'].includes(item.shape))return {...item};
  if(layer==='walls'&&item.piece){const piece=wallPieces[item.piece].next;return {...item,piece,shape:wallPieces[piece].shape,rotation:0};}
  const next={...item,rotation:(item.rotation+90)%360};
  if(layer==='props')[next.w,next.h]=[item.h,item.w];

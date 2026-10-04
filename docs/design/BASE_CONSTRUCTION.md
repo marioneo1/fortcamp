@@ -53,7 +53,7 @@ Walls have named directional assets rather than a separate post setting:
 - Full horizontal plain, left-post, right-post and both-post walls.
 - Full vertical plain, top-post, bottom-post and both-post walls.
 - Four corners, each with **two full-cell-length arms** along cell edges.
-- Four full-span T junctions, four facing identities for crosses, and gates.
+- Gates. T and + junctions have been removed from the active kit.
 - Opposite facing variants of straight walls and gates, so future artwork can
   have its own front/shadow instead of being mirrored.
 - Timber, rough stone, polished stone and iron placeholder materials.
@@ -70,7 +70,9 @@ piece to the selected anchor; they do not shorten its arms or change its facing.
 Old saved walls without a `piece` identifier remain readable and editable with
 the original arm/rotation/post rules. They are not silently resized or deleted.
 Choose a new wall asset in the inspector to replace a legacy piece. Half-arm
-corners and half walls are no longer offered in the library. Boundary validation
+corners, half walls, T junctions and + junctions are no longer offered in the
+library. Previously saved junctions still render and save, but their rotation
+control is disabled; their definitions live in the legacy piece file. Boundary validation
 applies to every new and legacy segment. Existing combat wall art is unchanged.
 
 Gate openness and broken variants are stored and rendered, but they are not yet
@@ -134,3 +136,16 @@ the committed scene. Selected-object nudging also retained the original ground
 node. Desktop capture was visually inspected. This is a behavior/DOM check, not
 a guarantee of frame rate on every device. Production and real player saves were
 not used for these tests. No bitmap art was generated in this refinement.
+
+## Simplified art plan (agreed; not generated yet)
+
+The future kit excludes half walls, T junctions and + junctions: 24 selectable
+variants from 9 original images per material. Originals are horizontal plain,
+vertical plain, horizontal one-post, vertical one-post, horizontal both-post,
+vertical both-post, corner, horizontal gate and vertical gate. Permitted mirrors
+supply other facings, post positions and corners; horizontal artwork is never
+rotated into vertical artwork. Full-length corner arms remain. Mirrored art and
+family-limited R behavior are a planned follow-up; current placeholder straight
+pieces still cycle between directional assets. Rectangle fill/repeated-footprint
+placement and separate Remove / Remove floors tools also remain pending from the
+interaction discussion. No art was generated in this simplification.
