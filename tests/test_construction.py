@@ -25,6 +25,17 @@ class ConstructionRulesTests(unittest.TestCase):
         result=dict(id='wall_1',x=2,y=2,shape='tee',anchor='north',material='timber',rotation=0,posts='auto')
         result.update(kwargs);return result
 
+    def test_native_pieces_have_full_corners_and_explicit_post_variants(self):
+        plan=empty_plan();plan['walls']=[self.wall(piece='corner_north_west',anchor='center',shape='corner',posts='none')]
+        saved=validate_plan(plan,self.size)['walls'][0]
+        self.assertEqual(saved['piece'],'corner_north_west')
+        for a,b in wall_segments(saved):
+            self.assertEqual(abs(a[0]-b[0])+abs(a[1]-b[1]),1)
+        for bad in [{'piece':'invented_asset'},{'rotation':90},{'x':0,'anchor':'west'}]:
+            with self.subTest(bad=bad):
+                item=deepcopy(plan['walls'][0]);item.update(bad)
+                with self.assertRaises(ValueError):validate_plan({**plan,'walls':[item]},self.size)
+
     def test_layers_keep_offsets_footprints_rotation_and_gate_state(self):
         plan=empty_plan();plan['ground']['1,1']={'asset':'grass','rotation':90}
         plan['props']=[self.prop()];plan['walls']=[self.wall(shape='gate',open=True)]
@@ -83,6 +94,8 @@ class ConstructionPersistenceTests(unittest.IsolatedAsyncioTestCase):
 
     async def test_owner_save_survives_reload_without_changing_other_data(self):
         plan=empty_plan()
+        plan['walls']=[dict(id='native',piece='horizontal_right_post_south',x=2,y=2,shape='straight',anchor='north',material='iron',rotation=0,posts='none'),
+                       dict(id='legacy',x=4,y=2,shape='corner',anchor='center',material='timber',rotation=0,posts='auto')]
         saved=await construction_api.save_construction(construction_api.SaveConstruction(revision=0,plan=plan),self.identity)
         self.assertEqual(saved['plan']['revision'],1)
         read=await construction_api.get_construction(self.identity)

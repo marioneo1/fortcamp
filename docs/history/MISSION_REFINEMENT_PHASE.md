@@ -821,3 +821,22 @@ Fixed rectangular prisoner list/detail and roster Conversation header frames, pl
 ## October 4: player base construction foundation (dev)
 
 Implemented Base ? Settlement ? Floors, props & walls: searchable installed terrain/prop catalogue, drag floor painting, adjustable/multi-cell/rotatable props, center/edge-snapped wall arms with corners/T/cross/half/gates, automatic exposed posts, broken/open placeholders, selection/moving, undo/redo, zoom, saved layout display and JSON layout export. Authenticated player/server ownership, server validation and revision/CAS conflicts protect persistence. Existing facilities and economy stay functional; decoration is currently free and grants no loot, capacity or defense. Generic geometry/render modules are reusable for a later dev map editor; import, combat adapters, costs/unlocks, functional camp gates/raids and painted wall art remain deferred. Canonical: docs/design/BASE_CONSTRUCTION.md. Validation: 25 backend construction/economy/onboarding checks, all 148 frontend checks, actual browser placement/joins/undo/save/reopen and 1440/800/430px bounds, visually inspected desktop capture, production build. Production and real player saves unchanged by validation.
+
+
+## October 4: construction interaction and wall asset refinement (dev)
+
+Implemented drag previews with drop-to-commit and outside/Escape/focus-loss
+cancellation, reliable R outside text entry, arrow-key prop offsets (Shift fine)
+and directional wall anchors, Home centering, full-cell corner arms, and named
+horizontal/vertical/post/corner/T/cross/gate assets. Opposite facings have their
+own IDs for later painted artwork. Post choice is part of the asset; the separate
+post dropdown and half-arm pieces are removed from the library. Legacy saved
+walls retain their geometry and can be replaced explicitly. Construction preview
+updates use a separate SVG layer, animation-frame coalescing and unchanged-preview
+skips; selected-object nudges replace only that SVG, avoiding whole-map rebuilds.
+Art generation and functional construction economy/collision remain deferred.
+Canonical: docs/design/BASE_CONSTRUCTION.md. Validation: 26 backend regressions,
+151 frontend checks, build, actual browser drag/cancel/hotkey/move/undo/save flows,
+1440/800/430px bounds, stable scene during 80 pointer updates, stable ground during
+selected prop adjustment, and visually reviewed capture. Dev only; no real save
+or production changes.

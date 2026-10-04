@@ -1,9 +1,10 @@
-import {wallSegments,wallConnections,pointKey} from './construction-geometry.js';
+import {wallSegments,wallConnections,wallPosts,pointKey} from './construction-geometry.js';
 export const wallColors={timber:['#b98953','#5d3e28'],fieldstone:['#9d9d89','#434c42'],limestone:['#e4d4a8','#8f805e'],iron:['#aab4bf','#435464']};
 const url=file=>`/assets/combat-terrain/${file}`;
-export function constructionSVG(plan,size,catalogue,{selected='',ghost=null,facilities=[],definitions={},grid=true}={}){
+export function constructionSVG(plan,size,catalogue,{selected='',ghost=null,facilities=[],definitions={},grid=true,background=true}={}){
  let html='';
  for(let y=0;y<size.h;y++)for(let x=0;x<size.w;x++){
+  if(!background&&!plan.ground[`${x},${y}`])continue;
   const tile=plan.ground[`${x},${y}`],file=tile&&catalogue.ground[tile.asset]?.file||catalogue.ground.grass_short?.file;
   html+=`<rect x="${x}" y="${y}" width="1" height="1" fill="#45603d"/>`;
   if(file)html+=`<image href="${url(file)}" x="${x}" y="${y}" width="1" height="1" transform="rotate(${tile?.rotation||0} ${x+.5} ${y+.5})"/>`;
@@ -18,7 +19,7 @@ export function constructionSVG(plan,size,catalogue,{selected='',ghost=null,faci
   return `<g data-construction-id="${p.id}" data-construction-layer="props" class="construction-prop ${selected===p.id?'selected':''}" opacity="${preview?.6:1}"><image href="${url(file)}" x="${cx-w*.46}" y="${cy-h*.46}" width="${w*.92}" height="${h*.92}" preserveAspectRatio="xMidYMid meet" transform="rotate(${p.rotation} ${cx} ${cy})"/>${selected===p.id||preview?`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" fill="none" stroke="${preview?'#fff1ae':'#91efd3'}" stroke-width=".035" stroke-dasharray=".1 .05"/>`:''}</g>`;
  };
  html+=plan.props.slice().sort((a,b)=>(a.y+a.h)-(b.y+b.h)).map(p=>drawProp(p)).join('');
- const nodes=wallConnections(plan.walls),caps=new Map();
+ const nodes=plan.walls.some(w=>!w.piece&&w.posts==='auto')?wallConnections(plan.walls):new Map(),caps=new Map();
  const drawWall=(wall,preview=false)=>{
   const [color,edge]=wallColors[wall.material],segments=wallSegments(wall);
   const start=segments[0][0];
@@ -27,12 +28,13 @@ export function constructionSVG(plan,size,catalogue,{selected='',ghost=null,faci
    const begin=gap?[a[0]+(b[0]-a[0])*.45,a[1]+(b[1]-a[1])*.45]:a;
    return `M${begin[0]} ${begin[1]}L${b[0]} ${b[1]}`;
   }).join(' ');
-  if(!preview)for(const [a,b] of segments)for(const p of [a,b]){
+  if(!wall.piece&&!preview)for(const [a,b] of segments)for(const p of [a,b]){
    const key=pointKey(p),degree=nodes.get(key)?.neighbors.size||0;
    if(wall.posts==='both'&&key!==pointKey(start)||wall.posts==='auto'&&degree===1)caps.set(key,{p,color,edge});
   }
   const gate=wall.shape==='gate'?`<circle cx="${start[0]}" cy="${start[1]}" r=".075" fill="${wall.open?'#99d68b':'#e0a14c'}" stroke="#342e21" stroke-width=".02"/>`:'';
-  return `<g data-construction-id="${wall.id}" data-construction-layer="walls" class="construction-wall ${selected===wall.id?'selected':''}" opacity="${preview?.6:1}"><path d="${path}" fill="none" stroke="${selected===wall.id?'#91efd3':edge}" stroke-width=".19" stroke-linecap="square"/><path d="${path}" fill="none" stroke="${color}" stroke-width=".12" stroke-linecap="square"/>${gate}</g>`;
+  const posts=wallPosts(wall).map(p=>`<rect x="${p[0]-.105}" y="${p[1]-.105}" width=".21" height=".21" rx=".025" fill="${color}" stroke="${edge}" stroke-width=".03"/>`).join('');
+  return `<g data-construction-id="${wall.id}" data-construction-layer="walls" class="construction-wall ${selected===wall.id?'selected':''}" opacity="${preview?.6:1}"><path d="${path}" fill="none" stroke="${selected===wall.id?'#91efd3':edge}" stroke-width=".19" stroke-linecap="butt"/><path d="${path}" fill="none" stroke="${color}" stroke-width=".12" stroke-linecap="butt"/>${posts}${gate}</g>`;
  };
  html+=plan.walls.map(w=>drawWall(w)).join('');
  for(const {p,color,edge} of caps.values())html+=`<rect x="${p[0]-.105}" y="${p[1]-.105}" width=".21" height=".21" rx=".025" fill="${color}" stroke="${edge}" stroke-width=".03" pointer-events="none"/>`;

@@ -7,13 +7,22 @@ not the dev Battle Lab or a replacement for existing functional facilities.
 ## Workflow
 
 Choose Floors & terrain, Props, Walls, Select / move, or Erase. Search filters
-the current asset library. Floors paint with click/drag, interpolating skipped
-cells along a fast stroke. R rotates the brush or selected object. Select / move
-allows dragging an object to a new cell, or editing its cell coordinates.
-Clicking empty ground deselects it. Undo/redo buttons and Ctrl+Z/Ctrl+Shift+Z
-restore edits. Slider gestures form one undo entry. Zoom runs from 50% to 200%;
-the map scrolls within its viewport. The layout also displays on the normal
-settlement plan after saving and reloading.
+that layer's asset library. Drag an asset from the library into the map, or drag
+on the map using the current brush. **Release inside the map to place it.**
+Releasing outside the visible map viewport cancels the entire operation,
+including a painted floor stroke or moving an existing object. Escape cancels
+an active drag; otherwise it requests closing the editor. Losing window focus
+also cancels the preview. Floor strokes interpolate skipped cells.
+
+R rotates the brush, selected object, or object being dragged. It works with a
+button, slider or closed dropdown focused; typing in text/number fields remains
+normal. Arrow keys shift prop art 5% of a cell, Shift+Arrows shift it 1%, and Home
+centers it. For walls, arrows choose the corresponding cell edge and Home chooses
+center. Invalid boundary adjustments are rejected. Select / move allows dragging
+an existing object, or editing its cell coordinates. Clicking empty ground
+clears selection. Undo/redo buttons and Ctrl+Z/Ctrl+Shift+Z restore edits; a drag
+or slider gesture is one undo entry. Zoom runs from 50% to 200% with scrolling.
+The layout also displays on the normal settlement plan after saving/reloading.
 
 Changes stay in the local draft until **Save camp**. Closing an unsaved draft
 uses the standard in-game confirmation. Export layout downloads only the camp
@@ -39,24 +48,30 @@ Reserved props do not currently define combat collision. Artwork shifted beyond
 the map edge may be clipped in the normal camp view; keep edge decorations inside
 the boundary when adjusting offsets.
 
-Walls anchor at center, top, right, bottom or left of a cell. Snap chooses the
-closest anchor to the pointer. Quarter-turn rotation changes the piece's arms
-around that anchor. The wall tool includes:
+Walls have named directional assets rather than a separate post setting:
 
-- Full straight wall, half wall, corner, T, cross and gate.
-- Timber, rough stone, polished stone and iron placeholder appearances.
-- Automatic exposed-end posts, no posts, or manual piece-end posts.
-- Open/closed gates and simple broken-center variations.
+- Full horizontal plain, left-post, right-post and both-post walls.
+- Full vertical plain, top-post, bottom-post and both-post walls.
+- Four corners, each with **two full-cell-length arms** along cell edges.
+- Four full-span T junctions, four facing identities for crosses, and gates.
+- Opposite facing variants of straight walls and gates, so future artwork can
+  have its own front/shadow instead of being mirrored.
+- Timber, rough stone, polished stone and iron placeholder materials.
 
-All connecting arms occupy exact half-cell segments. A top edge and the cell
-above's bottom edge map to identical coordinates. Neighbor connections use
-endpoint equality and deduplicated segments, not loosely matching sprite boxes.
-Crossing full walls form a cross at their shared center. An additional branch
-forms a T. Automatic posts appear at degree-one graph nodes only; they disappear
-at joined ends. The line geometry renders continuous junctions with matching
-thickness. Manual posts may deliberately remain at piece ends. Pieces are snapped
-to a half-cell lattice, not arbitrarily shifted by pixels. Rotate a boundary piece
-if its arms extend outside camp; server validation rejects out-of-bounds arms.
+`construction-wall-pieces.json` is the shared client/server definition of geometry,
+explicit posts and clockwise successor assets. R selects the next native asset;
+new directional walls save rotation 0. Matching ports snap to exact half-cell
+coordinates. Full segments are split into graph edges at midpoints, so T branches
+and crosses connect correctly. Post assets retain their chosen end posts even
+when another wall connects; plain assets have no automatic posts. Asset previews
+show their actual placeholder geometry and posts. Arrows translate the entire
+piece to the selected anchor; they do not shorten its arms or change its facing.
+
+Old saved walls without a `piece` identifier remain readable and editable with
+the original arm/rotation/post rules. They are not silently resized or deleted.
+Choose a new wall asset in the inspector to replace a legacy piece. Half-arm
+corners and half walls are no longer offered in the library. Boundary validation
+applies to every new and legacy segment. Existing combat wall art is unchanged.
 
 Gate openness and broken variants are stored and rendered, but they are not yet
 doors operated by walking camp characters. The current camp has no walking actor
@@ -72,15 +87,16 @@ state.construction is a versioned layout with a revision, ground map and object
 lists. No SQL schema migration. GET/PUT /api/construction use authenticated player
 and server identity; no target player/server can be supplied by the client.
 PUT validates catalogue IDs, finite numbers, footprints, offsets, quarter turns,
-wall shapes/anchors/materials, unique safe object IDs, and camp bounds. Saves use
+wall asset IDs/shapes/anchors/materials, unique safe object IDs, and camp bounds. Saves use
 the player lock and a compare-and-swap against the original JSON state; revision
 mismatches reject stale windows instead of replacing another edit or unrelated
 player changes. Only construction layers are changed. Existing buildings, roster,
 inventory, resources and production are preserved.
 
 Client construction-geometry.js and construction-render.js are independent of
-the dialog and usable by a later dev map editor. Backend construction.py mirrors
-the same coordinate/arm rules and owns validation. A later combat adapter must
+the dialog and usable by a later dev map editor. Backend construction.py reads
+the shared directional piece definitions and owns validation; legacy arm rules
+remain compatible. A later combat adapter must
 translate wall segments and prop reservations into real movement/sight rules;
 decoration data alone does not silently change combat maps. Existing authored
 combat map generation and wall-boundary rules remain unchanged.
@@ -94,13 +110,27 @@ rather than importing Godot or requiring its tile sets.
 and rotation; Fortcamp's layout export is a foundation, not yet blueprint import.
 No new runtime library or generated bitmap assets were required.
 
-## Validation
+## Responsiveness and validation
 
-Eight backend construction tests cover layer data, edge-coordinate equivalence,
-rotations, unknown assets/injected IDs/nonfinite inputs, bounds, reserved facility
-footprints, real SQLite save/reload, revision conflicts, and player/server isolation.
-With economy and onboarding regressions, 25 checks pass. Four geometry/render tests
-cover exact joins, duplicate arms, snapping, proportional rotations and automatic
-post removal. All 148 frontend tests pass. Isolated browser QA exercises actual
-mouse placement, offsets, rotation, T joins, undo/redo, save/reopen and 1440/800/430px
-dialog bounds. A desktop capture was visually inspected. Production build passes.
+The committed SVG scene stays intact during pointer movement. A separate preview
+layer updates at most once per animation frame and skips unchanged previews;
+pointer events change local preview data without API calls or whole-plan cloning.
+Undo snapshots and committing a draft occur on drop. Nudging/rotating a selected
+prop or native wall replaces only that object's SVG, retaining the ground and
+facilities. Legacy automatic-post walls need a scene redraw for neighbor caps.
+Full redraws still occur when committing a placement, switching tools, restoring
+history or saving. There is no permanent animation loop while idle.
+
+Nine backend construction tests plus economy/onboarding regressions (26 checks)
+pass, including native/legacy save round trips, bounds, unknown asset IDs and
+player/server isolation. Seven geometry/render tests cover full-arm corners,
+post orientation through a full rotation cycle, junction ports and nudges. All
+151 frontend tests and the production build pass. Isolated browser QA covers
+native palette drag, preview-only painting, outside-drop cancellation for paint,
+props, movement and erase, dropdown-focus R, arrow positioning, rotation during
+movement, undo/redo and save/reopen. At 1440/800/430px the dialog stays within the
+viewport. During 80 pointer updates, a MutationObserver verified zero changes to
+the committed scene. Selected-object nudging also retained the original ground
+node. Desktop capture was visually inspected. This is a behavior/DOM check, not
+a guarantee of frame rate on every device. Production and real player saves were
+not used for these tests. No bitmap art was generated in this refinement.

@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {wallSegments,wallConnections,snapAnchor,rotatePlacement,validPlacement} from './construction-geometry.js';
+import {wallSegments,wallConnections,snapAnchor,rotatePlacement,validPlacement,wallPieces,wallPosts,nudgePlacement} from './construction-geometry.js';
 import {constructionSVG} from './construction-render.js';
 const wall=(extra={})=>({id:'wall',x:2,y:2,shape:'straight',anchor:'center',material:'timber',rotation:0,posts:'auto',...extra});
 test('shared cell edges have identical ports; T and cross use exact half-cell segments',()=>{
@@ -30,4 +30,31 @@ test('renderer uses aspect-preserving props and removes end posts at connected p
  const svg=constructionSVG(plan,size,cat);
  assert.match(svg,/preserveAspectRatio="xMidYMid meet"/);
  assert.equal((svg.match(/rx=".025"/g)||[]).length,2);
+});
+
+
+test('directional corners have two full-cell arms and stay within their cell',()=>{
+ for(const piece of Object.keys(wallPieces).filter(id=>id.startsWith('corner_'))){
+  const w=wall({piece,shape:'corner'}),segments=wallSegments(w);
+  assert.equal(segments.length,2);
+  for(const [a,b] of segments)assert.equal(Math.hypot(a[0]-b[0],a[1]-b[1]),1);
+  assert.ok(validPlacement(w,'walls',{w:3,h:3}));
+ }
+});
+test('rotation preserves post side and native asset identity for future art',()=>{
+ let w=wall({piece:'horizontal_left_post',posts:'none'});
+ for(const piece of ['vertical_top_post','horizontal_right_post_south','vertical_bottom_post_west','horizontal_left_post']){
+  w=rotatePlacement(w,'walls');assert.equal(w.piece,piece);assert.equal(w.rotation,0);
+ }
+ assert.deepEqual(wallPosts(w),[[2,2.5]]);
+ assert.deepEqual(wallPosts({...w,piece:'horizontal_right_post'}),[[3,2.5]]);
+ assert.deepEqual(wallPosts({...w,piece:'horizontal_plain'}),[]);
+});
+test('full-cell T branches connect at their midpoint; nudges respect wall sides and prop bounds',()=>{
+ const w=wall({piece:'tee_north'});assert.equal(wallConnections([w]).get('2.5,2').neighbors.size,3);
+ assert.equal(nudgePlacement(w,'walls','ArrowLeft').anchor,'west');
+ assert.equal(nudgePlacement(w,'walls','Home').anchor,'center');
+ const p={offset_x:.44,offset_y:0};assert.equal(nudgePlacement(p,'props','ArrowRight').offset_x,.45);
+ assert.equal(nudgePlacement(p,'props','ArrowDown',true).offset_y,.01);
+ assert.deepEqual(nudgePlacement(p,'props','Home'),{offset_x:0,offset_y:0});
 });

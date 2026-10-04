@@ -1,0 +1,826 @@
+{
+  "horizontal_plain": {
+    "name": "Horizontal - plain",
+    "segments": [
+      [
+        [
+          0,
+          0.5
+        ],
+        [
+          1,
+          0.5
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "straight",
+    "glyph": "\u2501",
+    "next": "vertical_plain",
+    "facing": "north"
+  },
+  "vertical_plain": {
+    "name": "Vertical - plain",
+    "segments": [
+      [
+        [
+          0.5,
+          0
+        ],
+        [
+          0.5,
+          1
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "straight",
+    "glyph": "\u2503",
+    "next": "horizontal_plain_south",
+    "facing": "east"
+  },
+  "horizontal_left_post": {
+    "name": "Horizontal - left post",
+    "segments": [
+      [
+        [
+          0,
+          0.5
+        ],
+        [
+          1,
+          0.5
+        ]
+      ]
+    ],
+    "posts": [
+      [
+        0,
+        0.5
+      ]
+    ],
+    "shape": "straight",
+    "glyph": "\u257a",
+    "next": "vertical_top_post",
+    "facing": "north"
+  },
+  "vertical_top_post": {
+    "name": "Vertical - top post",
+    "segments": [
+      [
+        [
+          0.5,
+          0
+        ],
+        [
+          0.5,
+          1
+        ]
+      ]
+    ],
+    "posts": [
+      [
+        0.5,
+        0
+      ]
+    ],
+    "shape": "straight",
+    "glyph": "\u257b",
+    "next": "horizontal_right_post_south",
+    "facing": "east"
+  },
+  "horizontal_right_post": {
+    "name": "Horizontal - right post",
+    "segments": [
+      [
+        [
+          0,
+          0.5
+        ],
+        [
+          1,
+          0.5
+        ]
+      ]
+    ],
+    "posts": [
+      [
+        1,
+        0.5
+      ]
+    ],
+    "shape": "straight",
+    "glyph": "\u2578",
+    "next": "vertical_bottom_post",
+    "facing": "north"
+  },
+  "vertical_bottom_post": {
+    "name": "Vertical - bottom post",
+    "segments": [
+      [
+        [
+          0.5,
+          0
+        ],
+        [
+          0.5,
+          1
+        ]
+      ]
+    ],
+    "posts": [
+      [
+        0.5,
+        1
+      ]
+    ],
+    "shape": "straight",
+    "glyph": "\u2579",
+    "next": "horizontal_left_post_south",
+    "facing": "east"
+  },
+  "horizontal_both_posts": {
+    "name": "Horizontal - both posts",
+    "segments": [
+      [
+        [
+          0,
+          0.5
+        ],
+        [
+          1,
+          0.5
+        ]
+      ]
+    ],
+    "posts": [
+      [
+        0,
+        0.5
+      ],
+      [
+        1,
+        0.5
+      ]
+    ],
+    "shape": "straight",
+    "glyph": "\u2501",
+    "next": "vertical_both_posts",
+    "facing": "north"
+  },
+  "vertical_both_posts": {
+    "name": "Vertical - both posts",
+    "segments": [
+      [
+        [
+          0.5,
+          0
+        ],
+        [
+          0.5,
+          1
+        ]
+      ]
+    ],
+    "posts": [
+      [
+        0.5,
+        0
+      ],
+      [
+        0.5,
+        1
+      ]
+    ],
+    "shape": "straight",
+    "glyph": "\u2503",
+    "next": "horizontal_both_posts_south",
+    "facing": "east"
+  },
+  "corner_north_west": {
+    "name": "Corner - top left",
+    "segments": [
+      [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "corner",
+    "glyph": "\u250f",
+    "next": "corner_north_east"
+  },
+  "corner_north_east": {
+    "name": "Corner - top right",
+    "segments": [
+      [
+        [
+          1,
+          0
+        ],
+        [
+          0,
+          0
+        ]
+      ],
+      [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "corner",
+    "glyph": "\u2513",
+    "next": "corner_south_east"
+  },
+  "corner_south_east": {
+    "name": "Corner - bottom right",
+    "segments": [
+      [
+        [
+          1,
+          1
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      [
+        [
+          1,
+          1
+        ],
+        [
+          1,
+          0
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "corner",
+    "glyph": "\u251b",
+    "next": "corner_south_west"
+  },
+  "corner_south_west": {
+    "name": "Corner - bottom left",
+    "segments": [
+      [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      [
+        [
+          0,
+          1
+        ],
+        [
+          0,
+          0
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "corner",
+    "glyph": "\u2517",
+    "next": "corner_north_west"
+  },
+  "tee_north": {
+    "name": "T junction - top",
+    "segments": [
+      [
+        [
+          0,
+          0
+        ],
+        [
+          1,
+          0
+        ]
+      ],
+      [
+        [
+          0.5,
+          0
+        ],
+        [
+          0.5,
+          1
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "tee",
+    "glyph": "\u2533",
+    "next": "tee_east"
+  },
+  "tee_east": {
+    "name": "T junction - right",
+    "segments": [
+      [
+        [
+          1,
+          0
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      [
+        [
+          1,
+          0.5
+        ],
+        [
+          0,
+          0.5
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "tee",
+    "glyph": "\u252b",
+    "next": "tee_south"
+  },
+  "tee_south": {
+    "name": "T junction - bottom",
+    "segments": [
+      [
+        [
+          0,
+          1
+        ],
+        [
+          1,
+          1
+        ]
+      ],
+      [
+        [
+          0.5,
+          1
+        ],
+        [
+          0.5,
+          0
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "tee",
+    "glyph": "\u253b",
+    "next": "tee_west"
+  },
+  "tee_west": {
+    "name": "T junction - left",
+    "segments": [
+      [
+        [
+          0,
+          0
+        ],
+        [
+          0,
+          1
+        ]
+      ],
+      [
+        [
+          0,
+          0.5
+        ],
+        [
+          1,
+          0.5
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "tee",
+    "glyph": "\u2523",
+    "next": "tee_north"
+  },
+  "cross_north": {
+    "name": "Cross - north facing",
+    "segments": [
+      [
+        [
+          0,
+          0.5
+        ],
+        [
+          1,
+          0.5
+        ]
+      ],
+      [
+        [
+          0.5,
+          0
+        ],
+        [
+          0.5,
+          1
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "cross",
+    "glyph": "\u254b",
+    "next": "cross_east"
+  },
+  "cross_east": {
+    "name": "Cross - east facing",
+    "segments": [
+      [
+        [
+          0,
+          0.5
+        ],
+        [
+          1,
+          0.5
+        ]
+      ],
+      [
+        [
+          0.5,
+          0
+        ],
+        [
+          0.5,
+          1
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "cross",
+    "glyph": "\u254b",
+    "next": "cross_south"
+  },
+  "cross_south": {
+    "name": "Cross - south facing",
+    "segments": [
+      [
+        [
+          0,
+          0.5
+        ],
+        [
+          1,
+          0.5
+        ]
+      ],
+      [
+        [
+          0.5,
+          0
+        ],
+        [
+          0.5,
+          1
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "cross",
+    "glyph": "\u254b",
+    "next": "cross_west"
+  },
+  "cross_west": {
+    "name": "Cross - west facing",
+    "segments": [
+      [
+        [
+          0,
+          0.5
+        ],
+        [
+          1,
+          0.5
+        ]
+      ],
+      [
+        [
+          0.5,
+          0
+        ],
+        [
+          0.5,
+          1
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "cross",
+    "glyph": "\u254b",
+    "next": "cross_north"
+  },
+  "gate_horizontal": {
+    "name": "Gate - horizontal",
+    "segments": [
+      [
+        [
+          0,
+          0.5
+        ],
+        [
+          1,
+          0.5
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "gate",
+    "glyph": "\u25a5",
+    "next": "gate_vertical",
+    "facing": "north"
+  },
+  "gate_vertical": {
+    "name": "Gate - vertical",
+    "segments": [
+      [
+        [
+          0.5,
+          0
+        ],
+        [
+          0.5,
+          1
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "gate",
+    "glyph": "\u25a4",
+    "next": "gate_horizontal_south",
+    "facing": "east"
+  },
+  "horizontal_plain_south": {
+    "name": "Horizontal - plain - south facing",
+    "segments": [
+      [
+        [
+          0,
+          0.5
+        ],
+        [
+          1,
+          0.5
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "straight",
+    "glyph": "\u2501",
+    "next": "vertical_plain_west",
+    "facing": "south"
+  },
+  "vertical_plain_west": {
+    "name": "Vertical - plain - west facing",
+    "segments": [
+      [
+        [
+          0.5,
+          0
+        ],
+        [
+          0.5,
+          1
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "straight",
+    "glyph": "\u2503",
+    "next": "horizontal_plain",
+    "facing": "west"
+  },
+  "horizontal_left_post_south": {
+    "name": "Horizontal - left post - south facing",
+    "segments": [
+      [
+        [
+          0,
+          0.5
+        ],
+        [
+          1,
+          0.5
+        ]
+      ]
+    ],
+    "posts": [
+      [
+        0,
+        0.5
+      ]
+    ],
+    "shape": "straight",
+    "glyph": "\u257a",
+    "next": "vertical_top_post_west",
+    "facing": "south"
+  },
+  "vertical_top_post_west": {
+    "name": "Vertical - top post - west facing",
+    "segments": [
+      [
+        [
+          0.5,
+          0
+        ],
+        [
+          0.5,
+          1
+        ]
+      ]
+    ],
+    "posts": [
+      [
+        0.5,
+        0
+      ]
+    ],
+    "shape": "straight",
+    "glyph": "\u257b",
+    "next": "horizontal_right_post",
+    "facing": "west"
+  },
+  "horizontal_right_post_south": {
+    "name": "Horizontal - right post - south facing",
+    "segments": [
+      [
+        [
+          0,
+          0.5
+        ],
+        [
+          1,
+          0.5
+        ]
+      ]
+    ],
+    "posts": [
+      [
+        1,
+        0.5
+      ]
+    ],
+    "shape": "straight",
+    "glyph": "\u2578",
+    "next": "vertical_bottom_post_west",
+    "facing": "south"
+  },
+  "vertical_bottom_post_west": {
+    "name": "Vertical - bottom post - west facing",
+    "segments": [
+      [
+        [
+          0.5,
+          0
+        ],
+        [
+          0.5,
+          1
+        ]
+      ]
+    ],
+    "posts": [
+      [
+        0.5,
+        1
+      ]
+    ],
+    "shape": "straight",
+    "glyph": "\u2579",
+    "next": "horizontal_left_post",
+    "facing": "west"
+  },
+  "horizontal_both_posts_south": {
+    "name": "Horizontal - both posts - south facing",
+    "segments": [
+      [
+        [
+          0,
+          0.5
+        ],
+        [
+          1,
+          0.5
+        ]
+      ]
+    ],
+    "posts": [
+      [
+        0,
+        0.5
+      ],
+      [
+        1,
+        0.5
+      ]
+    ],
+    "shape": "straight",
+    "glyph": "\u2501",
+    "next": "vertical_both_posts_west",
+    "facing": "south"
+  },
+  "vertical_both_posts_west": {
+    "name": "Vertical - both posts - west facing",
+    "segments": [
+      [
+        [
+          0.5,
+          0
+        ],
+        [
+          0.5,
+          1
+        ]
+      ]
+    ],
+    "posts": [
+      [
+        0.5,
+        0
+      ],
+      [
+        0.5,
+        1
+      ]
+    ],
+    "shape": "straight",
+    "glyph": "\u2503",
+    "next": "horizontal_both_posts",
+    "facing": "west"
+  },
+  "gate_horizontal_south": {
+    "name": "Gate - horizontal - south facing",
+    "segments": [
+      [
+        [
+          0,
+          0.5
+        ],
+        [
+          1,
+          0.5
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "gate",
+    "glyph": "\u25a5",
+    "next": "gate_vertical_west",
+    "facing": "south"
+  },
+  "gate_vertical_west": {
+    "name": "Gate - vertical - west facing",
+    "segments": [
+      [
+        [
+          0.5,
+          0
+        ],
+        [
+          0.5,
+          1
+        ]
+      ]
+    ],
+    "posts": [],
+    "shape": "gate",
+    "glyph": "\u25a4",
+    "next": "gate_horizontal",
+    "facing": "west"
+  }
+}

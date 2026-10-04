@@ -10,6 +10,7 @@ ANCHORS = {'center':(.5,.5),'north':(.5,0),'east':(1,.5),'south':(.5,1),'west':(
 ARMS = {'straight':[(-.5,0),(.5,0)],'half':[(.5,0)],'corner':[(.5,0),(0,.5)],
         'tee':[(-.5,0),(.5,0),(0,.5)],'cross':[(-.5,0),(.5,0),(0,-.5),(0,.5)],
         'gate':[(-.5,0),(.5,0)]}
+WALL_PIECES = json.loads((ROOT/'frontend/src/construction-wall-pieces.json').read_text())
 MATERIALS = ['timber','fieldstone','limestone','iron']
 
 
@@ -30,10 +31,14 @@ def catalogue():
                 'footprint':sizes.get(key,{}).get('footprint',[1,1])}
            for key,file in props.items() if (file.startswith('props/') or any(s in key for s in ['cage','wagon','tent','stocks']))
            and (asset_root/file).is_file()}
-    return {'ground':ground,'props':props,'wall_shapes':list(ARMS),'wall_materials':MATERIALS}
+    return {'ground':ground,'props':props,'wall_pieces':WALL_PIECES,'wall_shapes':list(ARMS),'wall_materials':MATERIALS}
 
 
 def wall_segments(wall):
+    if wall.get('piece') in WALL_PIECES:
+        ax,ay=ANCHORS[wall['anchor']]
+        return [tuple((wall['x']+px+ax-.5,wall['y']+py+ay-.5) for px,py in segment)
+                for segment in WALL_PIECES[wall['piece']]['segments']]
     ax,ay=ANCHORS[wall['anchor']]
     center=(wall['x']+ax,wall['y']+ay)
     segments=[]
@@ -92,11 +97,17 @@ def validate_plan(plan, size, buildings=()):
                         if x<b['x']+d['w'] and x+w>b['x'] and y<b['y']+d['h'] and y+h>b['y']:
                             raise ValueError('A blocking prop overlaps a facility')
             else:
+                if item.get('piece') is not None and item['piece'] not in WALL_PIECES:
+                    raise ValueError('Unknown directional wall asset')
+                if item.get('piece') and obj['rotation'] != 0:
+                    raise ValueError('Directional walls use their native facing, not image rotation')
                 if item.get('anchor') not in ANCHORS or item.get('shape') not in ARMS or item.get('material') not in MATERIALS:
                     raise ValueError('Unknown wall piece, position or material')
                 if item.get('posts','auto') not in ['auto','none','both']:raise ValueError('Unknown end-post setting')
                 obj.update(anchor=item['anchor'],shape=item['shape'],material=item['material'],posts=item.get('posts','auto'),
                            broken=bool(item.get('broken',False)),open=bool(item.get('open',False)))
+                if item.get('piece'):
+                    obj.update(piece=item['piece'],shape=WALL_PIECES[item['piece']]['shape'],posts='none')
                 for start,end in wall_segments(obj):
                     for px,py in [start,end]:
                         if not 0<=px<=size['w'] or not 0<=py<=size['h']:raise ValueError('Wall extends outside the camp; rotate it or move its anchor')
