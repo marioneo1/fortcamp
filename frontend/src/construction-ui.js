@@ -2,6 +2,7 @@ import './construction-ui.css';
 import {anchors,defaultWallAnchor,wallPieces,availableWallPieces,wallLibraryPiece,wallLibraryEntries,placementError,rotatePlacement,nudgePlacement,newPlan} from './construction-geometry.js';
 import {constructionSVG} from './construction-render.js';
 import {confirmAction} from './confirmation-ui.js';
+import {snapSeat} from './construction-prop-snapping.js';
 import {snapWall,rotateSnappedWall} from './construction-snapping.js';
 import {wheelZoom} from './battle-camera.js';
 import {rectangleCells,wallRun,wallRunError} from './construction-strokes.js';
@@ -49,7 +50,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
  function drawPreview(){
   previewFrame=0;const hide=JSON.stringify([gesture?.kind==='move'?gesture.id:'',...(gesture?.removed||[]),removeHover?.item?.id]);
   if(hide!==hiddenKey){hiddenKey=hide;scene.querySelectorAll('[data-construction-id]').forEach(el=>{el.style.visibility=gesture?.kind==='move'&&el.dataset.constructionId===gesture.id?'hidden':'';el.classList.toggle('construction-remove-pending',!!gesture?.removed?.has(el.dataset.constructionId));el.classList.toggle('construction-remove-hover',removeHover?.item?.id===el.dataset.constructionId)})}
-  const label=find('[data-snap-state]');let message=ghost?.snapped?'Connected — R keeps the join':snapping&&mode==='walls'?'Snapping on — drag near a wall end':'';
+  const label=find('[data-snap-state]');let message=ghost?.tableId?'Seat tucked under table':ghost?.snapped?'Connected — R keeps the join':snapping&&mode==='walls'?'Snapping on — drag near a wall end':'';
   if(gesture?.kind==='paint')message=`${Object.keys(gesture.tiles).length} floors — release inside to place; outside to cancel`;
   if(gesture?.kind==='wall-run')message=`${ghost?.items?.length||0} wall pieces — release inside to place; outside to cancel`;
   if(mode==='erase')message=gesture?gesture.removeFloor?`${gesture.ground.size} floors marked for removal`:`${gesture.removed.size} objects marked for removal`:removeHover?.layer==='ground'?'Remove floor — drag a rectangle':removeHover?.item?`Remove ${removeHover.layer==='walls'?'wall':cat.props[removeHover.item.asset]?.name||'prop'} — hold Shift for floors`:'Remove props/walls — hold Shift to remove floors';
@@ -58,8 +59,9 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
   if(gesture?.kind==='paint')preview.innerHTML=`<g data-floor-fill opacity=".85">${constructionSVG({ground:gesture.tiles,props:[],walls:[]},size,cat,{grid:false,background:false})}${Object.keys(gesture.tiles).map(key=>{const [x,y]=key.split(',');return `<rect data-floor-preview x="${x}" y="${y}" width="1" height="1" fill="#eadc8b" fill-opacity=".1" stroke="#ffe5a1" stroke-width=".025"/>`}).join('')}</g>`;
   else if(gesture?.kind==='wall-run')preview.innerHTML=ghost?.items?.length?`<g data-wall-run opacity=".7">${constructionSVG({...newPlan(),walls:ghost.items},size,cat,{grid:false,background:false,wallKit,selected:ghost.item.id})}${ghost.error?ghost.items.flatMap(w=>wallSegments(w)).map(([a,b])=>`<path d="M${a.join(' ')} L${b.join(' ')}" fill="none" stroke="#ff7c6a" stroke-width=".07"/>`).join(''):''}</g>`:'';
   else if(mode==='erase')preview.innerHTML=removalPreview();
-  else if(ghost)preview.innerHTML=constructionSVG(newPlan(),size,cat,{ghost,grid:false,background:false,wallKit})+(ghost.snapped?ghost.contacts.map(([x,y])=>`<circle data-snap-port cx="${x}" cy="${y}" r=".085" fill="#b8ffe0" stroke="#183c30" stroke-width=".025"/>`).join(''):'');
+  else if(ghost)preview.innerHTML=constructionSVG(newPlan(),size,cat,{ghost,grid:false,background:false,wallKit})+(ghost.contacts?.length?ghost.contacts.map(([x,y])=>`<circle data-snap-port cx="${x}" cy="${y}" r=".085" fill="#b8ffe0" stroke="#183c30" stroke-width=".025"/>`).join(''):'');
   else preview.innerHTML='';
+  if(ghost?.layer==='props'&&ghost.tableId){const table=plan.props.find(p=>p.id===ghost.tableId);if(table)preview.innerHTML+=constructionSVG({...newPlan(),props:[table]},size,cat,{grid:false,background:false})}
  }
  function removalPreview(){
   const cells=gesture?.removeFloor?[...gesture.ground]:removeHover?.layer==='ground'?[`${removeHover.x},${removeHover.y}`]:[];
@@ -81,7 +83,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
   dialog.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===mode));
   const entries=mode==='walls'?wallLibraryEntries():Object.entries(cat[mode]||{});
   find('[data-palette]').innerHTML=entries.filter(([,item])=>item.name.toLowerCase().includes(query)).map(([id,item])=>`<button draggable="false" data-asset="${esc(id)}" class="${(mode==='walls'?wallLibraryPiece(brush.piece):brush[mode])===id?'active':''}">${item.file?`<img draggable="false" src="/assets/combat-terrain/${esc(item.file)}" alt="" loading="lazy">`:`<svg class="wall-palette-preview" viewBox="-.15 -.15 1.3 1.3" aria-hidden="true">${constructionSVG({ground:{},props:[],walls:[{id:'palette',x:0,y:0,rotation:0,piece:id,shape:item.shape,anchor:'center',material:brush.material,posts:'none'}]},{w:1,h:1},cat,{grid:false,background:false,wallKit})}</svg>`}<small>${esc(item.name)}</small></button>`).join('')||(mode==='erase'?'<p>Hover a prop or wall to check the removal target.<br><br>Hold <b>Shift</b> for floors.</p>':'<p>Select a placed object to adjust it, or choose a construction layer.</p>');
-  find('[data-help]').textContent={ground:'Drag from one corner to the opposite corner to preview a filled rectangle. Release inside to place; outside cancels.',props:'Drag an asset into the map, or drag on the map with your brush. Arrows adjust its position; Shift gives finer steps. Drop outside to cancel.',walls:'Drag to extend a single row or column. Corners start the run, followed by matching plain walls. R rotates the preview; S toggles snapping. Release inside to place; outside cancels.',select:'Drag a placed object to move it. R rotates, arrows adjust its position. Dropping outside cancels the move. Click empty ground to deselect.',erase:'Remove [Del] targets props/walls only. Hold Shift before dragging to remove a rectangle of floors. Highlights show the exact layer being removed. Release inside to confirm; outside cancels.'}[mode];
+  find('[data-help]').textContent={ground:'Drag from one corner to the opposite corner to preview a filled rectangle. Release inside to place; outside cancels.',props:'Drag an asset into the map, or drag on the map with your brush. Small props can share a cell when their visible shapes fit. Seats snap near tables [S]. Arrows adjust position; Shift gives finer steps. Drop outside to cancel.',walls:'Drag to extend a single row or column. Corners start the run, followed by matching plain walls. R rotates the preview; S toggles snapping. Release inside to place; outside cancels.',select:'Drag a placed object to move it. R rotates, arrows adjust its position. Dropping outside cancels the move. Click empty ground to deselect.',erase:'Remove [Del] targets props/walls only. Hold Shift before dragging to remove a rectangle of floors. Highlights show the exact layer being removed. Release inside to confirm; outside cancels.'}[mode];
   find('[data-palette]').querySelectorAll('[data-asset]').forEach(b=>{
    b.onclick=e=>{if(e.detail===0)chooseAsset(b.dataset.asset)};
    b.onpointerdown=e=>{if(e.button!==0||busy)return;e.preventDefault();cancelGesture();chooseAsset(b.dataset.asset);begin(e,'place');};
@@ -172,7 +174,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
   }
   if(gesture?.kind==='move'){
    if(!inside(e)){ghost=null;return}const {px,py}=coords(e);let item={...gesture.item,x:gesture.origin[0]+Math.round(px-gesture.start[0]),y:gesture.origin[1]+Math.round(py-gesture.start[1])};
-   const snap=snapping&&gesture.layer==='walls'?snapWall(item,plan,size,{requiredContacts:snapLock?.contacts||[],allowRotate:!snapLock&&item.shape==='corner'}):null;if(snap?.snapped)item=snap.item;
+   const snap=snapping?(gesture.layer==='walls'?snapWall(item,plan,size,{requiredContacts:snapLock?.contacts||[],allowRotate:!snapLock&&item.shape==='corner'}):snapSeat(item,plan,size)):null;if(snap?.snapped)item=snap.item;
    const error=placementError(item,gesture.layer,size,plan);showPlacementError(error);ghost=error?null:{layer:gesture.layer,item,...snap};
   }else if(gesture?.kind==='paint'){
    ghost=null;gesture.tiles={};if(!inside(e))return;
@@ -189,7 +191,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
     else if(removeHover?.item)gesture.removed.add(removeHover.item.id);
    }
   }else{
-   ghost=makeGhost(e);if(ghost?.layer==='walls'&&snapping){if(snapLock)ghost.item={...ghost.item,x:snapLock.item.x,y:snapLock.item.y,piece:snapLock.item.piece,anchor:snapLock.item.anchor};const snap=snapWall(ghost.item,plan,size,{requiredContacts:snapLock?.contacts||[],allowRotate:!snapLock&&ghost.item.shape==='corner'});ghost={...ghost,...snap};}if(ghost?.item){const error=placementError(ghost.item,ghost.layer,size,plan);showPlacementError(error);if(error)ghost=null;}
+   ghost=makeGhost(e);if(ghost?.layer==='walls'&&snapping){if(snapLock)ghost.item={...ghost.item,x:snapLock.item.x,y:snapLock.item.y,piece:snapLock.item.piece,anchor:snapLock.item.anchor};const snap=snapWall(ghost.item,plan,size,{requiredContacts:snapLock?.contacts||[],allowRotate:!snapLock&&ghost.item.shape==='corner'});ghost={...ghost,...snap};}if(ghost?.layer==='props'&&snapping)ghost={...ghost,...snapSeat(ghost.item,plan,size)};if(ghost?.item){const error=placementError(ghost.item,ghost.layer,size,plan);showPlacementError(error);if(error)ghost=null;}
   }
  }
  function begin(e,kind,initial=null){

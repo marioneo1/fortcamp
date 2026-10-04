@@ -16,7 +16,7 @@ CAT={'ground':{'grass':{'file':'grass.png'}},'props':{'crate':{'file':'crate.png
 
 class ConstructionRulesTests(unittest.TestCase):
     def setUp(self):
-        self.catalogue=patch('backend.construction.catalogue',return_value=CAT);self.catalogue.start();self.addCleanup(self.catalogue.stop)
+        self.catalogue=patch('backend.construction.catalogue',return_value=CAT);self.catalogue_mock=self.catalogue.start();self.addCleanup(self.catalogue.stop)
         self.size={'w':8,'h':6}
 
     def prop(self,**kwargs):
@@ -95,6 +95,28 @@ class ConstructionRulesTests(unittest.TestCase):
         validate_plan(plan,self.size)
         prop.update(x=1,w=2,offset_x=0)
         with self.assertRaisesRegex(ValueError,'overlaps a wall'):validate_plan(plan,self.size)
+
+    def test_props_share_cells_without_silhouette_overlap_and_old_layouts_survive(self):
+        first=self.prop(); first.update(asset='crate_closed',w=1,h=1,offset_x=-.35,offset_y=0)
+        second={**first,'id':'other','offset_x':.35}
+        plan={**empty_plan(),'props':[first,second]}
+        self.catalogue_mock.return_value={**CAT,'props':{**CAT['props'],'crate_closed':{'file':'crate.png'}}}
+        validate_plan(plan,self.size)
+        second['offset_x']=0
+        with self.assertRaisesRegex(ValueError,'props overlap'): validate_plan(plan,self.size)
+        validate_plan(plan,self.size,previous_plan=deepcopy(plan))
+        changed=deepcopy(plan);changed['props'][1]['offset_y']=.01
+        with self.assertRaisesRegex(ValueError,'props overlap'): validate_plan(changed,self.size,previous_plan=plan)
+
+    def test_seat_table_partial_tuck_allowed_but_full_overlap_rejected(self):
+        from backend.construction import props_overlap,prop_bounds
+        table=self.prop();table.update(asset='horticulture_round_table',w=1,h=1,offset_x=0,offset_y=0)
+        seat={**table,'id':'seat','asset':'horticulture_round_stool'}
+        self.assertTrue(props_overlap(table,seat))
+        l,t,r,b=prop_bounds(table);sl,st,sr,sb=prop_bounds(seat)
+        seat['offset_y']=b+(sb-st)*.3-(st+sb)/2
+        self.assertFalse(props_overlap(table,seat))
+        self.assertFalse(props_overlap(seat,table))
 
     def test_visible_art_fits_inside_edge_walls_and_retains_real_collisions(self):
         from backend.construction import wall_hits_prop, prop_bounds

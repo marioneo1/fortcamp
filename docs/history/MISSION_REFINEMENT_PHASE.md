@@ -975,3 +975,28 @@ viewport fallback. 237 existing sprites measured. Validation: 175 frontend tests
 16 backend construction tests and build pass, including three-sided enclosure,
 center collision, shifted collisions, multicell size and rotated art bounds.
 Production and player saves were not changed.
+
+
+## October 4: shared-cell furniture and seat docking
+
+Props do not reserve an entire cell for placement. Their measured, shifted,
+rotated artwork boxes are checked against other props. Separate silhouettes can
+share one cell; overlapping boxes reject new placements/moves. Bounds remain
+conservative: transparent gaps inside the silhouette are not detected. Unchanged
+old overlaps remain saveable, but moving either object rechecks the pair.
+
+Tables and seats have an explicit, editable exception in construction-furniture.json.
+Supported tables: wooden table, round garden table and food-prep table. Supported
+seats: round garden stool and mess bench. Up to 30% of the seat's visible box may
+tuck under a table; full overlap is rejected. Table art draws after seats regardless
+of placement order. Nearby seats dock at one of four table sides within 0.3 cell,
+using the existing optional Snapping [S] control. Preview shows the tabletop over
+the tucked seat. Other props do not snap to tables. Arrows/Shift+arrows provide
+manual positioning; turn off S to prevent automatic docking while dragging.
+
+Both the frontend and save API enforce these rules. The backend sweeps horizontal
+bounds to avoid testing distant prop pairs. No source artwork, player saves or
+production files changed. Validation: 178 frontend tests, 18 backend construction
+tests, build and real browser seat-preview/drop/save/draw-order QA pass. Browser
+saves were an in-memory fixture. Pixel-perfect silhouette collision and additional
+furniture pairing rules remain deferred.

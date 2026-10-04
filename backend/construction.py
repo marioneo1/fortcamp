@@ -13,6 +13,7 @@ ARMS = {'straight':[(-.5,0),(.5,0)],'half':[(.5,0)],'corner':[(.5,0),(0,.5)],
 AVAILABLE_WALL_PIECES = json.loads((ROOT/'frontend/src/construction-wall-pieces.json').read_text())
 WALL_PIECES = {**json.loads((ROOT/'frontend/src/construction-wall-pieces-legacy.json').read_text()),**AVAILABLE_WALL_PIECES}
 MATERIALS = ['timber','fieldstone','limestone','iron']
+FURNITURE = json.loads((ROOT/'frontend/src/construction-furniture.json').read_text())
 PROP_ART_BOUNDS = json.loads((ROOT/'frontend/src/construction-prop-bounds.json').read_text())
 
 
@@ -66,6 +67,17 @@ def prop_bounds(prop):
         for _ in range(prop['rotation']//90): dx, dy = -dy, dx
         points.append((cx+dx,cy+dy))
     return min(x for x,y in points), min(y for x,y in points), max(x for x,y in points), max(y for x,y in points)
+
+
+def props_overlap(a,b):
+    al,at,ar,ab=prop_bounds(a); bl,bt,br,bb=prop_bounds(b)
+    width=min(ar,br)-max(al,bl); height=min(ab,bb)-max(at,bt)
+    if width<=1e-7 or height<=1e-7: return False
+    seat = a if a['asset'] in FURNITURE['seats'] and b['asset'] in FURNITURE['tables'] else b if b['asset'] in FURNITURE['seats'] and a['asset'] in FURNITURE['tables'] else None
+    if seat:
+        l,t,r,bottom=prop_bounds(seat)
+        if width*height<=(r-l)*(bottom-t)*FURNITURE['tuck_fraction']+1e-7: return False
+    return True
 
 
 def wall_hits_prop(wall,prop):
@@ -167,6 +179,13 @@ def validate_plan(plan, size, buildings=(), previous_plan=None):
     previous={obj['id']:obj for layer in ('props','walls') for obj in (previous_plan or {}).get(layer,[])}
     def unchanged(a,b):
         return previous.get(a['id'])==a and previous.get(b['id'])==b
+    # Sweep visible boxes so distant props do not require collision checks.
+    ordered=sorted([(prop_bounds(p),p) for p in result['props']],key=lambda row:row[0][0])
+    for index,(bounds,prop) in enumerate(ordered):
+        for other_bounds,other in ordered[index+1:]:
+            if other_bounds[0]>=bounds[2]: break
+            if props_overlap(prop,other) and not unchanged(prop,other):
+                raise ValueError('Those props overlap. Adjust their positions; seats can tuck slightly under a table.')
     # Index half-cell edge spans once: no quadratic wall-pair scan on large camps.
     occupied={}
     for wall in result['walls']:

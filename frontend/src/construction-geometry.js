@@ -2,6 +2,17 @@
 import pieces from './construction-wall-pieces.json' with {type:'json'};
 import legacyPieces from './construction-wall-pieces-legacy.json' with {type:'json'};
 import propArtBounds from './construction-prop-bounds.json' with {type:'json'};
+import furniture from './construction-furniture.json' with {type:'json'};
+export const isTable=p=>furniture.tables.includes(p.asset);
+export const isSeat=p=>furniture.seats.includes(p.asset);
+export function propsOverlap(a,b){
+ const [al,at,ar,ab]=propBounds(a),[bl,bt,br,bb]=propBounds(b);
+ const width=Math.min(ar,br)-Math.max(al,bl),height=Math.min(ab,bb)-Math.max(at,bt);
+ if(width<=1e-7||height<=1e-7)return false;
+ const seat=isSeat(a)&&isTable(b)?a:isSeat(b)&&isTable(a)?b:null;
+ if(seat){const [l,t,r,b]=propBounds(seat);if(width*height<=(r-l)*(b-t)*furniture.tuck_fraction+1e-7)return false}
+ return true;
+}
 export function defaultWallAnchor(piece){return piece.startsWith('corner_')?'center':piece.startsWith('vertical_')?'west':'north'}
 export const availableWallPieces=pieces;
 // Direction/facing is placement state, not a second library icon.
@@ -79,7 +90,10 @@ export function placementError(item,layer,size,plan){
   const segments=wallSegments(item);
   if(plan.walls.some(w=>w.id!==item.id&&wallSegments(w).some(s=>segments.some(t=>segmentsOverlap(s,t)))))return 'A wall already occupies that position. Connecting wall ends is allowed.';
   if(plan.props.some(p=>wallHitsProp(item,p)))return 'That wall overlaps a prop. Move the prop or the wall.';
- }else if(layer==='props'&&plan.walls.some(w=>wallHitsProp(w,item)))return 'That prop overlaps a wall. Adjust its position or choose another cell.';
+ }else if(layer==='props'){
+  if(plan.walls.some(w=>wallHitsProp(w,item)))return 'That prop overlaps a wall. Adjust its position or choose another cell.';
+  if(plan.props.some(p=>p.id!==item.id&&propsOverlap(item,p)))return 'Those props overlap. Adjust their positions; seats can tuck slightly under a table.';
+ }
  return '';
 }
 const solidWall=w=>!w.broken&&!(w.shape==='gate'&&w.open);

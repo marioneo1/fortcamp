@@ -1,5 +1,13 @@
 # Fortcamp feature backlog
 
+October 4 furniture placement: props can share cells when visible bounds fit;
+unrelated silhouette overlaps are blocked on preview/save, untouched older
+layouts preserved. Supported seats dock beside tables with S snapping, permit
+a small tuck, and render behind the tabletop. 178 frontend/18 backend tests,
+build and isolated browser docking/save/order checks pass. Additional pairing
+rules and pixel-perfect collision deferred. Dev only; see
+docs/design/BASE_CONSTRUCTION.md.
+
 October 4 wall/prop sharing: visible sprite bounds replace transparent viewport
 collision padding; footprint, rotation and offsets match rendering on client and
 server. Edge walls leave usable interior space, actual wall crossings remain

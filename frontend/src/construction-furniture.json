@@ -1,0 +1,6 @@
+{
+  "tables": ["wooden_table", "horticulture_round_table", "food_prep_table"],
+  "seats": ["horticulture_round_stool", "mess_bench"],
+  "tuck_fraction": 0.3,
+  "snap_reach": 0.3
+}

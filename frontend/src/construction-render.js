@@ -1,5 +1,5 @@
 import {wallArtImage} from './construction-wall-art.js';
-import {wallSegments,wallConnections,wallPosts,pointKey} from './construction-geometry.js';
+import {wallSegments,wallConnections,wallPosts,pointKey,isTable} from './construction-geometry.js';
 export const wallColors={timber:['#b98953','#5d3e28'],fieldstone:['#9d9d89','#434c42'],limestone:['#e4d4a8','#8f805e'],iron:['#aab4bf','#435464']};
 const url=file=>`/assets/combat-terrain/${file}`;
 export function constructionSVG(plan,size,catalogue,{selected='',ghost=null,facilities=[],definitions={},grid=true,background=true,wallKit='placeholder'}={}){
@@ -19,7 +19,7 @@ export function constructionSVG(plan,size,catalogue,{selected='',ghost=null,faci
   const w=p.rotation%180?p.h:p.w,h=p.rotation%180?p.w:p.h;
   return `<g data-construction-id="${p.id}" data-construction-layer="props" class="construction-prop ${selected===p.id?'selected':''}" opacity="${preview?.6:1}"><image href="${url(file)}" x="${cx-w*.46}" y="${cy-h*.46}" width="${w*.92}" height="${h*.92}" preserveAspectRatio="xMidYMid meet" transform="rotate(${p.rotation} ${cx} ${cy})"/>${selected===p.id||preview?`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" fill="none" stroke="${preview?'#fff1ae':'#91efd3'}" stroke-width=".035" stroke-dasharray=".1 .05"/>`:''}</g>`;
  };
- html+=plan.props.slice().sort((a,b)=>(a.y+a.h)-(b.y+b.h)).map(p=>drawProp(p)).join('');
+ html+=plan.props.slice().sort((a,b)=>Number(isTable(a))-Number(isTable(b))||(a.y+a.h)-(b.y+b.h)).map(p=>drawProp(p)).join('');
  const nodes=plan.walls.some(w=>!w.piece&&w.posts==='auto')?wallConnections(plan.walls):new Map(),caps=new Map();
  const drawWall=(wall,preview=false)=>{
   const [color,edge]=wallColors[wall.material],segments=wallSegments(wall);
