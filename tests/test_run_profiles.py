@@ -5,7 +5,7 @@ from contextlib import closing
 from pathlib import Path
 from unittest.mock import patch
 from tools.run_profile import profile_config, conflicting_application
-from tools.prepare_release_copy import release_paths, release_env_source, production_destination, configure_release_launchers, DEV_ONLY_LAUNCHERS
+from tools.prepare_release_copy import release_paths, release_env_source, production_destination, configure_release_launchers, DEV_ONLY_LAUNCHERS, copy_portrait_framing
 
 class RunProfileTests(unittest.TestCase):
     def test_release_excludes_dev_shortcuts_without_changing_source_or_runtime_files(self):
@@ -31,6 +31,18 @@ class RunProfileTests(unittest.TestCase):
             self.assertEqual(git('rev-parse', 'HEAD'), commit)
             self.assertEqual(git('status', '--porcelain', '--untracked-files=no'), '')
             configure_release_launchers(prod)  # Repeating does not restore the unwanted launchers.
+    def test_release_copies_shared_framing_without_copying_player_data(self):
+        with tempfile.TemporaryDirectory() as d:
+            dev = Path(d)/'dev'; prod = Path(d)/'prod'
+            (dev/'data').mkdir(parents=True)
+            for name in ('portrait_framing.json', 'portrait_framing_overrides.json'):
+                (dev/'data'/name).write_text('{"fixture": true}')
+            (dev/'data/fortcamp.db').write_text('private player save')
+            copy_portrait_framing(dev, prod)
+            self.assertEqual((prod/'data/portrait_framing.json').read_text(), '{"fixture": true}')
+            self.assertEqual((prod/'data/portrait_framing_overrides.json').read_text(), '{"fixture": true}')
+            self.assertFalse((prod/'data/fortcamp.db').exists())
+
     def test_fixed_prod_preserves_credentials_and_restores_failed_update(self):
         import sqlite3
         with tempfile.TemporaryDirectory() as d:

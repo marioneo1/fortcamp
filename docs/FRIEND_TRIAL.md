@@ -61,3 +61,8 @@ The current production preparation includes the tested mercenaries, quieter regi
 There is one game launcher in each folder: run_dev_windows.bat for authenticated browser and Discord development, run_prod_windows.bat for production. The former separate Discord shortcut is removed. Stop either session with Ctrl+C in its control window; the obsolete stop_dev_windows.bat was removed because it targeted the old three-window setup and could also stop the shared tunnel. Keep Cloudflare running independently.
 
 Release preparation excludes dev-only launch/update shortcuts from the production checkout using Git sparse checkout. This keeps the pinned production source clean and its integrity check intact. The currently installed production copy received only that launcher cleanup; it was not upgraded or restarted. Developer-only unauthenticated local diagnostics remain available through `.venv\Scripts\python.exe tools\run_profile.py dev`; this is an internal option, not a second everyday launcher.
+
+
+## October 3: production update packaging
+
+Release updates now include shared portrait framing defaults alongside portrait assets, exclude the obsolete macOS/Linux dev shortcut, and require clean tracked source while leaving unrelated untracked notes alone. Production launch continues to force debug and authentication bypass off; production credentials, player saves and uploads stay separate. The standalone portrait tagging tool remains separate from game runtime metadata.

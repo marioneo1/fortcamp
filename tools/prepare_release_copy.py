@@ -14,7 +14,7 @@ from dotenv import set_key, dotenv_values
 ROOT=Path(__file__).resolve().parents[1]
 DEV_ONLY_LAUNCHERS = (
     'run_dev_windows.bat', 'run_dev_discord_windows.bat',
-    'stop_dev_windows.bat', 'update_prod_windows.bat',
+    'stop_dev_windows.bat', 'update_prod_windows.bat', 'run_dev_mac_linux.sh',
 )
 
 
@@ -29,6 +29,16 @@ def configure_release_launchers(target):
     patterns = '/*\n' + ''.join(f'!/{name}\n' for name in DEV_ONLY_LAUNCHERS)
     subprocess.run(['git', 'sparse-checkout', 'set', '--no-cone', '--stdin'], cwd=target,
                    input=patterns, text=True, check=True)
+
+def copy_portrait_framing(source, target):
+    """Ship shared art defaults; never copy character saves or uploaded portraits."""
+    for name in ('portrait_framing.json', 'portrait_framing_overrides.json'):
+        path = Path(source)/'data'/name
+        if path.is_file():
+            destination = Path(target)/'data'/name
+            destination.parent.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(path, destination)
+
 
 def release_paths(parent,version):
     if not re.fullmatch(r'[0-9]+\.[0-9]+\.[0-9]+(?:-[A-Za-z0-9]+(?:\.[A-Za-z0-9]+)*)?',version):raise ValueError('Use a version such as 0.3.1-trial.2')
@@ -99,7 +109,7 @@ def main():
     production_env=release_env_source(parent)
     if args.prod:
         target=Path(parent).resolve()/'fortcamp-prod'
-        if git('status','--porcelain'):raise SystemExit('Commit tested source changes before updating production.')
+        if git('status','--porcelain','--untracked-files=no'):raise SystemExit('Commit tested source changes before updating production.')
         with production_destination(target,data,production_env) as source:
             build_copy(args,target,data,source)
     else:build_copy(args,target,data,production_env)
@@ -107,7 +117,7 @@ def main():
 
 def build_copy(args,target,data,production_env):
     if target.exists():raise SystemExit(f'That release folder already exists; nothing was overwritten: {target}')
-    if git('status','--porcelain'):raise SystemExit('Commit all source changes before creating a release. Untracked secrets/media are ignored by Git.')
+    if git('status','--porcelain','--untracked-files=no'):raise SystemExit('Commit all source changes before creating a release. Untracked secrets/media are ignored by Git.')
     commit=git('rev-parse','HEAD');tag='v'+args.version
     if git('tag','--list',tag):raise SystemExit('That version tag already exists. Choose a new version.')
     remote=git('remote','get-url','origin')
@@ -130,6 +140,7 @@ def build_copy(args,target,data,production_env):
     for name in ('portrait_pools','champion_portraits'):
         source=ROOT/'data'/name
         if source.exists():shutil.copytree(source,target/'data'/name)
+    copy_portrait_framing(ROOT, target)
     shutil.copy2(production_env,target/'.env')
     values={'DATABASE_URL':f'sqlite+aiosqlite:///{(data/"fortcamp.db").as_posix()}','DEV_BYPASS_AUTH':'false','GAME_DEBUG_MODE':'false','MISSION_TIME_SCALE':'1.0','BOT_ENABLED':'true','DISCORD_TEST_GUILD_ID':'','FORTCAMP_UPLOAD_ROOT':str(data/'portraits'),'FORTCAMP_PROFILE':'release','FORTCAMP_WEB_ORIGIN':dotenv_values(production_env).get('FORTCAMP_RELEASE_WEB_ORIGIN') or 'https://play.fortcampgame.fyi'}
     for name,value in values.items():set_key(str(target/'.env'),name,value,quote_mode='always')

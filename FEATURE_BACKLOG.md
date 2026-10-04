@@ -431,3 +431,8 @@ Proposed, awaiting user direction: replace overlapping corpse/unconscious tokens
 # October 2 — coordinated building parts and independent building plans
 
 Implemented four distinct tool-shed and four workshop buildings, separate from map placement; union footprints, shared-wall removal, inward corners, anchor/quarter-turn transforms and spawn/furniture transforms. New 40-piece structural library supplies matching walls/corners/breaches/door/gate pairs across four families; workshop mixed stone art replaced. Battle Lab lists all eight plans with verified seeds. Canonical docs: docs/design/BUILDING_TEMPLATES.md. Stairs and castle/prison pieces are prepared assets; stair gameplay, further location/map variation and friend-server balance review remain pending. Earlier flipped layouts preserved in snapshots. Dev only.
+
+
+## October 3: production update packaging
+
+Release updates now include shared portrait framing defaults alongside portrait assets, exclude the obsolete macOS/Linux dev shortcut, and require clean tracked source while leaving unrelated untracked notes alone. Production launch continues to force debug and authentication bypass off; production credentials, player saves and uploads stay separate. The standalone portrait tagging tool remains separate from game runtime metadata.

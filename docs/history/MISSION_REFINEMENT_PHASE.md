@@ -778,3 +778,8 @@ Cloud tagging paused without an API key. Built sibling character-tagger with WD 
 ## October 3 ? Aasimar healer original crop repair
 
 Trimmed 17 bottom rows from uncropped IDs 011?015 after visual inspection showed separator/next-row contamination. Remaining pixels retained losslessly. Square/thumb image bytes, both appearance registries, shared framing and standalone tagging DB/normalized export verified unchanged by hashes. No tagging run. Image URL versions refreshed via timestamps, backups and before/after captures retained. Canonical: docs/art/PORTRAIT_FRAMING.md.
+
+
+## October 3: production update packaging
+
+Release updates now include shared portrait framing defaults alongside portrait assets, exclude the obsolete macOS/Linux dev shortcut, and require clean tracked source while leaving unrelated untracked notes alone. Production launch continues to force debug and authentication bypass off; production credentials, player saves and uploads stay separate. The standalone portrait tagging tool remains separate from game runtime metadata.
