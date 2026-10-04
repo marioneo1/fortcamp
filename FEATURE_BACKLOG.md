@@ -448,3 +448,8 @@ Implemented persistent first sightings for enemies in walkable bush cover. Spot 
 ## Bush ambush refinement
 
 Supersedes the two-tile proximity reveal: nearby enemies remain concealed until attacking, leaving cover or physical contact with their occupied cell. Names remain absent from initiative. Authored road kill zones, actual reachable attacks, isolated/wounded target preference and a shared spring signal govern ambushers. Two waiting activations maximum, then normal pursuit; hidden last survivors pursue immediately. An unfinished-fight hint covers the case with no visible targets. No extra damage or free attacks. Fatigue is a separate pacing proposal, not implemented. See docs/design/BUSH_CONCEALMENT.md and docs/design/FATIGUE_PACING_PROPOSAL.md.
+
+
+## October 3: stamina recovery and reward pacing review
+
+Proposal only: retain the user's 200-point recovery per 30-minute pool as the initial candidate so borrowed S-rank stamina can recover in approximately one pool. Recovery is elapsed-time based, not a reset refill; late deployments cannot guarantee full points at the next boundary. Current ordinary E?B reward scaling does not justify the earlier B20 suggestion on generic payouts alone. Keep B10 as the initial candidate and review whole-party cost, risk, rarity, unique effects and mission-specific rewards before increasing it. Optional healer/exploration/personal-contract recovery unlocks and modest additive improvements are documented, not implemented. Canonical: docs/design/FATIGUE_PACING_PROPOSAL.md. Validation: compared backend/content.py scaling and backend/services.py pool timing; calculated expected independent loot rolls and recovery durations. No runtime, save, drop-table or production changes.
