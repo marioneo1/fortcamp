@@ -5,7 +5,7 @@ from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
 from .auth import IdentityDep
 from .battle_lab import authorize
-from .portraits import PORTRAIT_POOL_ROOT, CHAMPION_PORTRAIT_ROOT, SUPPORTED_EXTENSIONS, version_pool_url
+from .portraits import PORTRAIT_POOL_ROOT, CHAMPION_PORTRAIT_ROOT, SUPPORTED_EXTENSIONS, version_pool_url, legacy_portrait_aliases
 from .portrait_framing import defaults, clean_frame, save_default, recommended_frame
 
 router = APIRouter(prefix='/api/debug/portrait-lab')
@@ -16,6 +16,7 @@ def catalogue():
     for path in sorted(PORTRAIT_POOL_ROOT.glob('*/full/*')):
         if not path.is_file() or path.suffix.lower() not in SUPPORTED_EXTENSIONS:continue
         pool = path.parent.parent.name
+        if path.name in legacy_portrait_aliases(pool):continue
         key = '/api/portrait-pools/'+quote(pool)+'/full/'+quote(path.name)
         thumb = path.parent.parent/'thumb'/path.name
         rows.append({'key':key,'full':version_pool_url(key),'name':path.stem,'group':pool,'kind':'Generic',

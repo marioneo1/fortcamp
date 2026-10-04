@@ -685,7 +685,7 @@ def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission
         else:
             gender = rng.choice(generated_genders(race))
             name = rng.choice(("Tarin","Nessa","Rovan","Mira","Kellan","Sera","Veyra","Darin")) + " " + rng.choice(("Hale","Voss","Carrow","Fen","Rook","Vale"))
-            identity = choose_pool_portrait(portrait_pool_key(race,gender,"scout" if kind == "archer" else "fighter"),rng) or {}
+            identity = choose_pool_portrait(portrait_pool_key(race,gender,"scout" if kind == "archer" else "fighter", special=index == 0),rng) or {}
             identity["gender"] = gender
         if name in used_names:
             name += " " + ("Ash","Reed","Iron","Thorn","Flint","Oak","Stone","Moss")[index]

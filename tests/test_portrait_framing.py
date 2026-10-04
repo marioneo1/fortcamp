@@ -12,6 +12,28 @@ from backend import portraits
 
 
 class PortraitFramingTests(unittest.TestCase):
+    def test_legacy_aliases_keep_urls_but_are_not_selected(self):
+        import random
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            folder = root / 'troll_female_melee' / 'full'
+            folder.mkdir(parents=True)
+            (folder / '001.webp').write_bytes(b'active')
+            (folder / '017.webp').write_bytes(b'compatibility')
+            manifest = root / 'import_manifest.json'
+            manifest.write_text(json.dumps({'imports': [{'pool': 'troll_female_melee',
+                'legacy_aliases': {'017.webp': '001.webp'}}]}))
+            with patch.object(portraits, 'PORTRAIT_POOL_ROOT', root):
+                for seed in range(20):
+                    selected = portraits.choose_pool_portrait('troll_female_melee', random.Random(seed))
+                    self.assertIn('/001.webp', selected['portrait'])
+                self.assertIn('017.webp?v=', portraits.version_pool_url(
+                    '/api/portrait-pools/troll_female_melee/full/017.webp'))
+                manifest.write_text(json.dumps({'imports': []}))
+                import os
+                os.utime(manifest, ns=(manifest.stat().st_atime_ns, manifest.stat().st_mtime_ns + 1000000000))
+                self.assertEqual(portraits.legacy_portrait_aliases('troll_female_melee'), set())
+
     def test_changed_asset_gets_new_url_without_changing_framing_identity(self):
         with tempfile.TemporaryDirectory() as directory:
             root=Path(directory);image=root/'test'/'full'/'001.webp';image.parent.mkdir(parents=True)

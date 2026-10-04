@@ -31,7 +31,7 @@ Combined installation verified all 960 assets, exact-role and alternate-role sel
 
 Inspected all outputs. Face/crest repetition is notable in Alien; some Troll ears and Manaforged crystal tips approach or touch edges. Ogre faces lean angular; circle framing cannot recover clipped source pixels. Undead retains the existing preserved humanoid design. Validation covers file decoding and grid evidence, not perfect anatomy or unique face detection.
 
-## Batch 004 — staged; generation plan complete
+## Batch 004 — approved and installed; generation plan complete
 
 | Common portrait role | Races |
 |---|---|
@@ -40,7 +40,7 @@ Inspected all outputs. Face/crest repetition is notable in Alien; some Troll ear
 | Worker | Automaton |
 | General, no class suffix | Slimefolk, Werewolf |
 
-Ten fresh sheets (200 portraits), saved with exact expanded prompts and review links in staging-portraits/MALE_BATCH_004.md. All decode at 1254×1254, five columns/four rows; grid evidence recorded in data/portrait_audit/male_batch_004/manifest.json. Not imported yet. Inspected complete outputs; some face repetition, tight ears/horns/fur, subtle Homunculus markings and luminous Slimefolk cores remain review notes.
+Ten fresh sheets (200 portraits), saved with exact expanded prompts and review links in staging-portraits/MALE_BATCH_004.md. All decode at 1254×1254, five columns/four rows; grid evidence recorded in data/portrait_audit/male_batch_004/manifest.json. User approved and all ten installed into dev with stable IDs, square full/thumb assets and separate originals. Verified 600 files, exact and alternate-role matching, and installed montage in data/portrait_audit/male_batch_004_install/. Inspected complete outputs; some face repetition, tight ears/horns/fur, subtle Homunculus markings and luminous Slimefolk cores remain review notes. Per-image appearance metadata tagging is pending.
 
 No further generic male generation targets remain in this plan. User excluded Banshee and Dryad: new recruits and combat enemies now generate female only, regardless of available male artwork or a conflicting profile gender preference. Saved identities are retained. Named Champions/Celestials are not generic generation targets.
 

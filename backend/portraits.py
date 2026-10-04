@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import random
 import re
+import json
 from pathlib import Path
 from urllib.parse import quote
 from urllib.parse import urlsplit, unquote
@@ -24,6 +25,26 @@ ARCHETYPE_ROLES = {
 
 PORTRAIT_ROLES = ("melee", "ranged", "magic", "healer", "worker", "special")
 ROLELESS_PORTRAIT_RACES = frozenset({"slimefolk", "werewolf"})
+
+_alias_stamp = None
+_legacy_aliases = {}
+
+
+def legacy_portrait_aliases(pool: str) -> set[str]:
+    """Keep old URLs working without rolling duplicate compatibility portraits."""
+    global _alias_stamp, _legacy_aliases
+    manifest = PORTRAIT_POOL_ROOT / "import_manifest.json"
+    stamp = (str(manifest), manifest.stat().st_mtime_ns if manifest.exists() else None)
+    if stamp != _alias_stamp:
+        try:
+            entries = json.loads(manifest.read_text(encoding="utf-8")).get("imports", [])
+        except (OSError, ValueError):
+            entries = []
+        aliases = {}
+        for entry in entries:
+            aliases.setdefault(entry.get("pool", ""), set()).update(entry.get("legacy_aliases", {}))
+        _legacy_aliases, _alias_stamp = aliases, stamp
+    return _legacy_aliases.get(pool, set())
 
 
 def version_pool_url(url):
@@ -80,9 +101,10 @@ def choose_pool_portrait(pool_key: str, rng: random.Random) -> dict:
     portraits: list[Path] = []
     for candidate_pool in portrait_pool_candidates(pool_key):
         full_dir = PORTRAIT_POOL_ROOT / candidate_pool / "full"
+        aliases = legacy_portrait_aliases(candidate_pool)
         portraits = sorted(
             path for path in full_dir.glob("*")
-            if path.is_file() and path.suffix.lower() in SUPPORTED_EXTENSIONS
+            if path.is_file() and path.suffix.lower() in SUPPORTED_EXTENSIONS and path.name not in aliases
         )
         if portraits:
             resolved_pool = candidate_pool

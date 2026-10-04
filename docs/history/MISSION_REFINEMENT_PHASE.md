@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## October 3: Final male installation and female Troll replacement
+
+Imported ten approved male batch 004 sheets, verified all 600 assets and role fallback, inspected installed montage. Installed user-provided f_troll.png, f_troll_shaman.png and f_troll_chieftain.png as 4×4 regular/magic/special pools, sixteen active images each. Regular IDs 001–016 replaced; 017–020 remain compatibility copies excluded from new selection and Lab browsing. Backed up old sources, pool, manifest, appearance metadata and shared framing; cleared stale replaced-image tags/defaults. Existing personal overrides preserved.
+
+Boss portrait selection now requests special art where available; checked eight female Troll bosses use chieftain pool. Fifteen focused framing/importer/race tests passed; regular pool measured-crop validation has no problems. Lab now 2,072 active images. Per-image appearance analysis/tagging has not been performed for these imports and remains outstanding. No production changes.
+
 ## October 3: Final male generation and female-only race rules
 
 Generated ten fresh sheets: Astral Elf/Voidsent/Dark Elf/Foxkin/Fairy magic, Homunculus/Merfolk healer, Automaton worker, roleless Slimefolk/Werewolf. Saved 200 portraits and exact prompts under staging-portraits/MALE_BATCH_004.md; all files decode at 1254×1254 and grid evidence recorded. Inspected outputs and documented edge/face/anatomy concerns. New sheets remain staged.
