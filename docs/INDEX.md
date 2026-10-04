@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Portrait tagging: [Local structured tagger](art/LOCAL_PORTRAIT_TAGGER.md) covers the standalone WD tool, existing race/gender assignments, review, search, exports and deferred game integration. Cloud tagging is paused.
+
 Male portrait rollout: [Batch progress and remaining targets](art/MALE_PORTRAIT_ROLLOUT.md) tracks installed males, staged sheets, generation prompts and visual-review concerns.
 
 Portrait review: [Portrait framing and Portrait Lab](art/PORTRAIT_FRAMING.md) covers the dev art browser, saved circle adjustments, automatic recommendations and per-character overrides.
