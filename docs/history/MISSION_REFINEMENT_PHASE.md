@@ -792,3 +792,10 @@ Validation: 142 frontend checks passed. Full backend run passed 355/356; the rem
 Implemented persistent first sightings for enemies in walkable bush cover. Spot within two tiles with clear sight, or reveal on leaving cover/attacking; bodies are visible. Server views omit unseen units, initiative, targets and animations; direct targeting is rejected. Provisional movement pauses on discovery without spending the main action. Auto/independent party AI uses spotted enemies and searches brush. Two Highway Ambush presets put two escorts in brush with waiting AI; other two presets and rank budgets stay intact. No new art or dependencies. Production remains unchanged. Full stealth, friendly concealment and re-hiding remain deferred. Canonical: docs/design/BUSH_CONCEALMENT.md.
 
 Bush pass validation: 150 targeted backend checks passed; final 56-check command/approach pass includes 11 concealment cases. All 142 frontend checks and build pass. Strong-party auto smoke completes all four road layouts. Player saves and prod unchanged.
+
+
+## Bush ambush refinement
+
+Supersedes the two-tile proximity reveal: nearby enemies remain concealed until attacking, leaving cover or physical contact with their occupied cell. Names remain absent from initiative. Authored road kill zones, actual reachable attacks, isolated/wounded target preference and a shared spring signal govern ambushers. Two waiting activations maximum, then normal pursuit; hidden last survivors pursue immediately. An unfinished-fight hint covers the case with no visible targets. No extra damage or free attacks. Fatigue is a separate pacing proposal, not implemented. See docs/design/BUSH_CONCEALMENT.md and docs/design/FATIGUE_PACING_PROPOSAL.md.
+
+Refined ambush validation: 70 targeted combat checks; final 20 concealment/road checks; 142 frontend checks and build pass. All four strong-party road auto checks complete. Fatigue simulation confirms S starts at 0s/9s/909s with 200 recovery, versus 0s/18s with 100 recovery in a 30-minute pool. All fatigue changes remain proposals.

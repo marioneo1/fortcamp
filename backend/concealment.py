@@ -2,9 +2,9 @@
 from .battle_maps import occupied_tiles
 
 BUSH_SPRITES = frozenset({'dense_shrub', 'thorny_bramble', 'bush'})
-HELP = ('Bushes can conceal enemies you have not spotted. Get within two tiles with a clear '
-        'line of sight to reveal them. Leaving cover or attacking also reveals them. '
-        'Once spotted, enemies stay visible for this battle.')
+HELP = ('Bushes can hide enemies, even beside you. They reveal themselves when attacking, '
+        'leaving cover, or when you run into their occupied tile. '
+        'Once revealed, enemies stay visible for this battle.')
 
 
 def cover_cells(battle):
@@ -19,15 +19,17 @@ def unseen(unit):
     return unit.get('team') == 'enemy' and unit.get('spotted') is False
 
 
-def reveal(battle, unit):
+def reveal(battle, unit, reason=None):
     if not unseen(unit):
         return False
     unit['spotted'] = True
-    battle.setdefault('log', []).append(f"{unit['name']} is spotted in the brush.")
+    message = (f"You run into {unit['name']} hiding in the brush." if reason == 'contact'
+               else f"{unit['name']} is revealed in the brush.")
+    battle.setdefault('log', []).append(message)
     return True
 
 
-def refresh(battle, line_of_sight):
+def refresh(battle):
     covers = cover_cells(battle)
     if not covers and not any(unseen(u) for u in battle.get('units', {}).values()):
         return False
@@ -35,12 +37,8 @@ def refresh(battle, line_of_sight):
                  and u.get('alive') and u.get('conscious', True)
                  and not u.get('extracted') and not u.get('carried_by')]
     searched = {tuple(p) for p in battle.get('searched_bushes', [])}
-    observed = set()
-    for x, y in covers:
-        if any(abs(u['x']-x)+abs(u['y']-y) <= 2
-               and line_of_sight(battle, u, {'x':x, 'y':y}) for u in observers):
-            searched.add((x, y))
-            observed.add((x, y))
+    # Looking at brush does not clear it. Only physically checked cells are searched.
+    searched.update((u['x'], u['y']) for u in observers if (u['x'], u['y']) in covers)
     battle['searched_bushes'] = [list(p) for p in sorted(searched)]
     changed = False
     for unit in battle.get('units', {}).values():
@@ -49,7 +47,6 @@ def refresh(battle, line_of_sight):
         # Older in-progress saves keep enemies already presented to the player visible.
         unit.setdefault('spotted', bool(battle.get('action_count', 0)) or (unit['x'],unit['y']) not in covers)
         if unseen(unit) and ((unit['x'],unit['y']) not in covers
-                or (unit['x'],unit['y']) in observed
                 or not unit.get('alive') or not unit.get('conscious', True)):
             changed = reveal(battle, unit) or changed
     return changed

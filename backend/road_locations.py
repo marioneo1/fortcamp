@@ -100,10 +100,11 @@ def blueprint(location, variant, rng):
         item(rng.choice(['dense_shrub','thorny_bramble']),x,y,'Roadside Brush',False)
     if variant in (0, 2):
         board['ambush_enemy_indices'] = [1, 2]
+        board['ambush_lane'] = [list(p) for p in sorted(road) if 7 <= p[0] <= 12]
         for index in board['ambush_enemy_indices']:
             x, y = enemies[index]
             brush = item('dense_shrub', x, y, 'Concealing Brush', False)
             brush.update(kind='bush', conceals_units=True,
-                         description='Conceals enemies until spotted nearby, leaving cover, or attacking.')
+                         description='Conceals enemies until they attack, leave cover, or their occupied tile is checked.')
     board['road_areas'] = ['Highway lane','Climbable low banks','Rejoining flank trail','Stolen-supply pull-off']
     return board

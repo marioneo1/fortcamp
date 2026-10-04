@@ -1622,12 +1622,16 @@ def _scout_path(battle, unit, path):
     original = (unit['x'], unit['y'])
     try:
         for x, y in path:
-            if any(_combat_active(other) and other['id'] != unit['id']
-                   and (other['x'], other['y']) == (x, y) for other in battle['units'].values()):
+            occupant = next((other for other in battle['units'].values()
+                             if _combat_active(other) and other['id'] != unit['id']
+                             and (other['x'],other['y']) == (x,y)), None)
+            if occupant:
+                if unit.get('team') == 'player':
+                    concealment.reveal(battle, occupant, reason='contact')
                 break
             unit['x'], unit['y'] = x, y
             accepted.append((x, y))
-            spotted = concealment.refresh(battle, _line_of_sight)
+            spotted = concealment.refresh(battle)
             if spotted and unit.get('team') == 'player':
                 break
     finally:
@@ -1860,8 +1864,35 @@ def _should_party_panic(battle: dict, unit: dict) -> bool:
     return health_ratio <= .30 and len(_living(battle, "enemy")) > len(_living(battle, "player"))
 
 
+def _ambush_target(battle, unit, targets):
+    """Wait for a real strike through the lane; abandon the plan before it stalls."""
+    # Once the rest of the opposition is beaten, hidden survivors actively hunt.
+    visible_allies = [u for u in _living(battle, 'enemy') if not concealment.unseen(u)]
+    if not visible_allies or unit.get('ambush_waits', 0) >= 2:
+        unit['ambush_plan'] = 'pursue'
+        return min(targets, key=lambda t: (_distance(unit,t),t['hp']))
+    lane = {tuple(p) for p in battle.get('ambush_lane', [])}
+    reach = unit['attack_range']
+    costs, parents = _movement_tree(battle, unit)
+    opportunities = []
+    for target in targets:
+        # A clear shot from concealment needs no speculative move or bonus action.
+        direct = _can_attack(battle, unit, target)
+        if not direct and lane and (target['x'],target['y']) not in lane:
+            continue
+        actor, approach = _attack_position(battle, unit, target, reach, costs, parents)
+        if direct or actor:
+            nearby_allies = sum(_distance(target, other) <= 2 for other in targets if other['id'] != target['id'])
+            opportunities.append((not direct, nearby_allies, target['hp']/max(1,target['max_hp']),
+                                  _distance(unit,target), target['id'], target))
+    if opportunities:
+        unit['ambush_plan'] = 'strike'
+        return min(opportunities, key=lambda entry: entry[:-1])[-1]
+    return None
+
+
 def _enemy_turn(battle: dict, unit: dict) -> None:
-    concealment.refresh(battle, _line_of_sight)
+    concealment.refresh(battle)
     if any(s.get("id") == "ambush_sleep" for s in unit.get("statuses", [])):
         battle["log"].append(f"{unit['name']} is still asleep.")
         _finish_turn(battle)
@@ -1896,16 +1927,21 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
         _search_brush(battle, unit)
         return
     target = min(targets, key=lambda candidate: (_distance(unit, candidate), candidate["hp"]))
-    if unit.get('bush_ambusher') and concealment.unseen(unit) and _distance(unit, target) > _movement_limit(unit) + unit['attack_range']:
-        _guard(battle, unit)
-        _finish_turn(battle)
-        return
+    if unit.get('bush_ambusher') and concealment.unseen(unit) and not battle.get('ambush_sprung'):
+        target = _ambush_target(battle, unit, targets)
+        if target is None:
+            unit['ambush_waits'] = int(unit.get('ambush_waits', 0)) + 1
+            _guard(battle, unit)
+            _finish_turn(battle)
+            return
+        battle['ambush_sprung'] = True
     if _auto_open_gate(battle, unit, target):
         return
     snared = int(unit.get("snared_until_round", 0)) >= int(battle.get("round", 1))
     if not _can_attack(battle, unit, target) and not snared:
         _move_toward(battle, unit, target)
-        target = min(targets, key=lambda candidate: (_distance(unit, candidate), candidate["hp"]))
+        if unit.get('ambush_plan') != 'strike' or not _can_attack(battle, unit, target):
+            target = min(targets, key=lambda candidate: (_distance(unit, candidate), candidate["hp"]))
     if _can_attack(battle, unit, target):
         target = conditions.confused_target(battle, unit, target, lambda u: _can_attack(battle, unit, u))
         if unit.get('capture_weapon'):
@@ -1927,10 +1963,10 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
 
 
 def _advance_to_player(battle: dict) -> None:
-    concealment.refresh(battle, _line_of_sight)
+    concealment.refresh(battle)
     safety = 0
     while battle["status"] == "active" and safety < 100:
-        concealment.refresh(battle, _line_of_sight)
+        concealment.refresh(battle)
         unit = _current_unit(battle)
         if not unit:
             return
@@ -2459,7 +2495,7 @@ def _context_actions(battle: dict, unit: dict) -> list[dict]:
 
 
 def battle_view(battle: dict) -> dict:
-    concealment.refresh(battle, _line_of_sight)
+    concealment.refresh(battle)
     view = deepcopy(battle)
     hidden = {uid for uid, unit in view['units'].items() if concealment.unseen(unit)}
     hidden_names = [view['units'][uid]['name'] for uid in hidden]
@@ -2477,6 +2513,10 @@ def battle_view(battle: dict) -> dict:
     view['concealment_help'] = concealment.HELP if concealment.cover_cells(view) else None
     view.pop('searched_bushes', None)
     view.pop('ambush_enemy_indices', None)
+    view.pop('ambush_lane', None)
+    view['concealment_warning'] = ('The fight is not over. Check the brush or end your turn to let the enemy act.'
+                                   if hidden and not _visible_enemies(battle) and battle.get('status') == 'active'
+                                   else None)
     from .portrait_framing import resolve_frame
     from .portraits import version_pool_url
     for unit in view.get('units',{}).values():
@@ -2700,7 +2740,7 @@ def _apply_preparation_command(battle: dict, command: dict) -> dict:
 
 def apply_player_command(battle: dict, command: dict) -> dict:
     _ensure_battle_schema(battle)
-    concealment.refresh(battle, _line_of_sight)
+    concealment.refresh(battle)
     battle["animation_events"] = []
     if battle.get("status") == "preparing":
         return _apply_preparation_command(battle, command)
@@ -2931,7 +2971,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         _commit_player_movement(battle, unit)
     if action == "end_turn" or action in {"attack", "skill", "subdue", "drop", "drop_object", "throw", "guard", "use_item"}:
         _finish_turn(battle)
-    concealment.refresh(battle, _line_of_sight)
+    concealment.refresh(battle)
     _check_end(battle)
     _advance_to_player(battle)
     if action != "move":

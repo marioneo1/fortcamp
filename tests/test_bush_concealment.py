@@ -39,14 +39,14 @@ class BushConcealmentTests(unittest.TestCase):
                 apply_player_command(battle,{'action':action,'target_id':enemy['id']})
         self.assertFalse(enemy['spotted'])
 
-    def test_movement_discovers_enemy_stops_safely_and_keeps_main_action(self):
+    def test_entering_occupied_brush_reveals_contact_and_keeps_main_action(self):
         battle=self.battle();battle_view(battle)
         result=apply_player_command(battle,{'action':'move','x':7,'y':2})
-        self.assertEqual((battle['units']['player']['x'],battle['units']['player']['y']),(3,2))
+        self.assertEqual((battle['units']['player']['x'],battle['units']['player']['y']),(4,2))
         self.assertIn('contract_enemy_1',result['units'])
         self.assertFalse(battle['units']['player']['acted'])
         self.assertEqual(result['current_unit_id'],'player')
-        self.assertEqual(len([s for s in battle['log'] if 'spotted' in s]),1)
+        self.assertEqual(len([s for s in battle['log'] if 'run into' in s]),1)
         restored=json.loads(json.dumps(battle))
         restored['units']['player'].update(x=0,y=2)
         self.assertIn('contract_enemy_1',battle_view(restored)['units'])
@@ -65,7 +65,7 @@ class BushConcealmentTests(unittest.TestCase):
         hp=battle['units']['contract_enemy_0']['hp']
         view=apply_player_command(battle,{'action':'attack','target_id':'contract_enemy_0',
                                           'move_to':{'x':5,'y':2}})
-        self.assertEqual((battle['units']['player']['x'],battle['units']['player']['y']),(3,2))
+        self.assertEqual((battle['units']['player']['x'],battle['units']['player']['y']),(4,2))
         self.assertEqual(battle['units']['contract_enemy_0']['hp'],hp)
         self.assertFalse(battle['units']['player']['acted'])
         self.assertIn('contract_enemy_1',view['units'])
@@ -80,20 +80,86 @@ class BushConcealmentTests(unittest.TestCase):
         battle['units']['player'].update(x=0,y=2)
         self.assertNotIn(enemy['id'],battle_view(battle)['units'])
 
-    def test_wall_blocks_spotting_and_destroying_it_reveals(self):
+    def test_adjacent_enemy_stays_hidden_even_after_wall_is_destroyed(self):
         battle=self.battle();battle['units']['player'].update(x=3,y=2)
         battle['terrain']=[{'id':'wall','x':4,'y':2,'blocking':True,'blocks_sight':True}]
         self.assertNotIn('contract_enemy_1',battle_view(battle)['units'])
         battle['terrain'][0]['destroyed']=True
-        self.assertIn('contract_enemy_1',battle_view(battle)['units'])
+        self.assertNotIn('contract_enemy_1',battle_view(battle)['units'])
 
     def test_hidden_ambusher_waits_without_name_or_movement_leak(self):
         battle=self.battle();battle_view(battle);enemy=battle['units']['contract_enemy_1']
-        battle['turn_index']=1
+        battle['turn_index']=2
         _enemy_turn(battle,enemy)
         self.assertEqual((enemy['x'],enemy['y']),(5,2))
         self.assertFalse(enemy['spotted'])
         self.assertNotIn(enemy['name'],json.dumps(battle_view(battle)))
+
+    def test_proximity_never_reveals_and_clear_attack_springs_ambush(self):
+        battle=self.battle();battle['units']['player'].update(x=4,y=2)
+        enemy=battle['units']['contract_enemy_1'];battle['turn_index']=2
+        self.assertNotIn(enemy['id'],battle_view(battle)['units'])
+        _enemy_turn(battle,enemy)
+        self.assertTrue(enemy['spotted'])
+        self.assertTrue(battle['ambush_sprung'])
+        self.assertIn(enemy['name'],json.dumps(battle_view(battle)))
+
+    def test_two_waits_then_regular_ai_pursues_instead_of_waiting_forever(self):
+        battle=self.battle();battle_view(battle);enemy=battle['units']['contract_enemy_1']
+        for _ in range(2):
+            battle['turn_index']=2
+            _enemy_turn(battle,enemy)
+            self.assertEqual((enemy['x'],enemy['y']),(5,2))
+        self.assertFalse(enemy['spotted'])
+        battle['turn_index']=2
+        _enemy_turn(battle,enemy)
+        self.assertNotEqual((enemy['x'],enemy['y']),(5,2))
+        self.assertEqual(enemy['ambush_plan'],'pursue')
+
+    def test_last_hidden_enemy_pursues_immediately_and_view_explains_unfinished_fight(self):
+        battle=self.battle()
+        for uid in ('contract_enemy_0','contract_enemy_2'):
+            battle['units'][uid].update(alive=False,conscious=False,condition='dead')
+        view=battle_view(battle)
+        self.assertTrue(view['concealment_warning'])
+        enemy=battle['units']['contract_enemy_1'];battle['turn_index']=2
+        _enemy_turn(battle,enemy)
+        self.assertNotEqual((enemy['x'],enemy['y']),(5,2))
+        self.assertTrue(enemy['spotted'])
+        self.assertFalse(battle_view(battle)['concealment_warning'])
+
+    def test_close_target_behind_wall_does_not_trigger_a_phantom_attack(self):
+        battle=self.battle();battle['units']['player'].update(x=3,y=2)
+        battle['units']['contract_enemy_1'].update(attack_range=3)
+        battle['terrain']=[{'id':'wall','x':4,'y':y,'blocking':True,'blocks_sight':True}
+                           for y in range(5)]
+        battle_view(battle);enemy=battle['units']['contract_enemy_1'];battle['turn_index']=2
+        _enemy_turn(battle,enemy)
+        self.assertFalse(enemy['spotted'])
+        self.assertEqual(enemy['ambush_waits'],1)
+        self.assertEqual((enemy['x'],enemy['y']),(5,2))
+
+    def test_melee_ambusher_waits_for_road_kill_zone_then_strikes(self):
+        battle=self.battle();battle['units']['player'].update(x=2,y=2)
+        battle['ambush_lane']=[[2,1]]
+        battle_view(battle);enemy=battle['units']['contract_enemy_1'];battle['turn_index']=2
+        _enemy_turn(battle,enemy)
+        self.assertFalse(enemy['spotted'])
+        self.assertEqual(enemy['ambush_waits'],1)
+        battle['ambush_lane']=[[2,2]];battle['turn_index']=2
+        _enemy_turn(battle,enemy)
+        self.assertTrue(battle['ambush_sprung'])
+        self.assertEqual(enemy['ambush_plan'],'strike')
+        self.assertTrue(enemy['spotted'])
+
+    def test_sprung_signal_sends_other_ambusher_into_normal_pursuit(self):
+        battle=self.battle();battle_view(battle)
+        battle['ambush_sprung']=True
+        enemy=battle['units']['contract_enemy_1'];battle['turn_index']=2
+        _enemy_turn(battle,enemy)
+        self.assertNotEqual((enemy['x'],enemy['y']),(5,2))
+        self.assertTrue(enemy['spotted'])
+        self.assertEqual(enemy.get('ambush_waits',0),0)
 
     def test_attack_leaving_cover_and_unconsciousness_reveal(self):
         for trigger in ('attack','move','unconscious'):
@@ -120,7 +186,7 @@ class BushConcealmentTests(unittest.TestCase):
         _player_auto_turn(battle,battle['units']['player'],'balanced')
         self.assertTrue(battle['units']['contract_enemy_1']['spotted'])
         self.assertEqual(battle['units']['contract_enemy_1']['hp'],hp)
-        self.assertEqual((battle['units']['player']['x'],battle['units']['player']['y']),(3,2))
+        self.assertEqual((battle['units']['player']['x'],battle['units']['player']['y']),(4,2))
 
     def test_real_road_ambush_variants_keep_hidden_scouts_and_normal_budgets(self):
         presets=layout_presets('contract:highway_ambush')

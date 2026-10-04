@@ -443,3 +443,8 @@ Validation: 142 frontend checks passed. Full backend run passed 355/356; the rem
 ## October 3: bush concealment and roadside ambushes
 
 Implemented persistent first sightings for enemies in walkable bush cover. Spot within two tiles with clear sight, or reveal on leaving cover/attacking; bodies are visible. Server views omit unseen units, initiative, targets and animations; direct targeting is rejected. Provisional movement pauses on discovery without spending the main action. Auto/independent party AI uses spotted enemies and searches brush. Two Highway Ambush presets put two escorts in brush with waiting AI; other two presets and rank budgets stay intact. No new art or dependencies. Production remains unchanged. Full stealth, friendly concealment and re-hiding remain deferred. Canonical: docs/design/BUSH_CONCEALMENT.md.
+
+
+## Bush ambush refinement
+
+Supersedes the two-tile proximity reveal: nearby enemies remain concealed until attacking, leaving cover or physical contact with their occupied cell. Names remain absent from initiative. Authored road kill zones, actual reachable attacks, isolated/wounded target preference and a shared spring signal govern ambushers. Two waiting activations maximum, then normal pursuit; hidden last survivors pursue immediately. An unfinished-fight hint covers the case with no visible targets. No extra damage or free attacks. Fatigue is a separate pacing proposal, not implemented. See docs/design/BUSH_CONCEALMENT.md and docs/design/FATIGUE_PACING_PROPOSAL.md.
