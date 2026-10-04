@@ -773,3 +773,8 @@ additional asset packs.
 ## October 3 ? standalone local portrait tagging
 
 Cloud tagging paused without an API key. Built sibling character-tagger with WD EVA02-Large v3, independent Windows environment, real CUDA/CPU health checks, structured normalization, known pool/catalogue race and gender, SQLite immutable detector runs/manual edit history, resume, JSON/CSV export, local review and searchable attributes. All 2,072 installed portraits processed; main GPU pass took 237 seconds for 2,059 new portraits with 13 pilot records skipped. Full resume skipped all images. Eighteen automated tests, Windows setup launcher and isolated desktop/mobile browser QA passed. Nine Champion and twelve original portraits visually checked with five separate field corrections; no samples marked fully reviewed. Existing game registries, production and character overrides unchanged. Reviewed-data integration and a benchmarked optional visual second pass remain deferred. Canonical: docs/art/LOCAL_PORTRAIT_TAGGER.md; standalone README has setup/configuration/schema details.
+
+
+## October 3 ? Aasimar healer original crop repair
+
+Trimmed 17 bottom rows from uncropped IDs 011?015 after visual inspection showed separator/next-row contamination. Remaining pixels retained losslessly. Square/thumb image bytes, both appearance registries, shared framing and standalone tagging DB/normalized export verified unchanged by hashes. No tagging run. Image URL versions refreshed via timestamps, backups and before/after captures retained. Canonical: docs/art/PORTRAIT_FRAMING.md.
