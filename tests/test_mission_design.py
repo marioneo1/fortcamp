@@ -1747,7 +1747,16 @@ class PortraitPipelineTests(unittest.TestCase):
         champion_portrait_io.MANIFEST_PATH = original_manifest
 
     def test_goblin_boss_uses_only_special_gender_pool(self):
-        recruit = _make_procedural("goblin_boss", random.Random(2))
+        # Asset installation is optional: test special selection with both pools available.
+        from unittest.mock import patch
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for gender in ("male", "female"):
+                folder = root / f"goblin_{gender}_special" / "full"
+                folder.mkdir(parents=True)
+                (folder / "001.webp").write_bytes(b"fixture")
+            with patch.object(portrait_module, "PORTRAIT_POOL_ROOT", root):
+                recruit = _make_procedural("goblin_boss", random.Random(2))
 
         self.assertIn(recruit["portrait_pool"], {"goblin_male_special", "goblin_female_special"})
         self.assertIn(recruit["gender"], {"male", "female"})
