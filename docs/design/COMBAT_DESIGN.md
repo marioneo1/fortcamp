@@ -1,5 +1,7 @@
 # Fortcamp Tactical Battle Design
 
+October 4 spaces foundation: COMBAT_SPACES.md documents implemented zone/form vocabulary and UI, with committed movement, owner clocks and exact form restoration. Arbitrary ground targeting, summon/device economy and complete Job AI remain pending.
+
 October 4 tactical update: COMBAT_ABILITIES.md documents live finite shields, owned Marks, bounded reactions, straight displacement and explicit pit types. Existing generic void is blocked; lethal falls require authored hazards. New Jobs remain proposed.
 
 October 4: [Combat ability foundation](COMBAT_ABILITIES.md) is authoritative for new-battle technique costs and activation timing. New battles no longer lose at round twenty; bounded auto pauses instead. Legacy saved battles retain old rules. Twelve Jobs remain proposed.

@@ -1,6 +1,7 @@
 """Small, versioned active-ability vocabulary. Definitions are data, never scripts."""
 from copy import deepcopy
 import math
+from . import combat_spaces as spaces
 
 VERSION = 1
 STATUSES = {'stun','sleep','poison','bleed','charm','confuse','berserk','freeze',
@@ -23,6 +24,8 @@ def validate(skill):
         raise ValueError('Ability needs a stable ID')
     if skill.get('elevation_rule') not in RULES:
         raise ValueError('Ability must declare an elevation rule')
+    if skill.get('source_kind','equipment') not in {'equipment','character'}:
+        raise ValueError('Unsupported ability source')
     _integer(skill.get('range'), 1, 20)
     cost = skill.get('cost', {})
     if not isinstance(cost, dict) or set(cost) != {'cooldown','charges'}:
@@ -43,7 +46,8 @@ def validate(skill):
         allowed = {'attack': {'damage_bonus','armor_pierce'}, 'heal': {'amount'},
                    'cleanse': {'statuses'}, 'guard': set(), 'status': {'status','turns','chance'},
                    'barrier': {'amount','turns'}, 'mark': {'turns','accuracy'},
-                   'displace': {'mode','distance','collision_damage'}}
+                   'displace': {'mode','distance','collision_damage'},
+                   'zone': {'zone','radius','turns'}, 'form': {'form','turns'}}
         if kind not in allowed or set(effect) - (allowed[kind] | {'type','conditions'}):
             raise ValueError('Unsupported ability effect')
         if kind == 'attack':
@@ -55,6 +59,14 @@ def validate(skill):
             raise ValueError('Support effects require an ally target')
         if kind in {'mark','displace'} and skill['target'] != 'enemy':
             raise ValueError('Hostile tactical effects require an enemy target')
+        if kind in {'zone','form'}:
+            spaces.validate_effect(effect)
+            _integer(effect.get('turns'),1,3)
+            if kind=='zone':_integer(effect.get('radius'),0,1)
+            if kind=='form' and skill['target']!='ally':
+                raise ValueError('Forms require a self/ally target')
+            if kind=='zone' and (skill['target']=='ally') != (spaces.ZONES[effect['zone']]['relation']=='ally'):
+                raise ValueError('Zone target must match its ally/enemy policy')
         if kind in {'barrier','mark'}:
             _integer(effect.get('turns'),1,3)
             _integer(effect.get('amount') if kind=='barrier' else effect.get('accuracy',10),1,200 if kind=='barrier' else 15)
@@ -99,6 +111,9 @@ def snapshot(skills, intelligence):
     result=[]
     for original in skills:
         skill=deepcopy(original)
+        if skill.get('ability_version'):
+            result.append(validate(skill))
+            continue
         skill.update(ability_version=VERSION,target=skill.get('target','enemy'))
         cooldown={'precision_shot':2,'arc_bolt':2,'field_care':3,'shield_cover':3}.get(skill['id'],0)
         skill['cost']={'cooldown':cooldown,'charges':None if cooldown else 1}
@@ -142,7 +157,8 @@ def availability(unit, skill):
     if charges is not None and state.get('uses',0)>=charges:
         return {'available':False,'reason':'No uses remaining','uses_remaining':0,'cooldown_remaining':0}
     remaining=max(0,state.get('ready_at',0)-unit.get('ability_activation',0))
-    restriction = ('Capture weapons cannot perform damaging techniques' if unit.get('capture_weapon') and any(e['type']=='attack' for e in skill['effects']) else
+    restriction = ('Weapon techniques are unavailable in this form' if unit.get('form') and skill.get('source_kind','equipment')=='equipment' and any(e['type']=='attack' for e in skill['effects']) else
+                   'Capture weapons cannot perform damaging techniques' if unit.get('capture_weapon') and any(e['type']=='attack' for e in skill['effects']) else
                    'Mute prevents this spell' if skill['elevation_rule'] in {'ignore','line_of_effect'} and any(s.get('id')=='mute' for s in unit.get('statuses',[])) else None)
     return {'available':remaining==0 and not unit.get('acted') and not restriction,'reason':'Main action already used' if unit.get('acted') else restriction or (f'Ready in {remaining} of your turns' if remaining else None),
             'cooldown_remaining':remaining,'uses_remaining':None if charges is None else charges-state.get('uses',0)}

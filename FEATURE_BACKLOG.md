@@ -1,5 +1,7 @@
 # Fortcamp feature backlog
 
+October 4 spaces foundation (dev): four bounded zone rules, real committed-route entry, overlap/expiry/owner checks, and two reversible form profiles implemented. No HP refill, race rewrite or new starter kits. Zone/form overlays and tooltips installed. Canonical: docs/design/COMBAT_SPACES.md. Next: owner-linked summons/devices, ground-target/command UI and Job loadouts; all twelve Jobs still launch together.
+
 October 4 tactical dependency pass: finite Barrier, owned Mark, status expiry/recovery, shared bounded interception/counters, straight displacement and authored pit outcomes implemented in dev. Tower Shield, Duelist Gloves, Precision Shot, Hook Thrust and Titan Thrust are pilots. Next: zones/forms/summon economy, then loadouts/UI/AI and all twelve Jobs together. Canonical: docs/design/COMBAT_ABILITIES.md. Production untouched.
 
 October 4 ability foundation: versioned snapshots, per-technique cooldown/charges and ordered effects/conditions implemented. Precision Shot/Arc Bolt cooldown 2; Field Care 3; other gear has individual one-use limits. No two-gear-active cap. New battles have no twenty-round defeat; bounded auto pauses. Old saved battles retain legacy rules. Dev only. Canonical: docs/design/COMBAT_ABILITIES.md. Next: status ownership/expiry, Barrier/Mark, displacement and bounded reactions, then summons/forms/loadouts and all twelve starters.

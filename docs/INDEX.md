@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Current spaces foundation: [Combat zones and forms](design/COMBAT_SPACES.md) documents engine rules, fixed effect IDs, expiry/stacking, reversible forms, presentation and remaining targeting/AI work. No Job release yet.
+
 Implemented tactical dependencies: [Combat ability foundation](design/COMBAT_ABILITIES.md) now also covers Barrier/Mark, control timing, shared reactions, knockback resistance and authored pit outcomes. Jobs, loadouts, summons, forms and zones remain future work.
 
 Implemented first dependency: [Combat ability foundation](design/COMBAT_ABILITIES.md) covers per-technique costs, ordered effects, activation timing and legacy saves. Twelve starting Jobs remain proposed.

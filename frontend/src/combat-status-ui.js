@@ -1,6 +1,7 @@
 export function statusDetails(status,definitions={}){
   const base=definitions[status.id]||{name:status.id,icon:'•',description:'Status effect'};
   const details=[];
+  if(status.id==='wild_form')return {name:status.name,icon:'◆',description:status.description,details:[`${status.turns} owner activations remaining · no HP refill`]};
   if(status.id==='barrier')details.push(`${status.amount} damage absorption remaining`);
   if(status.id==='mark')details.push(`Owner: ${status.source_name||'unknown'} · +${status.accuracy||10} accuracy on their first hit`);
   if(status.id==='reaction')return {name:status.ready?'Reaction ready':'Reaction spent',icon:status.ready?'↶':'↷',description:`${(status.reactions||[]).join(' / ')}. One shared reaction, refreshed at activation start. Cannot chain.`,details:[]};
@@ -19,6 +20,7 @@ export function tacticalPreviewText(preview){
   const parts=[];
   if(preview.intercepted_by)parts.push(`Intercepted by ${preview.intercepted_by}`);
   if(preview.barrier)parts.push(`${preview.barrier}-point Barrier`);
+  for(const zone of preview.zones||[])parts.push(`${zone.name} · ${zone.cells.length} tiles · ${zone.turns} owner activations · ${zone.description}`);
   for(const effect of preview.tactics||[]){
     const dest=effect.destination;
     parts.push(`On hit: ${effect.type} toward cell ${dest.x+1}, ${dest.y+1} · ${effect.resistance}% resistance`);

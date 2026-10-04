@@ -21,6 +21,7 @@ from . import combat_conditions as conditions
 from . import concealment
 from . import combat_abilities as abilities
 from . import combat_tactics as tactics
+from . import combat_spaces as spaces
 
 
 STATUS_DEFINITIONS = {
@@ -1031,12 +1032,17 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
 
 
 def _strike_preview(battle,actor,target,rule,reach,skill=None):
-    recipient=_interceptor(battle,actor,target,reach)
+    direct = not skill or any(e['type']=='attack' for e in skill.get('effects',[]))
+    recipient=_interceptor(battle,actor,target,reach) if direct else target
     preview=_attack_preview(battle,actor,recipient,rule)
     preview['barrier']=max((s.get('amount',0) for s in recipient.get('statuses',[]) if s['id']=='barrier'),default=0)
     if recipient is not target:preview['intercepted_by']=recipient['name']
     preview['tactics']=[{'type':e['mode'],**_displacement_preview(battle,actor,recipient,e)}
         for e in (skill or {}).get('effects',[]) if e['type']=='displace']
+    preview['zones']=[{'kind':e['zone'],'name':spaces.ZONES[e['zone']]['name'],
+        'description':spaces.ZONES[e['zone']]['description'],'cells':_zone_cells(battle,recipient,e),
+        'turns':e['turns']} for e in (skill or {}).get('effects',[]) if e['type']=='zone']
+    if not direct:preview.update(chance=100,damage_bonus=0,setup_only=True)
     return preview
 
 
@@ -1178,6 +1184,8 @@ def _commit_player_movement(battle: dict, unit: dict) -> None:
     origin = unit.get("movement_origin")
     if origin and (int(origin["x"]), int(origin["y"])) != (unit["x"], unit["y"]):
         battle["log"].append(f"{unit['name']} takes position at {unit['x'] + 1},{unit['y'] + 1}.")
+    if origin and unit.get('movement_path'):
+        _apply_zone_route(battle,unit,[(p['x'],p['y']) for p in unit['movement_path']])
     unit.pop("movement_origin", None)
     unit.pop("movement_path", None)
     _apply_tile_entry(battle, unit)
@@ -1240,8 +1248,52 @@ def _apply_attack_approach(battle, unit, target, attack_range, command):
     return (x, y) != desired
 
 
+def _zone_cells(battle, target, effect):
+    def allowed(x,y):
+        tiles=_terrain_at(battle,x,y)
+        if tactics.pit_at(battle,x,y) or any(t.get('blocking') and not t.get('edge_wall') and not t.get('destroyed') for t in tiles):return False
+        material,_=_ground_at(battle,x,y)
+        if material=='water' or any(t.get('kind')=='shallow_water' for t in tiles):return False
+        if any(o.get('blocking') and (x,y) in occupied_tiles(o) for o in battle.get('objects',{}).values()):return False
+        return _line_of_sight(battle,target,{'x':x,'y':y})
+    return spaces.zone_cells(battle,target,effect['radius'],allowed)
+
+
+def _trigger_zones(battle, unit, event):
+    def apply_status(owner,target,sid):
+        if sid=='poison' and sid in target.get('racial_resistances',[]):return
+        chance=50 if sid in target.get('racial_resistances',[]) else 100
+        roll=random.Random(f"{battle.get('seed')}:zone:{sid}:{target['id']}:{target.get('status_activation')}").randint(1,100)
+        if roll<=chance and conditions.apply(target,sid,1,owner):
+            battle['log'].append(f"{target['name']} suffers {sid} from {owner['name']}'s zone.")
+    def damage(owner,target,amount,name):
+        source={'id':owner['id'],'name':owner['name'],'attack':amount,'weapon':name,'status_tick':True}
+        dealt=_deal_damage(battle,source,target,armor_pierce=target.get('armor',0))
+        battle['log'].append(f"{target['name']} takes {dealt} damage from {name}.")
+    spaces.trigger_zones(battle,unit,event,_combat_active,
+        lambda target,owner:target['id'] in {u['id'] for u in conditions.hostile_units(battle,owner,_living(battle))},
+        apply_status,damage)
+
+
+def _apply_zone_route(battle,unit,path):
+    """Consequences run only after a real route commits, never during preview."""
+    if not battle.get('zones'):return
+    destination=(unit['x'],unit['y'])
+    for x,y in path:
+        if unit.get('zone_location')==[x,y]:continue
+        unit.update(x=x,y=y,zone_location=[x,y])
+        _trigger_zones(battle,unit,'entry')
+        if not _combat_active(unit):return
+    unit['x'],unit['y']=destination
+
+
 def _apply_tile_entry(battle: dict, unit: dict) -> None:
     """Resolve immediate effects from the tile where a committed move ends."""
+    if battle.get('zones'):
+        position=[unit['x'],unit['y']]
+        old=unit.get('zone_location')
+        unit['zone_location']=position
+        if old is not None and old!=position:_trigger_zones(battle,unit,'entry')
     tiles = _terrain_at(battle, unit["x"], unit["y"])
     material, _ = _ground_at(battle, unit["x"], unit["y"])
     if material == "water" or any(tile.get("kind") == "shallow_water" or "water" in tile.get("tags", []) for tile in tiles):
@@ -1305,6 +1357,11 @@ def _current_unit(battle: dict, activate: bool = True) -> dict | None:
                 unit["status_activation"] = stamp
                 if unit.get('ability_version'):
                     abilities.start_activation(unit, stamp)
+                spaces.expire_form(unit)
+                if battle.get('zones'):
+                    spaces.expire_zones(battle,unit)
+                    unit['zone_location']=[unit['x'],unit['y']]
+                    _trigger_zones(battle,unit,'start')
                 conditions.start_activation(battle, unit)
                 if unit.get("team")=="player":
                     facts=unit.setdefault("combat_record",{})
@@ -1354,6 +1411,8 @@ def _deal_damage(
     battle: dict, attacker: dict, target: dict, bonus: int = 0, armor_pierce: int = 0,
     intent: str = "lethal", ability: dict | None = None,
 ) -> int:
+    source_unit=battle.get('units',{}).get(attacker.get('id'))
+    if not attacker.get('status_tick') and source_unit and not _combat_active(source_unit):return 0
     if not attacker.get("status_tick"):
         _wake_ambush(battle, target)
     if ability:
@@ -1476,6 +1535,7 @@ def _deal_damage(
 
 
 def _capture_attempt(battle: dict, actor: dict, target: dict) -> None:
+    if not _combat_active(actor):return
     if not actor.get('capture_weapon'):
         raise ValueError('Equip a capture weapon to attempt Subdue')
     if not _combat_active(target) or not _can_attack(battle, actor, target):
@@ -1725,6 +1785,7 @@ def _check_frontier_watch_end(battle: dict) -> None:
 
 
 def _check_end(battle: dict) -> None:
+    spaces.cleanup_zones(battle,_combat_active)
     if battle.get('mercenary_interlude') or battle.get("encounter_id", "").startswith("contract:"):
         _check_contract_end(battle)
     elif battle.get("encounter_id") == "goblin_captive_cart":
@@ -1904,6 +1965,7 @@ def _move_toward(battle: dict, unit: dict, target: dict) -> None:
             _record_movement(battle,unit,start,reachable_path)
             if unit.get('carrying') in battle['units']:
                 carried=battle['units'][unit['carrying']];carried['x'],carried['y']=x,y
+            _apply_zone_route(battle,unit,reachable_path)
             _apply_tile_entry(battle,unit)
 
 
@@ -1949,6 +2011,7 @@ def _move_to_nearest_tile(battle: dict, unit: dict, destinations: list[dict]) ->
         if unit.get("carrying") in battle["units"]:
             carried = battle["units"][unit["carrying"]]
             carried["x"], carried["y"] = unit["x"], unit["y"]
+        _apply_zone_route(battle,unit,reachable)
         _apply_tile_entry(battle, unit)
 
 
@@ -2206,7 +2269,9 @@ def _support_eligible(battle, actor, target, effect):
         return False
     if _distance(actor, target) > int(effect.get('range', 1)) or not _line_of_sight(battle, actor, target):
         return False
-    return ((effect.get('heal', 0) > 0 and target['hp'] < target['max_hp'])
+    return ((effect.get('form_change') and target['id']==actor['id'] and not actor.get('capture_weapon') and not actor.get('carrying') and not actor.get('carrying_object'))
+            or effect.get('zone_setup')
+            or (effect.get('heal', 0) > 0 and target['hp'] < target['max_hp'])
             or (effect.get('barrier',0)>max((s.get('amount',0) for s in target.get('statuses',[]) if s['id']=='barrier'),default=0))
             or (effect.get('guard_ally') and not target.get('guarding'))
             or any(s.get('id') in effect.get('cleanses', []) for s in target.get('statuses', [])))
@@ -2237,6 +2302,8 @@ def _support_effect(skill, actor):
         effect['cleanses']=[s for e in skill['effects'] if e['type']=='cleanse' for s in e['statuses']]
         effect['guard_ally']=any(e['type']=='guard' for e in skill['effects'])
         effect['barrier']=max((e['amount'] for e in skill['effects'] if e['type']=='barrier'),default=0)
+        effect['form_change']=any(e['type']=='form' for e in skill['effects'])
+        effect['zone_setup']=any(e['type']=='zone' for e in skill['effects'])
         return effect
     if effect.get('heal'):
         effect['heal'] += int(actor.get('intelligence', 4)) // 2
@@ -2250,7 +2317,13 @@ def _resolve_ability(battle, actor, target, skill):
     abilities.validate(skill)
     if actor.get('capture_weapon') and any(e['type']=='attack' for e in skill['effects']):
         raise ValueError('Capture weapons cannot perform damaging techniques')
+    for effect in skill['effects']:
+        if effect['type']=='form' and (target['id']!=actor['id'] or actor.get('capture_weapon') or actor.get('carrying') or actor.get('carrying_object')):
+            raise ValueError('Forms require self targeting without a payload or capture weapon')
+        if effect['type']=='zone' and not _zone_cells(battle,target,effect):
+            raise ValueError('No legal ground for this zone')
     _commit_player_movement(battle, actor)
+    if not _combat_active(actor):return {'interrupted':True}
     def attack(effect):
         nonlocal target
         target,hit,damage,preview,roll=_perform_attack(battle,actor,target,skill['elevation_rule'],
@@ -2270,6 +2343,10 @@ def _resolve_ability(battle, actor, target, skill):
     def barrier(effect):conditions.barrier(target,effect['amount'],effect['turns'],actor)
     def mark(effect):conditions.mark(battle,actor,target,effect['turns'],effect.get('accuracy',10))
     def displace(effect):_apply_displacement(battle,actor,target,effect)
+    def zone(effect):spaces.place_zone(battle,actor,effect,_zone_cells(battle,target,effect))
+    def form(effect):
+        spaces.change_form(actor,effect)
+        battle['log'].append(f"{actor['name']} returns to normal form." if effect['form']=='normal' else f"{actor['name']} takes {spaces.FORMS[effect['form']]['name']} form.")
     def status(effect):
         sid=effect['status']
         if sid=='poison' and ('poison' in target.get('racial_resistances',[]) or target.get('race') in {'Undead','Revenant','Banshee','Golem','Automaton'}):return
@@ -2281,7 +2358,7 @@ def _resolve_ability(battle, actor, target, skill):
         if roll<=chance and conditions.apply(target,sid,effect['turns'],actor):
             battle['log'].append(f"{target['name']} suffers {sid}.")
     result=abilities.resolve(skill,target,{'attack':attack,'heal':heal,'cleanse':cleanse,'guard':guard,'status':status,
-        'barrier':barrier,'mark':mark,'displace':displace})
+        'barrier':barrier,'mark':mark,'displace':displace,'zone':zone,'form':form})
     abilities.spend(actor,skill)
     if result.get('attacked'):_react_after_attack(battle,actor,target,result['hit'],skill['elevation_rule'])
     if skill['target']=='ally':
@@ -2722,10 +2799,17 @@ def battle_view(battle: dict) -> dict:
     concealment.refresh(battle)
     view = deepcopy(battle)
     _ensure_battle_schema(view)
+    view['zones']=spaces.presentation(view)
+    for unit in view['units'].values():
+        if unit.get('form'):
+            rule=spaces.FORMS[unit['form']['id']]
+            unit['statuses'].append({'id':'wild_form','name':rule['name'],'description':rule['description'],
+                'turns':max(0,unit['form']['expires_at']-unit.get('ability_activation',0))})
     hidden = {uid for uid, unit in view['units'].items() if concealment.unseen(unit)}
     hidden_names = [view['units'][uid]['name'] for uid in hidden]
     view['log'] = [line for line in view.get('log', []) if not any(name in line for name in hidden_names)]
     view['units'] = {uid:unit for uid,unit in view['units'].items() if uid not in hidden}
+    view['zones']=[z for z in view['zones'] if z['owner_id'] not in hidden]
     if 'spawn_zones' in view:
         view['spawn_zones'].pop('enemy', None)
     # Filter initiative without advancing a hidden enemy activation in the view copy.

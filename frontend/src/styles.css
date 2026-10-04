@@ -377,3 +377,11 @@ body.board-vfx-active .event-arcane .guild-event-art:after{display:none}
 .stamina-readout{display:block;color:#b9c9a2;font-size:.75rem;line-height:1.5;font-variant-numeric:tabular-nums;white-space:normal}
 .planner-stamina-help,.planner-stamina-summary{padding:.75rem 1rem;border:1px solid #64755166;border-radius:8px;background:#27302466;color:#d1d9be;font-size:.8rem;line-height:1.5}
 .planner-stamina-summary{margin-top:.7rem;display:grid;gap:.25rem}.planner-stamina-summary small{display:block}
+
+/* Tactical zones stay beneath units and never intercept map input. */
+.battle-zone{pointer-events:none;z-index:2;position:relative;border:2px dashed #b9a76d;background:#b9a76d18;box-shadow:inset 0 0 12px #b9a76425}
+.battle-zone span{position:absolute;bottom:3px;left:3px;font-size:8px;color:#fff;text-shadow:0 1px 3px #000;max-width:90%;overflow:hidden;white-space:nowrap}
+.battle-zone.zone-ember{border-color:#f3a35f;background:#e1762725}
+.battle-zone.zone-binding{border-color:#ab8ce3;background:#7e5bab22}
+.battle-zone.zone-thorns{border-color:#91b870;background:#648e4125}
+.battle-zone.zone-sanctuary{border-color:#e8dba1;background:#dfc87422}

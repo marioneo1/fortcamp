@@ -1076,3 +1076,26 @@ Validation: 420 backend tests and 183 frontend tests passed; Vite build passed (
 Implemented finite Barrier, owned Mark, modern expiry/control recovery, one shared interception/counter reaction, straight displacement, resistance and opt-in shallow/deep/lethal pit resolution. Pilots use existing Tower Shield, Duelist Gloves, Precision Shot, Hook Thrust and Titan Thrust. Tooltips/previews explain actual rules; lost bodies do not become loot. No new Jobs, summons, forms, zones or maps published. Existing wall auto-pathfinding stalls remain tracked.
 
 Validation: 432 full backend tests plus 74 final focused tests; 185 frontend tests; final build and isolated battle UI check pass. Production and live saves untouched. Canonical: docs/design/COMBAT_ABILITIES.md.
+
+## October 4 - zones and reversible forms foundation
+
+Added four bounded zone rules, owner activation expiry, same-kind per-target
+activation limits, wall/ground clipping, committed route entry and owner-removal
+cleanup. Zone casting is currently unit-anchored; no empty-tile casting UI yet.
+Prowler/Bulwark replace each other and restore original profile fields exactly,
+without healing, changing race or inheriting weapon attack procs. Capture tools
+and payloads block changing form. Weapon techniques are unavailable in forms;
+authored character abilities remain governed by their own rules.
+
+Battle overlays preserve clicks and display zone ownership/duration. Form/status
+tooltips and target preview descriptions use the same authored rules. Existing
+starter kits, inventory and drops unchanged; this is engine dependency work,
+not publication of Druid/Mage/Cleric or the twelve-Job roster. Summon/device
+economy, ground-target UI and full form/zone AI scoring are still pending.
+
+Validation: 207 related backend tests passed, followed by 40 focused checks for
+final clipping/source-validation changes. All 186 frontend tests and Vite build
+passed (existing large-chunk warning). Isolated actual battle UI confirmed zone
+cells, tooltip ownership/timing, form tooltip and click-through overlay without
+JavaScript errors; screenshot inspected. No real saves or production touched.
+Canonical: docs/design/COMBAT_SPACES.md.
