@@ -3,16 +3,16 @@ import {anchors,wallPieces,availableWallPieces,validPlacement,rotatePlacement,nu
 import {constructionSVG} from './construction-render.js';
 import {confirmAction} from './confirmation-ui.js';
 
-export async function openConstruction({api,esc,definitions,onSave,onError}){
- let data;try{data=await api('/api/construction')}catch(e){onError(e.message);return}
- let plan=structuredClone(data.plan),revision=data.plan.revision,saved=JSON.stringify(plan),selected='',mode='ground',rotation=0,zoom=1,query='',ghost=null,busy=false;
- const size=data.size,cat=data.catalogue,undo=[],redo=[];
+export async function openConstruction({api,esc,definitions,onSave,onError,debugLab=false}){
+ let data;try{data=await api(debugLab?'/api/debug/construction/wall-kits':'/api/construction')}catch(e){onError(e.message);return}
+ let plan=structuredClone(data.plan),revision=data.plan.revision,saved=JSON.stringify(plan),selected='',mode=debugLab?'walls':'ground',rotation=0,zoom=debugLab?.5:1,query='',ghost=null,busy=false;
+ const size=data.size,cat=data.catalogue,undo=[],redo=[];let wallKit=debugLab&&data.kits?.plain_wood_v1?'plain_wood_v1':'placeholder';
  const brush={ground:cat.ground.grass_short?'grass_short':Object.keys(cat.ground)[0],props:cat.props.crate_closed?'crate_closed':Object.keys(cat.props)[0],piece:'horizontal_plain',shape:'straight',anchor:'center',material:'timber',posts:'none',w:1,h:1,offset_x:0,offset_y:0,blocking:false,open:false,broken:false};
  const dialog=document.createElement('dialog');dialog.className='construction-dialog';
- dialog.innerHTML=`<header><div><div class="eyebrow">YOUR SETTLEMENT · CONSTRUCTION</div><h2>Make this camp your own</h2><small>Ground, movable props and snapping walls. Decorations are free in this first pass; they do not grant loot, production or defense bonuses.</small></div><button data-close aria-label="Close construction">×</button></header>
+ dialog.innerHTML=`<header><div><div class="eyebrow">YOUR SETTLEMENT · CONSTRUCTION</div><h2>${debugLab?'Wall Kit Lab':'Make this camp your own'}</h2><small>${debugLab?'DEBUG ONLY - Temporary layout. Changes here never alter your camp or player save.':'Ground, movable props and snapping walls. Decorations are free in this first pass; they do not grant loot, production or defense bonuses.'}</small></div><button data-close aria-label="Close construction">×</button></header>
  <nav class="construction-tools">${[['ground','Floors & terrain'],['props','Props'],['walls','Walls'],['select','Select / move'],['erase','Erase']].map(([id,label])=>`<button data-tool="${id}">${label}</button>`).join('')}<span></span><button data-undo>Undo</button><button data-redo>Redo</button></nav>
  <div class="construction-workspace"><aside class="construction-library"><label>Find an asset<input data-search type="search" placeholder="Grass, cage, bed…"></label><div data-palette></div></aside>
- <section class="construction-map"><div class="construction-camera"><b>${size.w} × ${size.h} cells</b><button data-zoom="-.25" aria-label="Zoom out">−</button><button data-zoom="0">100%</button><button data-zoom=".25" aria-label="Zoom in">+</button><small>R rotate | Arrows position | Shift+Arrows fine | Home center | Ctrl+Z undo</small></div><div class="construction-scroll"><svg data-map viewBox="0 0 ${size.w} ${size.h}" xmlns="http://www.w3.org/2000/svg" tabindex="0" aria-label="Camp construction grid"></svg></div><p data-help></p></section>
+ <section class="construction-map"><div class="construction-camera"><b>${size.w} × ${size.h} cells</b>${debugLab?`<label class="construction-kit-picker">DEBUG WALL KIT<select data-wall-kit>${Object.entries(data.kits).map(([id,kit])=>`<option value="${esc(id)}" ${id===wallKit?'selected':''}>${esc(kit.name)}</option>`).join('')}</select></label>`:''}<button data-zoom="-.25" aria-label="Zoom out">−</button><button data-zoom="0">100%</button><button data-zoom=".25" aria-label="Zoom in">+</button><small>R rotate | Arrows position | Shift+Arrows fine | Home center | Ctrl+Z undo</small></div><div class="construction-scroll"><svg data-map viewBox="0 0 ${size.w} ${size.h}" xmlns="http://www.w3.org/2000/svg" tabindex="0" aria-label="Camp construction grid"></svg></div><p data-help></p></section>
  <aside class="construction-inspector"><h3 data-inspector-heading>Placement</h3><div data-inspector></div><p class="construction-error" role="alert" data-error></p></aside></div>
  <footer><small data-status>Nothing saved until you choose Save camp.</small><div><button data-export>Export layout</button><button data-close>Close</button><button data-save class="primary">Save camp</button></div></footer>`;
  document.body.append(dialog);dialog.showModal();const find=s=>dialog.querySelector(s),svg=find('[data-map]');
@@ -25,19 +25,19 @@ export async function openConstruction({api,esc,definitions,onSave,onError}){
  const remember=()=>{undo.push(structuredClone(plan));if(undo.length>60)undo.shift();redo.length=0};
  function renderMap(){
   svg.style.width=`${size.w*64*zoom}px`;svg.style.height=`${size.h*64*zoom}px`;
-  scene.innerHTML=constructionSVG(plan,size,cat,{selected,facilities:data.buildings,definitions});hiddenKey='';previewKey='';
+  scene.innerHTML=constructionSVG(plan,size,cat,{selected,facilities:data.buildings,definitions,wallKit});hiddenKey='';previewKey='';
   refreshStatus();
   drawPreview();
  }
  function refreshStatus(){
-  find('[data-save]').disabled=busy||!!gesture;find('[data-undo]').disabled=!undo.length||!!gesture;find('[data-redo]').disabled=!redo.length||!!gesture;
-  find('[data-status]').textContent=JSON.stringify(plan)===saved?'Camp layout saved.':'Unsaved changes - Save camp to keep this layout.';
+  find('[data-save]').disabled=busy||!!gesture||debugLab;find('[data-undo]').disabled=!undo.length||!!gesture;find('[data-redo]').disabled=!redo.length||!!gesture;
+  find('[data-status]').textContent=debugLab?'Debug layout only - nothing here is saved to your camp.':JSON.stringify(plan)===saved?'Camp layout saved.':'Unsaved changes - Save camp to keep this layout.';
  }
  function renderObject(item,layer){
   if(layer==='walls'&&!item.piece){renderMap();return} // Legacy automatic posts depend on neighbors.
   const old=Array.from(scene.querySelectorAll('[data-construction-id]')).find(el=>el.dataset.constructionId===item.id);
   if(!old){renderMap();return}
-  old.outerHTML=constructionSVG({...newPlan(),[layer]:[item]},size,cat,{selected,grid:false,background:false});refreshStatus();
+  old.outerHTML=constructionSVG({...newPlan(),[layer]:[item]},size,cat,{selected,grid:false,background:false,wallKit});refreshStatus();
  }
  // Pointer movement never rebuilds the ground, facilities or placed-object DOM.
  function drawPreview(){
@@ -45,7 +45,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError}){
   if(hide!==hiddenKey){hiddenKey=hide;scene.querySelectorAll('[data-construction-id]').forEach(el=>{el.style.visibility=gesture?.kind==='move'&&el.dataset.constructionId===gesture.id||gesture?.removed?.has(el.dataset.constructionId)?'hidden':''})}
   const key=JSON.stringify(gesture?.kind==='paint'?gesture.tiles:ghost);if(key===previewKey)return;previewKey=key;
   if(gesture?.kind==='paint')preview.innerHTML=constructionSVG({ground:gesture.tiles,props:[],walls:[]},size,cat,{grid:false,background:false});
-  else if(ghost)preview.innerHTML=constructionSVG(newPlan(),size,cat,{ghost,grid:false,background:false});
+  else if(ghost)preview.innerHTML=constructionSVG(newPlan(),size,cat,{ghost,grid:false,background:false,wallKit});
   else preview.innerHTML='';
  }
  function schedulePreview(){if(!previewFrame)previewFrame=requestAnimationFrame(drawPreview)}
@@ -57,14 +57,14 @@ export async function openConstruction({api,esc,definitions,onSave,onError}){
  function palette(){
   dialog.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===mode));
   const entries=mode==='walls'?Object.entries(availableWallPieces):Object.entries(cat[mode]||{});
-  find('[data-palette]').innerHTML=entries.filter(([,item])=>item.name.toLowerCase().includes(query)).map(([id,item])=>`<button draggable="false" data-asset="${esc(id)}" class="${(mode==='walls'?brush.piece:brush[mode])===id?'active':''}">${item.file?`<img draggable="false" src="/assets/combat-terrain/${esc(item.file)}" alt="" loading="lazy">`:`<svg class="wall-palette-preview" viewBox="-.15 -.15 1.3 1.3" aria-hidden="true">${constructionSVG({ground:{},props:[],walls:[{id:'palette',x:0,y:0,rotation:0,piece:id,shape:item.shape,anchor:'center',material:brush.material,posts:'none'}]},{w:1,h:1},cat,{grid:false,background:false})}</svg>`}<small>${esc(item.name)}</small></button>`).join('')||'<p>Select a placed object to adjust it, or choose a construction layer.</p>';
+  find('[data-palette]').innerHTML=entries.filter(([,item])=>item.name.toLowerCase().includes(query)).map(([id,item])=>`<button draggable="false" data-asset="${esc(id)}" class="${(mode==='walls'?brush.piece:brush[mode])===id?'active':''}">${item.file?`<img draggable="false" src="/assets/combat-terrain/${esc(item.file)}" alt="" loading="lazy">`:`<svg class="wall-palette-preview" viewBox="-.15 -.15 1.3 1.3" aria-hidden="true">${constructionSVG({ground:{},props:[],walls:[{id:'palette',x:0,y:0,rotation:0,piece:id,shape:item.shape,anchor:'center',material:brush.material,posts:'none'}]},{w:1,h:1},cat,{grid:false,background:false,wallKit})}</svg>`}<small>${esc(item.name)}</small></button>`).join('')||'<p>Select a placed object to adjust it, or choose a construction layer.</p>';
   find('[data-help]').textContent={ground:'Drag to paint; release inside the map to apply the stroke. Drop outside to cancel.',props:'Drag an asset into the map, or drag on the map with your brush. Arrows adjust its position; Shift gives finer steps. Drop outside to cancel.',walls:'Choose the exact wall and post variant. R cycles its native direction. Arrows position it at a cell edge; Home centers it. Corners have two full-cell arms. Drag and drop to place.',select:'Drag a placed object to move it. R rotates, arrows adjust its position. Dropping outside cancels the move. Click empty ground to deselect.',erase:'Drag over objects or floors to erase. Release inside to confirm; outside cancels. Undo restores the edit.'}[mode];
   find('[data-palette]').querySelectorAll('[data-asset]').forEach(b=>{
    b.onclick=e=>{if(e.detail===0)chooseAsset(b.dataset.asset)};
    b.onpointerdown=e=>{if(e.button!==0||busy)return;e.preventDefault();cancelGesture();chooseAsset(b.dataset.asset);begin(e,'place');};
   });
  }
- function refreshWallThumbnails(){if(mode!=='walls')return;find('[data-palette]').querySelectorAll('[data-asset]').forEach(b=>{const id=b.dataset.asset;b.querySelector('svg').innerHTML=constructionSVG({ground:{},props:[],walls:[{id:'palette',x:0,y:0,rotation:0,piece:id,shape:wallPieces[id].shape,anchor:'center',material:brush.material,posts:'none'}]},{w:1,h:1},cat,{grid:false,background:false})})}
+ function refreshWallThumbnails(){if(mode!=='walls')return;find('[data-palette]').querySelectorAll('[data-asset]').forEach(b=>{const id=b.dataset.asset;b.querySelector('svg').innerHTML=constructionSVG({ground:{},props:[],walls:[{id:'palette',x:0,y:0,rotation:0,piece:id,shape:wallPieces[id].shape,anchor:'center',material:brush.material,posts:'none'}]},{w:1,h:1},cat,{grid:false,background:false,wallKit})})}
  function inspector(){
   const selection=selectedObject(),item=gesture?.item||selection?.item||brush,layer=gesture?.layer||selection?.layer||mode;
   find('[data-inspector-heading]').textContent=selection?'Selected object':'Placement';
@@ -73,9 +73,10 @@ export async function openConstruction({api,esc,definitions,onSave,onError}){
   const check=(key,label)=>`<label class="construction-check"><input data-field="${key}" type="checkbox" ${item[key]?'checked':''}>${label}</label>`;
   let html=`<p data-piece-label>${esc(layer==='props'?cat.props[item.asset||brush.props]?.name||'Prop':layer==='walls'?wallPieces[item.piece]?.name||'Legacy wall':'Terrain')} | <span data-angle>${layer==='walls'&&item.piece?'native facing':selection?item.rotation:rotation+' deg'}</span></p><button data-rotate>Rotate [R]</button><small>Arrows position | Shift+Arrows fine | Home center</small>`;
   if(layer==='props')html+=select('w','Footprint width',[1,2,3,4].map(v=>[String(v),`${v} cell${v===1?'':'s'}`]),String(item.w))+select('h','Footprint height',[1,2,3,4].map(v=>[String(v),`${v} cell${v===1?'':'s'}`]),String(item.h))+range('offset_x','Position left / right',item.offset_x)+range('offset_y','Position up / down',item.offset_y)+check('blocking','Reserve this footprint')+'<small>Offsets move the artwork, not the reserved cells.</small>';
-  if(layer==='walls')html+=select('piece','Wall asset',Object.entries(availableWallPieces).map(([id,p])=>[id,p.name]),item.piece)+select('anchor','Position',Object.keys(anchors).map(v=>[v,v==='center'?'Center':{north:'Top edge',east:'Right edge',south:'Bottom edge',west:'Left edge'}[v]]),item.anchor)+select('material','Material',cat.wall_materials.map(v=>[v,v]),item.material)+check('broken','Broken variation')+check('open','Gate open (gates only)');
+  if(layer==='walls')html+=select('piece','Wall asset',Object.entries(availableWallPieces).map(([id,p])=>[id,p.name]),item.piece)+select('anchor','Position',Object.keys(anchors).map(v=>[v,v==='center'?'Center':{north:'Top edge',east:'Right edge',south:'Bottom edge',west:'Left edge'}[v]]),item.anchor)+select('material','Material',cat.wall_materials.map(v=>[v,v]),item.material)+(wallKit==='placeholder'?check('broken','Broken variation')+check('open','Gate open (gates only)'):'<small>This painted trial contains intact walls and closed gates.</small>');
   if(selection)html+=`<label>Cell X<input data-field="x" type="number" min="0" max="${size.w-1}" value="${item.x}"></label><label>Cell Y<input data-field="y" type="number" min="0" max="${size.h-1}" value="${item.y}"></label><button data-delete>Remove object</button>`;
   find('[data-inspector]').innerHTML=html;find('[data-rotate]').onclick=rotate;
+  if(layer==='walls'&&wallKit!=='placeholder')find('[data-field=material]').disabled=true;
   if(layer==='walls'&&['tee','cross'].includes(item.shape)){find('[data-rotate]').disabled=true;const field=find('[data-field=piece]');field.insertAdjacentHTML('afterbegin',`<option value="${esc(item.piece||'')}" selected disabled>Retired junction (saved placement)</option>`);}
   find('[data-inspector]').querySelectorAll('[data-field]').forEach(input=>{let rangeEditing=false;input.addEventListener('change',()=>{if(input.type==='range')rangeEditing=false});input.addEventListener(input.type==='range'?'input':'change',()=>{
    const key=input.dataset.field,value=input.type==='checkbox'?input.checked:['w','h','x','y','offset_x','offset_y'].includes(key)?Number(input.value):input.value;
@@ -132,7 +133,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError}){
   if(mode==='ground')gesture.kind='paint';
   updatePointer(e);find('[data-save]').disabled=true;find('[data-undo]').disabled=true;find('[data-redo]').disabled=true;schedulePreview();
  }
- function cancelGesture(){gesture=null;ghost=null;if(previewFrame){cancelAnimationFrame(previewFrame);previewFrame=0}drawPreview();find('[data-save]').disabled=busy;find('[data-undo]').disabled=!undo.length;find('[data-redo]').disabled=!redo.length}
+ function cancelGesture(){gesture=null;ghost=null;if(previewFrame){cancelAnimationFrame(previewFrame);previewFrame=0}drawPreview();find('[data-save]').disabled=busy||debugLab;find('[data-undo]').disabled=!undo.length;find('[data-redo]').disabled=!redo.length}
  svg.onpointerdown=e=>{
   if(e.button!==0||busy)return;e.preventDefault();svg.focus({preventScroll:true});cancelGesture();const target=e.target.closest('[data-construction-id]');
   svg.setPointerCapture(e.pointerId);
@@ -169,9 +170,10 @@ export async function openConstruction({api,esc,definitions,onSave,onError}){
   if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&e.key.toLowerCase()==='r'){e.preventDefault();e.stopPropagation();rotate()}
   if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home'].includes(e.key)){e.preventDefault();e.stopPropagation();transform((item,layer)=>['props','walls'].includes(layer)?nudgePlacement(item,layer,e.key,e.shiftKey):item)}
  };
- const close=async()=>{if(busy)return;cancelGesture();if(JSON.stringify(plan)!==saved&&!await confirmAction({title:'Discard construction changes?',message:'Your last saved camp layout will remain.',confirmLabel:'Discard changes',danger:true}))return;window.removeEventListener('blur',cancelGesture);window.removeEventListener('pointermove',pointerMove);window.removeEventListener('pointerup',pointerUp);window.removeEventListener('pointercancel',pointerCancel);dialog.close();dialog.remove()};
+ const close=async()=>{if(busy)return;cancelGesture();if(!debugLab&&JSON.stringify(plan)!==saved&&!await confirmAction({title:'Discard construction changes?',message:'Your last saved camp layout will remain.',confirmLabel:'Discard changes',danger:true}))return;window.removeEventListener('blur',cancelGesture);window.removeEventListener('pointermove',pointerMove);window.removeEventListener('pointerup',pointerUp);window.removeEventListener('pointercancel',pointerCancel);dialog.close();dialog.remove()};
  dialog.querySelectorAll('[data-close]').forEach(b=>b.onclick=close);dialog.oncancel=e=>{e.preventDefault();if(gesture)cancelGesture();else close()};
- find('[data-save]').onclick=async()=>{if(busy||gesture)return;busy=true;renderMap();try{const result=await api('/api/construction',{method:'PUT',body:JSON.stringify({revision,plan})});plan=result.plan;revision=plan.revision;saved=JSON.stringify(plan);find('[data-error]').textContent='';onSave(result.state)}catch(e){find('[data-error]').textContent=e.message}finally{busy=false;renderMap()}};
+ find('[data-save]').onclick=async()=>{if(busy||gesture||debugLab)return;busy=true;renderMap();try{const result=await api('/api/construction',{method:'PUT',body:JSON.stringify({revision,plan})});plan=result.plan;revision=plan.revision;saved=JSON.stringify(plan);find('[data-error]').textContent='';onSave(result.state)}catch(e){find('[data-error]').textContent=e.message}finally{busy=false;renderMap()}};
  find('[data-export]').onclick=()=>{const blob=new Blob([JSON.stringify({format:'fortcamp-construction',size,plan},null,2)],{type:'application/json'}),url=URL.createObjectURL(blob),a=document.createElement('a');a.href=url;a.download='fortcamp-camp-layout.json';a.click();setTimeout(()=>URL.revokeObjectURL(url),1000)};
- palette();inspector();renderMap();
+ if(debugLab){find('[data-save]').textContent='Preview only';find('[data-wall-kit]').onchange=e=>{cancelGesture();wallKit=e.target.value;if(wallKit!=='placeholder')for(const w of plan.walls){w.open=false;w.broken=false}palette();inspector();renderMap()}}
+ find('[data-zoom="0"]').textContent=`${Math.round(zoom*100)}%`;palette();inspector();renderMap();
 }

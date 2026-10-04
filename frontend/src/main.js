@@ -389,6 +389,8 @@ function renderMissions(){
   const debugBox=$('#debug-pool-controls');debugBox.classList.toggle('hidden',!debugEnabled());
   if(debugEnabled()&&!$('#debug-pool-event').options.length){$('#debug-pool-event').innerHTML=Object.entries(content.mission_events).map(([id,e])=>`<option value="${id}">${esc(e.name)}</option>`).join('');$('#debug-force-refresh').onclick=async()=>{const btn=$('#debug-force-refresh');btn.disabled=true;try{const d=await rawApi('/api/debug/missions/refresh',{method:'POST',body:JSON.stringify({event_id:$('#debug-pool-event').value})});toast(`Forced ${d.event.name}`);await refreshDynamic(true)}catch(err){toast(err.message)}finally{btn.disabled=false}}}
   if(debugEnabled())$('#debug-battle-lab').onclick=()=>battleLab.open();
+  const wallLabEnabled=debugEnabled()&&!['prod','production','release','stable'].includes((appConfig.environment||'').toLowerCase());
+  $('#debug-wall-kit-lab').classList.toggle('hidden',!wallLabEnabled);if(wallLabEnabled)$('#debug-wall-kit-lab').onclick=()=>launchConstruction(true);
   if(debugEnabled())$('#debug-portrait-lab').onclick=()=>openPortraitLab({api:rawApi,src:portraitSrc,esc,onSaved:()=>refreshDynamic(true),onError:error=>toast(error.message)});
   const ranks=content.mission_ranks||['E','D','C','B','A','S'],viewerIndex=ranks.indexOf(pool.rank);
   const rankFilter=$('#board-rank'),formFilter=$('#board-form');
@@ -1007,7 +1009,7 @@ function syncRosterWorkspace(){
  document.querySelectorAll('[data-prison-count]').forEach(n=>n.textContent=(state.prisoners||[]).length);
 }
 let constructionCatalogue=null;
-async function launchConstruction(){if(!constructionCatalogue){try{constructionCatalogue=(await rawApi('/api/construction')).catalogue}catch(e){toast(e.message);return}}await openConstruction({api:rawApi,esc,definitions:content.buildings,onError:toast,onSave:next=>{state=next;renderBase();renderResources();toast('Camp layout saved')}})}
+async function launchConstruction(debugLab=false){debugLab=debugLab===true;if(!debugLab&&!constructionCatalogue){try{constructionCatalogue=(await rawApi('/api/construction')).catalogue}catch(e){toast(e.message);return}}await openConstruction({api:rawApi,esc,definitions:content.buildings,debugLab,onError:toast,onSave:next=>{state=next;renderBase();renderResources();toast('Camp layout saved')}})}
 function syncBaseWorkspace(){
  document.querySelectorAll('[data-base-view]').forEach(button=>{button.setAttribute('aria-current',button.dataset.baseView===baseView?'page':'false');button.onclick=()=>{baseView=button.dataset.baseView;syncBaseWorkspace()}});
  document.querySelectorAll('[data-base-panel]').forEach(panel=>panel.hidden=panel.dataset.basePanel!==baseView);

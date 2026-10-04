@@ -5,3 +5,5 @@
 .construction-library [data-asset]{touch-action:none;user-select:none;cursor:grab}.construction-library [data-asset]:active{cursor:grabbing}.construction-scroll svg:focus-visible{outline:2px solid #cfb778;outline-offset:-2px}.construction-inspector [data-piece-label]{min-height:32px}.construction-inspector [data-rotate]+small{display:block;margin:8px 0 16px}
 
 .wall-palette-preview{width:64px;height:52px;pointer-events:none;overflow:visible}
+
+.construction-kit-picker{margin:0!important;min-width:210px;flex:1;font-size:10px!important}.construction-kit-picker select{padding:6px}.construction-camera .construction-kit-picker+button{margin-left:auto}

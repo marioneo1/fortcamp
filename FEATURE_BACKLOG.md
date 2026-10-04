@@ -505,3 +505,25 @@ docs/design/BASE_CONSTRUCTION.md. Production and player saves untouched.
 Validation: 9 backend construction checks (including old/native retired junction
 save/reload and active catalogue filtering), 8 frontend geometry/render checks,
 production build and whitespace checks passed.
+
+
+## October 4: plain-wood atlas and isolated Wall Kit Lab (dev)
+
+Generated one matched 3x3 nine-original timber kit using active painted map art
+and an equal-cell diagram; refined the short vertical plain wall in the same
+atlas. Extracted relative equal cells, measured alpha/thickness/ports, retained
+ends/posts/corner joint while fitting middle grain bands, and installed nine
+normalized transparent sprites. All 24 variants use native H/V originals plus
+mirrors; bitmap quarter-turns are never used. R stays within straight/gate
+orientation families. No half, T or + assets. Added Mission Board debug Wall Kit
+Lab with all variants and a connected room, a whole-layout kit dropdown, and no
+save writes. Backend access denies production, debug-off and non-admin without
+bypass; normal base construction has no trial picker. Combat kits and production
+remain untouched. Canonical: docs/art/CONSTRUCTION_PLAIN_WOOD_KIT.md.
+
+Validation: 27 backend construction/economy/onboarding checks, 155 frontend
+checks and build; actual browser verifies 44 sample/room walls load nine sprites,
+whole-layout switching, mirrored preview, no PUT/save, normal UI separation and
+1440/800/430px bounds. Full/100%-zoom room captures visually inspected. Permanent
+player wall art, open/broken sprites, rectangle fill/repeated placement and
+separate Remove / Remove floors tools remain pending.

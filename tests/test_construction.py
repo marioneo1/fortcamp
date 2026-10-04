@@ -1,6 +1,7 @@
 import unittest
 from copy import deepcopy
 from unittest.mock import patch
+from types import SimpleNamespace
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import async_sessionmaker, create_async_engine
 from fastapi import HTTPException
@@ -123,3 +124,21 @@ class ConstructionPersistenceTests(unittest.IsolatedAsyncioTestCase):
         foreign=Identity(guild_id='other',user_id='owner',display_name='Owner',guild_admin=False)
         with self.assertRaises(HTTPException):await construction_api.get_construction(foreign)
         with self.assertRaises(HTTPException):await construction_api.save_construction(construction_api.SaveConstruction(revision=0,plan=empty_plan()),foreign)
+
+
+class WallKitLabTests(unittest.IsolatedAsyncioTestCase):
+    async def test_debug_lab_is_read_only_authorized_and_has_every_active_piece(self):
+        identity=Identity(guild_id='camp',user_id='admin',display_name='Admin',guild_admin=True)
+        config=SimpleNamespace(game_debug_mode=True,environment='dev',dev_bypass_auth=False)
+        with patch.object(construction_api,'settings',config),patch.object(construction_api,'SessionLocal',side_effect=AssertionError('Lab must never touch saves')):
+            result=await construction_api.get_wall_kits(identity)
+        self.assertEqual(len({w['piece'] for w in result['plan']['walls']}),24)
+        self.assertEqual(len(result['catalogue']['wall_pieces']),24)
+        self.assertIn('plain_wood_v1',result['kits'])
+        validate_plan(result['plan'],result['size'])
+        for profile,debug,admin,bypass,expected in [('prod',True,True,True,404),('release',True,True,True,404),('dev',False,True,True,404),('dev',True,False,False,403)]:
+            config=SimpleNamespace(game_debug_mode=debug,environment=profile,dev_bypass_auth=bypass)
+            user=Identity(guild_id='camp',user_id='user',display_name='User',guild_admin=admin)
+            with patch.object(construction_api,'settings',config),self.assertRaises(HTTPException) as caught:
+                await construction_api.get_wall_kits(user)
+            self.assertEqual(caught.exception.status_code,expected)

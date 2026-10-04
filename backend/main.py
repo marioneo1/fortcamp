@@ -26,7 +26,7 @@ from .auth import IdentityDep, create_session_token, exchange_discord_code, veri
 from .web_auth import browser_router
 from .battle_lab import router as battle_lab_router
 from .portrait_lab import router as portrait_lab_router
-from .construction_api import router as construction_router
+from .construction_api import router as construction_router, wall_lab_router
 from .content import MISSION_TEMPLATES
 from .db import SessionLocal, init_db
 from .game import (
@@ -135,6 +135,7 @@ app.include_router(browser_router(installed_web_guilds))
 app.include_router(battle_lab_router)
 app.include_router(portrait_lab_router)
 app.include_router(construction_router)
+app.include_router(wall_lab_router)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"], allow_credentials=False, allow_methods=["*"], allow_headers=["*"],

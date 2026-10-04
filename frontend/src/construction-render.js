@@ -1,7 +1,8 @@
+import {wallArtImage} from './construction-wall-art.js';
 import {wallSegments,wallConnections,wallPosts,pointKey} from './construction-geometry.js';
 export const wallColors={timber:['#b98953','#5d3e28'],fieldstone:['#9d9d89','#434c42'],limestone:['#e4d4a8','#8f805e'],iron:['#aab4bf','#435464']};
 const url=file=>`/assets/combat-terrain/${file}`;
-export function constructionSVG(plan,size,catalogue,{selected='',ghost=null,facilities=[],definitions={},grid=true,background=true}={}){
+export function constructionSVG(plan,size,catalogue,{selected='',ghost=null,facilities=[],definitions={},grid=true,background=true,wallKit='placeholder'}={}){
  let html='';
  for(let y=0;y<size.h;y++)for(let x=0;x<size.w;x++){
   if(!background&&!plan.ground[`${x},${y}`])continue;
@@ -33,6 +34,8 @@ export function constructionSVG(plan,size,catalogue,{selected='',ghost=null,faci
    if(wall.posts==='both'&&key!==pointKey(start)||wall.posts==='auto'&&degree===1)caps.set(key,{p,color,edge});
   }
   const gate=wall.shape==='gate'?`<circle cx="${start[0]}" cy="${start[1]}" r=".075" fill="${wall.open?'#99d68b':'#e0a14c'}" stroke="#342e21" stroke-width=".02"/>`:'';
+  const painted=wallArtImage(wall,wallKit);
+  if(painted)return `<g data-construction-id="${wall.id}" data-construction-layer="walls" class="construction-wall ${selected===wall.id?'selected':''}" opacity="${preview?.65:1}">${painted}${selected===wall.id||preview?`<path d="${path}" fill="none" stroke="${preview?'#ffefa1':'#91efd3'}" stroke-width=".03" stroke-dasharray=".08 .05" pointer-events="none"/>`:''}</g>`;
   const posts=wallPosts(wall).map(p=>`<rect x="${p[0]-.105}" y="${p[1]-.105}" width=".21" height=".21" rx=".025" fill="${color}" stroke="${edge}" stroke-width=".03"/>`).join('');
   return `<g data-construction-id="${wall.id}" data-construction-layer="walls" class="construction-wall ${selected===wall.id?'selected':''}" opacity="${preview?.6:1}"><path d="${path}" fill="none" stroke="${selected===wall.id?'#91efd3':edge}" stroke-width=".19" stroke-linecap="butt"/><path d="${path}" fill="none" stroke="${color}" stroke-width=".12" stroke-linecap="butt"/>${posts}${gate}</g>`;
  };

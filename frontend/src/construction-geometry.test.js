@@ -41,14 +41,14 @@ test('directional corners have two full-cell arms and stay within their cell',()
   assert.ok(validPlacement(w,'walls',{w:3,h:3}));
  }
 });
-test('rotation preserves post side and native asset identity for future art',()=>{
+test('rotation changes facing within a family and never swaps native H and V',()=>{
  let w=wall({piece:'horizontal_left_post',posts:'none'});
- for(const piece of ['vertical_top_post','horizontal_right_post_south','vertical_bottom_post_west','horizontal_left_post']){
-  w=rotatePlacement(w,'walls');assert.equal(w.piece,piece);assert.equal(w.rotation,0);
- }
+ w=rotatePlacement(w,'walls');assert.equal(w.piece,'horizontal_left_post_south');assert.equal(w.rotation,0);
+ w=rotatePlacement(w,'walls');assert.equal(w.piece,'horizontal_left_post');
  assert.deepEqual(wallPosts(w),[[2,2.5]]);
  assert.deepEqual(wallPosts({...w,piece:'horizontal_right_post'}),[[3,2.5]]);
  assert.deepEqual(wallPosts({...w,piece:'horizontal_plain'}),[]);
+ const upright=rotatePlacement(wall({piece:'vertical_top_post'}),'walls');assert.equal(upright.piece,'vertical_top_post_west');
 });
 test('full-cell T branches connect at their midpoint; nudges respect wall sides and prop bounds',()=>{
  const w=wall({piece:'tee_north'});assert.equal(wallConnections([w]).get('2.5,2').neighbors.size,3);

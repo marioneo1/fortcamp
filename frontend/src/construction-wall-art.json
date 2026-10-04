@@ -1,0 +1,88 @@
+{
+  "plain_wood_v1": {
+    "name": "Plain wood - painted test kit",
+    "sources": {
+      "horizontal_plain": {
+        "file": "construction/plain-wood-v1/horizontal_plain.png",
+        "origin": [
+          48,
+          256
+        ],
+        "span": 416,
+        "size": 512
+      },
+      "vertical_plain": {
+        "file": "construction/plain-wood-v1/vertical_plain.png",
+        "origin": [
+          256,
+          48
+        ],
+        "span": 416,
+        "size": 512
+      },
+      "horizontal_one_post": {
+        "file": "construction/plain-wood-v1/horizontal_one_post.png",
+        "origin": [
+          48,
+          256
+        ],
+        "span": 416,
+        "size": 512
+      },
+      "vertical_one_post": {
+        "file": "construction/plain-wood-v1/vertical_one_post.png",
+        "origin": [
+          256,
+          48
+        ],
+        "span": 416,
+        "size": 512
+      },
+      "horizontal_both_posts": {
+        "file": "construction/plain-wood-v1/horizontal_both_posts.png",
+        "origin": [
+          48,
+          256
+        ],
+        "span": 416,
+        "size": 512
+      },
+      "vertical_both_posts": {
+        "file": "construction/plain-wood-v1/vertical_both_posts.png",
+        "origin": [
+          256,
+          48
+        ],
+        "span": 416,
+        "size": 512
+      },
+      "corner": {
+        "file": "construction/plain-wood-v1/corner.png",
+        "origin": [
+          48,
+          48
+        ],
+        "span": 416,
+        "size": 512
+      },
+      "gate_horizontal": {
+        "file": "construction/plain-wood-v1/gate_horizontal.png",
+        "origin": [
+          48,
+          256
+        ],
+        "span": 416,
+        "size": 512
+      },
+      "gate_vertical": {
+        "file": "construction/plain-wood-v1/gate_vertical.png",
+        "origin": [
+          256,
+          48
+        ],
+        "span": 416,
+        "size": 512
+      }
+    }
+  }
+}

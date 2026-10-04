@@ -59,7 +59,8 @@ Walls have named directional assets rather than a separate post setting:
 - Timber, rough stone, polished stone and iron placeholder materials.
 
 `construction-wall-pieces.json` is the shared client/server definition of geometry,
-explicit posts and clockwise successor assets. R selects the next native asset;
+explicit posts and clockwise successor assets. R changes facing within horizontal/vertical families and selects a mirrored
+corner orientation;
 new directional walls save rotation 0. Matching ports snap to exact half-cell
 coordinates. Full segments are split into graph edges at midpoints, so T branches
 and crosses connect correctly. Post assets retain their chosen end posts even
@@ -144,8 +145,18 @@ variants from 9 original images per material. Originals are horizontal plain,
 vertical plain, horizontal one-post, vertical one-post, horizontal both-post,
 vertical both-post, corner, horizontal gate and vertical gate. Permitted mirrors
 supply other facings, post positions and corners; horizontal artwork is never
-rotated into vertical artwork. Full-length corner arms remain. Mirrored art and
-family-limited R behavior are a planned follow-up; current placeholder straight
-pieces still cycle between directional assets. Rectangle fill/repeated-footprint
+rotated into vertical artwork. Full-length corner arms remain. Family-limited R is implemented: horizontal pieces stay horizontal and vertical
+pieces stay vertical. A nine-original plain-wood atlas is now available in the
+isolated debug Wall Kit Lab; permanent player art selection remains deferred.
+See docs/art/CONSTRUCTION_PLAIN_WOOD_KIT.md for generation, mapping and validation. Rectangle fill/repeated-footprint
 placement and separate Remove / Remove floors tools also remain pending from the
 interaction discussion. No art was generated in this simplification.
+
+## Debug wall artwork trial
+
+Mission Board debug controls include Wall Kit Lab, an isolated sample layout.
+A single dropdown switches all test walls between geometry placeholders and the
+new painted plain-wood kit. It never saves to a camp and is denied in production
+or without debug/admin access. Normal construction keeps its existing save UI
+and has no trial dropdown. Canonical art reference:
+[Plain wood trial](../art/CONSTRUCTION_PLAIN_WOOD_KIT.md).
