@@ -1,5 +1,11 @@
 # Fortcamp documentation map
 
+Starting Jobs — proposal: [Twelve Jobs and initial skill catalogues](design/STARTING_JOBS_AND_SKILLS_V1.md)
+records starter kits, 96 proposed skills, five regular slots, unrestricted equipped
+gear ability access, and proposed summon/turret/form/control rules. It is not live
+content; [capture and starting roles](design/CAPTURE_AND_STARTING_ROLES.md) remains
+the implemented reference. Champion kits are deferred.
+
 Construction sizing: [142-prop audit](art/CONSTRUCTION_PROP_SIZE_AUDIT.md), [overhead chairs and training pack](art/FURNITURE_TRAINING_OVERHEAD_V1.md), and [construction controls](design/BASE_CONSTRUCTION.md) cover calibrated visual sizes, placement-only boxes and preserved movement rules.
 
 Portrait tagging: [Local structured tagger](art/LOCAL_PORTRAIT_TAGGER.md) covers the standalone WD tool, existing race/gender assignments, review, search, exports and deferred game integration. Cloud tagging is paused.

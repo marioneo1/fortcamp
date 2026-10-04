@@ -1,5 +1,14 @@
 # Mission Refinement Phase
 
+## October 4: Starting Job and skill design — proposal only
+
+Inspected current starter equipment, capture formula, combat and design references.
+Recorded twelve-Job roster, matching starter gear, eight proposed learnable skills
+per Job (three starter/five later), full equipped-gear ability access, and proposed
+summon/device/form/control timing and UI. Champion authoring remains deferred.
+Updated INDEX and backlog; this is design work, not an implemented feature.
+No gameplay code, saves, generated art or production changes; no tests claimed.
+
 ## October 4: Adjustable table spacing
 
 Seats now have a saved Table spacing slider: 60% tuck through a 60% seat-size

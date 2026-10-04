@@ -1,5 +1,17 @@
 # Fortcamp feature backlog
 
+October 4 Job design draft (NOT IMPLEMENTED): agreed starting roster is Fighter,
+Barbarian, Rogue, Ranger, Mage, Cleric, Monk, Bard, Druid, Engineer, Summoner and
+Captor; replace Paladin proposal with Summoner and remove Medic/proficiency
+selection from future character creation. Five regular character slots; no
+two-gear-active limit. All equipped gear abilities remain accessible. Champion
+kits deferred; popularity rank must not dictate combat power. Draft proposes
+96 skills and matching starter equipment, bounded summon/device/form mechanics,
+distinct restraint versus Subdue, pit types and encounter-specific pressure
+instead of twenty-round loss. Canonical: docs/design/STARTING_JOBS_AND_SKILLS_V1.md.
+Next: review individual skills and budgets, then implement dependencies and
+test all twelve starters before publishing them together. Current runtime unchanged.
+
 October 4 chair spacing: implemented Table spacing for supported seats, 60% tuck
 through 60% outward gap, retaining table/side and saving the preference per seat.
 Tight prop picking and post-save inspector editing fixed. 182 frontend tests,
