@@ -1,5 +1,15 @@
 # Fortcamp feature backlog
 
+October 4 prop audit: 142 construction props now use calibrated, centered visible
+art sizes instead of one generic PNG box. Placement-only boxes/toggle, red invalid
+preview, Standard size for old footprints, full half-cell positioning, and 24 new
+overhead furniture/training sprites installed. Eight chairs/three stools/bench
+use existing table docking; six training images replaced with overhead versions.
+Character/combat collision unchanged. 181 frontend tests, 24 backend tests, build
+and isolated browser checks pass. Production untouched. Canonical: BASE_CONSTRUCTION
+and docs/art/CONSTRUCTION_PROP_SIZE_AUDIT.md. Further irregular-silhouette collision
+and additional style refinements remain deferred.
+
 October 4 furniture placement: props can share cells when visible bounds fit;
 unrelated silhouette overlaps are blocked on preview/save, untouched older
 layouts preserved. Supported seats dock beside tables with S snapping, permit

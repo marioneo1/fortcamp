@@ -68,15 +68,23 @@ export function segmentsOverlap([a,b],[c,d]){
  return c[other]===d[other]&&a[other]===c[other]&&Math.min(Math.max(a[axis],b[axis]),Math.max(c[axis],d[axis]))-Math.max(Math.min(a[axis],b[axis]),Math.min(c[axis],d[axis]))>1e-7;
 }
 export function propBounds(p){
+ const layout=propImageLayout(p);
+ if(layout.bounds)return layout.bounds;
+ return [p.x+p.w*.04+(p.offset_x||0),p.y+p.h*.04+(p.offset_y||0),p.x+p.w*.96+(p.offset_x||0),p.y+p.h*.96+(p.offset_y||0)];
+}
+// Presentation and placement geometry share the exact same source measurements.
+export function propImageLayout(p){
+ const cx=p.x+p.w/2+(p.offset_x||0),cy=p.y+p.h/2+(p.offset_y||0);
+ const w=p.rotation%180?p.h:p.w,h=p.rotation%180?p.w:p.h;
  const art=propArtBounds[p.asset];
  if(art){
   const [iw,ih]=art.size,[l,t,r,b]=art.bounds;
-  const w=p.rotation%180?p.h:p.w,h=p.rotation%180?p.w:p.h,scale=Math.min(w*.92/iw,h*.92/ih);
-  const cx=p.x+p.w/2+(p.offset_x||0),cy=p.y+p.h/2+(p.offset_y||0);
-  const points=[[l,t],[r,t],[r,b],[l,b]].map(([x,y])=>{let dx=(x-iw/2)*scale,dy=(y-ih/2)*scale;for(let turn=0;turn<(p.rotation||0)/90;turn++)[dx,dy]=[-dy,dx];return [cx+dx,cy+dy]});
-  return [Math.min(...points.map(p=>p[0])),Math.min(...points.map(p=>p[1])),Math.max(...points.map(p=>p[0])),Math.max(...points.map(p=>p[1]))];
+  const scale=art.fill?Math.min(w*art.fill/(r-l),h*art.fill/(b-t)):Math.min(w*.92/iw,h*.92/ih);
+  const mx=art.fill?(l+r)/2:iw/2,my=art.fill?(t+b)/2:ih/2;
+  const points=[[l,t],[r,t],[r,b],[l,b]].map(([x,y])=>{let dx=(x-mx)*scale,dy=(y-my)*scale;for(let turn=0;turn<(p.rotation||0)/90;turn++)[dx,dy]=[-dy,dx];return [cx+dx,cy+dy]});
+  return {cx,cy,x:cx-mx*scale,y:cy-my*scale,w:iw*scale,h:ih*scale,bounds:[Math.min(...points.map(p=>p[0])),Math.min(...points.map(p=>p[1])),Math.max(...points.map(p=>p[0])),Math.max(...points.map(p=>p[1]))]};
  }
- return [p.x+p.w*.04+(p.offset_x||0),p.y+p.h*.04+(p.offset_y||0),p.x+p.w*.96+(p.offset_x||0),p.y+p.h*.96+(p.offset_y||0)];
+ return {cx,cy,x:cx-w*.46,y:cy-h*.46,w:w*.92,h:h*.92};
 }
 export function wallHitsProp(w,p){
  const [left,top,right,bottom]=propBounds(p);
@@ -119,6 +127,6 @@ export function nudgePlacement(item,layer,key,fine=false){
  if(layer==='walls')return {...item,anchor:{ArrowLeft:'west',ArrowRight:'east',ArrowUp:'north',ArrowDown:'south',Home:'center'}[key]||item.anchor};
  const next={...item};if(key==='Home')return {...next,offset_x:0,offset_y:0};
  const axis=key==='ArrowLeft'||key==='ArrowRight'?'offset_x':'offset_y',sign=key==='ArrowLeft'||key==='ArrowUp'?-1:1;
- next[axis]=Math.round(Math.max(-.45,Math.min(.45,(next[axis]||0)+sign*(fine?.01:.05)))*1000)/1000;return next;
+ next[axis]=Math.round(Math.max(-.5,Math.min(.5,(next[axis]||0)+sign*(fine?.01:.05)))*1000)/1000;return next;
 }
 export function newPlan(){return {version:1,revision:0,ground:{},props:[],walls:[]}}

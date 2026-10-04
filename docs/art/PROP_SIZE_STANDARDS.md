@@ -1,5 +1,12 @@
 # Map prop sizing and environment dressing
 
+October 4 construction refinement: the player construction editor now uses its
+own calibrated profiles and tight placement bounds; see
+[Construction prop audit](CONSTRUCTION_PROP_SIZE_AUDIT.md) and
+[Overhead furniture/training pack](FURNITURE_TRAINING_OVERHEAD_V1.md).
+The battle/preparation sizing rules below retain their existing footprints.
+Construction placement boxes do not define character collision.
+
 New overhead garden props and step-over crop edging are covered in [GARDEN_TOOLKIT_V2.md](GARDEN_TOOLKIT_V2.md). Shared profiles now include the new kit; connected rails retain explicit modular dimensions.
 
 Implemented in dev, October 3. The audit in [PROP_SIZE_AUDIT.md](PROP_SIZE_AUDIT.md) covers all 131 registered non-modular prop/state sprites across 249 isolated encounter previews. Modular architectural parts retain their existing material-specific joint geometry. Ground art is not a prop. Runtime alias and destroyed/open state resolution comes from the actual frontend resolver, not filename guesses. Prepared assets are counted and retained even when no current map uses them.

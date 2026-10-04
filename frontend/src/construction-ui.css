@@ -10,3 +10,5 @@
 .construction-tools [data-snap][aria-pressed=true]{background:#385b45;border-color:#82bd9a}.construction-camera [data-snap-state]{flex-basis:100%;min-height:1.4em;font-size:11px;color:#a5efca}
 .construction-remove-pending{opacity:.3}.construction-remove-hover{opacity:.25}
 .construction-remove-guide p{font-size:12px;color:#c8cbb5;line-height:1.6;margin:8px 0 24px}.construction-remove-guide kbd{display:inline-block;margin-left:8px;padding:3px 7px;background:#18271e;border:1px solid #839478;border-radius:5px;font-size:11px}
+.construction-bounds-toggle{display:flex;align-items:center;gap:6px;padding:6px 8px;font-size:12px;color:#c5d9c9;white-space:nowrap}.construction-bounds-toggle input{accent-color:#91efd3;width:15px;height:15px;margin:0}
+.construction-tools .construction-bounds-toggle{display:flex;align-items:center;flex-direction:row;gap:6px;margin:0;padding:6px 8px;white-space:nowrap}.construction-inspector small{display:block;margin:6px 0;line-height:1.5}.construction-inspector button{margin:0 5px 5px 0}

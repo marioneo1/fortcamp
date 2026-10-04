@@ -97,8 +97,8 @@ class ConstructionRulesTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'overlaps a wall'):validate_plan(plan,self.size)
 
     def test_props_share_cells_without_silhouette_overlap_and_old_layouts_survive(self):
-        first=self.prop(); first.update(asset='crate_closed',w=1,h=1,offset_x=-.35,offset_y=0)
-        second={**first,'id':'other','offset_x':.35}
+        first=self.prop(); first.update(asset='crate_closed',w=1,h=1,offset_x=-.4,offset_y=0)
+        second={**first,'id':'other','offset_x':.4}
         plan={**empty_plan(),'props':[first,second]}
         self.catalogue_mock.return_value={**CAT,'props':{**CAT['props'],'crate_closed':{'file':'crate.png'}}}
         validate_plan(plan,self.size)
@@ -117,6 +117,24 @@ class ConstructionRulesTests(unittest.TestCase):
         seat['offset_y']=b+(sb-st)*.3-(st+sb)/2
         self.assertFalse(props_overlap(table,seat))
         self.assertFalse(props_overlap(seat,table))
+
+    def test_calibrated_sizes_use_visible_bounds_and_preserve_independent_movement(self):
+        from backend.construction import prop_bounds, construction_cell_blocked, PROP_SIZING
+        chart=self.prop();chart.update(asset='marked_farm_chart',w=1,h=1,offset_x=.5,offset_y=0,rotation=90)
+        l,t,r,b=prop_bounds(chart)
+        self.assertAlmostEqual(max(r-l,b-t),.3)
+        self.assertAlmostEqual((l+r)/2,3)
+        self.assertFalse(construction_cell_blocked({'props':[chart],'walls':[]},2,2))
+        chart['blocking']=True
+        self.assertTrue(construction_cell_blocked({'props':[chart],'walls':[]},2,2))
+        self.assertEqual(PROP_SIZING['village_well']['footprint'],[2,2])
+        self.assertEqual(PROP_SIZING['wooden_bed']['footprint'],[1,2])
+
+    def test_half_cell_offsets_save_without_a_gap_between_neighboring_anchors(self):
+        prop=self.prop();prop.update(w=1,h=1,offset_x=.5,offset_y=-.5)
+        saved=validate_plan({**empty_plan(),'props':[prop]},self.size)
+        self.assertEqual(saved['props'][0]['offset_x'],.5)
+        self.assertEqual(saved['props'][0]['offset_y'],-.5)
 
     def test_visible_art_fits_inside_edge_walls_and_retains_real_collisions(self):
         from backend.construction import wall_hits_prop, prop_bounds

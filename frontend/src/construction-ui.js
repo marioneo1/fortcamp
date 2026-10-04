@@ -12,11 +12,12 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
  let data;try{data=await api(debugLab?'/api/debug/construction/wall-kits':'/api/construction')}catch(e){onError(e.message);return}
  let plan=structuredClone(data.plan),revision=data.plan.revision,saved=JSON.stringify(plan),selected='',mode=debugLab?'walls':'ground',rotation=0,zoom=debugLab?.5:1,query='',ghost=null,busy=false;
  const size=data.size,cat=data.catalogue,undo=[],redo=[];let wallKit=debugLab&&data.kits?.plain_wood_v1?'plain_wood_v1':'placeholder';
+ let placementBounds=true;try{placementBounds=localStorage.getItem('fortcamp.construction.bounds')!=='off'}catch{}
  let snapping=true,snapLock=null;try{snapping=localStorage.getItem('fortcamp.construction.snapping')!=='off'}catch{}
  const brush={ground:cat.ground.grass_short?'grass_short':Object.keys(cat.ground)[0],props:cat.props.crate_closed?'crate_closed':Object.keys(cat.props)[0],piece:'horizontal_plain',shape:'straight',anchor:'north',material:'timber',posts:'none',w:1,h:1,offset_x:0,offset_y:0,blocking:false,open:false,broken:false};
  const dialog=document.createElement('dialog');dialog.className='construction-dialog';
  dialog.innerHTML=`<header><div><div class="eyebrow">YOUR SETTLEMENT · CONSTRUCTION</div><h2>${debugLab?'Wall Kit Lab':'Make this camp your own'}</h2><small>${debugLab?'DEBUG ONLY - Temporary layout. Changes here never alter your camp or player save.':'Ground, movable props and snapping walls. Decorations are free in this first pass; they do not grant loot, production or defense bonuses.'}</small></div><button data-close aria-label="Close construction">×</button></header>
- <nav class="construction-tools">${[['ground','Floors & terrain [F]'],['props','Props [P]'],['walls','Walls [W]'],['select','Select / move [V]'],['erase','Remove [Del]']].map(([id,label])=>`<button data-tool="${id}">${label}</button>`).join('')}<button data-snap aria-pressed="${snapping}">Snapping [S]: ${snapping?'On':'Off'}</button><span></span><button data-undo>Undo</button><button data-redo>Redo</button></nav>
+ <nav class="construction-tools">${[['ground','Floors & terrain [F]'],['props','Props [P]'],['walls','Walls [W]'],['select','Select / move [V]'],['erase','Remove [Del]']].map(([id,label])=>`<button data-tool="${id}">${label}</button>`).join('')}<button data-snap aria-pressed="${snapping}">Snapping [S]: ${snapping?'On':'Off'}</button><label class="construction-bounds-toggle"><input data-bounds type="checkbox" ${placementBounds?'checked':''}>Placement boxes</label><span></span><button data-undo>Undo</button><button data-redo>Redo</button></nav>
  <div class="construction-workspace"><aside class="construction-library"><label>Find an asset<input data-search type="search" placeholder="Grass, cage, bed…"></label><div data-palette></div></aside>
  <section class="construction-map"><div class="construction-camera"><b>${size.w} × ${size.h} cells</b>${debugLab?`<label class="construction-kit-picker">DEBUG WALL KIT<select data-wall-kit>${Object.entries(data.kits).map(([id,kit])=>`<option value="${esc(id)}" ${id===wallKit?'selected':''}>${esc(kit.name)}</option>`).join('')}</select></label>`:''}<button data-zoom="-.25" aria-label="Zoom out">−</button><button data-zoom="0">100%</button><button data-zoom=".25" aria-label="Zoom in">+</button><small>Wheel zoom | Shift+wheel scroll | R rotate | S snapping | Arrows position | Home center | Ctrl+Z undo</small><span data-snap-state role="status"></span></div><div class="construction-scroll"><svg data-map viewBox="0 0 ${size.w} ${size.h}" xmlns="http://www.w3.org/2000/svg" tabindex="0" aria-label="Camp construction grid"></svg></div><p data-help></p></section>
  <aside class="construction-inspector"><h3 data-inspector-heading>Placement</h3><div data-inspector></div><p class="construction-error" role="alert" data-error></p></aside></div>
@@ -32,7 +33,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
  const remember=()=>{undo.push(structuredClone(plan));if(undo.length>60)undo.shift();redo.length=0};
  function renderMap(){
   svg.style.width=`${size.w*64*zoom}px`;svg.style.height=`${size.h*64*zoom}px`;
-  scene.innerHTML=constructionSVG(plan,size,cat,{selected,facilities:data.buildings,definitions,wallKit});hiddenKey='';previewKey='';
+  scene.innerHTML=constructionSVG(plan,size,cat,{selected,facilities:data.buildings,definitions,wallKit,placementBounds});hiddenKey='';previewKey='';
   refreshStatus();
   drawPreview();
  }
@@ -44,7 +45,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
   if(layer==='walls'&&!item.piece){renderMap();return} // Legacy automatic posts depend on neighbors.
   const old=Array.from(scene.querySelectorAll('[data-construction-id]')).find(el=>el.dataset.constructionId===item.id);
   if(!old){renderMap();return}
-  old.outerHTML=constructionSVG({...newPlan(),[layer]:[item]},size,cat,{selected,grid:false,background:false,wallKit});refreshStatus();
+  old.outerHTML=constructionSVG({...newPlan(),[layer]:[item]},size,cat,{selected,grid:false,background:false,wallKit,placementBounds});refreshStatus();
  }
  // Pointer movement never rebuilds the ground, facilities or placed-object DOM.
  function drawPreview(){
@@ -57,7 +58,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
   if(label.textContent!==message)label.textContent=message;
   const key=JSON.stringify([ghost,gesture?.tiles,[...(gesture?.ground||[])],[...(gesture?.removed||[])],removeHover]);if(key===previewKey)return;previewKey=key;
   if(gesture?.kind==='paint')preview.innerHTML=`<g data-floor-fill opacity=".85">${constructionSVG({ground:gesture.tiles,props:[],walls:[]},size,cat,{grid:false,background:false})}${Object.keys(gesture.tiles).map(key=>{const [x,y]=key.split(',');return `<rect data-floor-preview x="${x}" y="${y}" width="1" height="1" fill="#eadc8b" fill-opacity=".1" stroke="#ffe5a1" stroke-width=".025"/>`}).join('')}</g>`;
-  else if(gesture?.kind==='wall-run')preview.innerHTML=ghost?.items?.length?`<g data-wall-run opacity=".7">${constructionSVG({...newPlan(),walls:ghost.items},size,cat,{grid:false,background:false,wallKit,selected:ghost.item.id})}${ghost.error?ghost.items.flatMap(w=>wallSegments(w)).map(([a,b])=>`<path d="M${a.join(' ')} L${b.join(' ')}" fill="none" stroke="#ff7c6a" stroke-width=".07"/>`).join(''):''}</g>`:'';
+  else if(gesture?.kind==='wall-run')preview.innerHTML=ghost?.items?.length?`<g data-wall-run opacity=".7">${constructionSVG({...newPlan(),walls:ghost.items},size,cat,{grid:false,background:false,wallKit,selected:ghost.item.id,placementBounds})}${ghost.error?ghost.items.flatMap(w=>wallSegments(w)).map(([a,b])=>`<path d="M${a.join(' ')} L${b.join(' ')}" fill="none" stroke="#ff7c6a" stroke-width=".07"/>`).join(''):''}</g>`:'';
   else if(mode==='erase')preview.innerHTML=removalPreview();
   else if(ghost)preview.innerHTML=constructionSVG(newPlan(),size,cat,{ghost,grid:false,background:false,wallKit})+(ghost.contacts?.length?ghost.contacts.map(([x,y])=>`<circle data-snap-port cx="${x}" cy="${y}" r=".085" fill="#b8ffe0" stroke="#183c30" stroke-width=".025"/>`).join(''):'');
   else preview.innerHTML='';
@@ -98,13 +99,19 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
   }
   find('[data-inspector-heading]').textContent=selection?'Selected object':'Placement';
   const select=(key,label,options,value)=>`<label>${label}<select data-field="${key}">${options.map(([id,name])=>`<option value="${id}" ${String(value)===id?'selected':''}>${esc(name)}</option>`).join('')}</select></label>`;
-  const range=(key,label,value)=>`<label>${label}<input data-field="${key}" type="range" min="-.45" max=".45" step=".01" value="${value||0}"><small data-range-value="${key}">${Math.round((value||0)*100)}% of a cell</small></label>`;
+  const range=(key,label,value)=>`<label>${label}<input data-field="${key}" type="range" min="-.5" max=".5" step=".01" value="${value||0}"><small data-range-value="${key}">${Math.round((value||0)*100)}% of a cell</small></label>`;
   const check=(key,label)=>`<label class="construction-check"><input data-field="${key}" type="checkbox" ${item[key]?'checked':''}>${label}</label>`;
   let html=`<p data-piece-label>${esc(layer==='props'?cat.props[item.asset||brush.props]?.name||'Prop':layer==='walls'?wallPieces[item.piece]?.name||'Legacy wall':'Terrain')} | <span data-angle>${layer==='walls'&&item.piece?'native facing':selection?item.rotation:rotation+' deg'}</span></p><button data-rotate>Rotate [R]</button><button data-center>Center [Home]</button><small>Arrows position | Shift+Arrows fine | Home center</small>`;
-  if(layer==='props')html+=select('w','Footprint width',[1,2,3,4].map(v=>[String(v),`${v} cell${v===1?'':'s'}`]),String(item.w))+select('h','Footprint height',[1,2,3,4].map(v=>[String(v),`${v} cell${v===1?'':'s'}`]),String(item.h))+range('offset_x','Position left / right',item.offset_x)+range('offset_y','Position up / down',item.offset_y)+check('blocking','Reserve this footprint')+'<small>Offsets move the artwork, not the reserved cells.</small>';
+  if(layer==='props')html+=`<small>Placement boxes outline visible art. They do not change character movement.</small>`+select('w','Footprint width',[1,2,3,4].map(v=>[String(v),`${v} cell${v===1?'':'s'}`]),String(item.w))+select('h','Footprint height',[1,2,3,4].map(v=>[String(v),`${v} cell${v===1?'':'s'}`]),String(item.h))+range('offset_x','Position left / right',item.offset_x)+range('offset_y','Position up / down',item.offset_y)+check('blocking','Reserve this footprint')+'<small>Offsets move the artwork, not the reserved cells.</small>';
   if(layer==='walls')html+=select('piece','Wall asset',wallLibraryEntries().map(([id,p])=>[id,p.name]),wallLibraryPiece(item.piece))+select('anchor','Position',Object.keys(anchors).map(v=>[v,v==='center'?'Center':{north:'Top edge',east:'Right edge',south:'Bottom edge',west:'Left edge'}[v]]),item.anchor)+select('material','Material',cat.wall_materials.map(v=>[v,v]),item.material)+(wallKit==='placeholder'?check('broken','Broken variation')+check('open','Gate open (gates only)'):'<small>This painted trial contains intact walls and closed gates.</small>');
   if(selection)html+=`<label>Cell X<input data-field="x" type="number" min="0" max="${size.w-1}" value="${item.x}"></label><label>Cell Y<input data-field="y" type="number" min="0" max="${size.h-1}" value="${item.y}"></label><button data-delete>Remove object</button>`;
   find('[data-inspector]').innerHTML=html;find('[data-rotate]').onclick=rotate;find('[data-center]').onclick=()=>transform((item,layer)=>['props','walls'].includes(layer)?nudgePlacement(item,layer,'Home'):item);find('[data-center]').disabled=!['props','walls'].includes(layer);
+  if(layer==='props'){
+   const button=document.createElement('button');button.textContent='Standard size';button.dataset.standardSize='';
+   button.title='Use the audited size for this prop; keep its position and rotation.';
+   button.onclick=()=>{transform(item=>{let [w,h]=cat.props[item.asset||brush.props]?.footprint||[1,1];if((selection?item.rotation:rotation)%180)[w,h]=[h,w];return {...item,w,h}});inspector()};
+   find('[data-center]').after(button);
+  }
   if(layer==='walls'&&wallKit!=='placeholder')find('[data-field=material]').disabled=true;
   if(layer==='walls'&&['tee','cross'].includes(item.shape)){find('[data-rotate]').disabled=true;const field=find('[data-field=piece]');field.insertAdjacentHTML('afterbegin',`<option value="${esc(item.piece||'')}" selected disabled>Retired junction (saved placement)</option>`);}
   find('[data-inspector]').querySelectorAll('[data-field]').forEach(input=>{let rangeEditing=false;input.addEventListener('change',()=>{if(input.type==='range')rangeEditing=false});input.addEventListener(input.type==='range'?'input':'change',()=>{
@@ -175,7 +182,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
   if(gesture?.kind==='move'){
    if(!inside(e)){ghost=null;return}const {px,py}=coords(e);let item={...gesture.item,x:gesture.origin[0]+Math.round(px-gesture.start[0]),y:gesture.origin[1]+Math.round(py-gesture.start[1])};
    const snap=snapping?(gesture.layer==='walls'?snapWall(item,plan,size,{requiredContacts:snapLock?.contacts||[],allowRotate:!snapLock&&item.shape==='corner'}):snapSeat(item,plan,size)):null;if(snap?.snapped)item=snap.item;
-   const error=placementError(item,gesture.layer,size,plan);showPlacementError(error);ghost=error?null:{layer:gesture.layer,item,...snap};
+   const error=placementError(item,gesture.layer,size,plan);showPlacementError(error);ghost=error&&gesture.layer==='walls'?null:{layer:gesture.layer,item,...snap,error};
   }else if(gesture?.kind==='paint'){
    ghost=null;gesture.tiles={};if(!inside(e))return;
    gesture.startCell??=cellAt(e);
@@ -191,7 +198,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
     else if(removeHover?.item)gesture.removed.add(removeHover.item.id);
    }
   }else{
-   ghost=makeGhost(e);if(ghost?.layer==='walls'&&snapping){if(snapLock)ghost.item={...ghost.item,x:snapLock.item.x,y:snapLock.item.y,piece:snapLock.item.piece,anchor:snapLock.item.anchor};const snap=snapWall(ghost.item,plan,size,{requiredContacts:snapLock?.contacts||[],allowRotate:!snapLock&&ghost.item.shape==='corner'});ghost={...ghost,...snap};}if(ghost?.layer==='props'&&snapping)ghost={...ghost,...snapSeat(ghost.item,plan,size)};if(ghost?.item){const error=placementError(ghost.item,ghost.layer,size,plan);showPlacementError(error);if(error)ghost=null;}
+   ghost=makeGhost(e);if(ghost?.layer==='walls'&&snapping){if(snapLock)ghost.item={...ghost.item,x:snapLock.item.x,y:snapLock.item.y,piece:snapLock.item.piece,anchor:snapLock.item.anchor};const snap=snapWall(ghost.item,plan,size,{requiredContacts:snapLock?.contacts||[],allowRotate:!snapLock&&ghost.item.shape==='corner'});ghost={...ghost,...snap};}if(ghost?.layer==='props'&&snapping)ghost={...ghost,...snapSeat(ghost.item,plan,size)};if(ghost?.item){const error=placementError(ghost.item,ghost.layer,size,plan);showPlacementError(error);if(error){if(ghost.layer==='props')ghost.error=error;else ghost=null;}}
   }
  }
  function begin(e,kind,initial=null){
@@ -217,7 +224,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
  };
  const pointerMove=e=>{if(gesture&&e.pointerId!==gesture.pointerId)return;if(!gesture&&!svg.contains(e.target))return;updatePointer(e);schedulePreview()};
  const pointerUp=e=>{
-  if(!gesture||e.pointerId!==gesture.pointerId)return;updatePointer(e);const g=gesture,valid=inside(e)&&(['paint','erase'].includes(g.kind)||g.kind==='wall-run'&&ghost?.items?.length&&!ghost.error||['move','place'].includes(g.kind)&&!!ghost),next=valid?structuredClone(plan):plan;
+  if(!gesture||e.pointerId!==gesture.pointerId)return;updatePointer(e);const g=gesture,valid=inside(e)&&(['paint','erase'].includes(g.kind)||g.kind==='wall-run'&&ghost?.items?.length&&!ghost.error||['move','place'].includes(g.kind)&&!!ghost&&!ghost.error),next=valid?structuredClone(plan):plan;
   if(valid){
    if(g.kind==='paint')Object.assign(next.ground,g.tiles);
    else if(g.kind==='wall-run')next.walls.push(...ghost.items.map(({invalidConnection,...item})=>({...item,id:crypto.randomUUID()})));
@@ -236,6 +243,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
  function setTool(next){cancelGesture();mode=next;if(mode!=='select')selected='';query='';find('[data-search]').value='';showPlacementError('');palette();inspector();renderMap();if(svg.matches(':hover')){updatePointer(lastPointer);schedulePreview()}}
  dialog.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
  find('[data-snap]').onclick=()=>{snapping=!snapping;snapLock=null;try{localStorage.setItem('fortcamp.construction.snapping',snapping?'on':'off')}catch{}find('[data-snap]').textContent=`Snapping [S]: ${snapping?'On':'Off'}`;find('[data-snap]').setAttribute('aria-pressed',String(snapping));updatePointer(lastPointer);schedulePreview()};
+ find('[data-bounds]').onchange=e=>{placementBounds=e.target.checked;try{localStorage.setItem('fortcamp.construction.bounds',placementBounds?'on':'off')}catch{}renderMap()};
  find('[data-search]').oninput=e=>{query=e.target.value.toLowerCase();palette()};
  function setZoom(next,point){
   const before=svg.getBoundingClientRect(),px=point?.clientX??scroll.getBoundingClientRect().left+scroll.clientWidth/2,py=point?.clientY??scroll.getBoundingClientRect().top+scroll.clientHeight/2,fx=(px-before.left)/before.width,fy=(py-before.top)/before.height;

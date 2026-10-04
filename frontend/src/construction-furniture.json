@@ -1,6 +1,25 @@
 {
-  "tables": ["wooden_table", "horticulture_round_table", "food_prep_table"],
-  "seats": ["horticulture_round_stool", "mess_bench"],
+  "tables": [
+    "wooden_table",
+    "horticulture_round_table",
+    "food_prep_table"
+  ],
+  "seats": [
+    "horticulture_round_stool",
+    "mess_bench",
+    "timber_chair",
+    "iron_chair",
+    "stone_chair",
+    "wicker_chair",
+    "upholstered_chair",
+    "tribal_chair",
+    "wooden_armchair",
+    "royal_chair",
+    "round_wooden_stool",
+    "square_wooden_stool",
+    "training_bench",
+    "folding_camp_stool"
+  ],
   "tuck_fraction": 0.3,
   "snap_reach": 0.3
 }

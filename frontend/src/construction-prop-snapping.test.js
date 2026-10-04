@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import {propsOverlap,propBounds,placementError} from './construction-geometry.js';
 import {snapSeat} from './construction-prop-snapping.js';
 import {constructionSVG} from './construction-render.js';
-const crate={id:'one',asset:'crate_closed',x:2,y:2,w:1,h:1,rotation:0,offset_x:-.35};
+const crate={id:'one',asset:'crate_closed',x:2,y:2,w:1,h:1,rotation:0,offset_x:-.4};
 const table={id:'table',asset:'horticulture_round_table',x:3,y:3,w:1,h:1,rotation:0};
 const seat={id:'seat',asset:'horticulture_round_stool',x:3,y:3,w:1,h:1,rotation:0};
 test('props share a cell only when visible bounds fit; overlap does not depend on IDs or insertion order',()=>{
- const other={...crate,id:'two',offset_x:.35};
+ const other={...crate,id:'two',offset_x:.4};
  assert.ok(!propsOverlap(crate,other));
  assert.equal(placementError(other,'props',{w:8,h:8},{props:[crate],walls:[]}),'');
  assert.ok(propsOverlap(crate,{...other,offset_x:0}));

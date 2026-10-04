@@ -68,7 +68,7 @@ test('full-cell T branches connect at their midpoint; nudges respect wall sides 
  const w=wall({piece:'tee_north'});assert.equal(wallConnections([w]).get('2.5,2').neighbors.size,3);
  assert.equal(nudgePlacement(w,'walls','ArrowLeft').anchor,'west');
  assert.equal(nudgePlacement(w,'walls','Home').anchor,'center');
- const p={offset_x:.44,offset_y:0};assert.equal(nudgePlacement(p,'props','ArrowRight').offset_x,.45);
+ const p={offset_x:.44,offset_y:0};assert.equal(nudgePlacement(p,'props','ArrowRight').offset_x,.49);
  assert.equal(nudgePlacement(p,'props','ArrowDown',true).offset_y,.01);
  assert.deepEqual(nudgePlacement(p,'props','Home'),{offset_x:0,offset_y:0});
 });

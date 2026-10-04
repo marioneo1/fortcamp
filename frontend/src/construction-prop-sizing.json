@@ -1,0 +1,1138 @@
+{
+  "treasure_chest_bronze_closed": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "treasure_chest_bronze_open": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "campfire_lit": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "cut_log_pile": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "mossy_boulder": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "canvas_tent": {
+    "fill": 0.85,
+    "footprint": [
+      2,
+      2
+    ],
+    "category": "large object"
+  },
+  "oak_tree": {
+    "fill": 0.85,
+    "footprint": [
+      2,
+      2
+    ],
+    "category": "mature tree"
+  },
+  "pine_tree": {
+    "fill": 0.85,
+    "footprint": [
+      2,
+      2
+    ],
+    "category": "mature tree"
+  },
+  "birch_tree": {
+    "fill": 0.85,
+    "footprint": [
+      2,
+      2
+    ],
+    "category": "mature tree"
+  },
+  "dead_tree": {
+    "fill": 0.75,
+    "footprint": [
+      2,
+      2
+    ],
+    "category": "mature tree"
+  },
+  "dense_shrub": {
+    "fill": 0.65,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "shrub"
+  },
+  "thorny_bramble": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "leafy_sapling": {
+    "fill": 0.55,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "sapling"
+  },
+  "tree_stump": {
+    "fill": 0.6,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "stump"
+  },
+  "fallen_branches": {
+    "fill": 0.6,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "branches"
+  },
+  "scattered_stones": {
+    "fill": 0.6,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "loose stones"
+  },
+  "rounded_boulder": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "hay_bale": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "bound_barrels": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "structure:wooden_rescue_cage_closed": {
+    "fill": 0.85,
+    "footprint": [
+      2,
+      2
+    ],
+    "category": "large object"
+  },
+  "structure:wooden_rescue_cage_open": {
+    "fill": 0.85,
+    "footprint": [
+      2,
+      2
+    ],
+    "category": "large object"
+  },
+  "alarm_bell_active": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "alarm_bell_disabled": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "crate_closed": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "crate_open": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "treasure_chest_silver_closed": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "treasure_chest_silver_open": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "treasure_chest_gold_closed": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "treasure_chest_gold_open": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "military_supply_coffer_closed": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "military_supply_coffer_open": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "ancient_reliquary_closed": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "ancient_reliquary_open": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "floor_lever_off": {
+    "fill": 0.35,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "floor lever"
+  },
+  "floor_lever_on": {
+    "fill": 0.35,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "floor lever"
+  },
+  "prison_wagon": {
+    "fill": 0.85,
+    "footprint": [
+      2,
+      2
+    ],
+    "category": "large object"
+  },
+  "prison_wagon_broken": {
+    "fill": 0.85,
+    "footprint": [
+      2,
+      2
+    ],
+    "category": "large object"
+  },
+  "dispatch_satchel": {
+    "fill": 0.35,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "satchel"
+  },
+  "wagon_wheel": {
+    "fill": 0.55,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "wheel"
+  },
+  "marked_farm_chart": {
+    "fill": 0.3,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "handheld map"
+  },
+  "spike_trap": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "spike_trap_spent": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "iron_jaw_trap": {
+    "fill": 0.45,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "small trap"
+  },
+  "iron_jaw_trap_spent": {
+    "fill": 0.45,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "small trap"
+  },
+  "wooden_handcart": {
+    "fill": 0.8,
+    "footprint": [
+      2,
+      1
+    ],
+    "category": "long object"
+  },
+  "campfire_cold": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "wooden_table": {
+    "fill": 0.8,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "table"
+  },
+  "repair_workbench": {
+    "fill": 0.8,
+    "footprint": [
+      2,
+      1
+    ],
+    "category": "workbench"
+  },
+  "iron_anvil": {
+    "fill": 0.55,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "anvil"
+  },
+  "carpenter_tool_rack": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "small_coal_forge": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "mossy_gravestone": {
+    "fill": 0.6,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "grave marker"
+  },
+  "fallen_gravestone": {
+    "fill": 0.6,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "grave marker"
+  },
+  "grave_cross": {
+    "fill": 0.55,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "grave marker"
+  },
+  "old_bone_pile": {
+    "fill": 0.5,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "bones"
+  },
+  "carpenter_sawhorse": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "stacked_planks": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "camp_lantern": {
+    "fill": 0.25,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "small lantern"
+  },
+  "open_toolbox": {
+    "fill": 0.45,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "toolbox"
+  },
+  "weapon_rack": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "shield_rack": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "armor_stand": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "arrow_crate": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "chapel_altar": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "chapel_pew": {
+    "fill": 0.8,
+    "footprint": [
+      2,
+      1
+    ],
+    "category": "long bench"
+  },
+  "fallen_church_bell": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "toll_desk": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "straw_training_dummy": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.75,
+    "category": "training equipment"
+  },
+  "armored_training_dummy": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.75,
+    "category": "training equipment"
+  },
+  "archery_target": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.75,
+    "category": "training equipment"
+  },
+  "hay_archery_butt": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.75,
+    "category": "training equipment"
+  },
+  "practice_weapon_rack": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.75,
+    "category": "training equipment"
+  },
+  "training_shield_rack": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.75,
+    "category": "training equipment"
+  },
+  "arrow_bundle": {
+    "fill": 0.35,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "arrows"
+  },
+  "war_drum": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "sleeping_bag": {
+    "fill": 0.88,
+    "footprint": [
+      1,
+      2
+    ],
+    "category": "bedding"
+  },
+  "straw_bed": {
+    "fill": 0.88,
+    "footprint": [
+      1,
+      2
+    ],
+    "category": "bedding"
+  },
+  "canvas_cot": {
+    "fill": 0.88,
+    "footprint": [
+      1,
+      2
+    ],
+    "category": "bedding"
+  },
+  "wooden_bed": {
+    "fill": 0.88,
+    "footprint": [
+      1,
+      2
+    ],
+    "category": "bedding"
+  },
+  "stone_bed": {
+    "fill": 0.88,
+    "footprint": [
+      1,
+      2
+    ],
+    "category": "bedding"
+  },
+  "luxurious_bed": {
+    "fill": 0.88,
+    "footprint": [
+      1,
+      2
+    ],
+    "category": "bedding"
+  },
+  "tribal_hide_bed": {
+    "fill": 0.88,
+    "footprint": [
+      1,
+      2
+    ],
+    "category": "bedding"
+  },
+  "reed_sleeping_mat": {
+    "fill": 0.88,
+    "footprint": [
+      1,
+      2
+    ],
+    "category": "bedding"
+  },
+  "camp_cooking_pot": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "food_prep_table": {
+    "fill": 0.8,
+    "footprint": [
+      2,
+      1
+    ],
+    "category": "work table"
+  },
+  "grain_sacks": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "water_trough": {
+    "fill": 0.75,
+    "footprint": [
+      2,
+      1
+    ],
+    "category": "trough"
+  },
+  "wash_tub": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "mess_bench": {
+    "fill": 0.8,
+    "footprint": [
+      2,
+      1
+    ],
+    "category": "long bench"
+  },
+  "herb_planter": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "village_well": {
+    "fill": 0.85,
+    "footprint": [
+      2,
+      2
+    ],
+    "category": "large object"
+  },
+  "ballista_loaded": {
+    "fill": 0.85,
+    "footprint": [
+      2,
+      2
+    ],
+    "category": "large object"
+  },
+  "ballista_empty": {
+    "fill": 0.85,
+    "footprint": [
+      2,
+      2
+    ],
+    "category": "large object"
+  },
+  "oil_cauldron": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "oil_cauldron_tipped": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "ballista_bolts": {
+    "fill": 0.45,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "bolts"
+  },
+  "dropped_coin_purse": {
+    "fill": 0.23,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "coin purse"
+  },
+  "blanket_chest": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "tribal_trophy_pole": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "ordinary prop"
+  },
+  "horticulture_fence_full": {
+    "fill": 0.9,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "prepared crop edging"
+  },
+  "horticulture_fence_half": {
+    "fill": 0.9,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "prepared crop edging"
+  },
+  "horticulture_fence_corner": {
+    "fill": 0.9,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "prepared crop edging"
+  },
+  "horticulture_fence_junction": {
+    "fill": 0.9,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "prepared crop edging"
+  },
+  "horticulture_fence_cross": {
+    "fill": 0.9,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "prepared crop edging"
+  },
+  "horticulture_fence_post": {
+    "fill": 0.9,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "prepared crop edging"
+  },
+  "horticulture_gate_closed": {
+    "fill": 0.9,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "prepared crop edging"
+  },
+  "horticulture_gate_open": {
+    "fill": 0.9,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "prepared crop edging"
+  },
+  "horticulture_fence_damaged": {
+    "fill": 0.9,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "prepared crop edging"
+  },
+  "horticulture_scarecrow": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "garden furniture"
+  },
+  "horticulture_hand_pump": {
+    "fill": 0.45,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "hand pump"
+  },
+  "horticulture_round_stool": {
+    "fill": 0.35,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "stool"
+  },
+  "horticulture_round_table": {
+    "fill": 0.8,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "table"
+  },
+  "horticulture_potting_bench": {
+    "fill": 0.75,
+    "footprint": [
+      2,
+      1
+    ],
+    "category": "garden furniture"
+  },
+  "horticulture_watering_can": {
+    "fill": 0.35,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "small garden clutter"
+  },
+  "horticulture_wheelbarrow": {
+    "fill": 0.75,
+    "footprint": [
+      2,
+      1
+    ],
+    "category": "garden furniture"
+  },
+  "horticulture_tool_crate": {
+    "fill": 0.35,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "small garden clutter"
+  },
+  "horticulture_soil_sack": {
+    "fill": 0.35,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "small garden clutter"
+  },
+  "horticulture_clay_pots": {
+    "fill": 0.35,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "small garden clutter"
+  },
+  "horticulture_seedling_tray": {
+    "fill": 0.35,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "small garden clutter"
+  },
+  "horticulture_herb_basket": {
+    "fill": 0.35,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "small garden clutter"
+  },
+  "horticulture_compost_bin": {
+    "fill": 0.75,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "garden furniture"
+  },
+  "horticulture_drying_screen": {
+    "fill": 0.75,
+    "footprint": [
+      2,
+      1
+    ],
+    "category": "garden furniture"
+  },
+  "horticulture_hose_coil": {
+    "fill": 0.35,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "small garden clutter"
+  },
+  "horticulture_fence_joined": {
+    "fill": 0.9,
+    "footprint": [
+      1,
+      1
+    ],
+    "category": "prepared crop edging"
+  },
+  "timber_chair": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.5,
+    "category": "seat"
+  },
+  "iron_chair": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.5,
+    "category": "seat"
+  },
+  "stone_chair": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.5,
+    "category": "seat"
+  },
+  "wicker_chair": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.5,
+    "category": "seat"
+  },
+  "upholstered_chair": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.5,
+    "category": "seat"
+  },
+  "tribal_chair": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.5,
+    "category": "seat"
+  },
+  "wooden_armchair": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.5,
+    "category": "seat"
+  },
+  "royal_chair": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.5,
+    "category": "seat"
+  },
+  "round_wooden_stool": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.35,
+    "category": "seat"
+  },
+  "square_wooden_stool": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.35,
+    "category": "seat"
+  },
+  "training_bench": {
+    "footprint": [
+      2,
+      1
+    ],
+    "fill": 0.75,
+    "category": "seat"
+  },
+  "folding_camp_stool": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.35,
+    "category": "seat"
+  },
+  "floor_training_target": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.75,
+    "category": "training equipment"
+  },
+  "padded_sparring_post": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.75,
+    "category": "training equipment"
+  },
+  "practice_spear_bundle": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.35,
+    "category": "training equipment"
+  },
+  "practice_sword_bundle": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.35,
+    "category": "training equipment"
+  },
+  "archery_quiver": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.35,
+    "category": "training equipment"
+  },
+  "training_helmet_crate": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.6,
+    "category": "training equipment"
+  }
+}

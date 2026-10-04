@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Construction sizing: [142-prop audit](art/CONSTRUCTION_PROP_SIZE_AUDIT.md), [overhead chairs and training pack](art/FURNITURE_TRAINING_OVERHEAD_V1.md), and [construction controls](design/BASE_CONSTRUCTION.md) cover calibrated visual sizes, placement-only boxes and preserved movement rules.
+
 Portrait tagging: [Local structured tagger](art/LOCAL_PORTRAIT_TAGGER.md) covers the standalone WD tool, existing race/gender assignments, review, search, exports and deferred game integration. Cloud tagging is paused.
 
 Male portrait rollout: [Batch progress and remaining targets](art/MALE_PORTRAIT_ROLLOUT.md) tracks installed males, staged sheets, generation prompts and visual-review concerns.

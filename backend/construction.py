@@ -15,6 +15,7 @@ WALL_PIECES = {**json.loads((ROOT/'frontend/src/construction-wall-pieces-legacy.
 MATERIALS = ['timber','fieldstone','limestone','iron']
 FURNITURE = json.loads((ROOT/'frontend/src/construction-furniture.json').read_text())
 PROP_ART_BOUNDS = json.loads((ROOT/'frontend/src/construction-prop-bounds.json').read_text())
+PROP_SIZING = json.loads((ROOT/'frontend/src/construction-prop-sizing.json').read_text())
 
 
 def empty_plan():
@@ -31,7 +32,9 @@ def catalogue():
     props=json.loads((ROOT/'frontend/src/map-prop-art.json').read_text())
     sizes=json.loads((ROOT/'frontend/src/map-prop-sizes.json').read_text())
     props={key:{'name':key.replace('structure:','').replace('_',' ').title(),'file':file,
-                'footprint':sizes.get(key,{}).get('footprint',[1,1])}
+                'footprint':PROP_SIZING.get(key,sizes.get(key,{})).get('footprint',[1,1]),
+                'category':PROP_SIZING.get(key,{}).get('category','prop'),
+                'fill':PROP_SIZING.get(key,{}).get('fill',.75)}
            for key,file in props.items() if (file.startswith('props/') or any(s in key for s in ['cage','wagon','tent','stocks']))
            and (asset_root/file).is_file()}
     return {'ground':ground,'props':props,'wall_pieces':AVAILABLE_WALL_PIECES,'wall_shapes':['straight','corner','gate'],'wall_materials':MATERIALS}
@@ -58,12 +61,14 @@ def prop_bounds(prop):
                 prop['x']+prop['w']*.96+prop.get('offset_x',0), prop['y']+prop['h']*.96+prop.get('offset_y',0))
     iw, ih = art['size']; l, t, r, b = art['bounds']
     w, h = (prop['h'], prop['w']) if prop['rotation'] % 180 else (prop['w'], prop['h'])
-    scale = min(w*.92/iw, h*.92/ih)
+    fill = art.get('fill')
+    scale = min(w*fill/(r-l),h*fill/(b-t)) if fill else min(w*.92/iw,h*.92/ih)
+    mx,my = ((l+r)/2,(t+b)/2) if fill else (iw/2,ih/2)
     cx = prop['x']+prop['w']/2+prop.get('offset_x',0)
     cy = prop['y']+prop['h']/2+prop.get('offset_y',0)
     points = []
     for x, y in [(l,t),(r,t),(r,b),(l,b)]:
-        dx, dy = (x-iw/2)*scale, (y-ih/2)*scale
+        dx, dy = (x-mx)*scale, (y-my)*scale
         for _ in range(prop['rotation']//90): dx, dy = -dy, dx
         points.append((cx+dx,cy+dy))
     return min(x for x,y in points), min(y for x,y in points), max(x for x,y in points), max(y for x,y in points)
@@ -151,7 +156,7 @@ def validate_plan(plan, size, buildings=(), previous_plan=None):
                 w=number(item.get('w',1),1,4,True);h=number(item.get('h',1),1,4,True)
                 if x+w>size['w'] or y+h>size['h']:raise ValueError('Prop footprint extends outside the camp')
                 obj.update(asset=item['asset'],w=w,h=h,
-                           offset_x=number(item.get('offset_x',0),-.45,.45),offset_y=number(item.get('offset_y',0),-.45,.45),
+                           offset_x=number(item.get('offset_x',0),-.5,.5),offset_y=number(item.get('offset_y',0),-.5,.5),
                            blocking=bool(item.get('blocking',False)))
                 if obj['blocking']:
                     from .content import BUILDINGS

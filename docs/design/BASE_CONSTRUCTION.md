@@ -39,8 +39,8 @@ There are currently 112 installed ground textures and 124 supported props;
 catalogue counts depend on locally installed artwork.
 
 Props have stable IDs, cell coordinates, a 1–4-cell footprint on each axis,
-quarter-turn rotation and independent horizontal/vertical offsets from -45% to
-+45% of a cell. Rotation swaps a rectangular footprint's width/height. The SVG
+quarter-turn rotation and independent horizontal/vertical offsets from -50% to
++50% of a cell. Rotation swaps a rectangular footprint's width/height. The SVG
 image preserves source aspect ratio; resizing a footprint never stretches the
 image. Offset changes the art position, not the reserved cells. Non-reserved
 decorations can share cells when their visible bounds fit. Reserve this footprint prevents placing a
@@ -330,3 +330,54 @@ production files changed. Validation: 178 frontend tests, 18 backend constructio
 tests, build and real browser seat-preview/drop/save/draw-order QA pass. Browser
 saves were an in-memory fixture. Pixel-perfect silhouette collision and additional
 furniture pairing rules remain deferred.
+
+
+## October 4: calibrated prop audit and placement outlines
+
+Construction now has its own audited size profiles in construction-prop-sizing.json.
+The previous generic 92% image viewport was inconsistent: transparent margins
+made furniture too small while charts and small clutter used furniture-sized boxes.
+All 142 installed construction props have measured art bounds and calibrated fill.
+Visible silhouettes are centered, sized by object category, and keep their source
+aspect ratio. Chart 0.30 cell, lantern 0.25, ordinary containers about 0.75, chairs
+0.50, stools 0.35. Large wells/cages/wagons/tents default 2x2; beds 1x2; workbenches,
+pews and benches 2x1. This supersedes the earlier generic viewport sizing above.
+
+Saved coordinates and footprints are not rewritten. Select an existing prop and
+use Standard size to adopt the current default dimensions while retaining its
+position/rotation; collision validation and undo still apply. Offsets now cover
+-50% to +50% so docking has no gap between adjacent cells' supported positions.
+
+Placement boxes are enabled by default in the editor, with a browser-persistent
+checkbox. They tightly bound the visible alpha rectangle after sizing, rotation
+and offsets, ignoring transparent image margins. Wall boxes show the existing
+0.08-cell placement clearance around segments. Invalid prop previews remain visible
+with red outlines and cannot commit. Boxes are noninteractive and do not appear
+in the normal settlement view. They do not change character pathfinding, combat
+movement, or the existing independent Reserve this footprint setting. Empty gaps
+inside a silhouette's rectangle remain conservative occupied space.
+
+Prop selection uses these tight rectangles as well, so transparent PNG margins
+do not intercept neighboring objects. Painted walls use a narrow segment hit
+area rather than their square bitmap canvas. Faint alpha outside the measured
+silhouette is ignored for placement. These are editor hit areas, not gameplay
+movement collision shapes.
+
+A new 6x4 atlas supplies 24 overhead furniture/training props, including eight
+chairs, three stools, a bench, six replacement training sprites and six new props.
+All seats use the existing optional S table docking and tabletop draw priority.
+Old sources remain. Combat replacement art resolves through the same stable IDs;
+existing battle footprints and logic remain unchanged. Battle sprite calibration
+is refreshed for the replacement images, separately from construction geometry.
+
+Audit: docs/art/CONSTRUCTION_PROP_SIZE_AUDIT.md; six galleries and JSON under
+staging-terrain/construction-prop-audit. Rebuild with:
+`.venv\Scripts\python.exe tools\measure_construction_props.py`
+then `.venv\Scripts\python.exe -m tools.audit_construction_props`.
+New-pack source/prompt/extraction log: staging-terrain/furniture-training-v1.
+
+Validation: 181 frontend tests, 24 backend construction/shared-size tests, build
+and isolated browser checks pass. Browser verifies calibrated chart/chair/well
+sizes, prop/wall boxes and toggle, red invalid preview/no commit, Standard size,
+save and table docking/occlusion. Screenshots inspected. Saves were in-memory
+fixtures; production and real player saves are untouched.

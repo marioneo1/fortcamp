@@ -684,7 +684,7 @@
     ],
     "fill": 0.85,
     "category": "ordinary prop",
-    "scale": 1.5845
+    "scale": 1.4637
   },
   "armored_training_dummy": {
     "footprint": [
@@ -693,7 +693,7 @@
     ],
     "fill": 0.85,
     "category": "ordinary prop",
-    "scale": 1.5845
+    "scale": 1.4442
   },
   "archery_target": {
     "footprint": [
@@ -702,7 +702,7 @@
     ],
     "fill": 0.85,
     "category": "ordinary prop",
-    "scale": 1.6402
+    "scale": 1.6912
   },
   "hay_archery_butt": {
     "footprint": [
@@ -711,7 +711,7 @@
     ],
     "fill": 0.85,
     "category": "ordinary prop",
-    "scale": 1.7548
+    "scale": 1.6239
   },
   "practice_weapon_rack": {
     "footprint": [
@@ -720,7 +720,7 @@
     ],
     "fill": 0.85,
     "category": "ordinary prop",
-    "scale": 1.5324
+    "scale": 1.3488
   },
   "training_shield_rack": {
     "footprint": [
@@ -729,7 +729,7 @@
     ],
     "fill": 0.85,
     "category": "ordinary prop",
-    "scale": 1.5252
+    "scale": 1.5768
   },
   "arrow_bundle": {
     "footprint": [
@@ -1189,5 +1189,167 @@
     "fill": 0.85,
     "category": "prepared crop edging",
     "scale": 0.85
+  },
+  "timber_chair": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.5,
+    "category": "seat",
+    "scale": 0.9648
+  },
+  "iron_chair": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.5,
+    "category": "seat",
+    "scale": 0.9187
+  },
+  "stone_chair": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.5,
+    "category": "seat",
+    "scale": 0.9187
+  },
+  "wicker_chair": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.5,
+    "category": "seat",
+    "scale": 0.9143
+  },
+  "upholstered_chair": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.5,
+    "category": "seat",
+    "scale": 0.9505
+  },
+  "tribal_chair": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.5,
+    "category": "seat",
+    "scale": 0.932
+  },
+  "wooden_armchair": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.5,
+    "category": "seat",
+    "scale": 0.9846
+  },
+  "royal_chair": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.5,
+    "category": "seat",
+    "scale": 0.9275
+  },
+  "round_wooden_stool": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.35,
+    "category": "seat",
+    "scale": 0.8901
+  },
+  "square_wooden_stool": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.35,
+    "category": "seat",
+    "scale": 0.8453
+  },
+  "training_bench": {
+    "footprint": [
+      2,
+      1
+    ],
+    "fill": 0.75,
+    "category": "seat",
+    "scale": 0.932
+  },
+  "folding_camp_stool": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.35,
+    "category": "seat",
+    "scale": 0.7636
+  },
+  "floor_training_target": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.75,
+    "category": "training equipment",
+    "scale": 1.378
+  },
+  "padded_sparring_post": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.75,
+    "category": "training equipment",
+    "scale": 1.2101
+  },
+  "practice_spear_bundle": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.35,
+    "category": "training equipment",
+    "scale": 0.6109
+  },
+  "practice_sword_bundle": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.35,
+    "category": "training equipment",
+    "scale": 0.5793
+  },
+  "archery_quiver": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.35,
+    "category": "training equipment",
+    "scale": 0.6822
+  },
+  "training_helmet_crate": {
+    "footprint": [
+      1,
+      1
+    ],
+    "fill": 0.6,
+    "category": "training equipment",
+    "scale": 1.015
   }
 }

@@ -13,9 +13,9 @@ export function snapSeat(item,plan,size){
    if(distance>furniture.snap_reach||best&&distance>=best.distance)continue;
    // Keep offsets in their supported range by transferring whole-cell movement.
    let px=item.x,py=item.y,ox=(item.offset_x||0)+dx,oy=(item.offset_y||0)+dy;
-   if(ox>.45){px++;ox--}else if(ox<-.45){px--;ox++}
-   if(oy>.45){py++;oy--}else if(oy<-.45){py--;oy++}
-   if(Math.abs(ox)>.45||Math.abs(oy)>.45)continue;
+   if(ox>.5){px++;ox--}else if(ox<-.5){px--;ox++}
+   if(oy>.5){py++;oy--}else if(oy<-.5){py--;oy++}
+   if(Math.abs(ox)>.5||Math.abs(oy)>.5)continue;
    const candidate={...item,x:px,y:py,offset_x:Math.round(ox*1000)/1000,offset_y:Math.round(oy*1000)/1000};
    if(!placementError(candidate,'props',size,plan))best={item:candidate,snapped:true,tableId:table.id,distance};
   }

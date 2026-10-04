@@ -1,8 +1,8 @@
 import {wallArtImage} from './construction-wall-art.js';
-import {wallSegments,wallConnections,wallPosts,pointKey,isTable} from './construction-geometry.js';
+import {wallSegments,wallConnections,wallPosts,pointKey,isTable,propBounds,propImageLayout} from './construction-geometry.js';
 export const wallColors={timber:['#b98953','#5d3e28'],fieldstone:['#9d9d89','#434c42'],limestone:['#e4d4a8','#8f805e'],iron:['#aab4bf','#435464']};
 const url=file=>`/assets/combat-terrain/${file}`;
-export function constructionSVG(plan,size,catalogue,{selected='',ghost=null,facilities=[],definitions={},grid=true,background=true,wallKit='placeholder'}={}){
+export function constructionSVG(plan,size,catalogue,{selected='',ghost=null,facilities=[],definitions={},grid=true,background=true,wallKit='placeholder',placementBounds=false}={}){
  let html='';
  for(let y=0;y<size.h;y++)for(let x=0;x<size.w;x++){
   if(!background&&!plan.ground[`${x},${y}`])continue;
@@ -14,10 +14,9 @@ export function constructionSVG(plan,size,catalogue,{selected='',ghost=null,faci
  for(const b of facilities){const d=definitions[b.type];if(d)html+=`<rect x="${b.x}" y="${b.y}" width="${d.w}" height="${d.h}" fill="#172b21" opacity=".7" stroke="#e2c988" stroke-width=".025"/><text x="${b.x+.12}" y="${b.y+.35}" font-size=".16" fill="#f5e4b8">${d.name.replaceAll('&','&amp;').replaceAll('<','&lt;')}</text>`}
  const drawProp=(p,preview=false)=>{
   const file=catalogue.props[p.asset]?.file;if(!file)return '';
-  const cx=p.x+p.w/2+(p.offset_x||0),cy=p.y+p.h/2+(p.offset_y||0);
+  const {cx,cy,x,y,w,h}=propImageLayout(p),[left,top,right,bottom]=propBounds(p);
   // Rotate the art with its footprint; preserveAspectRatio prevents stretching.
-  const w=p.rotation%180?p.h:p.w,h=p.rotation%180?p.w:p.h;
-  return `<g data-construction-id="${p.id}" data-construction-layer="props" class="construction-prop ${selected===p.id?'selected':''}" opacity="${preview?.6:1}"><image href="${url(file)}" x="${cx-w*.46}" y="${cy-h*.46}" width="${w*.92}" height="${h*.92}" preserveAspectRatio="xMidYMid meet" transform="rotate(${p.rotation} ${cx} ${cy})"/>${selected===p.id||preview?`<rect x="${p.x}" y="${p.y}" width="${p.w}" height="${p.h}" fill="none" stroke="${preview?'#fff1ae':'#91efd3'}" stroke-width=".035" stroke-dasharray=".1 .05"/>`:''}</g>`;
+  return `<g data-construction-id="${p.id}" data-construction-layer="props" class="construction-prop ${selected===p.id?'selected':''}" opacity="${preview?.6:1}"><rect data-prop-hit x="${left}" y="${top}" width="${right-left}" height="${bottom-top}" fill="transparent" pointer-events="all"/><image pointer-events="none" href="${url(file)}" x="${x}" y="${y}" width="${w}" height="${h}" preserveAspectRatio="xMidYMid meet" transform="rotate(${p.rotation} ${cx} ${cy})"/>${placementBounds||selected===p.id||preview?`<rect data-placement-bounds="prop" x="${left}" y="${top}" width="${right-left}" height="${bottom-top}" fill="none" stroke="${ghost?.error&&preview?'#ff7666':preview?'#fff1ae':selected===p.id?'#91efd3':'#dfc98e'}" stroke-opacity=".95" stroke-width=".025" stroke-dasharray=".07 .035" pointer-events="none"/>`:''}</g>`;
  };
  html+=plan.props.slice().sort((a,b)=>Number(isTable(a))-Number(isTable(b))||(a.y+a.h)-(b.y+b.h)).map(p=>drawProp(p)).join('');
  const nodes=plan.walls.some(w=>!w.piece&&w.posts==='auto')?wallConnections(plan.walls):new Map(),caps=new Map();
@@ -35,12 +34,18 @@ export function constructionSVG(plan,size,catalogue,{selected='',ghost=null,faci
   }
   const gate=wall.shape==='gate'?`<circle cx="${start[0]}" cy="${start[1]}" r=".075" fill="${wall.open?'#99d68b':'#e0a14c'}" stroke="#342e21" stroke-width=".02"/>`:'';
   const painted=wallArtImage(wall,wallKit);
-  if(painted)return `<g data-construction-id="${wall.id}" data-construction-layer="walls" class="construction-wall ${selected===wall.id?'selected':''}" opacity="${preview?.65:1}">${painted}${selected===wall.id||preview?`<path d="${path}" fill="none" stroke="${preview?'#ffefa1':'#91efd3'}" stroke-width=".03" stroke-dasharray=".08 .05" pointer-events="none"/>`:''}</g>`;
+  if(painted)return `<g data-construction-id="${wall.id}" data-construction-layer="walls" class="construction-wall ${selected===wall.id?'selected':''}" opacity="${preview?.65:1}"><g pointer-events="none">${painted}</g><path data-wall-hit d="${path}" fill="none" stroke="transparent" stroke-width=".22" pointer-events="stroke"/>${selected===wall.id||preview?`<path d="${path}" fill="none" stroke="${preview?'#ffefa1':'#91efd3'}" stroke-width=".03" stroke-dasharray=".08 .05" pointer-events="none"/>`:''}</g>`;
   const posts=wallPosts(wall).map(p=>`<rect x="${p[0]-.105}" y="${p[1]-.105}" width=".21" height=".21" rx=".025" fill="${color}" stroke="${edge}" stroke-width=".03"/>`).join('');
   return `<g data-construction-id="${wall.id}" data-construction-layer="walls" class="construction-wall ${selected===wall.id?'selected':''}" opacity="${preview?.6:1}"><path d="${path}" fill="none" stroke="${selected===wall.id?'#91efd3':edge}" stroke-width=".19" stroke-linecap="butt"/><path d="${path}" fill="none" stroke="${color}" stroke-width=".12" stroke-linecap="butt"/>${posts}${gate}</g>`;
  };
  html+=plan.walls.map(w=>drawWall(w)).join('');
+ if(placementBounds)html+=wallPlacementBounds(plan.walls);
  for(const {p,color,edge} of caps.values())html+=`<rect x="${p[0]-.105}" y="${p[1]-.105}" width=".21" height=".21" rx=".025" fill="${color}" stroke="${edge}" stroke-width=".03" pointer-events="none"/>`;
- if(ghost)html+=ghost.layer==='props'?drawProp(ghost.item,true):ghost.layer==='walls'?drawWall(ghost.item,true):`<rect x="${ghost.x}" y="${ghost.y}" width="1" height="1" fill="#e9dc99" opacity=".3"/>`;
+ if(ghost)html+=ghost.layer==='props'?drawProp(ghost.item,true):ghost.layer==='walls'?drawWall(ghost.item,true)+wallPlacementBounds([ghost.item],ghost.error?'#ff7666':'#fff1ae'):`<rect x="${ghost.x}" y="${ghost.y}" width="1" height="1" fill="#e9dc99" opacity=".3"/>`;
  return html;
+}
+export function wallPlacementBounds(walls,color='#91efd3'){
+ return walls.flatMap(w=>wallSegments(w)).map(([a,b])=>a[1]===b[1]
+  ?`<rect data-placement-bounds="wall" x="${Math.min(a[0],b[0])-.08}" y="${a[1]-.08}" width="${Math.abs(a[0]-b[0])+.16}" height=".16" fill="none" stroke="${color}" stroke-width=".015" stroke-opacity=".6" stroke-dasharray=".07 .035" pointer-events="none"/>`
+  :`<rect data-placement-bounds="wall" x="${a[0]-.08}" y="${Math.min(a[1],b[1])-.08}" width=".16" height="${Math.abs(a[1]-b[1])+.16}" fill="none" stroke="${color}" stroke-width=".015" stroke-opacity=".6" stroke-dasharray=".07 .035" pointer-events="none"/>`).join('');
 }
