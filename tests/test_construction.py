@@ -136,6 +136,19 @@ class ConstructionRulesTests(unittest.TestCase):
         self.assertEqual(saved['props'][0]['offset_x'],.5)
         self.assertEqual(saved['props'][0]['offset_y'],-.5)
 
+    def test_seat_spacing_is_saved_and_invalid_values_are_rejected(self):
+        self.catalogue_mock.return_value={**CAT,'props':{**CAT['props'],'timber_chair':{'file':'chair.png'}}}
+        seat=self.prop();seat.update(asset='timber_chair',w=1,h=1,table_spacing=-.6)
+        plan={**empty_plan(),'props':[seat]}
+        self.assertEqual(validate_plan(plan,self.size)['props'][0]['table_spacing'],-.6)
+        seat['table_spacing']=.6
+        self.assertEqual(validate_plan(plan,self.size)['props'][0]['table_spacing'],.6)
+        for value in [-.61,.61,float('nan')]:
+            seat['table_spacing']=value
+            with self.assertRaises(ValueError):validate_plan(plan,self.size)
+        seat.update(asset='crate',table_spacing=0)
+        with self.assertRaisesRegex(ValueError,'seating'):validate_plan(plan,self.size)
+
     def test_visible_art_fits_inside_edge_walls_and_retains_real_collisions(self):
         from backend.construction import wall_hits_prop, prop_bounds
         prop = self.prop(); prop.update(asset='crate_closed',w=1,h=1,offset_x=0,offset_y=0)

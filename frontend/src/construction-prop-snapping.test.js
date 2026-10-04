@@ -35,3 +35,21 @@ test('tables draw over seats regardless of insertion order and source aspect is 
   assert.ok(svg.indexOf('data-construction-id="seat"')<svg.indexOf('data-construction-id="table"'));
  }
 });
+
+test('spacing adjustments tuck farther or pull out while keeping the same table and side',()=>{
+ const [l,t,r,b]=propBounds(table),[sl,st,sr,sb]=propBounds(seat),height=sb-st;
+ const near={...seat,offset_y:b+height*.3-(st+sb)/2};
+ const plan={props:[table],walls:[]},size={w:8,h:8};
+ const dock=snapSeat(near,plan,size);assert.ok(dock.snapped);
+ const deep=snapSeat({...dock.item,table_spacing:-.6},plan,size,{reference:dock.item});
+ assert.ok(deep.snapped);assert.equal(deep.tableId,table.id);
+ assert.ok(!propsOverlap(deep.item,table));
+ assert.ok(Math.abs(propBounds(deep.item)[1]-(b-height*.6))<.002);
+ const out=snapSeat({...deep.item,table_spacing:.6},plan,size,{reference:deep.item});
+ assert.ok(out.snapped);assert.equal(out.tableId,table.id);
+ assert.ok(Math.abs(propBounds(out.item)[1]-(b+height*.6))<.002);
+ assert.equal(out.item.table_spacing,.6);
+ assert.ok(propsOverlap(seat,table));
+ const blocked={props:[table,{...out.item,id:'obstacle'}],walls:[]};
+ assert.ok(!snapSeat({...deep.item,table_spacing:.6},blocked,size,{reference:deep.item}).snapped);
+});

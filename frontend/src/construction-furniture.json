@@ -20,6 +20,9 @@
     "training_bench",
     "folding_camp_stool"
   ],
-  "tuck_fraction": 0.3,
+  "tuck_fraction": 0.65,
+  "default_spacing": -0.2,
+  "min_spacing": -0.6,
+  "max_spacing": 0.6,
   "snap_reach": 0.3
 }

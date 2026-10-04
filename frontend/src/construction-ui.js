@@ -1,8 +1,9 @@
 import './construction-ui.css';
-import {anchors,defaultWallAnchor,wallPieces,availableWallPieces,wallLibraryPiece,wallLibraryEntries,placementError,rotatePlacement,nudgePlacement,newPlan} from './construction-geometry.js';
+import {anchors,isSeat,isTable,propBounds,defaultWallAnchor,wallPieces,availableWallPieces,wallLibraryPiece,wallLibraryEntries,placementError,rotatePlacement,nudgePlacement,newPlan} from './construction-geometry.js';
 import {constructionSVG} from './construction-render.js';
 import {confirmAction} from './confirmation-ui.js';
 import {snapSeat} from './construction-prop-snapping.js';
+import furniture from './construction-furniture.json' with {type:'json'};
 import {snapWall,rotateSnappedWall} from './construction-snapping.js';
 import {wheelZoom} from './battle-camera.js';
 import {rectangleCells,wallRun,wallRunError} from './construction-strokes.js';
@@ -103,6 +104,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
   const check=(key,label)=>`<label class="construction-check"><input data-field="${key}" type="checkbox" ${item[key]?'checked':''}>${label}</label>`;
   let html=`<p data-piece-label>${esc(layer==='props'?cat.props[item.asset||brush.props]?.name||'Prop':layer==='walls'?wallPieces[item.piece]?.name||'Legacy wall':'Terrain')} | <span data-angle>${layer==='walls'&&item.piece?'native facing':selection?item.rotation:rotation+' deg'}</span></p><button data-rotate>Rotate [R]</button><button data-center>Center [Home]</button><small>Arrows position | Shift+Arrows fine | Home center</small>`;
   if(layer==='props')html+=`<small>Placement boxes outline visible art. They do not change character movement.</small>`+select('w','Footprint width',[1,2,3,4].map(v=>[String(v),`${v} cell${v===1?'':'s'}`]),String(item.w))+select('h','Footprint height',[1,2,3,4].map(v=>[String(v),`${v} cell${v===1?'':'s'}`]),String(item.h))+range('offset_x','Position left / right',item.offset_x)+range('offset_y','Position up / down',item.offset_y)+check('blocking','Reserve this footprint')+'<small>Offsets move the artwork, not the reserved cells.</small>';
+  if(layer==='props'&&isSeat({asset:item.asset||brush.props}))html+=`<label>Table spacing<input data-field="table_spacing" type="range" min="${furniture.min_spacing}" max="${furniture.max_spacing}" step=".02" value="${item.table_spacing??furniture.default_spacing}"><small data-seat-spacing></small></label><small>Left tucks the chair under the table; right pulls it out. Keeps the current table side.</small>`;
   if(layer==='walls')html+=select('piece','Wall asset',wallLibraryEntries().map(([id,p])=>[id,p.name]),wallLibraryPiece(item.piece))+select('anchor','Position',Object.keys(anchors).map(v=>[v,v==='center'?'Center':{north:'Top edge',east:'Right edge',south:'Bottom edge',west:'Left edge'}[v]]),item.anchor)+select('material','Material',cat.wall_materials.map(v=>[v,v]),item.material)+(wallKit==='placeholder'?check('broken','Broken variation')+check('open','Gate open (gates only)'):'<small>This painted trial contains intact walls and closed gates.</small>');
   if(selection)html+=`<label>Cell X<input data-field="x" type="number" min="0" max="${size.w-1}" value="${item.x}"></label><label>Cell Y<input data-field="y" type="number" min="0" max="${size.h-1}" value="${item.y}"></label><button data-delete>Remove object</button>`;
   find('[data-inspector]').innerHTML=html;find('[data-rotate]').onclick=rotate;find('[data-center]').onclick=()=>transform((item,layer)=>['props','walls'].includes(layer)?nudgePlacement(item,layer,'Home'):item);find('[data-center]').disabled=!['props','walls'].includes(layer);
@@ -115,12 +117,14 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
   if(layer==='walls'&&wallKit!=='placeholder')find('[data-field=material]').disabled=true;
   if(layer==='walls'&&['tee','cross'].includes(item.shape)){find('[data-rotate]').disabled=true;const field=find('[data-field=piece]');field.insertAdjacentHTML('afterbegin',`<option value="${esc(item.piece||'')}" selected disabled>Retired junction (saved placement)</option>`);}
   find('[data-inspector]').querySelectorAll('[data-field]').forEach(input=>{let rangeEditing=false;input.addEventListener('change',()=>{if(input.type==='range')rangeEditing=false});input.addEventListener(input.type==='range'?'input':'change',()=>{
-   showPlacementError('');const key=input.dataset.field,value=input.type==='checkbox'?input.checked:['w','h','x','y','offset_x','offset_y'].includes(key)?Number(input.value):input.value;
-   let next={...item,[key]:value};if(key==='piece')next={...next,anchor:defaultWallAnchor(value),rotation:0,shape:wallPieces[value].shape,posts:'none'};
+   const selection=selectedObject(),item=gesture?.item||selection?.item||brush;
+   showPlacementError('');const key=input.dataset.field,value=input.type==='checkbox'?input.checked:['w','h','x','y','offset_x','offset_y','table_spacing'].includes(key)?Number(input.value):input.value;
+   let next={...item,[key]:value};if(key==='table_spacing'&&selection)next=snapSeat(next,plan,size,{reference:item}).item;if(key==='piece')next={...next,anchor:defaultWallAnchor(value),rotation:0,shape:wallPieces[value].shape,posts:'none'};
    if(selection&&!gesture){const error=placementError(next,layer,size,plan);if(error){find('[data-error]').textContent=error;syncInspector();return}if(input.type!=='range'||!rangeEditing)remember();rangeEditing=input.type==='range';Object.assign(selection.item,next);if(['x','y','w','h'].includes(key))renderMap();else renderObject(selection.item,layer)}
    else{Object.assign(gesture?.item||brush,next);if(key==='piece')rotation=0;updatePointer(lastPointer);schedulePreview()}
    syncInspector();if(key==='material')refreshWallThumbnails();
   })});
+  syncInspector();
   if(selection)find('[data-delete]').onclick=()=>{remember();plan[selection.layer]=plan[selection.layer].filter(p=>p.id!==selected);selected='';renderMap();inspector()};
  }
  // Keep focus and native controls alive when using hotkeys; do not replace inspector DOM.
@@ -128,6 +132,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
   const selection=selectedObject(),item=gesture?.item||selection?.item||brush,layer=gesture?.layer||selection?.layer||mode;
   find('[data-inspector]').querySelectorAll('[data-field]').forEach(input=>{const value=item[input.dataset.field];if(input.type==='checkbox')input.checked=!!value;else if(value!==undefined)input.value=input.dataset.field==='piece'?wallLibraryPiece(value):value});
   for(const key of ['offset_x','offset_y']){const label=find(`[data-range-value="${key}"]`);if(label)label.textContent=`${Math.round((item[key]||0)*100)}% of a cell`}
+  const spacingLabel=find('[data-seat-spacing]');if(spacingLabel){const value=item.table_spacing??furniture.default_spacing;spacingLabel.textContent=value<0?`Tucked ${Math.round(-value*100)}% under table`:value>0?`Gap ${Math.round(value*100)}% of chair size`:'Flush with table edge'}
   const label=find('[data-piece-label]');if(layer==='walls'&&item.piece&&label)label.textContent=`${wallPieces[item.piece].name} | native facing`;else if(find('[data-angle]'))find('[data-angle]').textContent=`${selection?item.rotation:rotation} deg`;
   if(mode==='walls')find('[data-palette]').querySelectorAll('[data-asset]').forEach(b=>b.classList.toggle('active',b.dataset.asset===wallLibraryPiece(brush.piece)));
  }
@@ -159,7 +164,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
  function makeGhost(e){
   if(!inside(e))return null;const {px,py}=coords(e),x=Math.floor(px),y=Math.floor(py);
   if(mode==='ground')return {layer:'ground',x,y};
-  if(mode==='props')return {layer:'props',item:{id:'preview',asset:brush.props,x,y,rotation,w:brush.w,h:brush.h,offset_x:brush.offset_x,offset_y:brush.offset_y,blocking:brush.blocking}};
+  if(mode==='props')return {layer:'props',item:{id:'preview',asset:brush.props,x,y,rotation,w:brush.w,h:brush.h,offset_x:brush.offset_x,offset_y:brush.offset_y,blocking:brush.blocking,...(isSeat({asset:brush.props})&&Number.isFinite(brush.table_spacing)?{table_spacing:brush.table_spacing}:{})}};
   if(mode==='walls')return {layer:'walls',item:{id:'preview',x,y,rotation:0,piece:brush.piece,shape:wallPieces[brush.piece].shape,anchor:brush.anchor,material:brush.material,posts:'none',open:brush.open,broken:brush.broken}};
   return null;
  }
@@ -168,8 +173,14 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
   if(!inside(e))return null;
   if(floor)return {layer:'ground',...cellAt(e)};
   const element=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-construction-id]');
-  if(!element||!scene.contains(element))return null;
-  for(const layer of ['props','walls']){const item=plan[layer].find(i=>i.id===element.dataset.constructionId);if(item)return {layer,item}}
+  if(element&&scene.contains(element)&&element.dataset.constructionLayer==='walls'){
+   const item=plan.walls.find(i=>i.id===element.dataset.constructionId);if(item)return {layer:'walls',item};
+  }
+  // SVG image canvases/filters can extend hit regions beyond their visible art.
+  // Pick the calibrated bounds, in the same table-first order as rendering.
+  const {px,py}=coords(e);
+  const props=plan.props.slice().sort((a,b)=>Number(isTable(a))-Number(isTable(b))||(a.y+a.h)-(b.y+b.h));
+  for(const item of props.reverse()){const [l,t,r,b]=propBounds(item);if(px>=l&&px<=r&&py>=t&&py<=b)return {layer:'props',item}}
   return null;
  }
  function updatePointer(e){
@@ -214,10 +225,10 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
  }
  function cancelGesture(){gesture=null;ghost=null;snapLock=null;removeHover=null;if(previewFrame){cancelAnimationFrame(previewFrame);previewFrame=0}drawPreview();find('[data-save]').disabled=busy||debugLab;find('[data-undo]').disabled=!undo.length;find('[data-redo]').disabled=!redo.length}
  svg.onpointerdown=e=>{
-  if(e.button!==0||busy)return;e.preventDefault();svg.focus({preventScroll:true});const initial=mode==='walls'&&ghost?.layer==='walls'&&lastPointer&&Math.hypot(e.clientX-lastPointer.clientX,e.clientY-lastPointer.clientY)<=2?structuredClone(ghost):null;cancelGesture();const target=e.target.closest('[data-construction-id]');
+  if(e.button!==0||busy)return;e.preventDefault();svg.focus({preventScroll:true});const initial=mode==='walls'&&ghost?.layer==='walls'&&lastPointer&&Math.hypot(e.clientX-lastPointer.clientX,e.clientY-lastPointer.clientY)<=2?structuredClone(ghost):null;cancelGesture();
   svg.setPointerCapture(e.pointerId);
   if(mode==='select'){
-   selected=target?.dataset.constructionId||'';const s=selectedObject();renderMap();inspector();if(!s)return;
+   selected=removalTarget(e,false)?.item.id||'';const s=selectedObject();renderMap();inspector();if(!s)return;
    const {px,py}=coords(e);gesture={kind:'move',pointerId:e.pointerId,layer:s.layer,item:{...s.item},start:[px,py],origin:[s.item.x,s.item.y],id:selected};updatePointer(e);schedulePreview();find('[data-save]').disabled=true;
   }else if(mode==='erase'){gesture={kind:'erase',pointerId:e.pointerId,removed:new Set(),ground:new Set(),removeFloor:e.shiftKey,startCell:cellAt(e)};updatePointer(e);schedulePreview();find('[data-save]').disabled=true}
   else begin(e,'place',initial);

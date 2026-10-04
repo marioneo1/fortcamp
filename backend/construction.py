@@ -158,6 +158,9 @@ def validate_plan(plan, size, buildings=(), previous_plan=None):
                 obj.update(asset=item['asset'],w=w,h=h,
                            offset_x=number(item.get('offset_x',0),-.5,.5),offset_y=number(item.get('offset_y',0),-.5,.5),
                            blocking=bool(item.get('blocking',False)))
+                if 'table_spacing' in item:
+                    if item['asset'] not in FURNITURE['seats']:raise ValueError('Table spacing is only available for seating')
+                    obj['table_spacing']=number(item['table_spacing'],FURNITURE['min_spacing'],FURNITURE['max_spacing'])
                 if obj['blocking']:
                     from .content import BUILDINGS
                     for b in buildings:

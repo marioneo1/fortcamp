@@ -2,15 +2,19 @@ import {propBounds,isSeat,isTable,placementError} from './construction-geometry.
 import furniture from './construction-furniture.json' with {type:'json'};
 
 // Seat docking is a small optional adjustment, never a teleport across the map.
-export function snapSeat(item,plan,size){
+export function snapSeat(item,plan,size,{reference=item,reach=furniture.snap_reach}={}){
  if(!isSeat(item))return {item,snapped:false};
  const [l,t,r,b]=propBounds(item),cx=(l+r)/2,cy=(t+b)/2,w=r-l,h=b-t;
+ const [rl,rt,rr,rb]=propBounds(reference),rcx=(rl+rr)/2,rcy=(rt+rb)/2;
+ const spacing=Number.isFinite(item.table_spacing)?Math.max(furniture.min_spacing,Math.min(furniture.max_spacing,item.table_spacing)):furniture.default_spacing;
+ const oldSpacing=Number.isFinite(reference.table_spacing)?reference.table_spacing:furniture.default_spacing;
  let best=null;
  for(const table of plan.props.filter(p=>p.id!==item.id&&isTable(p))){
   const [tl,tt,tr,tb]=propBounds(table),tx=(tl+tr)/2,ty=(tt+tb)/2;
-  for(const [x,y] of [[tx,tt-h*.3],[tx,tb+h*.3],[tl-w*.3,ty],[tr+w*.3,ty]]){
-   const dx=x-cx,dy=y-cy,distance=Math.hypot(dx,dy);
-   if(distance>furniture.snap_reach||best&&distance>=best.distance)continue;
+  const ports=s=>[[tx,tt-h*(.5+s)],[tx,tb+h*(.5+s)],[tl-w*(.5+s),ty],[tr+w*(.5+s),ty]];
+  for(const [index,[x,y]] of ports(spacing).entries()){
+   const previous=ports(oldSpacing)[index],dx=x-cx,dy=y-cy,distance=Math.hypot(previous[0]-rcx,previous[1]-rcy);
+   if(distance>reach||best&&distance>=best.distance)continue;
    // Keep offsets in their supported range by transferring whole-cell movement.
    let px=item.x,py=item.y,ox=(item.offset_x||0)+dx,oy=(item.offset_y||0)+dy;
    if(ox>.5){px++;ox--}else if(ox<-.5){px--;ox++}

@@ -381,3 +381,26 @@ and isolated browser checks pass. Browser verifies calibrated chart/chair/well
 sizes, prop/wall boxes and toggle, red invalid preview/no commit, Standard size,
 save and table docking/occlusion. Screenshots inspected. Saves were in-memory
 fixtures; production and real player saves are untouched.
+
+### Adjustable table spacing — October 4
+
+Select a supported chair/seat and adjust **Table spacing**: left tucks it under
+the tabletop, right pulls it away. Range: 60% tuck through a gap of 60% of the
+seat's size along that side; default docking retains its 20% tuck. Adjustment
+keeps the nearby table and current side, transferring position between cells
+when needed. The preference saves per seat. Ordinary offset controls remain.
+Walls, other props and map edges still constrain placement. Table art draws
+above the seat; shared overlap allowance is 65% for rounding tolerance, and
+fully enclosed seats are rejected.
+
+Prop picking uses calibrated bounds in draw order, avoiding transparent table
+margins intercepting visible chairs. Inspector edits resolve the current object
+after Save, so repeated adjustments continue to persist.
+
+Validation: 182 frontend tests, 25 backend construction/shared-size tests, build
+and isolated browser checks: exposed-chair selection, deep tuck, pull-out, same
+side, repeated saves and reopen persistence. In-memory saves only; prod untouched.
+
+Deferred: full map audit using this calibrated toolkit. Review active locations
+and variations for scale, clutter, wall connections, appropriate layouts,
+objectives and traversable routes. Automatic base-to-map export is separate work.

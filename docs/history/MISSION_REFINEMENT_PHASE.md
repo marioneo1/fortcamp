@@ -1,5 +1,15 @@
 # Mission Refinement Phase
 
+## October 4: Adjustable table spacing
+
+Seats now have a saved Table spacing slider: 60% tuck through a 60% seat-size
+gap, retaining the nearby table and side. Shared overlap allowance accommodates
+the deeper tuck with table draw priority; unrelated collisions still reject.
+Fixed selection of visible chair edges and repeated inspector edits after Save.
+Full map audit with calibrated toolkit recorded as pending in FEATURE_BACKLOG.
+182 frontend and 25 backend tests, build and browser spacing/save/reopen checks
+passed with in-memory saves only. Production unchanged.
+
 ## October 3: Final male installation and female Troll replacement
 
 Imported ten approved male batch 004 sheets, verified all 600 assets and role fallback, inspected installed montage. Installed user-provided f_troll.png, f_troll_shaman.png and f_troll_chieftain.png as 4×4 regular/magic/special pools, sixteen active images each. Regular IDs 001–016 replaced; 017–020 remain compatibility copies excluded from new selection and Lab browsing. Backed up old sources, pool, manifest, appearance metadata and shared framing; cleared stale replaced-image tags/defaults. Existing personal overrides preserved.

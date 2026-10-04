@@ -1,5 +1,17 @@
 # Fortcamp feature backlog
 
+October 4 chair spacing: implemented Table spacing for supported seats, 60% tuck
+through 60% outward gap, retaining table/side and saving the preference per seat.
+Tight prop picking and post-save inspector editing fixed. 182 frontend tests,
+25 backend tests, build and browser spacing/save checks pass. Dev only;
+canonical: docs/design/BASE_CONSTRUCTION.md.
+
+Pending: full active-map audit using the calibrated construction/prop toolkit.
+Review all locations and variations for prop scale, placement, clutter,
+perspective, wall connections, objectives and traversable routes. Reuse shared
+assets and geometry, with visual and gameplay review for each layout.
+Automatic base-to-map export remains separate future work.
+
 October 4 prop audit: 142 construction props now use calibrated, centered visible
 art sizes instead of one generic PNG box. Placement-only boxes/toggle, red invalid
 preview, Standard size for old footprints, full half-cell positioning, and 24 new
