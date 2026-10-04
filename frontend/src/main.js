@@ -1,3 +1,5 @@
+import {openConstruction} from './construction-ui.js';
+import {constructionSVG} from './construction-render.js';
 import {staminaHTML,staminaLabel} from './stamina.js';
 import {framedImage,openPortraitFraming} from './portrait-framing.js';
 import {openPortraitLab} from './portrait-lab.js';
@@ -324,9 +326,9 @@ function refreshDynamic(force=false){
         if($('#mission-modal').classList.contains('hidden'))showResult(newest.result);
       }
     }
-    const uiState=value=>value&&JSON.stringify({characters:value.characters?.map(({practice,...c})=>c),buildings:value.buildings,inventory:value.inventory,prisoners:value.prisoners,rank:value.mission_rank,size:value.base_size,claims:value.claim_upgrade,blueprints:value.learned_blueprints,meals:value.meals});
+    const uiState=value=>value&&JSON.stringify({characters:value.characters?.map(({practice,...c})=>c),buildings:value.buildings,inventory:value.inventory,prisoners:value.prisoners,rank:value.mission_rank,size:value.base_size,construction:value.construction,claims:value.claim_upgrade,blueprints:value.learned_blueprints,meals:value.meals});
     const stateChanged=!!(s.exists&&uiState(s.state)!==uiState(state));
-    activeMissions=incoming;dynamicReady=true;if(s.exists)state=s.state;renderResources();
+    activeMissions=incoming;dynamicReady=true;if(s.exists)state=s.state;if(state?.construction&&!constructionCatalogue){try{constructionCatalogue=(await rawApi('/api/construction')).catalogue;baseNeedsRefresh=true}catch(e){console.warn(e.message)}}renderResources();
     if(stateChanged){rosterNeedsRefresh=true;baseNeedsRefresh=true}
     renderVisiblePanels();updateLiveCountdowns();
     if($('.tabs button.active')?.dataset.tab==='base')$$('[data-build]').forEach(button=>{const costs=content.buildings[button.dataset.build]?.cost||{};button.disabled=Object.entries(costs).some(([r,n])=>(state.resources[r]||0)<n)});
@@ -1004,6 +1006,8 @@ function syncRosterWorkspace(){
  $('[data-open-prison]').onclick=()=>{baseView='prison';baseNeedsRefresh=true;$('.tabs button[data-tab="base"]').click();renderBase()};
  document.querySelectorAll('[data-prison-count]').forEach(n=>n.textContent=(state.prisoners||[]).length);
 }
+let constructionCatalogue=null;
+async function launchConstruction(){if(!constructionCatalogue){try{constructionCatalogue=(await rawApi('/api/construction')).catalogue}catch(e){toast(e.message);return}}await openConstruction({api:rawApi,esc,definitions:content.buildings,onError:toast,onSave:next=>{state=next;renderBase();renderResources();toast('Camp layout saved')}})}
 function syncBaseWorkspace(){
  document.querySelectorAll('[data-base-view]').forEach(button=>{button.setAttribute('aria-current',button.dataset.baseView===baseView?'page':'false');button.onclick=()=>{baseView=button.dataset.baseView;syncBaseWorkspace()}});
  document.querySelectorAll('[data-base-panel]').forEach(panel=>panel.hidden=panel.dataset.basePanel!==baseView);
@@ -1014,11 +1018,12 @@ function renderFacilities(){
  patchLiveHTML($('#base-facilities'),state.buildings.map(b=>{const d=content.buildings[b.type];return `<button data-facility="${esc(b.id)}" aria-pressed="${b.id===selectedBuildingId}"><b>${esc(d.name)}</b><small>${b.level?`Level ${b.level} / `:''}${(b.assigned||[]).length} assigned</small></button>`}).join('')||'<p class="muted">Place your first facility using Build.</p>');
  document.querySelectorAll('[data-facility]').forEach(button=>button.onclick=()=>{selectedBuildingId=button.dataset.facility;renderBase()});
 }
-function renderBase(){if(!state||!content)return;const w=state.base_size?.w||12,h=state.base_size?.h||8;$('#base-size-label').textContent=`${w} \u00d7 ${h} SETTLEMENT`;patchLiveHTML($('#base-summary'),`<div><b>${state.buildings.length}</b><small>Facilities</small></div><div><b>${state.characters.filter(c=>c.status==='idle').length}</b><small>Available characters</small></div><div><b>${w} \u00d7 ${h}</b><small>Settlement size</small></div>`);$('#base-blueprint-search').oninput=event=>{baseBlueprintQuery=event.target.value.trim().toLowerCase();renderBlueprints()};renderCampEconomy($('#camp-economy'),{state,content,api:rawApi,onState:value=>{state=value;rosterNeedsRefresh=true;baseNeedsRefresh=true;renderResources();renderVisiblePanels()},notify:toast,onContract:mission=>{syncMissionMutation(mission);openMission(mission)}});renderBlueprints();renderSelectedBuilding();const idle=state.characters.filter(c=>!c.assignment&&c.status==='idle');patchLiveHTML($('#idle-zone'),idle.length?idle.map(c=>portraitHTML(c)).join(''):'<span class="muted small">No idle unassigned characters.</span>');renderBaseGrid();renderFacilities();renderPrisoners();syncBaseWorkspace();bindDrag()}
+function renderBase(){if(!state||!content)return;$('#open-base-construction').onclick=launchConstruction;const w=state.base_size?.w||12,h=state.base_size?.h||8;$('#base-size-label').textContent=`${w} \u00d7 ${h} SETTLEMENT`;patchLiveHTML($('#base-summary'),`<div><b>${state.buildings.length}</b><small>Facilities</small></div><div><b>${state.characters.filter(c=>c.status==='idle').length}</b><small>Available characters</small></div><div><b>${w} \u00d7 ${h}</b><small>Settlement size</small></div>`);$('#base-blueprint-search').oninput=event=>{baseBlueprintQuery=event.target.value.trim().toLowerCase();renderBlueprints()};renderCampEconomy($('#camp-economy'),{state,content,api:rawApi,onState:value=>{state=value;rosterNeedsRefresh=true;baseNeedsRefresh=true;renderResources();renderVisiblePanels()},notify:toast,onContract:mission=>{syncMissionMutation(mission);openMission(mission)}});renderBlueprints();renderSelectedBuilding();const idle=state.characters.filter(c=>!c.assignment&&c.status==='idle');patchLiveHTML($('#idle-zone'),idle.length?idle.map(c=>portraitHTML(c)).join(''):'<span class="muted small">No idle unassigned characters.</span>');renderBaseGrid();renderFacilities();renderPrisoners();syncBaseWorkspace();bindDrag()}
 function renderBaseGrid(){
   const grid=$('#base-grid');if(!grid||!state)return;const placing=!!placementType();let html='';
   grid.style.gridTemplateColumns=`repeat(${state.base_size?.w||content.grid.w},58px)`;for(let y=0;y<(state.base_size?.h||content.grid.h);y++)for(let x=0;x<(state.base_size?.w||content.grid.w);x++)html+=`<div class="grid-cell ${placing?'build-target':''}" data-x="${x}" data-y="${y}" style="grid-column:${x+1};grid-row:${y+1}"></div>`;
   html+=state.buildings.map(b=>{const d=content.buildings[b.type],chars=(b.assigned||[]).map(id=>state.characters.find(c=>c.id===id)).filter(Boolean);return `<div class="building ${b.type} ${d.w*d.h<=2?'compact-building':''} ${b.id===selectedBuildingId?'selected':''}" data-building="${b.id}" title="${esc(d.name)} - ${esc(d.description)}" style="grid-column:${b.x+1}/span ${d.w};grid-row:${b.y+1}/span ${d.h}"><b>${esc(d.name)}</b><small>${d.w}×${d.h} · ${d.workers?`${chars.length}/${d.workers+(d.production?(b.level||1)-1:0)} assigned`:d.beds?`${d.beds} beds`:'Facility'}</small><div class="assigned">${chars.map(c=>portraitHTML(c,true)).join('')}</div></div>`}).join('');
+  if(state.construction&&constructionCatalogue)html+=`<svg class="base-construction-overlay" viewBox="0 0 ${state.base_size?.w||12} ${state.base_size?.h||8}" preserveAspectRatio="none">${constructionSVG(state.construction,state.base_size||{w:12,h:8},constructionCatalogue)}</svg>`;
   if(placing)html+='<div id="placement-ghost" class="placement-ghost hidden"></div>';patchLiveHTML(grid,html);
   $$('.grid-cell').forEach(cell=>{
     cell.onmouseenter=()=>{if(placementType())updatePlacementGhost(Number(cell.dataset.x),Number(cell.dataset.y))};

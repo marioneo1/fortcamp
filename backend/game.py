@@ -1406,6 +1406,9 @@ def _placement_error(state: dict, building_type: str, x: int, y: int, ignore_bui
     size=state.get('base_size',{'w':GRID_W,'h':GRID_H})
     if x < 0 or y < 0 or x + w > size['w'] or y + h > size['h']:
         return "Building would be outside the base"
+    from .construction import blocked_prop_overlap
+    if blocked_prop_overlap(state,x,y,w,h):
+        return "Move the blocking construction prop before placing a facility here"
     for placed in state.get("buildings", []):
         if ignore_building_id and placed.get("id") == ignore_building_id:
             continue
