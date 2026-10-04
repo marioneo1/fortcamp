@@ -1,5 +1,16 @@
 # Fortcamp feature backlog
 
+October 4 construction finishing pass: Delete selects Erase; F/P/W/V switch tools;
+wheel zoom stays under the cursor with Shift+wheel scrolling; optional S snapping
+persists in the browser. Corners choose connected facing/anchor automatically;
+R keeps existing joins and skips invalid orientations. Six nine-original material
+kits added to the read-only Wall Kit Lab: rough stone, castle, church, metal,
+goblin camp and raider camp. Existing wood/combat art preserved. Future materials
+share the same ports/installer. Permanent painted base selection and open/broken
+art remain deferred. 168 frontend tests, 18 construction/extraction tests, build
+and browser checks pass; room captures inspected. Dev only. See
+docs/art/CONSTRUCTION_MATERIAL_KITS.md and docs/design/BASE_CONSTRUCTION.md.
+
 October 3 Aasimar female healer 011?015: trimmed next-row/separator contamination from uncropped originals only; visually verified clean. Tags, standalone tagging data, square/thumb bytes and framing unchanged. Backups retained; image URL versions refreshed. See docs/art/PORTRAIT_FRAMING.md.
 
 October 3 local portrait tagger built in sibling `character-tagger`: pinned WD EVA02-Large v3, own Windows venv/CUDA runtime, immutable raw scores, editable taxonomy/thresholds, SQLite audit history, JSON/CSV exports, resume/remap, local review and structured/phrase search. All 2,072 portraits tagged; assigned race/gender imported. Nine Champion and twelve original samples visually checked; five separate corrections. Eighteen tests, browser QA, CPU/GPU inference and setup launcher passed. Cloud option paused; no API key needed. **Existing game metadata stays unchanged.** Next: reviewed-only integration preserving manual character descriptions; optional VLM comparison for difficult visual attributes. Canonical: docs/art/LOCAL_PORTRAIT_TAGGER.md.

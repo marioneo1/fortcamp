@@ -42,9 +42,8 @@ Horizontal and vertical artwork are independently generated; there is never a
 posts, vertical mirroring changes horizontal facing. Vertical mirroring moves
 top/bottom posts, horizontal mirroring changes vertical facing. Corner mirrors
 supply the four corners without exchanging the horizontal and vertical arms.
-R now changes facing only within a straight/gate orientation family; it cycles
-corner positions through mirrors. Choose horizontal versus vertical in the asset
-library. Half walls, T junctions and + junctions are excluded. Previously saved
+R cycles native horizontal/vertical orientations; connected walls preserve joins
+when snapping is on. Direct H/V selection remains in the library. Half walls, T junctions and + junctions are excluded. Previously saved
 retired junctions still use their compatible placeholder renderer.
 
 ## Generation and extraction
@@ -129,3 +128,7 @@ edge crossing from blocked interior cells; base character walking is still defer
 Validation: 161 frontend tests, 15 construction backend tests, build and browser
 rotation/collision checks pass. Dev only; production and player saves untouched.
 See docs/design/BASE_CONSTRUCTION.md for implemented rules and limitations.
+
+
+October 4: six additional materials are now available in the same debug dropdown.
+See CONSTRUCTION_MATERIAL_KITS.md for sources, prompts and shared import rules.

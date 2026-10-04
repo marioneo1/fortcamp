@@ -209,3 +209,40 @@ Home/Center, a duplicate shared edge, a perpendicular connection, a rejected
 prop and successful offset adjustment. The wall save check indexes half-cell
 segments rather than comparing every pair of walls. Pointer error labels only
 change when their message changes. No production deployment or real saves used.
+
+
+## October 4 hotkeys, wheel zoom and optional snapping
+
+| Key / gesture | Action |
+|---|---|
+| F / P / W / V | Floors / Props / Walls / Select and move |
+| Delete | Switch to Erase; does not immediately delete an object |
+| S | Toggle wall snapping; preference saved in this browser |
+| R | Rotate; while snapped, keep joins and skip rotations that cannot fit |
+| Arrows / Shift+arrows | Position / fine prop positioning |
+| Home | Center the prop or wall |
+| Wheel over map | Smooth zoom, 25-300%, keeping the cursor point when scroll bounds allow |
+| Shift+wheel | Ordinary scrolling |
+| Ctrl+Z / Ctrl+Shift+Z | Undo / redo |
+
+Text/number inputs keep normal typing/Delete behavior. Ctrl/Meta wheel gestures
+stay available; library/inspector scrolling does not zoom. Zoom buttons remain.
+
+Snapping defaults on and searches nearby exact endpoint connections, checking
+bounds, duplicate spans and prop overlap. Corners can change facing and anchor,
+preferring connections at the bend. Straight/gate brushes retain their chosen
+horizontal/vertical family until R. Green dots mark connections and a status
+line confirms the join. R considers the other native orientations and nearby
+positions to preserve all existing endpoint contacts. If none fit it leaves the
+piece unchanged and explains that S permits free rotation. Distant walls cannot
+attract the brush. Turn S off for fully manual positioning/rotation.
+
+Snapping uses nearby world geometry, independent of artwork or material. It
+changes only previews/local drafts; existing server validation remains. No new
+network calls occur on pointer movement or zoom. Six new kits use the same
+nine-original contract: see ../art/CONSTRUCTION_MATERIAL_KITS.md.
+
+Validation: 168 frontend tests, 18 construction/extraction backend tests, build
+and browser controls/material checks pass. Seven painted kits switch 44 sample
+walls and load all 63 native sprites. Room captures visually inspected. Production
+and real player saves untouched. Base character walking remains deferred.

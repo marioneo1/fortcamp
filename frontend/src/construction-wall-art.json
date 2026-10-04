@@ -84,5 +84,521 @@
         "size": 512
       }
     }
+  },
+  "rough_stone_v1": {
+    "name": "Rough stone",
+    "sources": {
+      "horizontal_plain": {
+        "file": "construction/rough-stone-v1/horizontal_plain.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_plain": {
+        "file": "construction/rough-stone-v1/vertical_plain.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "horizontal_one_post": {
+        "file": "construction/rough-stone-v1/horizontal_one_post.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_one_post": {
+        "file": "construction/rough-stone-v1/vertical_one_post.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "horizontal_both_posts": {
+        "file": "construction/rough-stone-v1/horizontal_both_posts.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_both_posts": {
+        "file": "construction/rough-stone-v1/vertical_both_posts.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "corner": {
+        "file": "construction/rough-stone-v1/corner.png",
+        "origin": [
+          80,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "gate_horizontal": {
+        "file": "construction/rough-stone-v1/gate_horizontal.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "gate_vertical": {
+        "file": "construction/rough-stone-v1/gate_vertical.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      }
+    }
+  },
+  "castle_v1": {
+    "name": "Castle masonry",
+    "sources": {
+      "horizontal_plain": {
+        "file": "construction/castle-v1/horizontal_plain.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_plain": {
+        "file": "construction/castle-v1/vertical_plain.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "horizontal_one_post": {
+        "file": "construction/castle-v1/horizontal_one_post.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_one_post": {
+        "file": "construction/castle-v1/vertical_one_post.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "horizontal_both_posts": {
+        "file": "construction/castle-v1/horizontal_both_posts.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_both_posts": {
+        "file": "construction/castle-v1/vertical_both_posts.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "corner": {
+        "file": "construction/castle-v1/corner.png",
+        "origin": [
+          80,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "gate_horizontal": {
+        "file": "construction/castle-v1/gate_horizontal.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "gate_vertical": {
+        "file": "construction/castle-v1/gate_vertical.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      }
+    }
+  },
+  "church_v1": {
+    "name": "Church masonry",
+    "sources": {
+      "horizontal_plain": {
+        "file": "construction/church-v1/horizontal_plain.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_plain": {
+        "file": "construction/church-v1/vertical_plain.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "horizontal_one_post": {
+        "file": "construction/church-v1/horizontal_one_post.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_one_post": {
+        "file": "construction/church-v1/vertical_one_post.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "horizontal_both_posts": {
+        "file": "construction/church-v1/horizontal_both_posts.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_both_posts": {
+        "file": "construction/church-v1/vertical_both_posts.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "corner": {
+        "file": "construction/church-v1/corner.png",
+        "origin": [
+          80,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "gate_horizontal": {
+        "file": "construction/church-v1/gate_horizontal.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "gate_vertical": {
+        "file": "construction/church-v1/gate_vertical.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      }
+    }
+  },
+  "metal_v1": {
+    "name": "Iron fortifications",
+    "sources": {
+      "horizontal_plain": {
+        "file": "construction/metal-v1/horizontal_plain.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_plain": {
+        "file": "construction/metal-v1/vertical_plain.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "horizontal_one_post": {
+        "file": "construction/metal-v1/horizontal_one_post.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_one_post": {
+        "file": "construction/metal-v1/vertical_one_post.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "horizontal_both_posts": {
+        "file": "construction/metal-v1/horizontal_both_posts.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_both_posts": {
+        "file": "construction/metal-v1/vertical_both_posts.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "corner": {
+        "file": "construction/metal-v1/corner.png",
+        "origin": [
+          80,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "gate_horizontal": {
+        "file": "construction/metal-v1/gate_horizontal.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "gate_vertical": {
+        "file": "construction/metal-v1/gate_vertical.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      }
+    }
+  },
+  "goblin_camp_v1": {
+    "name": "Goblin camp",
+    "sources": {
+      "horizontal_plain": {
+        "file": "construction/goblin-camp-v1/horizontal_plain.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_plain": {
+        "file": "construction/goblin-camp-v1/vertical_plain.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "horizontal_one_post": {
+        "file": "construction/goblin-camp-v1/horizontal_one_post.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_one_post": {
+        "file": "construction/goblin-camp-v1/vertical_one_post.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "horizontal_both_posts": {
+        "file": "construction/goblin-camp-v1/horizontal_both_posts.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_both_posts": {
+        "file": "construction/goblin-camp-v1/vertical_both_posts.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "corner": {
+        "file": "construction/goblin-camp-v1/corner.png",
+        "origin": [
+          80,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "gate_horizontal": {
+        "file": "construction/goblin-camp-v1/gate_horizontal.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "gate_vertical": {
+        "file": "construction/goblin-camp-v1/gate_vertical.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      }
+    }
+  },
+  "raider_camp_v1": {
+    "name": "Raider camp",
+    "sources": {
+      "horizontal_plain": {
+        "file": "construction/raider-camp-v1/horizontal_plain.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_plain": {
+        "file": "construction/raider-camp-v1/vertical_plain.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "horizontal_one_post": {
+        "file": "construction/raider-camp-v1/horizontal_one_post.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_one_post": {
+        "file": "construction/raider-camp-v1/vertical_one_post.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "horizontal_both_posts": {
+        "file": "construction/raider-camp-v1/horizontal_both_posts.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "vertical_both_posts": {
+        "file": "construction/raider-camp-v1/vertical_both_posts.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "corner": {
+        "file": "construction/raider-camp-v1/corner.png",
+        "origin": [
+          80,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "gate_horizontal": {
+        "file": "construction/raider-camp-v1/gate_horizontal.png",
+        "origin": [
+          80,
+          288
+        ],
+        "span": 416,
+        "size": 576
+      },
+      "gate_vertical": {
+        "file": "construction/raider-camp-v1/gate_vertical.png",
+        "origin": [
+          288,
+          80
+        ],
+        "span": 416,
+        "size": 576
+      }
+    }
   }
 }

@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {availableWallPieces} from './construction-geometry.js';
 import {wallArt,wallArtImage} from './construction-wall-art.js';
 import {constructionSVG} from './construction-render.js';
+import kits from './construction-wall-art.json' with {type:'json'};
 
 const wall=piece=>({id:piece,piece,shape:availableWallPieces[piece].shape,x:2,y:3,anchor:'center',rotation:0,material:'timber',posts:'none'});
 test('all 24 pieces resolve to nine originals; vertical sources never come from horizontal',()=>{
@@ -26,4 +27,20 @@ test('kit switching replaces all wall art without changing geometry; normal view
  assert.equal((painted.match(/data-wall-original=/g)||[]).length,24);
  assert.deepEqual(plan,before);
  assert.equal(wallArtImage({...wall('gate_horizontal'),open:true},'plain_wood_v1'),'');
+});
+
+test('every construction material obeys the same nine-source geometry and native orientation contract',()=>{
+ assert.equal(Object.keys(kits).length,7);
+ for(const [kit,definition] of Object.entries(kits)){
+  assert.equal(Object.keys(definition.sources).length,9);
+  const originals=new Set();
+  for(const piece of Object.keys(availableWallPieces)){
+   const art=wallArt(piece,kit);assert.ok(art);originals.add(art.file);
+   assert.equal(art.span,416);
+   if(piece.startsWith('vertical')||piece.startsWith('gate_vertical'))assert.match(art.source,/vertical/);
+   const rendered=wallArtImage(wall(piece),kit);assert.ok(!rendered.includes('rotate('));
+   assert.match(rendered,/preserveAspectRatio="xMidYMid meet"/);
+  }
+  assert.equal(originals.size,9);
+ }
 });

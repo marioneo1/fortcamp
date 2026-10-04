@@ -901,3 +901,22 @@ edge crossing from blocked interior cells; base character walking is still defer
 Validation: 161 frontend tests, 15 construction backend tests, build and browser
 rotation/collision checks pass. Dev only; production and player saves untouched.
 See docs/design/BASE_CONSTRUCTION.md for implemented rules and limitations.
+
+
+October 4: construction hotkeys, wheel camera, smart joins and six material kits.
+Delete selects Erase, F/P/W/V switch tools and S toggles remembered snapping.
+Wheel zoom preserves cursor anchoring where possible; Shift+wheel still scrolls.
+Corners automatically find nearby endpoint/facing/anchor matches, preferring the
+bend. R retains existing endpoint joins and skips invalid fits; manual mode stays
+available. No pointer/zoom API traffic added.
+
+Six new built-in imagegen calls each produced one nine-original equal 3x3 atlas:
+rough stone, castle, church, iron, goblin camp, raider camp. Sources/prompts/crops
+and real renderer screenshots saved under staging-terrain/construction-kits-v1.
+Installer generalized to append a named kit, log disconnected neighbor-fragment
+cleanup and retain endcaps; 576px canvases preserve the same 416px port span with
+more margin. Existing wood and combat materials unchanged. Seven kits available
+in read-only debug comparison; permanent painted player selection remains deferred.
+168 frontend tests, 18 backend construction/extraction tests, build and browser
+controls/collision/material checks pass. Six room comparisons inspected. No prod
+changes or player save writes. Canonical reference: docs/art/CONSTRUCTION_MATERIAL_KITS.md.

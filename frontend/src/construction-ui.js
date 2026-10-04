@@ -2,17 +2,20 @@ import './construction-ui.css';
 import {anchors,wallPieces,availableWallPieces,wallLibraryPiece,wallLibraryEntries,placementError,rotatePlacement,nudgePlacement,newPlan} from './construction-geometry.js';
 import {constructionSVG} from './construction-render.js';
 import {confirmAction} from './confirmation-ui.js';
+import {snapWall,rotateSnappedWall} from './construction-snapping.js';
+import {wheelZoom} from './battle-camera.js';
 
 export async function openConstruction({api,esc,definitions,onSave,onError,debugLab=false}){
  let data;try{data=await api(debugLab?'/api/debug/construction/wall-kits':'/api/construction')}catch(e){onError(e.message);return}
  let plan=structuredClone(data.plan),revision=data.plan.revision,saved=JSON.stringify(plan),selected='',mode=debugLab?'walls':'ground',rotation=0,zoom=debugLab?.5:1,query='',ghost=null,busy=false;
  const size=data.size,cat=data.catalogue,undo=[],redo=[];let wallKit=debugLab&&data.kits?.plain_wood_v1?'plain_wood_v1':'placeholder';
+ let snapping=true,snapLock=null;try{snapping=localStorage.getItem('fortcamp.construction.snapping')!=='off'}catch{}
  const brush={ground:cat.ground.grass_short?'grass_short':Object.keys(cat.ground)[0],props:cat.props.crate_closed?'crate_closed':Object.keys(cat.props)[0],piece:'horizontal_plain',shape:'straight',anchor:'center',material:'timber',posts:'none',w:1,h:1,offset_x:0,offset_y:0,blocking:false,open:false,broken:false};
  const dialog=document.createElement('dialog');dialog.className='construction-dialog';
  dialog.innerHTML=`<header><div><div class="eyebrow">YOUR SETTLEMENT · CONSTRUCTION</div><h2>${debugLab?'Wall Kit Lab':'Make this camp your own'}</h2><small>${debugLab?'DEBUG ONLY - Temporary layout. Changes here never alter your camp or player save.':'Ground, movable props and snapping walls. Decorations are free in this first pass; they do not grant loot, production or defense bonuses.'}</small></div><button data-close aria-label="Close construction">×</button></header>
- <nav class="construction-tools">${[['ground','Floors & terrain'],['props','Props'],['walls','Walls'],['select','Select / move'],['erase','Erase']].map(([id,label])=>`<button data-tool="${id}">${label}</button>`).join('')}<span></span><button data-undo>Undo</button><button data-redo>Redo</button></nav>
+ <nav class="construction-tools">${[['ground','Floors & terrain [F]'],['props','Props [P]'],['walls','Walls [W]'],['select','Select / move [V]'],['erase','Erase [Del]']].map(([id,label])=>`<button data-tool="${id}">${label}</button>`).join('')}<button data-snap aria-pressed="${snapping}">Snapping [S]: ${snapping?'On':'Off'}</button><span></span><button data-undo>Undo</button><button data-redo>Redo</button></nav>
  <div class="construction-workspace"><aside class="construction-library"><label>Find an asset<input data-search type="search" placeholder="Grass, cage, bed…"></label><div data-palette></div></aside>
- <section class="construction-map"><div class="construction-camera"><b>${size.w} × ${size.h} cells</b>${debugLab?`<label class="construction-kit-picker">DEBUG WALL KIT<select data-wall-kit>${Object.entries(data.kits).map(([id,kit])=>`<option value="${esc(id)}" ${id===wallKit?'selected':''}>${esc(kit.name)}</option>`).join('')}</select></label>`:''}<button data-zoom="-.25" aria-label="Zoom out">−</button><button data-zoom="0">100%</button><button data-zoom=".25" aria-label="Zoom in">+</button><small>R rotate | Arrows position | Shift+Arrows fine | Home center | Ctrl+Z undo</small></div><div class="construction-scroll"><svg data-map viewBox="0 0 ${size.w} ${size.h}" xmlns="http://www.w3.org/2000/svg" tabindex="0" aria-label="Camp construction grid"></svg></div><p data-help></p></section>
+ <section class="construction-map"><div class="construction-camera"><b>${size.w} × ${size.h} cells</b>${debugLab?`<label class="construction-kit-picker">DEBUG WALL KIT<select data-wall-kit>${Object.entries(data.kits).map(([id,kit])=>`<option value="${esc(id)}" ${id===wallKit?'selected':''}>${esc(kit.name)}</option>`).join('')}</select></label>`:''}<button data-zoom="-.25" aria-label="Zoom out">−</button><button data-zoom="0">100%</button><button data-zoom=".25" aria-label="Zoom in">+</button><small>Wheel zoom | Shift+wheel scroll | R rotate | S snapping | Arrows position | Home center | Ctrl+Z undo</small><span data-snap-state role="status"></span></div><div class="construction-scroll"><svg data-map viewBox="0 0 ${size.w} ${size.h}" xmlns="http://www.w3.org/2000/svg" tabindex="0" aria-label="Camp construction grid"></svg></div><p data-help></p></section>
  <aside class="construction-inspector"><h3 data-inspector-heading>Placement</h3><div data-inspector></div><p class="construction-error" role="alert" data-error></p></aside></div>
  <footer><small data-status>Nothing saved until you choose Save camp.</small><div><button data-export>Export layout</button><button data-close>Close</button><button data-save class="primary">Save camp</button></div></footer>`;
  document.body.append(dialog);dialog.showModal();const find=s=>dialog.querySelector(s),svg=find('[data-map]');
@@ -44,9 +47,10 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
  function drawPreview(){
   previewFrame=0;const hide=gesture?.kind==='move'?gesture.id:[...(gesture?.removed||[])].sort().join(',');
   if(hide!==hiddenKey){hiddenKey=hide;scene.querySelectorAll('[data-construction-id]').forEach(el=>{el.style.visibility=gesture?.kind==='move'&&el.dataset.constructionId===gesture.id||gesture?.removed?.has(el.dataset.constructionId)?'hidden':''})}
+  const label=find('[data-snap-state]'),message=ghost?.snapped?'Connected — R keeps the join':snapping&&mode==='walls'?'Snapping on — drag near a wall end':'';if(label.textContent!==message)label.textContent=message;
   const key=JSON.stringify(gesture?.kind==='paint'?gesture.tiles:ghost);if(key===previewKey)return;previewKey=key;
   if(gesture?.kind==='paint')preview.innerHTML=constructionSVG({ground:gesture.tiles,props:[],walls:[]},size,cat,{grid:false,background:false});
-  else if(ghost)preview.innerHTML=constructionSVG(newPlan(),size,cat,{ghost,grid:false,background:false,wallKit});
+  else if(ghost)preview.innerHTML=constructionSVG(newPlan(),size,cat,{ghost,grid:false,background:false,wallKit})+(ghost.snapped?ghost.contacts.map(([x,y])=>`<circle data-snap-port cx="${x}" cy="${y}" r=".085" fill="#b8ffe0" stroke="#183c30" stroke-width=".025"/>`).join(''):'');
   else preview.innerHTML='';
  }
  function schedulePreview(){if(!previewFrame)previewFrame=requestAnimationFrame(drawPreview)}
@@ -105,7 +109,19 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
   else{Object.assign(brush,next);rotation=next.rotation;updatePointer(lastPointer);schedulePreview()}
   syncInspector();
  }
- function rotate(){transform((item,layer)=>rotatePlacement(item,layer))}
+ function rotate(){
+  const selection=selectedObject(),layer=gesture?.layer||selection?.layer||mode,current=ghost?.item||gesture?.item||selection?.item;
+  if(snapping&&layer==='walls'&&current){
+   const result=rotateSnappedWall(current,plan,size);
+   if(result.blocked){showPlacementError('No other rotation fits this connection. Turn snapping off [S] to rotate freely.');return}
+   if(gesture?.kind==='move'){
+    gesture.item=result.item;gesture.origin=[result.item.x,result.item.y];const {px,py}=coords(lastPointer);gesture.start=[px,py];
+   }else if(!selection)Object.assign(brush,result.item);
+   snapLock=result.snapped&&lastPointer?{x:lastPointer.clientX,y:lastPointer.clientY,contacts:result.contacts,item:result.item}:null;
+   transform(()=>result.item);return;
+  }
+  transform((item,layer)=>rotatePlacement(item,layer));
+ }
  function coords(e){const r=svg.getBoundingClientRect();return {px:(e.clientX-r.left)*size.w/r.width,py:(e.clientY-r.top)*size.h/r.height}}
  function inside(e){if(!e)return false;const r=scroll.getBoundingClientRect(),{px,py}=coords(e);return e.clientX>r.left&&e.clientX<r.right&&e.clientY>r.top&&e.clientY<r.bottom&&px>=0&&py>=0&&px<size.w&&py<size.h}
  function makeGhost(e){
@@ -118,14 +134,16 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
  function paintBetween(a,b){const steps=a?Math.max(Math.abs(b.x-a.x),Math.abs(b.y-a.y),1):1;a=a||b;for(let i=0;i<=steps;i++)gesture.tiles[`${Math.round(a.x+(b.x-a.x)*i/steps)},${Math.round(a.y+(b.y-a.y)*i/steps)}`]={asset:brush.ground,rotation}}
  function updatePointer(e){
   if(!e)return;lastPointer=e;
+  if(snapLock&&Math.hypot(e.clientX-snapLock.x,e.clientY-snapLock.y)>2)snapLock=null;
   if(gesture?.kind==='move'){
-   if(!inside(e)){ghost=null;return}const {px,py}=coords(e),item={...gesture.item,x:gesture.origin[0]+Math.round(px-gesture.start[0]),y:gesture.origin[1]+Math.round(py-gesture.start[1])};
-   const error=placementError(item,gesture.layer,size,plan);showPlacementError(error);ghost=error?null:{layer:gesture.layer,item};
+   if(!inside(e)){ghost=null;return}const {px,py}=coords(e);let item={...gesture.item,x:gesture.origin[0]+Math.round(px-gesture.start[0]),y:gesture.origin[1]+Math.round(py-gesture.start[1])};
+   const snap=snapping&&gesture.layer==='walls'?snapWall(item,plan,size,{requiredContacts:snapLock?.contacts||[],allowRotate:!snapLock&&item.shape==='corner'}):null;if(snap?.snapped)item=snap.item;
+   const error=placementError(item,gesture.layer,size,plan);showPlacementError(error);ghost=error?null:{layer:gesture.layer,item,...snap};
   }else if(gesture?.kind==='erase'){
    ghost=null;if(!inside(e))return;const {px:cellX,py:cellY}=coords(e),cell=`${Math.floor(cellX)},${Math.floor(cellY)}`;if(gesture.cells.has(cell))return;gesture.cells.add(cell);const target=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-construction-id]');
    if(target)gesture.removed.add(target.dataset.constructionId);else{const {px,py}=coords(e);gesture.ground.add(`${Math.floor(px)},${Math.floor(py)}`)}
   }else{
-   ghost=makeGhost(e);if(ghost?.item){const error=placementError(ghost.item,ghost.layer,size,plan);showPlacementError(error);if(error)ghost=null;}
+   ghost=makeGhost(e);if(ghost?.layer==='walls'&&snapping){if(snapLock)ghost.item={...ghost.item,x:snapLock.item.x,y:snapLock.item.y,piece:snapLock.item.piece,anchor:snapLock.item.anchor};const snap=snapWall(ghost.item,plan,size,{requiredContacts:snapLock?.contacts||[],allowRotate:!snapLock&&ghost.item.shape==='corner'});ghost={...ghost,...snap};}if(ghost?.item){const error=placementError(ghost.item,ghost.layer,size,plan);showPlacementError(error);if(error)ghost=null;}
    if(gesture?.kind==='paint'){if(ghost){paintBetween(gesture.last,ghost);gesture.last=ghost}else gesture.last=null}
   }
  }
@@ -134,7 +152,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
   if(mode==='ground')gesture.kind='paint';
   updatePointer(e);find('[data-save]').disabled=true;find('[data-undo]').disabled=true;find('[data-redo]').disabled=true;schedulePreview();
  }
- function cancelGesture(){gesture=null;ghost=null;if(previewFrame){cancelAnimationFrame(previewFrame);previewFrame=0}drawPreview();find('[data-save]').disabled=busy||debugLab;find('[data-undo]').disabled=!undo.length;find('[data-redo]').disabled=!redo.length}
+ function cancelGesture(){gesture=null;ghost=null;snapLock=null;if(previewFrame){cancelAnimationFrame(previewFrame);previewFrame=0}drawPreview();find('[data-save]').disabled=busy||debugLab;find('[data-undo]').disabled=!undo.length;find('[data-redo]').disabled=!redo.length}
  svg.onpointerdown=e=>{
   if(e.button!==0||busy)return;e.preventDefault();svg.focus({preventScroll:true});cancelGesture();const target=e.target.closest('[data-construction-id]');
   svg.setPointerCapture(e.pointerId);
@@ -161,11 +179,20 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
  svg.onpointerleave=()=>{if(!gesture){ghost=null;schedulePreview()}};
  function history(direction){if(gesture)cancelGesture();const from=direction==='undo'?undo:redo,to=direction==='undo'?redo:undo;if(!from.length)return;to.push(structuredClone(plan));plan=from.pop();selected='';ghost=null;renderMap();inspector()}
  find('[data-undo]').onclick=()=>history('undo');find('[data-redo]').onclick=()=>history('redo');
- dialog.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>{cancelGesture();mode=b.dataset.tool;if(mode!=='select')selected='';query='';find('[data-search]').value='';palette();inspector();renderMap()});
+ function setTool(next){cancelGesture();mode=next;if(mode!=='select')selected='';query='';find('[data-search]').value='';showPlacementError('');palette();inspector();renderMap()}
+ dialog.querySelectorAll('[data-tool]').forEach(b=>b.onclick=()=>setTool(b.dataset.tool));
+ find('[data-snap]').onclick=()=>{snapping=!snapping;snapLock=null;try{localStorage.setItem('fortcamp.construction.snapping',snapping?'on':'off')}catch{}find('[data-snap]').textContent=`Snapping [S]: ${snapping?'On':'Off'}`;find('[data-snap]').setAttribute('aria-pressed',String(snapping));updatePointer(lastPointer);schedulePreview()};
  find('[data-search]').oninput=e=>{query=e.target.value.toLowerCase();palette()};
- dialog.querySelectorAll('[data-zoom]').forEach(b=>b.onclick=()=>{zoom=b.dataset.zoom==='0'?1:Math.max(.5,Math.min(2,zoom+Number(b.dataset.zoom)));find('[data-zoom="0"]').textContent=`${Math.round(zoom*100)}%`;svg.style.width=`${size.w*64*zoom}px`;svg.style.height=`${size.h*64*zoom}px`;updatePointer(lastPointer);schedulePreview()});
+ function setZoom(next,point){
+  const before=svg.getBoundingClientRect(),px=point?.clientX??scroll.getBoundingClientRect().left+scroll.clientWidth/2,py=point?.clientY??scroll.getBoundingClientRect().top+scroll.clientHeight/2,fx=(px-before.left)/before.width,fy=(py-before.top)/before.height;
+  zoom=Math.max(.25,Math.min(3,next));find('[data-zoom="0"]').textContent=`${Math.round(zoom*100)}%`;svg.style.width=`${size.w*64*zoom}px`;svg.style.height=`${size.h*64*zoom}px`;
+  const after=svg.getBoundingClientRect();scroll.scrollLeft+=after.left+fx*after.width-px;scroll.scrollTop+=after.top+fy*after.height-py;updatePointer(lastPointer);schedulePreview();
+ }
+ dialog.querySelectorAll('[data-zoom]').forEach(b=>b.onclick=()=>setZoom(b.dataset.zoom==='0'?1:zoom+Number(b.dataset.zoom)));
+ scroll.addEventListener('wheel',e=>{if(e.shiftKey||e.ctrlKey||e.metaKey||!e.deltaY)return;e.preventDefault();setZoom(wheelZoom(zoom,e),e)},{passive:false});
  dialog.onkeydown=e=>{
   if(e.target.matches('textarea,input:not([type=range]):not([type=checkbox])')||e.target.isContentEditable)return;
+  if(!e.ctrlKey&&!e.metaKey&&!e.altKey){const tool={Delete:'erase',f:'ground',p:'props',w:'walls',v:'select'}[e.key.length===1?e.key.toLowerCase():e.key];if(tool){e.preventDefault();e.stopPropagation();setTool(tool);return}if(e.key.toLowerCase()==='s'){e.preventDefault();e.stopPropagation();find('[data-snap]').click();return}}
   if(e.key==='Escape'&&gesture){e.preventDefault();e.stopPropagation();cancelGesture();return}
   if((e.ctrlKey||e.metaKey)&&e.key.toLowerCase()==='z'){e.preventDefault();e.stopPropagation();history(e.shiftKey?'redo':'undo');return}
   if(!e.ctrlKey&&!e.metaKey&&!e.altKey&&e.key.toLowerCase()==='r'){e.preventDefault();e.stopPropagation();rotate()}

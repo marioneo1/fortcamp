@@ -28,6 +28,7 @@ Current building collision/art: [Wall boundaries](design/WALL_BOUNDARIES.md) exp
 - [Mercenaries and early pacing](design/MERCENARIES.md): persistent hiring, betrayal, rare encounters, starter kits, and quieter regional events.
 - [Camp and roster UI](design/CAMP_INTERFACE.md): base sections, inventory, prisoner navigation and item selling.
 - [Plain wood wall trial](art/CONSTRUCTION_PLAIN_WOOD_KIT.md): nine-original atlas, 24 mirrored variants, independent horizontal/vertical art, normalization and isolated debug Wall Kit Lab.
+- [Construction material kits](art/CONSTRUCTION_MATERIAL_KITS.md): six new nine-original materials, shared snapping geometry, extraction reports and connected-room comparisons.
 - [Player base construction](design/BASE_CONSTRUCTION.md): drag/drop terrain painting, arrow-key prop offsets, named directional wall/post/corner/gate assets (T/+ retired), preview optimization, undo/redo and player-owned saved layouts; reusable geometry for a later dev map editor.
 - [Relationships](design/CHARACTER_RELATIONSHIPS.md): loyalty, personality, records, conversations and staged roadmap.
 - [Prison recruitment proposal](design/PRISON_RECRUITMENT_PROPOSAL.md): original warden, conversation and boss pacing proposals; see the implemented reference below.
