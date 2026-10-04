@@ -19,6 +19,7 @@ from .combat_pacing import enemy_budget
 from .combat_supplies import sync_supplies, remaining_uses
 from . import combat_conditions as conditions
 from . import concealment
+from . import combat_abilities as abilities
 
 
 STATUS_DEFINITIONS = {
@@ -311,6 +312,7 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
             skills.append({'id': 'field_care', 'name': 'Field Care', 'target': 'ally', 'effect': 'support',
                            'range': 1, 'heal': 8, 'cleanses': ['bleed'], 'scaling': 'int',
                            'elevation_rule': 'physical_care', 'description': 'One shared technique use per battle. Range 1: restore 8 + half INT HP and stop Bleed. Physical treatment works while muted; cannot revive.'})
+    skills = abilities.snapshot(skills, _effective_attribute(state, character, 'int'))
     special = skills[0] if skills else None
     rules=collect_rules(equipped)
     race = character.get("race", "Human")
@@ -344,7 +346,8 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
         "portrait_frame": deepcopy(character.get('portrait_frame', {})),
         "portrait_frame_source": character.get('portrait_frame_source'),
         "portrait_frame_key": character.get('portrait_frame_key'),
-        "special": special, "skills":skills, "special_used": False, "guarding": rules.get('opening_guard',False),
+        "special": special, "skills":skills, "special_used": False, "ability_version": 1,
+        "ability_activation": 0, "ability_state": {}, "guarding": rules.get('opening_guard',False),
         "moved": False, "acted": False, "alive": True, "conscious": True, "condition": "active",
         "statuses": ([{'id':'lifeline_ready'}] if rules.get('lifeline') else []), "carrying": None, "carrying_object": None, "carried_by": None, "panicked": False, "fled": False,
         "loyalty": ensure_character(character)["loyalty"],
@@ -1125,11 +1128,15 @@ def _apply_tile_entry(battle: dict, unit: dict) -> None:
             battle["log"].append(f"{unit['name']} is killed by the prepared defense.")
 
 
-def _current_unit(battle: dict) -> dict | None:
+def _current_unit(battle: dict, activate: bool = True) -> dict | None:
     _ensure_battle_schema(battle)
     if battle["status"] != "active" or battle.get("decision_pending"):
         return None
     order = battle["turn_order"]
+    if not activate:
+        index = battle.get('turn_index',0)
+        unit = battle['units'].get(order[index]) if 0 <= index < len(order) else None
+        return unit if unit and _combat_active(unit) else None
     while order:
         if battle["turn_index"] >= len(order):
             battle["turn_index"] = 0
@@ -1145,7 +1152,7 @@ def _current_unit(battle: dict) -> dict | None:
             alarm = battle.get("objects", {}).get("alarm_horn")
             if battle.get("encounter_id") == "goblin_warcamp" and battle["round"] == 5 and alarm and alarm.get("state") == "active":
                 _spawn_reinforcements(battle)
-            if battle["round"] > 20:
+            if battle["round"] > 20 and not any(u.get('ability_version') for u in battle['units'].values()):
                 battle["status"] = "complete"; battle["outcome"] = "failure"
                 battle["log"].append("After twenty rounds, the exhausted party can no longer hold its position and is forced to retreat.")
                 return None
@@ -1154,6 +1161,8 @@ def _current_unit(battle: dict) -> dict | None:
             stamp = [battle["round"], battle["turn_index"]]
             if unit.get("status_activation") != stamp:
                 unit["status_activation"] = stamp
+                if unit.get('ability_version'):
+                    abilities.start_activation(unit, stamp)
                 conditions.start_activation(battle, unit)
                 if unit.get("team")=="player":
                     facts=unit.setdefault("combat_record",{})
@@ -2075,24 +2084,74 @@ def _apply_support(battle, actor, target, effect):
 
 def _support_effect(skill, actor):
     effect = dict(skill)
+    if skill.get('ability_version'):
+        effect['heal']=sum(e['amount'] for e in skill['effects'] if e['type']=='heal')
+        effect['cleanses']=[s for e in skill['effects'] if e['type']=='cleanse' for s in e['statuses']]
+        effect['guard_ally']=any(e['type']=='guard' for e in skill['effects'])
+        return effect
     if effect.get('heal'):
         effect['heal'] += int(actor.get('intelligence', 4)) // 2
     return effect
 
 
+def _resolve_ability(battle, actor, target, skill):
+    """Apply a snapshotted ordered ability through the existing combat primitives."""
+    if not abilities.availability(actor,skill)['available']:
+        raise ValueError(abilities.availability(actor,skill)['reason'])
+    abilities.validate(skill)
+    if actor.get('capture_weapon') and any(e['type']=='attack' for e in skill['effects']):
+        raise ValueError('Capture weapons cannot perform damaging techniques')
+    _commit_player_movement(battle, actor)
+    def attack(effect):
+        hit, preview, roll = _attack_hits(battle,actor,target,skill['elevation_rule'])
+        damage = _deal_damage(battle,actor,target,effect.get('damage_bonus',0)+preview['damage_bonus'],
+                              effect.get('armor_pierce',0),ability=skill) if hit else 0
+        _record_melee_animation(battle,actor,target,hit,skill['elevation_rule'])
+        battle['log'].append(f"{actor['name']} uses {skill['name']} on {target['name']} for {damage} damage." if hit else
+                             f"{actor['name']} misses {target['name']} ({roll} vs {preview['chance']}% accuracy).")
+        return {'hit':hit,'damage':damage}
+    def heal(effect):
+        amount=min(target['max_hp']-target['hp'],effect['amount'])
+        target['hp']+=amount
+        return {'healing':amount}
+    def cleanse(effect):
+        conditions.remove(target,*effect['statuses'])
+        if not any(conditions.has(target,s) for s in ('stun','sleep','paralyze')):target.pop('forced_skip',None)
+        if not conditions.has(target,'paralyze'):target.pop('paralyzed_move',None)
+    def guard(effect):target['guarding']=True
+    def status(effect):
+        sid=effect['status']
+        if sid=='poison' and ('poison' in target.get('racial_resistances',[]) or target.get('race') in {'Undead','Revenant','Banshee','Golem','Automaton'}):return
+        chance=effect.get('chance',100)
+        if sid in target.get('racial_resistances',[]):chance//=2
+        if sid in target.get('racial_weaknesses',[]):chance=min(95,chance+15)
+        counter=battle.get('proc_counter',0);battle['proc_counter']=counter+1
+        roll=random.Random(f"{battle.get('seed')}:ability-status:{counter}:{actor['id']}:{target['id']}").randint(1,100)
+        if roll<=chance and conditions.apply(target,sid,effect['turns'],actor):
+            battle['log'].append(f"{target['name']} suffers {sid}.")
+    result=abilities.resolve(skill,target,{'attack':attack,'heal':heal,'cleanse':cleanse,'guard':guard,'status':status})
+    abilities.spend(actor,skill)
+    if skill['target']=='ally':
+        battle['log'].append(f"{actor['name']} uses {skill['name']} on {target['name']}: {result.get('healing',0)} HP restored"+
+                             (', harmful effects treated.' if skill.get('cleanses') else '.'))
+        _record_sound(battle,'magic_cast' if skill['elevation_rule']=='line_of_effect' else 'guard')
+    actor['acted']=True
+    return result
+
+
 def _auto_support(battle, unit):
-    if unit.get('special_used'):
-        return False
     for skill in unit.get('skills', []):
-        if skill.get('target') != 'ally' or (conditions.has(unit, 'mute') and skill['elevation_rule'] == 'line_of_effect'):
+        if not abilities.availability(unit,skill)['available'] or skill.get('target') != 'ally' or (conditions.has(unit, 'mute') and skill['elevation_rule'] == 'line_of_effect'):
             continue
         effect = _support_effect(skill, unit)
         targets = [u for u in _living(battle, unit['team']) if _support_eligible(battle, unit, u, effect)
                    and (u['hp'] <= u['max_hp'] * .65 or any(s['id'] in effect.get('cleanses', []) for s in u['statuses']))]
         if targets:
             target = min(targets, key=lambda u: u['hp'] / u['max_hp'])
-            _apply_support(battle, unit, target, effect)
-            unit['special_used'] = True
+            if skill.get('ability_version'):_resolve_ability(battle,unit,target,skill)
+            else:
+                _apply_support(battle, unit, target, effect)
+                abilities.spend(unit,skill)
             _finish_turn(battle)
             return True
     return False
@@ -2149,7 +2208,7 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
             _finish_turn(battle)
             return
     available_skills=[s for s in (unit.get('skills') or ([unit['special']] if unit.get('special') else []))
-                      if s.get('target') != 'ally' and not (conditions.has(unit, 'mute') and s['elevation_rule'] in {'ignore', 'line_of_effect'})] if not unit.get('special_used') else []
+                      if abilities.availability(unit,s)['available'] and s.get('target') != 'ally' and not (conditions.has(unit, 'mute') and s['elevation_rule'] in {'ignore', 'line_of_effect'})]
     if conditions.has(unit, 'mute') and unit['attack_elevation_rule'] in {'ignore','line_of_effect'} and not available_skills:
         _guard(battle, unit)
         unit['acted'] = True
@@ -2187,7 +2246,7 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
             choices=[s for s in available_skills if _can_attack(battle,unit,target,s['range']) and (not capturing or s.get('nonlethal'))]
             special=max(choices,key=lambda s:(s.get('armor_pierce',0)+s.get('damage_bonus',0),s.get('attack',unit['attack']))) if choices and not nonlethal else None
             if special:unit['special']=special
-            use_skill = bool(special and not unit.get("special_used") and _can_attack(battle, unit, target, special["range"]))
+            use_skill = bool(special and abilities.availability(unit,special)['available'] and _can_attack(battle, unit, target, special["range"]))
             if not use_skill and not _can_attack(battle, unit, target, 1 if nonlethal else unit["attack_range"]):
                 unit["acted"] = True
                 _finish_turn(battle)
@@ -2196,6 +2255,10 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
             rule = special["elevation_rule"] if use_skill else unit["attack_elevation_rule"]
             skill_nonlethal = use_skill and special.get("nonlethal", False)
             target = conditions.confused_target(battle, unit, target, lambda u: _can_attack(battle, unit, u, special['range'] if use_skill else unit['attack_range']))
+            if use_skill and special.get('ability_version'):
+                _resolve_ability(battle,unit,target,special)
+                _finish_turn(battle)
+                return
             hit, preview, roll = _attack_hits(battle, unit, target, rule)
             damage = _deal_damage(
                 battle, unit, target, bonus + preview["damage_bonus"] - (1 if nonlethal else 0),
@@ -2495,8 +2558,11 @@ def _context_actions(battle: dict, unit: dict) -> list[dict]:
 
 
 def battle_view(battle: dict) -> dict:
+    # First sightings are persistent. Presentation must not start an activation,
+    # but must keep a revealed enemy visible after it returns to cover.
     concealment.refresh(battle)
     view = deepcopy(battle)
+    _ensure_battle_schema(view)
     hidden = {uid for uid, unit in view['units'].items() if concealment.unseen(unit)}
     hidden_names = [view['units'][uid]['name'] for uid in hidden]
     view['log'] = [line for line in view.get('log', []) if not any(name in line for name in hidden_names)]
@@ -2529,7 +2595,12 @@ def battle_view(battle: dict) -> dict:
     for objective in view.get('objectives', []):
         if objective.get('id') == 'alarm':
             objective['name'] = 'Disable the alarm bell'
-    current = _current_unit(view)
+    current = _current_unit(view, activate=False)
+    for unit in view['units'].values():
+        for choice in unit.get('skills',[]):
+            choice['availability']=abilities.availability(unit,choice)
+        if unit.get('special'):
+            unit['special']['availability']=abilities.availability(unit,unit['special'])
     for unit in view["units"].values():
         for status in unit.get("statuses", []):
             if status.get("id") == "ambush_sleep":
@@ -2569,7 +2640,7 @@ def battle_view(battle: dict) -> dict:
         options = {
             'attack': (current['attack_range'], current['attack_elevation_rule'], not current.get('capture_weapon') and not current.get('acted') and not (conditions.has(current, 'mute') and current['attack_elevation_rule'] in {'ignore','line_of_effect'})),
             'subdue': (current['attack_range'], current['attack_elevation_rule'], not current.get('acted') and current.get('capture_weapon') and not (conditions.has(current,'mute') and current['attack_elevation_rule']=='line_of_effect')),
-            'skill': (skill['range'], skill['elevation_rule'], skill.get('target') != 'ally' and not current.get('acted') and not current.get('special_used') and not (conditions.has(current, 'mute') and skill['elevation_rule'] in {'ignore', 'line_of_effect'})) if skill else (0, 'melee', False),
+            'skill': (skill['range'], skill['elevation_rule'], skill.get('target') != 'ally' and abilities.availability(current,skill)['available'] and not (conditions.has(current, 'mute') and skill['elevation_rule'] in {'ignore', 'line_of_effect'})) if skill else (0, 'melee', False),
         }
         for target in _living(view, 'enemy'):
             previews = {}
@@ -2583,7 +2654,7 @@ def battle_view(battle: dict) -> dict:
             if choice.get('target') == 'ally':
                 for target in _living(view, 'player'):
                     view['attack_previews'].setdefault(target['id'], {})
-                    allowed = not current.get('acted') and not current.get('special_used') and not (conditions.has(current, 'mute') and choice['elevation_rule'] == 'line_of_effect')
+                    allowed = abilities.availability(current,choice)['available'] and not (conditions.has(current, 'mute') and choice['elevation_rule'] == 'line_of_effect')
                     effect = _support_effect(choice, current)
                     entries[target['id']] = {'chance': 100, 'support': True, 'heal': effect.get('heal', 0)} if allowed and _support_eligible(view, current, target, effect) else None
                     if choice['id'] == (skill or {}).get('id'):
@@ -2591,7 +2662,7 @@ def battle_view(battle: dict) -> dict:
                 view['skill_previews'][choice['id']] = entries
                 continue
             for target in _living(view,'enemy'):
-                allowed = not current.get('acted') and not current.get('special_used') and not (conditions.has(current, 'mute') and choice['elevation_rule'] in {'ignore', 'line_of_effect'})
+                allowed = abilities.availability(current,choice)['available'] and not (conditions.has(current, 'mute') and choice['elevation_rule'] in {'ignore', 'line_of_effect'})
                 actor,approach=_attack_position(view,current,target,choice['range'],reachable,parents) if allowed else (None,None)
                 entries[target['id']]={**_attack_preview(view,actor,target,choice['elevation_rule']),**(approach or {})} if actor else None
             view['skill_previews'][choice['id']]=entries
@@ -2747,6 +2818,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
     if battle.get("status") != "active":
         raise ValueError("This battle is already complete")
     action = command.get("action")
+    battle.pop('auto_pause_reason',None)
     if action == "claim_victory":
         _claim_victory(battle)
         battle["action_count"] += 1
@@ -2778,7 +2850,29 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         _advance_to_player(battle)
         battle["action_count"]+=1
         return battle_view(battle)
-    if action == "move":
+    selected_skill=next((s for s in unit.get('skills',[]) if s['id']==command.get('skill_id',(unit.get('special') or {}).get('id'))),None) if action=='skill' else None
+    if selected_skill and selected_skill.get('ability_version'):
+        abilities.validate(selected_skill)
+        availability=abilities.availability(unit,selected_skill)
+        if not availability['available']:raise ValueError(availability['reason'])
+        rule=selected_skill['elevation_rule']
+        if conditions.has(unit,'mute') and rule in {'ignore','line_of_effect'}:
+            raise ValueError('Mute prevents this spell')
+        target=battle['units'].get(command.get('target_id'))
+        if selected_skill['target']=='ally':
+            if not _support_eligible(battle,unit,target,_support_effect(selected_skill,unit)):
+                raise ValueError('Choose a conscious ally in range who needs this technique')
+        else:
+            if not target or not _combat_active(target) or target['team']!='enemy' or concealment.unseen(target):
+                raise ValueError('Choose a visible living enemy')
+            if unit.get('capture_weapon') and any(e['type']=='attack' for e in selected_skill['effects']):
+                raise ValueError('Capture weapons cannot perform damaging techniques')
+            if _apply_attack_approach(battle,unit,target,selected_skill['range'],command):return battle_view(battle)
+            if not _can_attack(battle,unit,target,selected_skill['range']):raise ValueError('Target is outside technique range')
+            target=conditions.confused_target(battle,unit,target,lambda u:_can_attack(battle,unit,u,selected_skill['range']))
+        unit['special']=selected_skill
+        _resolve_ability(battle,unit,target,selected_skill)
+    elif action == "move":
         if unit.get("acted"):
             raise ValueError("This unit already committed its action")
         x, y = int(command.get("x", -1)), int(command.get("y", -1))
@@ -2980,6 +3074,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
 
 
 def auto_step(battle: dict, tactic: str = "balanced") -> dict:
+    battle.pop('auto_pause_reason',None)
     battle["animation_events"] = []
     if battle.get("status") == "preparing":
         battle["status"] = "active"
@@ -3010,6 +3105,9 @@ def auto_resolve(battle: dict, tactic: str = "balanced", max_steps: int = 200) -
             break
         auto_step(battle, tactic)
     if battle.get("status") == "active":
-        battle["status"] = "complete"; battle["outcome"] = "failure"
-        battle["log"].append("The battle exceeded its action limit and the party withdrew.")
+        if any(u.get('ability_version') for u in battle['units'].values()):
+            battle['auto_pause_reason']='Auto-battle paused after its step limit. Continue manually or run auto-battle again.'
+        else:
+            battle["status"] = "complete"; battle["outcome"] = "failure"
+            battle["log"].append("The battle exceeded its action limit and the party withdrew.")
     return battle_view(battle)

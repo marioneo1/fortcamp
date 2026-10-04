@@ -13,6 +13,7 @@ from backend.combat import (_player_unit, _deal_damage, _guard, _step_cost,
 from backend.game import new_game, resolve_mission, analyze_mission
 from backend.mission_loot import roll_item_pool, scene_reward_template
 from backend.services import _award_capture_loot
+from backend.combat_abilities import availability
 
 
 class SlotGearTests(unittest.TestCase):
@@ -80,7 +81,7 @@ class SlotGearTests(unittest.TestCase):
             actor['gear_rules'] = {}
             self.assertEqual(_step_cost(b, 0, 1, 1, 1, actor), 6)
 
-    def test_equipped_techniques_are_selectable_and_share_one_use(self):
+    def test_equipped_techniques_are_selectable_and_have_independent_uses(self):
         b, actor, enemy = self.battle('hooked_spear', 'meridian_field_projector')
         names = {s['name'] for s in actor['skills']}
         self.assertGreaterEqual(len(names),2)
@@ -94,10 +95,12 @@ class SlotGearTests(unittest.TestCase):
         with patch('backend.combat._attack_hits', return_value=(True, {'damage_bonus': 0, 'chance': 100}, 1)):
             apply_player_command(b, {'action': 'skill', 'skill_id': selected, 'target_id': enemy['id']})
         self.assertEqual(actor['special']['name'], 'Field Lance')
-        self.assertTrue(actor['special_used'])
+        self.assertFalse(availability(actor,actor['special'])['available'])
         actor['acted'] = False
+        self.assertTrue(availability(actor,actor['skills'][0])['available'])
+        self.assertEqual(availability(actor,actor['special'])['uses_remaining'],0)
         with self.assertRaises(ValueError):
-            apply_player_command(b, {'action': 'skill', 'skill_id': actor['skills'][0]['id'], 'target_id': enemy['id']})
+            apply_player_command(b, {'action': 'skill', 'skill_id': selected, 'target_id': enemy['id']})
 
     def test_exclusives_never_leak_into_any_cache_rank_or_event(self):
         exclusive = {iid for iid, item in ITEMS.items() if 'mission_exclusive' in item.get('tags', [])}

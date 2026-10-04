@@ -117,7 +117,7 @@ class CombatToolsTests(unittest.TestCase):
         with self.assertRaises(ValueError): apply_player_command(b, {'action': 'use_item', 'item_id': 'dressing0', 'target_id': 'ally'})
         self.assertEqual(len(b['supplies']), 4)
 
-    def test_support_techniques_share_focus_and_work_when_physical_actor_is_muted(self):
+    def test_legacy_support_techniques_share_focus_and_work_when_physical_actor_is_muted(self):
         b = self.battle(); p = b['units']['player']; a = b['units']['ally']; a['hp'] -= 40
         p['statuses'] = [{'id': 'mute', 'turns': 2}]
         p['skills'] = [dict(ITEMS['medic_coat']['combat_skill']), dict(ITEMS['mourning_censer']['combat_skill'])]

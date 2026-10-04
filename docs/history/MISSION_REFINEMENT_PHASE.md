@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## October 4: Combat ability foundation
+
+Implemented versioned snapshots, independent cooldowns/charges, ordered effects and validated conditions using existing combat primitives. Precision Shot/Arc Bolt/Field Care are cooldown pilots; all other existing gear techniques keep individual one-use limits. Polling never starts activations. Legacy battle rules preserved. Removed new-battle twenty-round loss; auto step limit pauses. Twelve Jobs/loadouts/summons remain deferred. Added backend/frontend coverage and isolated browser review; all 45 authored gear definitions validated. Auto pathfinding wall stalls in two older maps recorded in backlog. Production and real saves untouched.
+
 ## October 4: Starting Job and skill design — proposal only
 
 Inspected current starter equipment, capture formula, combat and design references.
@@ -1064,3 +1068,5 @@ and isolated browser checks pass. Browser verifies calibrated chart/chair/well
 sizes, prop/wall boxes and toggle, red invalid preview/no commit, Standard size,
 save and table docking/occlusion. Screenshots inspected. Saves were in-memory
 fixtures; production and real player saves are untouched.
+
+Validation: 420 backend tests and 183 frontend tests passed; Vite build passed (existing large-chunk warning). Isolated Chrome check confirmed cooldown labels, independent selection and action-button availability without JavaScript errors. No live API/database used for browser review.

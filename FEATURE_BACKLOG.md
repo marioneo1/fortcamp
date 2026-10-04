@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+October 4 ability foundation: versioned snapshots, per-technique cooldown/charges and ordered effects/conditions implemented. Precision Shot/Arc Bolt cooldown 2; Field Care 3; other gear has individual one-use limits. No two-gear-active cap. New battles have no twenty-round defeat; bounded auto pauses. Old saved battles retain legacy rules. Dev only. Canonical: docs/design/COMBAT_ABILITIES.md. Next: status ownership/expiry, Barrier/Mark, displacement and bounded reactions, then summons/forms/loadouts and all twelve starters.
+
+Follow-up: boundary-aware auto approach/pathfinding for Locked Tool Shed and former-command prison encounter. Existing wall stalls previously ended in forced timeout defeats; now they pause without a fabricated outcome.
+
 October 4 Job design draft (NOT IMPLEMENTED): agreed starting roster is Fighter,
 Barbarian, Rogue, Ranger, Mage, Cleric, Monk, Bard, Druid, Engineer, Summoner and
 Captor; replace Paladin proposal with Summoner and remove Medic/proficiency
@@ -10,7 +14,7 @@ kits deferred; popularity rank must not dictate combat power. Draft proposes
 distinct restraint versus Subdue, pit types and encounter-specific pressure
 instead of twenty-round loss. Canonical: docs/design/STARTING_JOBS_AND_SKILLS_V1.md.
 Next: review individual skills and budgets, then implement dependencies and
-test all twelve starters before publishing them together. Current runtime unchanged.
+test all twelve starters before publishing them together. Starting role roster unchanged; the foundation above is live in new dev battles.
 
 October 4 chair spacing: implemented Table spacing for supported seats, 60% tuck
 through 60% outward gap, retaining table/side and saving the preference per seat.

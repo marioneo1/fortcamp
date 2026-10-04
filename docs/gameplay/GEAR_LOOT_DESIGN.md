@@ -1,5 +1,7 @@
 # Gear and loot design
 
+October 4: [Combat ability foundation](../design/COMBAT_ABILITIES.md) replaces shared technique use in new battles with individual cooldowns/charges. All equipped techniques remain accessible; identical IDs remain deduplicated. Legacy saved battles keep shared use.
+
 October 2 capture/starter update: [Capture and starting roles](../design/CAPTURE_AND_STARTING_ROLES.md) is authoritative for dedicated capture weapons, removal of ordinary blunt/unarmed Subdue and six coherent starting kits. References below to old nonlethal weapon permissions are historical; XP/levels remain proposed.
 
 

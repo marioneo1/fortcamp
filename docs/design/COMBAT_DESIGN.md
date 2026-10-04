@@ -1,5 +1,7 @@
 # Fortcamp Tactical Battle Design
 
+October 4: [Combat ability foundation](COMBAT_ABILITIES.md) is authoritative for new-battle technique costs and activation timing. New battles no longer lose at round twenty; bounded auto pauses instead. Legacy saved battles retain old rules. Twelve Jobs remain proposed.
+
 October 2 capture/starter update: [Capture and starting roles](CAPTURE_AND_STARTING_ROLES.md) is authoritative for dedicated capture weapons, removal of ordinary blunt/unarmed Subdue and six coherent starting kits. References below to old nonlethal weapon permissions are historical; XP/levels remain proposed.
 
 

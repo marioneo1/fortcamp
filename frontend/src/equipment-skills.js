@@ -6,7 +6,19 @@ export function selectBattleSkill(view,id){
   return {...view,units:{...view.units,[actor.id]:{...actor,special:selected}},
     attack_previews:previews?Object.fromEntries(Object.entries(view.attack_previews||{}).map(([target,actions])=>[target,{...actions,skill:previews[target]??null}])):view.attack_previews};
 }
+export function skillAvailability(actor,skill=actor?.special){
+  if(actor?.acted)return {available:false,reason:'Main action already used'};
+  return skill?.availability||{available:!!skill&&!actor?.special_used,reason:actor?.special_used?'Shared technique use spent':null};
+}
+export function skillTiming(skill){
+  const state=skill?.availability;
+  if(!state)return '';
+  if(state.cooldown_remaining)return `Ready in ${state.cooldown_remaining} turns`;
+  if(state.uses_remaining!==null&&state.uses_remaining!==undefined)return `${state.uses_remaining} use${state.uses_remaining===1?'':'s'} left`;
+  return 'Ready';
+}
 export function skillPicker(actor,escape){
   if((actor?.skills||[]).length<2)return '';
-  return `<label class="battle-skill-picker">Equipped technique<select id="battle-gear-skill" ${actor.acted||actor.special_used?'disabled':''}>${actor.skills.map(skill=>`<option value="${escape(skill.id)}" ${skill.id===actor.special?.id?'selected':''}>${escape(skill.name)}${skill.source_name?` · ${escape(skill.source_name)}`:''}</option>`).join('')}</select><small>Choose one technique. All equipped techniques share one use per battle.</small></label>`;
+  const modern=actor.skills.some(s=>s.ability_version);
+  return `<label class="battle-skill-picker">Equipped technique<select id="battle-gear-skill" ${actor.acted||!modern&&actor.special_used?'disabled':''}>${actor.skills.map(skill=>`<option value="${escape(skill.id)}" ${skill.id===actor.special?.id?'selected':''}>${escape(skill.name)}${skill.source_name?` · ${escape(skill.source_name)}`:''}${skillTiming(skill)?` · ${escape(skillTiming(skill))}`:''}</option>`).join('')}</select><small>${modern?'Each technique has its own cooldown or uses. Switching techniques does not spend an action.':'All equipped techniques share one use per battle.'}</small></label>`;
 }

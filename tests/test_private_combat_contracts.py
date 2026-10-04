@@ -12,7 +12,7 @@ from backend.combat import create_battle, auto_resolve, _check_end, apply_player
 
 
 class TacticalContractTests(unittest.TestCase):
-    def test_all_converted_contracts_have_stable_maps_and_complete(self):
+    def test_all_converted_contracts_have_stable_maps_and_bounded_auto_resolution(self):
         state=new_game({'name':'Tester','attributes':{'str':12,'dex':9,'agi':9,'vit':12,'int':8,'luk':7}})
         for mission_id in TACTICAL_CONTRACTS:
             with self.subTest(mission=mission_id):
@@ -20,7 +20,11 @@ class TacticalContractTests(unittest.TestCase):
                 battle=create_battle(state,['player'],mission_id,encounter)
                 self.assertEqual(battle,create_battle(state,['player'],mission_id,encounter))
                 self.assertTrue(all(u['race']==TACTICAL_CONTRACTS[mission_id]['race'] for u in battle['units'].values() if u['team']=='enemy'))
-                self.assertEqual(auto_resolve(battle,max_steps=500)['status'],'complete')
+                result=auto_resolve(battle,max_steps=80)
+                self.assertIn(result['status'],('active','complete'))
+                if result['status']=='active':
+                    self.assertIn('paused',result['auto_pause_reason'])
+                    self.assertIsNone(result.get('outcome'))
 
     def test_critical_requires_living_capture_and_safe_party(self):
         state=new_game({'name':'Tester'})

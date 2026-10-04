@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Implemented first dependency: [Combat ability foundation](design/COMBAT_ABILITIES.md) covers per-technique costs, ordered effects, activation timing and legacy saves. Twelve starting Jobs remain proposed.
+
 Starting Jobs — proposal: [Twelve Jobs and initial skill catalogues](design/STARTING_JOBS_AND_SKILLS_V1.md)
 records starter kits, 96 proposed skills, five regular slots, unrestricted equipped
 gear ability access, and proposed summon/turret/form/control rules. It is not live

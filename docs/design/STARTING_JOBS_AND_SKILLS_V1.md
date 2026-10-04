@@ -7,6 +7,8 @@ consuming those slots, and Champion kits deferred. Individual abilities and
 balance values below remain proposals.
 
 Current runtime still has six starting roles and equipment-driven techniques.
+The [ability foundation](COMBAT_ABILITIES.md) is now implemented in dev. The
+twelve Jobs and proposed 96 skills are not playable yet.
 See CAPTURE_AND_STARTING_ROLES.md for live behavior. Do not present this draft
 as playable content. No advanced Jobs, Champion kits or final XP curve here.
 
@@ -38,7 +40,7 @@ as playable content. No advanced Jobs, Champion kits or final XP curve here.
 
 Every active below uses the main action unless an exception explicitly says
 otherwise. It commits provisional movement. Availability is per ability, not the
-current shared special_used flag. Ordinary actions end the activation.
+legacy shared special_used flag. Ordinary actions end the activation.
 
 Initial cooldown bands, subject to testing:
 
@@ -430,5 +432,5 @@ repeat commands, status timing, control recovery, owner defeat and no duplicate
 reward credit. Require each build to make different tactical choices, not merely
 win by a different damage coefficient.
 
-No implementation tests were run for this proposal. Read-only inspection confirmed
-the current starter/capture/equipment foundations and the gaps described above.
+The original proposal was based on read-only inspection. Its first dependency
+pass is now implemented and tested; COMBAT_ABILITIES.md documents live scope.

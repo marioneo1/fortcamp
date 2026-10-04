@@ -12,7 +12,7 @@ def collect_rules(equipped):
     return result
 
 def equipped_skills(equipped,attribute,training,fallback=None,weapon=None):
-    # One shared focus use per battle. Extra gear adds choices, not extra casts.
+    # Collect every distinct equipped technique. Battle snapshots own its costs.
     found=[]
     priority=([weapon] if weapon else [])+[item for item in equipped if item is not weapon]
     seen=set()
