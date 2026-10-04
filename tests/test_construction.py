@@ -8,7 +8,7 @@ from fastapi import HTTPException
 from backend.auth import Identity
 from backend.db import Base
 from backend.models import PlayerState
-from backend.construction import empty_plan, validate_plan, wall_segments, blocked_prop_overlap
+from backend.construction import empty_plan, validate_plan, wall_segments, blocked_prop_overlap, construction_step_allowed
 from backend import construction_api
 
 CAT={'ground':{'grass':{'file':'grass.png'}},'props':{'crate':{'file':'crate.png'}}}
@@ -39,7 +39,7 @@ class ConstructionRulesTests(unittest.TestCase):
 
     def test_layers_keep_offsets_footprints_rotation_and_gate_state(self):
         plan=empty_plan();plan['ground']['1,1']={'asset':'grass','rotation':90}
-        plan['props']=[self.prop()];plan['walls']=[self.wall(shape='gate',open=True)]
+        plan['props']=[self.prop()];plan['walls']=[self.wall(shape='gate',open=True,x=6)]
         checked=validate_plan(plan,self.size)
         self.assertEqual(checked['props'][0]['offset_y'],-.3)
         self.assertEqual(checked['props'][0]['w'],2)
@@ -77,6 +77,49 @@ class ConstructionRulesTests(unittest.TestCase):
         plan=empty_plan();plan['props']=[p]
         with self.assertRaisesRegex(ValueError,'facility'):
             validate_plan(plan,self.size,[{'type':'tent','x':2,'y':2}])
+
+    def test_shared_edge_duplicates_rejected_but_perpendicular_connections_allowed(self):
+        first=self.wall(piece='horizontal_plain',shape='straight',anchor='south')
+        duplicate=self.wall(id='wall_2',piece='horizontal_right_post_south',shape='straight',anchor='north',y=3,material='iron')
+        with self.assertRaisesRegex(ValueError,'already occupies'):
+            validate_plan({**empty_plan(),'walls':[first,duplicate]},self.size)
+        join=self.wall(id='wall_2',piece='vertical_plain',shape='straight',anchor='east')
+        self.assertEqual(len(validate_plan({**empty_plan(),'walls':[first,join]},self.size)['walls']),2)
+
+    def test_prop_wall_conflicts_follow_actual_offset_and_multicell_bounds(self):
+        wall=self.wall(piece='vertical_plain',shape='straight',anchor='west')
+        prop=self.prop();prop.update(w=1,h=1,offset_x=0,offset_y=0)
+        plan={**empty_plan(),'walls':[wall],'props':[prop]}
+        with self.assertRaisesRegex(ValueError,'overlaps a wall'):validate_plan(plan,self.size)
+        prop['offset_x']=.15
+        validate_plan(plan,self.size)
+        prop.update(x=1,w=2,offset_x=0)
+        with self.assertRaisesRegex(ValueError,'overlaps a wall'):validate_plan(plan,self.size)
+
+    def test_unchanged_legacy_conflicts_can_save_but_new_or_moved_conflicts_cannot(self):
+        wall=self.wall(piece='vertical_plain',shape='straight',anchor='west',posts='none',broken=False,open=False)
+        prop=self.prop();prop.update(w=1,h=1,offset_x=0,offset_y=0)
+        old={**empty_plan(),'walls':[wall],'props':[prop]}
+        validate_plan(old,self.size,previous_plan=old)
+        changed=deepcopy(old);changed['props'][0]['offset_y']=.1
+        with self.assertRaisesRegex(ValueError,'overlaps a wall'):validate_plan(changed,self.size,previous_plan=old)
+
+    def test_edge_wall_blocks_only_crossing_and_center_wall_blocks_cell(self):
+        wall=self.wall(piece='vertical_plain',shape='straight',anchor='west')
+        plan={**empty_plan(),'walls':[wall]}
+        self.assertTrue(construction_step_allowed(plan,self.size,3,2,2,2))
+        self.assertFalse(construction_step_allowed(plan,self.size,1,2,2,2))
+        self.assertFalse(construction_step_allowed(plan,self.size,2,2,1,2))
+        self.assertTrue(construction_step_allowed(plan,self.size,2,2,2,3))
+        wall['anchor']='east';self.assertFalse(construction_step_allowed(plan,self.size,3,2,2,2))
+        wall['anchor']='center';self.assertFalse(construction_step_allowed(plan,self.size,3,2,2,2))
+        wall.update(shape='gate',open=True);self.assertTrue(construction_step_allowed(plan,self.size,3,2,2,2))
+        wall.update(open=False,broken=True);self.assertTrue(construction_step_allowed(plan,self.size,3,2,2,2))
+
+    def test_corner_edges_leave_interior_walkable(self):
+        plan={**empty_plan(),'walls':[self.wall(piece='corner_north_west',shape='corner',anchor='center')]}
+        for start in [(3,2),(2,3)]:self.assertTrue(construction_step_allowed(plan,self.size,*start,2,2))
+        for start in [(1,2),(2,1)]:self.assertFalse(construction_step_allowed(plan,self.size,*start,2,2))
 
 
 class ConstructionPersistenceTests(unittest.IsolatedAsyncioTestCase):

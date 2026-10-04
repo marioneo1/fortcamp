@@ -1,5 +1,5 @@
 import './construction-ui.css';
-import {anchors,wallPieces,availableWallPieces,validPlacement,rotatePlacement,nudgePlacement,newPlan} from './construction-geometry.js';
+import {anchors,wallPieces,availableWallPieces,wallLibraryPiece,wallLibraryEntries,placementError,rotatePlacement,nudgePlacement,newPlan} from './construction-geometry.js';
 import {constructionSVG} from './construction-render.js';
 import {confirmAction} from './confirmation-ui.js';
 
@@ -22,6 +22,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
  const scene=svg.querySelector('[data-scene]'),preview=svg.querySelector('[data-preview]');
  let gesture=null,lastPointer=null,previewFrame=0,previewKey='',hiddenKey='';
  const selectedObject=()=>{for(const layer of ['props','walls']){const item=plan[layer].find(i=>i.id===selected);if(item)return {item,layer}}return null};
+ const showPlacementError=error=>{const label=find('[data-error]');if(label.textContent!==error)label.textContent=error};
  const remember=()=>{undo.push(structuredClone(plan));if(undo.length>60)undo.shift();redo.length=0};
  function renderMap(){
   svg.style.width=`${size.w*64*zoom}px`;svg.style.height=`${size.h*64*zoom}px`;
@@ -56,9 +57,9 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
  }
  function palette(){
   dialog.querySelectorAll('[data-tool]').forEach(b=>b.classList.toggle('active',b.dataset.tool===mode));
-  const entries=mode==='walls'?Object.entries(availableWallPieces):Object.entries(cat[mode]||{});
-  find('[data-palette]').innerHTML=entries.filter(([,item])=>item.name.toLowerCase().includes(query)).map(([id,item])=>`<button draggable="false" data-asset="${esc(id)}" class="${(mode==='walls'?brush.piece:brush[mode])===id?'active':''}">${item.file?`<img draggable="false" src="/assets/combat-terrain/${esc(item.file)}" alt="" loading="lazy">`:`<svg class="wall-palette-preview" viewBox="-.15 -.15 1.3 1.3" aria-hidden="true">${constructionSVG({ground:{},props:[],walls:[{id:'palette',x:0,y:0,rotation:0,piece:id,shape:item.shape,anchor:'center',material:brush.material,posts:'none'}]},{w:1,h:1},cat,{grid:false,background:false,wallKit})}</svg>`}<small>${esc(item.name)}</small></button>`).join('')||'<p>Select a placed object to adjust it, or choose a construction layer.</p>';
-  find('[data-help]').textContent={ground:'Drag to paint; release inside the map to apply the stroke. Drop outside to cancel.',props:'Drag an asset into the map, or drag on the map with your brush. Arrows adjust its position; Shift gives finer steps. Drop outside to cancel.',walls:'Choose the exact wall and post variant. R cycles its native direction. Arrows position it at a cell edge; Home centers it. Corners have two full-cell arms. Drag and drop to place.',select:'Drag a placed object to move it. R rotates, arrows adjust its position. Dropping outside cancels the move. Click empty ground to deselect.',erase:'Drag over objects or floors to erase. Release inside to confirm; outside cancels. Undo restores the edit.'}[mode];
+  const entries=mode==='walls'?wallLibraryEntries():Object.entries(cat[mode]||{});
+  find('[data-palette]').innerHTML=entries.filter(([,item])=>item.name.toLowerCase().includes(query)).map(([id,item])=>`<button draggable="false" data-asset="${esc(id)}" class="${(mode==='walls'?wallLibraryPiece(brush.piece):brush[mode])===id?'active':''}">${item.file?`<img draggable="false" src="/assets/combat-terrain/${esc(item.file)}" alt="" loading="lazy">`:`<svg class="wall-palette-preview" viewBox="-.15 -.15 1.3 1.3" aria-hidden="true">${constructionSVG({ground:{},props:[],walls:[{id:'palette',x:0,y:0,rotation:0,piece:id,shape:item.shape,anchor:'center',material:brush.material,posts:'none'}]},{w:1,h:1},cat,{grid:false,background:false,wallKit})}</svg>`}<small>${esc(item.name)}</small></button>`).join('')||'<p>Select a placed object to adjust it, or choose a construction layer.</p>';
+  find('[data-help]').textContent={ground:'Drag to paint; release inside the map to apply the stroke. Drop outside to cancel.',props:'Drag an asset into the map, or drag on the map with your brush. Arrows adjust its position; Shift gives finer steps. Drop outside to cancel.',walls:'Choose the exact wall and post variant. R turns through horizontal and vertical pieces using the matching artwork. Arrows position it at a cell edge; Home centers it. Corners have two full-cell arms. Drag and drop to place.',select:'Drag a placed object to move it. R rotates, arrows adjust its position. Dropping outside cancels the move. Click empty ground to deselect.',erase:'Drag over objects or floors to erase. Release inside to confirm; outside cancels. Undo restores the edit.'}[mode];
   find('[data-palette]').querySelectorAll('[data-asset]').forEach(b=>{
    b.onclick=e=>{if(e.detail===0)chooseAsset(b.dataset.asset)};
    b.onpointerdown=e=>{if(e.button!==0||busy)return;e.preventDefault();cancelGesture();chooseAsset(b.dataset.asset);begin(e,'place');};
@@ -71,38 +72,38 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
   const select=(key,label,options,value)=>`<label>${label}<select data-field="${key}">${options.map(([id,name])=>`<option value="${id}" ${String(value)===id?'selected':''}>${esc(name)}</option>`).join('')}</select></label>`;
   const range=(key,label,value)=>`<label>${label}<input data-field="${key}" type="range" min="-.45" max=".45" step=".01" value="${value||0}"><small data-range-value="${key}">${Math.round((value||0)*100)}% of a cell</small></label>`;
   const check=(key,label)=>`<label class="construction-check"><input data-field="${key}" type="checkbox" ${item[key]?'checked':''}>${label}</label>`;
-  let html=`<p data-piece-label>${esc(layer==='props'?cat.props[item.asset||brush.props]?.name||'Prop':layer==='walls'?wallPieces[item.piece]?.name||'Legacy wall':'Terrain')} | <span data-angle>${layer==='walls'&&item.piece?'native facing':selection?item.rotation:rotation+' deg'}</span></p><button data-rotate>Rotate [R]</button><small>Arrows position | Shift+Arrows fine | Home center</small>`;
+  let html=`<p data-piece-label>${esc(layer==='props'?cat.props[item.asset||brush.props]?.name||'Prop':layer==='walls'?wallPieces[item.piece]?.name||'Legacy wall':'Terrain')} | <span data-angle>${layer==='walls'&&item.piece?'native facing':selection?item.rotation:rotation+' deg'}</span></p><button data-rotate>Rotate [R]</button><button data-center>Center [Home]</button><small>Arrows position | Shift+Arrows fine | Home center</small>`;
   if(layer==='props')html+=select('w','Footprint width',[1,2,3,4].map(v=>[String(v),`${v} cell${v===1?'':'s'}`]),String(item.w))+select('h','Footprint height',[1,2,3,4].map(v=>[String(v),`${v} cell${v===1?'':'s'}`]),String(item.h))+range('offset_x','Position left / right',item.offset_x)+range('offset_y','Position up / down',item.offset_y)+check('blocking','Reserve this footprint')+'<small>Offsets move the artwork, not the reserved cells.</small>';
-  if(layer==='walls')html+=select('piece','Wall asset',Object.entries(availableWallPieces).map(([id,p])=>[id,p.name]),item.piece)+select('anchor','Position',Object.keys(anchors).map(v=>[v,v==='center'?'Center':{north:'Top edge',east:'Right edge',south:'Bottom edge',west:'Left edge'}[v]]),item.anchor)+select('material','Material',cat.wall_materials.map(v=>[v,v]),item.material)+(wallKit==='placeholder'?check('broken','Broken variation')+check('open','Gate open (gates only)'):'<small>This painted trial contains intact walls and closed gates.</small>');
+  if(layer==='walls')html+=select('piece','Wall asset',wallLibraryEntries().map(([id,p])=>[id,p.name]),wallLibraryPiece(item.piece))+select('anchor','Position',Object.keys(anchors).map(v=>[v,v==='center'?'Center':{north:'Top edge',east:'Right edge',south:'Bottom edge',west:'Left edge'}[v]]),item.anchor)+select('material','Material',cat.wall_materials.map(v=>[v,v]),item.material)+(wallKit==='placeholder'?check('broken','Broken variation')+check('open','Gate open (gates only)'):'<small>This painted trial contains intact walls and closed gates.</small>');
   if(selection)html+=`<label>Cell X<input data-field="x" type="number" min="0" max="${size.w-1}" value="${item.x}"></label><label>Cell Y<input data-field="y" type="number" min="0" max="${size.h-1}" value="${item.y}"></label><button data-delete>Remove object</button>`;
-  find('[data-inspector]').innerHTML=html;find('[data-rotate]').onclick=rotate;
+  find('[data-inspector]').innerHTML=html;find('[data-rotate]').onclick=rotate;find('[data-center]').onclick=()=>transform((item,layer)=>['props','walls'].includes(layer)?nudgePlacement(item,layer,'Home'):item);find('[data-center]').disabled=!['props','walls'].includes(layer);
   if(layer==='walls'&&wallKit!=='placeholder')find('[data-field=material]').disabled=true;
   if(layer==='walls'&&['tee','cross'].includes(item.shape)){find('[data-rotate]').disabled=true;const field=find('[data-field=piece]');field.insertAdjacentHTML('afterbegin',`<option value="${esc(item.piece||'')}" selected disabled>Retired junction (saved placement)</option>`);}
   find('[data-inspector]').querySelectorAll('[data-field]').forEach(input=>{let rangeEditing=false;input.addEventListener('change',()=>{if(input.type==='range')rangeEditing=false});input.addEventListener(input.type==='range'?'input':'change',()=>{
-   const key=input.dataset.field,value=input.type==='checkbox'?input.checked:['w','h','x','y','offset_x','offset_y'].includes(key)?Number(input.value):input.value;
+   showPlacementError('');const key=input.dataset.field,value=input.type==='checkbox'?input.checked:['w','h','x','y','offset_x','offset_y'].includes(key)?Number(input.value):input.value;
    let next={...item,[key]:value};if(key==='piece')next={...next,rotation:0,shape:wallPieces[value].shape,posts:'none'};
-   if(selection&&!gesture){if(!validPlacement(next,layer,size)){find('[data-error]').textContent='That piece extends outside the camp.';syncInspector();return}if(input.type!=='range'||!rangeEditing)remember();rangeEditing=input.type==='range';Object.assign(selection.item,next);if(['x','y','w','h'].includes(key))renderMap();else renderObject(selection.item,layer)}
+   if(selection&&!gesture){const error=placementError(next,layer,size,plan);if(error){find('[data-error]').textContent=error;syncInspector();return}if(input.type!=='range'||!rangeEditing)remember();rangeEditing=input.type==='range';Object.assign(selection.item,next);if(['x','y','w','h'].includes(key))renderMap();else renderObject(selection.item,layer)}
    else{Object.assign(gesture?.item||brush,next);if(key==='piece')rotation=0;updatePointer(lastPointer);schedulePreview()}
-   find('[data-error]').textContent='';syncInspector();if(key==='material')refreshWallThumbnails();
+   syncInspector();if(key==='material')refreshWallThumbnails();
   })});
   if(selection)find('[data-delete]').onclick=()=>{remember();plan[selection.layer]=plan[selection.layer].filter(p=>p.id!==selected);selected='';renderMap();inspector()};
  }
  // Keep focus and native controls alive when using hotkeys; do not replace inspector DOM.
  function syncInspector(){
   const selection=selectedObject(),item=gesture?.item||selection?.item||brush,layer=gesture?.layer||selection?.layer||mode;
-  find('[data-inspector]').querySelectorAll('[data-field]').forEach(input=>{const value=item[input.dataset.field];if(input.type==='checkbox')input.checked=!!value;else if(value!==undefined)input.value=value});
+  find('[data-inspector]').querySelectorAll('[data-field]').forEach(input=>{const value=item[input.dataset.field];if(input.type==='checkbox')input.checked=!!value;else if(value!==undefined)input.value=input.dataset.field==='piece'?wallLibraryPiece(value):value});
   for(const key of ['offset_x','offset_y']){const label=find(`[data-range-value="${key}"]`);if(label)label.textContent=`${Math.round((item[key]||0)*100)}% of a cell`}
   const label=find('[data-piece-label]');if(layer==='walls'&&item.piece&&label)label.textContent=`${wallPieces[item.piece].name} | native facing`;else if(find('[data-angle]'))find('[data-angle]').textContent=`${selection?item.rotation:rotation} deg`;
-  if(mode==='walls')find('[data-palette]').querySelectorAll('[data-asset]').forEach(b=>b.classList.toggle('active',b.dataset.asset===brush.piece));
+  if(mode==='walls')find('[data-palette]').querySelectorAll('[data-asset]').forEach(b=>b.classList.toggle('active',b.dataset.asset===wallLibraryPiece(brush.piece)));
  }
  function transform(fn){
   const s=selectedObject(),layer=gesture?.layer||s?.layer||mode;
   if(!['ground','props','walls'].includes(layer))return;
-  const source=gesture?.item||s?.item||{...brush,rotation},next=fn(source,layer);
-  if(s&&!gesture){if(!validPlacement(next,layer,size)){find('[data-error]').textContent='That adjustment extends outside the camp.';return}remember();Object.assign(s.item,next);renderObject(s.item,layer)}
+  const source=gesture?.item||s?.item||{...brush,rotation},next=fn(source,layer);showPlacementError('');
+  if(s&&!gesture){const error=placementError(next,layer,size,plan);if(error){find('[data-error]').textContent=error;return}remember();Object.assign(s.item,next);renderObject(s.item,layer)}
   else if(gesture?.kind==='move'){gesture.item=next;updatePointer(lastPointer);schedulePreview()}
   else{Object.assign(brush,next);rotation=next.rotation;updatePointer(lastPointer);schedulePreview()}
-  find('[data-error]').textContent='';syncInspector();
+  syncInspector();
  }
  function rotate(){transform((item,layer)=>rotatePlacement(item,layer))}
  function coords(e){const r=svg.getBoundingClientRect();return {px:(e.clientX-r.left)*size.w/r.width,py:(e.clientY-r.top)*size.h/r.height}}
@@ -119,12 +120,12 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
   if(!e)return;lastPointer=e;
   if(gesture?.kind==='move'){
    if(!inside(e)){ghost=null;return}const {px,py}=coords(e),item={...gesture.item,x:gesture.origin[0]+Math.round(px-gesture.start[0]),y:gesture.origin[1]+Math.round(py-gesture.start[1])};
-   ghost=validPlacement(item,gesture.layer,size)?{layer:gesture.layer,item}:null;
+   const error=placementError(item,gesture.layer,size,plan);showPlacementError(error);ghost=error?null:{layer:gesture.layer,item};
   }else if(gesture?.kind==='erase'){
    ghost=null;if(!inside(e))return;const {px:cellX,py:cellY}=coords(e),cell=`${Math.floor(cellX)},${Math.floor(cellY)}`;if(gesture.cells.has(cell))return;gesture.cells.add(cell);const target=document.elementFromPoint(e.clientX,e.clientY)?.closest('[data-construction-id]');
    if(target)gesture.removed.add(target.dataset.constructionId);else{const {px,py}=coords(e);gesture.ground.add(`${Math.floor(px)},${Math.floor(py)}`)}
   }else{
-   ghost=makeGhost(e);if(ghost?.item&&!validPlacement(ghost.item,ghost.layer,size))ghost=null;
+   ghost=makeGhost(e);if(ghost?.item){const error=placementError(ghost.item,ghost.layer,size,plan);showPlacementError(error);if(error)ghost=null;}
    if(gesture?.kind==='paint'){if(ghost){paintBetween(gesture.last,ghost);gesture.last=ghost}else gesture.last=null}
   }
  }
@@ -150,7 +151,7 @@ export async function openConstruction({api,esc,definitions,onSave,onError,debug
    if(g.kind==='paint')Object.assign(next.ground,g.tiles);
    else if(g.kind==='erase'){for(const layer of ['props','walls'])next[layer]=next[layer].filter(p=>!g.removed.has(p.id));for(const key of g.ground)delete next.ground[key]}
    else if(g.kind==='move')Object.assign(next[g.layer].find(p=>p.id===g.id),ghost.item);
-   else if(ghost?.item){const item={...ghost.item,id:crypto.randomUUID()};if(ghost.layer==='walls')next.walls=next.walls.filter(w=>!(w.x===item.x&&w.y===item.y&&w.anchor===item.anchor&&w.piece===item.piece&&w.material===item.material));next[ghost.layer].push(item)}
+   else if(ghost?.item){const item={...ghost.item,id:crypto.randomUUID()};next[ghost.layer].push(item)}
    if(JSON.stringify(plan)!==JSON.stringify(next)){remember();plan=next}
   }
   cancelGesture();renderMap();inspector();find('[data-status]').textContent=valid?find('[data-status]').textContent:'Drop cancelled - no changes placed.';

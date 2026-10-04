@@ -16,7 +16,7 @@
     "posts": [],
     "shape": "straight",
     "glyph": "\u2501",
-    "next": "horizontal_plain_south",
+    "next": "vertical_plain",
     "facing": "north"
   },
   "vertical_plain": {
@@ -36,7 +36,7 @@
     "posts": [],
     "shape": "straight",
     "glyph": "\u2503",
-    "next": "vertical_plain_west",
+    "next": "horizontal_plain_south",
     "facing": "east"
   },
   "horizontal_left_post": {
@@ -61,7 +61,7 @@
     ],
     "shape": "straight",
     "glyph": "\u257a",
-    "next": "horizontal_left_post_south",
+    "next": "vertical_top_post",
     "facing": "north"
   },
   "vertical_top_post": {
@@ -86,7 +86,7 @@
     ],
     "shape": "straight",
     "glyph": "\u257b",
-    "next": "vertical_top_post_west",
+    "next": "horizontal_right_post_south",
     "facing": "east"
   },
   "horizontal_right_post": {
@@ -111,7 +111,7 @@
     ],
     "shape": "straight",
     "glyph": "\u2578",
-    "next": "horizontal_right_post_south",
+    "next": "vertical_bottom_post",
     "facing": "north"
   },
   "vertical_bottom_post": {
@@ -136,7 +136,7 @@
     ],
     "shape": "straight",
     "glyph": "\u2579",
-    "next": "vertical_bottom_post_west",
+    "next": "horizontal_left_post_south",
     "facing": "east"
   },
   "horizontal_both_posts": {
@@ -165,7 +165,7 @@
     ],
     "shape": "straight",
     "glyph": "\u2501",
-    "next": "horizontal_both_posts_south",
+    "next": "vertical_both_posts",
     "facing": "north"
   },
   "vertical_both_posts": {
@@ -194,7 +194,7 @@
     ],
     "shape": "straight",
     "glyph": "\u2503",
-    "next": "vertical_both_posts_west",
+    "next": "horizontal_both_posts_south",
     "facing": "east"
   },
   "corner_north_west": {
@@ -330,7 +330,7 @@
     "posts": [],
     "shape": "gate",
     "glyph": "\u25a5",
-    "next": "gate_horizontal_south",
+    "next": "gate_vertical",
     "facing": "north"
   },
   "gate_vertical": {
@@ -350,7 +350,7 @@
     "posts": [],
     "shape": "gate",
     "glyph": "\u25a4",
-    "next": "gate_vertical_west",
+    "next": "gate_horizontal_south",
     "facing": "east"
   },
   "horizontal_plain_south": {
@@ -370,7 +370,7 @@
     "posts": [],
     "shape": "straight",
     "glyph": "\u2501",
-    "next": "horizontal_plain",
+    "next": "vertical_plain_west",
     "facing": "south"
   },
   "vertical_plain_west": {
@@ -390,7 +390,7 @@
     "posts": [],
     "shape": "straight",
     "glyph": "\u2503",
-    "next": "vertical_plain",
+    "next": "horizontal_plain",
     "facing": "west"
   },
   "horizontal_left_post_south": {
@@ -415,7 +415,7 @@
     ],
     "shape": "straight",
     "glyph": "\u257a",
-    "next": "horizontal_left_post",
+    "next": "vertical_top_post_west",
     "facing": "south"
   },
   "vertical_top_post_west": {
@@ -440,7 +440,7 @@
     ],
     "shape": "straight",
     "glyph": "\u257b",
-    "next": "vertical_top_post",
+    "next": "horizontal_right_post",
     "facing": "west"
   },
   "horizontal_right_post_south": {
@@ -465,7 +465,7 @@
     ],
     "shape": "straight",
     "glyph": "\u2578",
-    "next": "horizontal_right_post",
+    "next": "vertical_bottom_post_west",
     "facing": "south"
   },
   "vertical_bottom_post_west": {
@@ -490,7 +490,7 @@
     ],
     "shape": "straight",
     "glyph": "\u2579",
-    "next": "vertical_bottom_post",
+    "next": "horizontal_left_post",
     "facing": "west"
   },
   "horizontal_both_posts_south": {
@@ -519,7 +519,7 @@
     ],
     "shape": "straight",
     "glyph": "\u2501",
-    "next": "horizontal_both_posts",
+    "next": "vertical_both_posts_west",
     "facing": "south"
   },
   "vertical_both_posts_west": {
@@ -548,7 +548,7 @@
     ],
     "shape": "straight",
     "glyph": "\u2503",
-    "next": "vertical_both_posts",
+    "next": "horizontal_both_posts",
     "facing": "west"
   },
   "gate_horizontal_south": {
@@ -568,7 +568,7 @@
     "posts": [],
     "shape": "gate",
     "glyph": "\u25a5",
-    "next": "gate_horizontal",
+    "next": "gate_vertical_west",
     "facing": "south"
   },
   "gate_vertical_west": {
@@ -588,7 +588,7 @@
     "posts": [],
     "shape": "gate",
     "glyph": "\u25a4",
-    "next": "gate_vertical",
+    "next": "gate_horizontal",
     "facing": "west"
   }
 }

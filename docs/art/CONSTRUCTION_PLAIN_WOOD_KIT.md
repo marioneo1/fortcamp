@@ -105,3 +105,27 @@ preview, confirms no PUT/save, verifies normal construction has no kit picker,
 and checks dialog bounds at 1440/800/430px. Full lab and 100% connected-room
 captures were visually inspected. Generated media remains local and excluded
 from Git according to the existing media policy; code/docs/manifests are tracked.
+
+## October 4 rotation and library refinement
+
+R now cycles horizontal -> vertical -> opposite-facing horizontal ->
+opposite-facing vertical, returning to the starting piece after four turns.
+Each step selects its native source or a reflection; no H bitmap is quarter-turned
+to make a V bitmap. This supersedes the earlier family-limited R behavior.
+Facing duplicates no longer have separate library icons/options, and corners
+have one rotatable entry. Direct horizontal/vertical choices and explicit
+left/right/top/bottom post choices remain. All 24 saved variant IDs stay valid.
+Center [Home] beside Rotate resets prop offsets to zero or wall anchor to center;
+the Home hotkey does the same. Text/number editing retains its normal keys.
+
+
+October 4 construction follow-up: 11 wall-library entries cover all 24 orientations;
+R changes native H/V artwork and rotates edge anchors; Center [Home] resets position.
+World-segment duplicate detection prevents two neighboring cells owning the same
+wall span while allowing perpendicular/end connections. Prop collision respects
+actual offsets and wall thickness, in preview, selected edits and server saves.
+Untouched old conflicts remain saveable. Shared movement helpers distinguish
+edge crossing from blocked interior cells; base character walking is still deferred.
+Validation: 161 frontend tests, 15 construction backend tests, build and browser
+rotation/collision checks pass. Dev only; production and player saves untouched.
+See docs/design/BASE_CONSTRUCTION.md for implemented rules and limitations.

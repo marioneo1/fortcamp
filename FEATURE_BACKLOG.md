@@ -527,3 +527,26 @@ whole-layout switching, mirrored preview, no PUT/save, normal UI separation and
 1440/800/430px bounds. Full/100%-zoom room captures visually inspected. Permanent
 player wall art, open/broken sprites, rectangle fill/repeated placement and
 separate Remove / Remove floors tools remain pending.
+
+
+## October 4: construction palette and rotation QoL (dev)
+
+Removed opposite-facing duplicate icons/options and collapsed rotated corners
+to one Full-length corner entry. Kept direct horizontal/vertical choices and
+explicit post positions. R now cycles four orientations H -> V -> opposite H
+-> opposite V, selecting separately authored art plus mirrors without rotating
+bitmap images. Post positions follow the turn and four turns restore the original.
+Added Center [Home] beside Rotate: resets prop offsets or wall anchor to center.
+Existing Home key remains. No art, player saves or production changes.
+
+
+October 4 construction follow-up: 11 wall-library entries cover all 24 orientations;
+R changes native H/V artwork and rotates edge anchors; Center [Home] resets position.
+World-segment duplicate detection prevents two neighboring cells owning the same
+wall span while allowing perpendicular/end connections. Prop collision respects
+actual offsets and wall thickness, in preview, selected edits and server saves.
+Untouched old conflicts remain saveable. Shared movement helpers distinguish
+edge crossing from blocked interior cells; base character walking is still deferred.
+Validation: 161 frontend tests, 15 construction backend tests, build and browser
+rotation/collision checks pass. Dev only; production and player saves untouched.
+See docs/design/BASE_CONSTRUCTION.md for implemented rules and limitations.

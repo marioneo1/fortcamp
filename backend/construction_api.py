@@ -39,7 +39,7 @@ async def save_construction(req:SaveConstruction,identity:IdentityDep):
                 state=deepcopy(row.state)
                 old=state.get('construction',empty_plan())
                 if old['revision']!=req.revision:raise HTTPException(409,'Your camp changed in another window. Reopen construction before saving.')
-                try:plan=validate_plan(req.plan,state.get('base_size',{'w':12,'h':8}),state.get('buildings',[]))
+                try:plan=validate_plan(req.plan,state.get('base_size',{'w':12,'h':8}),state.get('buildings',[]),previous_plan=old)
                 except (ValueError,TypeError,AttributeError) as exc:raise HTTPException(422,str(exc))
                 plan['revision']=req.revision+1
                 state['construction']=plan

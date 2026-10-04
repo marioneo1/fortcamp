@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {wallSegments,wallConnections,snapAnchor,rotatePlacement,validPlacement,wallPieces,availableWallPieces,wallPosts,nudgePlacement} from './construction-geometry.js';
+import {wallSegments,wallConnections,snapAnchor,rotatePlacement,validPlacement,wallPieces,availableWallPieces,wallLibraryEntries,wallLibraryPiece,wallPosts,nudgePlacement,placementError,constructionStepAllowed} from './construction-geometry.js';
 import {constructionSVG} from './construction-render.js';
 const wall=(extra={})=>({id:'wall',x:2,y:2,shape:'straight',anchor:'center',material:'timber',rotation:0,posts:'auto',...extra});
 test('shared cell edges have identical ports; T and cross use exact half-cell segments',()=>{
@@ -41,14 +41,28 @@ test('directional corners have two full-cell arms and stay within their cell',()
   assert.ok(validPlacement(w,'walls',{w:3,h:3}));
  }
 });
-test('rotation changes facing within a family and never swaps native H and V',()=>{
+test('four-step wall rotation switches native H/V pieces and returns to the original post side',()=>{
  let w=wall({piece:'horizontal_left_post',posts:'none'});
- w=rotatePlacement(w,'walls');assert.equal(w.piece,'horizontal_left_post_south');assert.equal(w.rotation,0);
- w=rotatePlacement(w,'walls');assert.equal(w.piece,'horizontal_left_post');
+ for(const piece of ['vertical_top_post','horizontal_right_post_south','vertical_bottom_post_west','horizontal_left_post']){
+  w=rotatePlacement(w,'walls');assert.equal(w.piece,piece);assert.equal(w.rotation,0);
+ }
  assert.deepEqual(wallPosts(w),[[2,2.5]]);
- assert.deepEqual(wallPosts({...w,piece:'horizontal_right_post'}),[[3,2.5]]);
- assert.deepEqual(wallPosts({...w,piece:'horizontal_plain'}),[]);
- const upright=rotatePlacement(wall({piece:'vertical_top_post'}),'walls');assert.equal(upright.piece,'vertical_top_post_west');
+ let plain=wall({piece:'horizontal_plain'});
+ for(const piece of ['vertical_plain','horizontal_plain_south','vertical_plain_west','horizontal_plain']){
+  plain=rotatePlacement(plain,'walls');assert.equal(plain.piece,piece);
+ }
+});
+test('edge wall rotations carry the anchor around the cell and remain inside the map',()=>{
+ const top=wall({piece:'horizontal_plain',x:0,y:0,anchor:'north'}),right=rotatePlacement(top,'walls');
+ assert.equal(right.anchor,'east');assert.equal(right.piece,'vertical_plain');assert.ok(validPlacement(right,'walls',{w:8,h:8}));
+});
+
+test('library hides facing duplicates and rotated corners while retaining direct native vertical choices',()=>{
+ const ids=wallLibraryEntries().map(([id])=>id);
+ assert.ok(ids.includes('horizontal_plain')&&ids.includes('vertical_plain'));
+ assert.ok(!ids.includes('horizontal_plain_south')&&!ids.includes('vertical_plain_west'));
+ assert.equal(ids.filter(id=>id.startsWith('corner_')).length,1);
+ for(const id of Object.keys(availableWallPieces))assert.ok(ids.includes(wallLibraryPiece(id)));
 });
 test('full-cell T branches connect at their midpoint; nudges respect wall sides and prop bounds',()=>{
  const w=wall({piece:'tee_north'});assert.equal(wallConnections([w]).get('2.5,2').neighbors.size,3);
@@ -65,4 +79,41 @@ test('junctions are retired from brushes but saved native junctions remain rende
  const saved=wall({piece:'tee_north',shape:'tee'});
  assert.equal(wallSegments(saved).length,2);
  assert.deepEqual(rotatePlacement(saved,'walls'),saved);
+});
+
+test('shared-edge duplicate detection ignores owning cell, facing, posts and material but allows perpendicular joins',()=>{
+ const existing=wall({piece:'horizontal_plain',anchor:'south'}),plan={walls:[existing],props:[]},size={w:8,h:8};
+ assert.match(placementError(wall({id:'new',piece:'horizontal_right_post_south',anchor:'north',y:3,material:'iron'}),'walls',size,plan),/already occupies/);
+ assert.equal(placementError(wall({id:'join',piece:'vertical_plain',anchor:'east'}),'walls',size,plan),'');
+ assert.equal(placementError({...existing},'walls',size,plan),'');
+});
+
+test('prop collision follows its shifted artwork footprint and checks both placement directions',()=>{
+ const w=wall({piece:'vertical_plain',anchor:'west'}),p={id:'crate',x:2,y:2,w:1,h:1,rotation:0,offset_x:0,offset_y:0};
+ const size={w:8,h:8};
+ assert.match(placementError(p,'props',size,{walls:[w],props:[]}),/overlaps a wall/);
+ assert.equal(placementError({...p,offset_x:.15},'props',size,{walls:[w],props:[]}),'');
+ assert.match(placementError(w,'walls',size,{walls:[],props:[p]}),/overlaps a prop/);
+ assert.match(placementError({...p,w:2,x:1},'props',size,{walls:[wall({piece:'vertical_plain'})],props:[]}),/overlaps a wall/);
+});
+
+test('edge walls permit entry from the free side and movement alongside; center walls block the cell',()=>{
+ const size={w:8,h:8},plan={props:[],walls:[wall({piece:'vertical_plain',anchor:'west'})]};
+ assert.ok(constructionStepAllowed(plan,size,3,2,2,2));
+ assert.ok(!constructionStepAllowed(plan,size,1,2,2,2));
+ assert.ok(!constructionStepAllowed(plan,size,2,2,1,2));
+ assert.ok(constructionStepAllowed(plan,size,2,2,2,3));
+ plan.walls[0].anchor='east';assert.ok(!constructionStepAllowed(plan,size,3,2,2,2));
+ plan.walls[0].anchor='center';assert.ok(!constructionStepAllowed(plan,size,3,2,2,2));
+ plan.walls[0].shape='gate';plan.walls[0].open=true;assert.ok(constructionStepAllowed(plan,size,3,2,2,2));
+ plan.walls[0].open=false;plan.walls[0].broken=true;assert.ok(constructionStepAllowed(plan,size,3,2,2,2));
+});
+
+test('full corner boundary arms and shifted interior arms use their real world positions',()=>{
+ const size={w:8,h:8},plan={props:[],walls:[wall({piece:'corner_north_west'})]};
+ assert.ok(constructionStepAllowed(plan,size,3,2,2,2));
+ assert.ok(constructionStepAllowed(plan,size,2,3,2,2));
+ assert.ok(!constructionStepAllowed(plan,size,1,2,2,2));
+ assert.ok(!constructionStepAllowed(plan,size,2,1,2,2));
+ plan.walls[0].anchor='east';assert.ok(!constructionStepAllowed(plan,size,3,2,2,2));
 });

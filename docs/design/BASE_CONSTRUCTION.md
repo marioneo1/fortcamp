@@ -145,8 +145,7 @@ variants from 9 original images per material. Originals are horizontal plain,
 vertical plain, horizontal one-post, vertical one-post, horizontal both-post,
 vertical both-post, corner, horizontal gate and vertical gate. Permitted mirrors
 supply other facings, post positions and corners; horizontal artwork is never
-rotated into vertical artwork. Full-length corner arms remain. Family-limited R is implemented: horizontal pieces stay horizontal and vertical
-pieces stay vertical. A nine-original plain-wood atlas is now available in the
+rotated into vertical artwork. Full-length corner arms remain. R cycles through native horizontal and vertical variants (see the October 4 refinement below). A nine-original plain-wood atlas is now available in the
 isolated debug Wall Kit Lab; permanent player art selection remains deferred.
 See docs/art/CONSTRUCTION_PLAIN_WOOD_KIT.md for generation, mapping and validation. Rectangle fill/repeated-footprint
 placement and separate Remove / Remove floors tools also remain pending from the
@@ -160,3 +159,53 @@ new painted plain-wood kit. It never saves to a camp and is denied in production
 or without debug/admin access. Normal construction keeps its existing save UI
 and has no trial dropdown. Canonical art reference:
 [Plain wood trial](../art/CONSTRUCTION_PLAIN_WOOD_KIT.md).
+
+## October 4 rotation and library refinement
+
+R now cycles horizontal -> vertical -> opposite-facing horizontal ->
+opposite-facing vertical, returning to the starting piece after four turns.
+Each step selects its native source or a reflection; no H bitmap is quarter-turned
+to make a V bitmap. This supersedes the earlier family-limited R behavior.
+Facing duplicates no longer have separate library icons/options, and corners
+have one rotatable entry. Direct horizontal/vertical choices and explicit
+left/right/top/bottom post choices remain. All 24 saved variant IDs stay valid.
+Center [Home] beside Rotate resets prop offsets to zero or wall anchor to center;
+the Home hotkey does the same. Text/number editing retains its normal keys.
+
+Rotating an edge-anchored wall carries its position clockwise: top -> right ->
+bottom -> left. Center remains center. The library has 11 entries, representing
+all 24 saved orientation/post variants without duplicate facing icons.
+
+## October 4 position-aware construction rules
+
+Placement and save validation use world-coordinate wall segments, independent of
+which cell owns a wall. A bottom-edge horizontal wall in one cell and a top-edge
+wall in the cell below occupy the same segment: the second placement is rejected.
+Material, facing and posts do not permit duplicates. End-to-end connections and
+perpendicular joins remain allowed; partially overlapping collinear segments do
+not. Existing untouched conflicts in old saves are grandfathered by the save API;
+new or moved conflicts are rejected. No player data is rewritten.
+
+Props cannot overlap walls, including open gates and broken-wall objects. The
+check uses the shifted, rotated prop image viewport (92% of its footprint), plus
+0.08 cell clearance for wall thickness. This is a conservative rectangle, not
+pixel-perfect silhouette detection: nudging a small prop away can make it fit.
+The same rule applies when placing/moving either the wall or the prop. Floors
+remain placeable under walls. Invalid placements show a reason and do not commit;
+rotations, arrow adjustments and inspector edits respect the same checks.
+
+Shared JavaScript/Python movement helpers distinguish walls crossing a cell's
+interior from walls lying along its edges. Interior segments make that cell
+unwalkable; edge segments only block crossing that edge. Full corners occupying
+two boundaries leave the cell interior walkable. Open gates/broken walls permit
+movement; reserved prop footprints block their cells. The base currently has no
+walking-character simulation, so these helpers are tested foundations for a
+future playable base/map adapter, not a new live base movement feature. Existing
+combat continues using its existing edge-wall pathfinding.
+
+Validation: 161 frontend tests, 15 construction backend tests and build pass.
+Browser checks cover 11 library entries, native four-step R, rotating edge anchors,
+Home/Center, a duplicate shared edge, a perpendicular connection, a rejected
+prop and successful offset adjustment. The wall save check indexes half-cell
+segments rather than comparing every pair of walls. Pointer error labels only
+change when their message changes. No production deployment or real saves used.

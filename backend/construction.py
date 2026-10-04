@@ -49,7 +49,40 @@ def wall_segments(wall):
     return segments
 
 
-def validate_plan(plan, size, buildings=()):
+def wall_hits_prop(wall,prop):
+    left=prop['x']+prop['w']*.04+prop.get('offset_x',0)-.08
+    right=prop['x']+prop['w']*.96+prop.get('offset_x',0)+.08
+    top=prop['y']+prop['h']*.04+prop.get('offset_y',0)-.08
+    bottom=prop['y']+prop['h']*.96+prop.get('offset_y',0)+.08
+    return any((top<=a[1]<=bottom and max(a[0],b[0])>left and min(a[0],b[0])<right)
+               if a[1]==b[1] else (left<=a[0]<=right and max(a[1],b[1])>top and min(a[1],b[1])<bottom)
+               for a,b in wall_segments(wall))
+
+
+def solid_wall(wall):
+    return not wall.get('broken') and not (wall['shape']=='gate' and wall.get('open'))
+
+
+def construction_cell_blocked(plan,x,y):
+    if any(p.get('blocking') and p['x']<=x<p['x']+p['w'] and p['y']<=y<p['y']+p['h'] for p in plan.get('props',[])):
+        return True
+    return any((y<a[1]<y+1 and max(a[0],b[0])>x and min(a[0],b[0])<x+1)
+               if a[1]==b[1] else (x<a[0]<x+1 and max(a[1],b[1])>y and min(a[1],b[1])<y+1)
+               for w in plan.get('walls',[]) if solid_wall(w) for a,b in wall_segments(w))
+
+
+def construction_step_allowed(plan,size,x,y,nx,ny):
+    """Cardinal cell movement: edge walls block crossings, interior walls block cells."""
+    if (abs(x-nx)+abs(y-ny)!=1 or not all(0<=v<size['w'] for v in (x,nx))
+            or not all(0<=v<size['h'] for v in (y,ny))
+            or construction_cell_blocked(plan,x,y) or construction_cell_blocked(plan,nx,ny)):
+        return False
+    return not any((a[0]==b[0] and min(x,nx)+.5<a[0]<max(x,nx)+.5 and min(a[1],b[1])<=y+.5<=max(a[1],b[1]))
+                   if x!=nx else (a[1]==b[1] and min(y,ny)+.5<a[1]<max(y,ny)+.5 and min(a[0],b[0])<=x+.5<=max(a[0],b[0]))
+                   for w in plan.get('walls',[]) if solid_wall(w) for a,b in wall_segments(w))
+
+
+def validate_plan(plan, size, buildings=(), previous_plan=None):
     """Whitelist all asset IDs and numeric placement data; no client file paths."""
     cat=catalogue()
     if plan.get('version')!=1:raise ValueError('Unsupported construction format')
@@ -113,6 +146,27 @@ def validate_plan(plan, size, buildings=()):
                     for px,py in [start,end]:
                         if not 0<=px<=size['w'] or not 0<=py<=size['h']:raise ValueError('Wall extends outside the camp; rotate it or move its anchor')
             result[layer].append(obj)
+    # Preserve untouched old overlaps, but never allow new ones or moved conflicts.
+    previous={obj['id']:obj for layer in ('props','walls') for obj in (previous_plan or {}).get(layer,[])}
+    def unchanged(a,b):
+        return previous.get(a['id'])==a and previous.get(b['id'])==b
+    # Index half-cell edge spans once: no quadratic wall-pair scan on large camps.
+    occupied={}
+    for wall in result['walls']:
+        segments=wall_segments(wall)
+        for a,b in segments:
+            count=max(1,round(max(abs(a[0]-b[0]),abs(a[1]-b[1]))*2))
+            for step in range(count):
+                start=tuple(a[k]+(b[k]-a[k])*step/count for k in range(2))
+                end=tuple(a[k]+(b[k]-a[k])*(step+1)/count for k in range(2))
+                key=tuple(sorted((start,end)))
+                for other in occupied.get(key,[]):
+                    if other['id']!=wall['id'] and not unchanged(wall,other):
+                        raise ValueError('A wall already occupies that position. Connecting wall ends is allowed.')
+                occupied.setdefault(key,[]).append(wall)
+        for prop in result['props']:
+            if wall_hits_prop(wall,prop) and not unchanged(wall,prop):
+                raise ValueError('A prop overlaps a wall. Adjust its position or choose another cell.')
     return result
 
 
