@@ -16,6 +16,35 @@ class FighterPresentationTests(unittest.TestCase):
     def skill(self,key):
         return deepcopy(job_loadouts.SKILLS['job:fighter:'+key])
 
+    def test_earthbreaker_does_not_append_magic_cast_after_physical_impact(self):
+        b,a,t=self.fixture()
+        destination=combat._ground_target(3,3)
+        self.use(b,a,destination,'pull')
+        self.assertTrue(any(e['type']=='ground_impact' for e in b['animation_events']))
+        self.assertFalse(any(c['name']=='magic_cast' for e in b['animation_events'] for c in e.get('cues',[])))
+
+    def test_pull_preview_predicts_real_body_collision_and_barrier_absorption(self):
+        b,a,t=self.fixture();t.update(x=5,y=2)
+        other=deepcopy(t);other.update(id='bystander',name='Bystander',x=4,statuses=[{'id':'barrier','amount':2}])
+        b['units'][other['id']]=other
+        preview=combat._strike_preview(b,a,t,'melee',3,self.skill('cover'))
+        pull=preview['tactics'][0]
+        self.assertEqual(pull['destination'],{'x':5,'y':2})
+        self.assertEqual(pull['collision_cell'],{'x':4,'y':2})
+        self.assertEqual(pull['collision_target_id'],'bystander')
+        self.assertEqual(pull['collision_damage'],preview['damage_on_hit']//2)
+        self.assertEqual(pull['bystander_damage'],pull['collision_damage']-2)
+        self.use(b,a,t,'cover')
+        self.assertEqual(100-t['hp'],preview['damage_on_hit']+pull['collision_damage'])
+        self.assertEqual(100-other['hp'],pull['bystander_damage'])
+
+    def test_push_preview_does_not_predict_collision_damage_at_map_edge(self):
+        b,a,t=self.fixture();a.update(x=b['width']-2,y=2);t.update(x=b['width']-1,y=2)
+        pull=combat._strike_preview(b,a,t,'melee',1,self.skill('bash'))['tactics'][0]
+        self.assertFalse(pull['solid_collision'])
+        self.assertEqual(pull['collision_damage'],0)
+        self.assertIsNone(pull['collision_cell'])
+
     def use(self,b,a,t,key):
         with patch('backend.combat._attack_hits',return_value=(True,{'damage_bonus':0,'chance':100},1)):
             return combat._resolve_ability(b,a,t,self.skill(key))

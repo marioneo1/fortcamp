@@ -455,3 +455,45 @@ buff/debuff strip, square painted map badges, specific hover explanations and
 Stun stars synchronized to application contact. Poison visuals are retained.
 232 frontend tests, build and isolated browser checks passed. Broader effects
 remain a staged follow-up; player listening review is still needed.
+
+## October 5: painted commands and attached Chain Snare (implemented in dev)
+
+Map status icons are 36 px and wrap above the portrait; the dock strip uses
+48 px icons. All compact effects remain visible. Commands have 44 px art and
+15 px labels in a wider, unboxed section at the right of the bottom dock.
+On narrower screens, commands occupy their own row rather than squeezing skills.
+Existing Move/Attack/Subdue/Throw icons and hotkeys remain.
+
+One six-cell painted atlas adds bow/magic attack art, leather pointer, hourglass,
+unavailable X and a steel hook. Basic attack art follows the equipped weapon's
+actual attack rule, with capture weapons retaining Subdue. Busy map playback uses
+one animated hourglass cursor overlay and hides the native cursor; reduced motion
+uses a still hourglass. Valid/invalid ground casting and Chain Snare have matching
+cursor states. No new Effekseer dependency is needed.
+
+Chain Snare's hook travels for 220 ms to contact, stays attached to the target's
+rendered position through pull/rebound, then fades. Misses retract and play a miss
+sound. The old magical target ring is removed. Hovering shows the target path,
+endpoint and solid collision cell. Forecasts use shared collision geometry and
+half of predicted post-Barrier direct damage, showing bystander damage after
+its Barrier separately. Map edges and elevation limits do not predict solid
+collision damage. Names of concealed bystanders are not disclosed. Hit chance,
+movement resistance, death and other reactions can change the actual result.
+
+Earthbreaker no longer emits the unintended generic `magic_cast` after its area
+attack. Landing volume is 0.65, with a new physical crater boom at 0.38 on the
+same contact marker. Generation sources and receipts remain in staging; the
+new boom is 573 ms, mono 48 kHz, with no clipping. Listening approval is pending.
+
+Validation: 112 relevant backend tests, 236 frontend tests and build passed.
+Browser fixtures verified large status badges/hover/reduced motion, pull endpoint,
+collision amount and bystander forecast, hook cursor, attached movement within
+one pixel at paint time, removal after recovery and restored command input.
+Review images: `staging-ui/combat-fighter-review/controls-status-review.png` and
+`chain-preview-review.png`. Existing bundle-size warning remains. Dev only;
+production, saves, skill cooldowns and walking motion are unchanged.
+
+Deferred: dedicated status-icon art, richer Barrier/ground status effects and
+optional chain sparks. Effekseer can add secondary sparks later; it should not
+own resolved hook/target movement. Art provenance is in
+`docs/art/COMBAT_CONTROLS_V2_PROMPT.md`.

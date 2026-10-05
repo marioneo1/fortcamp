@@ -1,5 +1,11 @@
 # Fortcamp documentation map
 
+Latest combat controls: [Painted control atlas](art/COMBAT_CONTROLS_V2_PROMPT.md)
+records the six matching attack/cursor/hook assets and reproducible import.
+[Combat controls](design/COMBAT_CONTROLS.md) and
+[Fighter review](design/FIGHTER_COMBAT_REVIEW.md) cover attached Chain Snare,
+pull/collision forecasts, wider commands and the corrected physical landing audio.
+
 Current buff/debuff UI: [Status presentation](design/COMBAT_STATUS_PRESENTATION.md)
 covers readable grouped icons, counts, cursor descriptions, the persistent Stun
 star orbit, reduced motion and dry Earthbreaker landing audio. Burn/Freeze/Barrier

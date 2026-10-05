@@ -169,3 +169,17 @@ short names and duration/absorption/one-use badges. Map units show two priority
 on a status opens its own readable description. See
 [Status presentation](COMBAT_STATUS_PRESENTATION.md) for the current rules and
 persistent Stun orbit. Existing ability targeting and combat rules are retained.
+
+## October 5: painted commands and attached Chain Snare (implemented in dev)
+
+Commands now have 44 px art and 15 px labels, with a wider unboxed section
+at the right of the bottom dock. Narrow screens give commands their own row.
+One painted atlas adds weapon-aware bow/magic attack art, a leather pointer,
+animated hourglass, unavailable X and Chain Snare hook cursor. Playback hides
+native map cursors while showing one hourglass; reduced motion keeps it still.
+Map status icons are 36 px, wrap above the portrait and retain all compact effects.
+Dock status icons are 48 px. Existing keybinds remain.
+
+[Fighter review](FIGHTER_COMBAT_REVIEW.md) records attached chain movement,
+collision forecasts, audio correction and browser verification. Atlas source,
+prompt and import: `docs/art/COMBAT_CONTROLS_V2_PROMPT.md`.

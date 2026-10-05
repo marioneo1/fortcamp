@@ -41,7 +41,7 @@ export function statusBadge(status,definitions,escape,{unitId='',compact=false}=
 }
 export function mapStatusMarkup(unit,definitions,escape){
  const statuses=visibleStatuses(unit,{compact:true});if(!statuses.length)return '';
- return `<span class="status-row readable-statuses">${statuses.slice(0,2).map(s=>statusBadge(s,definitions,escape,{unitId:unit.id,compact:true})).join('')}${statuses.length>2?`<span class="status-overflow" aria-label="${statuses.length-2} more effects; hover this unit">+${statuses.length-2}</span>`:''}</span>`;
+ return `<span class="status-row readable-statuses">${statuses.map(s=>statusBadge(s,definitions,escape,{unitId:unit.id,compact:true})).join('')}</span>`;
 }
 export function statusTrayMarkup(unit,definitions,escape){
  const statuses=visibleStatuses(unit);if(!statuses.length)return '';

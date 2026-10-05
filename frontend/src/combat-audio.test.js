@@ -6,10 +6,12 @@ import {impactTimeline} from './combat-impact.js';
 test('Earthbreaker sound follows takeoff and landing rather than footsteps',()=>{
  const events=[{type:'movement',leap:true,points:[{x:0,y:0},{x:3,y:0}]},{type:'ground_impact',attack_packet:1}];
  const cues=combatAudioSchedule({},events).cues;
- assert.deepEqual(cues.map(c=>c.name),['earthbreaker_launch','earthbreaker_land']);
+ assert.deepEqual(cues.map(c=>c.name),['earthbreaker_launch','earthbreaker_land','earthbreaker_crater']);
  assert.equal(cues[0].delay,0);
  assert.equal(cues[1].delay,impactTimeline(events)[1].start);
  assert.ok(cues[1].delay>400);
+ assert.equal(cues[2].delay,cues[1].delay);
+ assert.equal(cues[1].volume,.65);
 });
 test('Collision audio uses contact, distinguishes bodies/walls and avoids duplicate damage sounds',()=>{
  for(const bystander_id of [null,'other']){
@@ -33,4 +35,9 @@ test('wall collisions play slightly louder than body collisions',()=>{
  const body=combatAudioSchedule({},[{type:'collision_recoil',bystander_id:'other'}]).cues[0];
  const wall=combatAudioSchedule({},[{type:'collision_recoil',bystander_id:null}]).cues[0];
  assert.equal(body.volume,.5);assert.equal(wall.volume,.63);
+});
+
+test('chain misses do not play a flesh impact',()=>{
+ const cues=combatAudioSchedule({},[{type:'chain_attack',hit:false,attack_packet:1}]).cues;
+ assert.deepEqual(cues.map(c=>c.name),['melee_swing','attack_miss']);
 });

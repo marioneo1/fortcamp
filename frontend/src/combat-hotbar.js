@@ -1,7 +1,8 @@
 import {statusListMarkup,statusInspectMarkup,visibleStatuses} from './combat-status-presentation.js';
 import {skillAvailability,skillTiming} from './equipment-skills.js';
-import {statusDetails} from './combat-status-ui.js';
+import {statusDetails,tacticalPreviewText} from './combat-status-ui.js';
 import {skillIconMarkup} from './ability-icons.js';
+import {displacementPreviewMarkup} from './fighter-effects.js';
 export function hotbarSkills(actor){return [...(actor?.skills||[]).filter(s=>s.source_kind==='character'),...(actor?.skills||[]).filter(s=>s.source_kind!=='character')]}
 export function hotbarPage(actor,page=0){const skills=hotbarSkills(actor),pages=Math.max(1,Math.ceil(skills.length/10)),index=Math.max(0,Math.min(pages-1,page));return {index,pages,skills:skills.slice(index*10,index*10+10)}}
 export function hotbarMarkup(actor,page,selected,escape){
@@ -12,8 +13,9 @@ export function unitInspectMarkup(unit,definitions,escape,preview=null,battle=nu
  const statuses=[...(unit.statuses||[])];if(unit.guarding)statuses.unshift({id:'guard'});
  const stats=[['Attack',unit.attack],['Armor',unit.effective_armor??unit.armor],['Movement',unit.move],['Range',unit.attack_range],['Accuracy',unit.accuracy],['Evasion',unit.evasion],['Initiative',unit.initiative],['Level',unit.level]];
  const forecast=preview?`<section class="inspect-forecast"><b>${preview.capture?'Capture attempt':preview.support?'Support preview':'Attack forecast'}</b>${preview.damage_on_hit!=null?`<strong>${preview.damage_on_hit} ${preview.raw_damage?'impact power':'HP damage on hit'}</strong>`:''}<p>${preview.capture?`${preview.chance}% capture chance`:preview.chance!=null?`${preview.chance}% accuracy`:''}${preview.absorbed_damage?` · Barrier absorbs ${preview.absorbed_damage}`:''}</p>${preview.intercepted_by?`<p>Intercepted by ${escape(preview.intercepted_by)}</p>`:''}${preview.move_to?`<p>Approach: ${preview.movement_cost} movement</p>`:''}${preview.damage_note?`<small>${escape(preview.damage_note)}</small>`:''}</section>`:'';
+ const tactics=preview?tacticalPreviewText(preview):'';
  const height=battle?.elevation?.find(t=>t.x===unit.x&&t.y===unit.y)?.height||0;
- return `<header><strong>${escape(unit.name)}</strong><small>${escape(unit.boss?'Boss':unit.team==='enemy'?'Enemy':'Ally')} · ${escape(unit.race||'')} · ${escape(unit.condition||'active')}</small></header><div class="inspect-health"><b>${unit.hp}/${unit.max_hp} HP</b><meter min="0" max="${Math.max(1,unit.max_hp)}" value="${Math.max(0,unit.hp)}"></meter></div>${forecast}<dl class="inspect-stat-grid">${stats.filter(([,value])=>value!=null).map(([label,value])=>`<div><dt>${label}</dt><dd>${escape(value)}</dd></div>`).join('')}<div><dt>Elevation</dt><dd>${height}</dd></div></dl>${unit.weapon?`<p class="inspect-weapon">${escape(unit.weapon)}</p>`:''}<div class="inspect-statuses">${statusListMarkup(unit,definitions,escape)}</div>${unit.passives?.length?`<details><summary>Passives (${unit.passives.length})</summary>${unit.passives.map(p=>`<article><b>${escape(p.name)}</b><p>${escape(p.description)}</p></article>`).join('')}</details>`:''}`;
+ return `<header><strong>${escape(unit.name)}</strong><small>${escape(unit.boss?'Boss':unit.team==='enemy'?'Enemy':'Ally')} · ${escape(unit.race||'')} · ${escape(unit.condition||'active')}</small></header><div class="inspect-health"><b>${unit.hp}/${unit.max_hp} HP</b><meter min="0" max="${Math.max(1,unit.max_hp)}" value="${Math.max(0,unit.hp)}"></meter></div>${forecast}${tactics?`<p class="inspect-tactical-detail">${escape(tactics)}</p>`:""}<dl class="inspect-stat-grid">${stats.filter(([,value])=>value!=null).map(([label,value])=>`<div><dt>${label}</dt><dd>${escape(value)}</dd></div>`).join('')}<div><dt>Elevation</dt><dd>${height}</dd></div></dl>${unit.weapon?`<p class="inspect-weapon">${escape(unit.weapon)}</p>`:''}<div class="inspect-statuses">${statusListMarkup(unit,definitions,escape)}</div>${unit.passives?.length?`<details><summary>Passives (${unit.passives.length})</summary>${unit.passives.map(p=>`<article><b>${escape(p.name)}</b><p>${escape(p.description)}</p></article>`).join('')}</details>`:''}`;
 }
 export function cursorCardPosition(x,y,width,height,viewportWidth,viewportHeight){
  return {left:Math.max(8,Math.min(viewportWidth-width-8,x+18)),top:Math.max(8,Math.min(viewportHeight-height-8,y+18))};
@@ -68,18 +70,24 @@ export function bindSpellTargets(field,battle,mode,onCast){
  if(field._spellClick)field.removeEventListener('click',field._spellClick,true);
  field.onpointermove=null;field.onpointerleave=null;
  field.querySelector('.aoe-preview-layer')?.remove();
- field.querySelectorAll('.spell-area,.spell-center,.spell-self-target,.spell-castable,.spell-inner,.spell-outer,.spell-landing').forEach(el=>el.classList.remove('spell-area','spell-center','spell-self-target','spell-castable','spell-inner','spell-outer','spell-landing'));
+ field.querySelectorAll('.spell-area,.spell-center,.spell-self-target,.spell-castable,.spell-inner,.spell-outer,.spell-landing,.spell-pull-path,.spell-pull-stop,.spell-collision-cell').forEach(el=>el.classList.remove('spell-area','spell-center','spell-self-target','spell-castable','spell-inner','spell-outer','spell-landing','spell-pull-path','spell-pull-stop','spell-collision-cell'));
  const actor=battle.units?.[battle.current_unit_id],skill=actor?.special;
  if(mode!=='skill'||!skill)return;
  const entries=battle.ground_skill_previews?.[skill.id],self=(skill.effects||[]).some(e=>['form','deploy'].includes(e.type)||e.type==='cleanse'&&e.radius);
  if(self)field.querySelector(`[data-battle-unit="${CSS.escape(actor.id)}"]`)?.classList.add('spell-self-target');
- const clear=()=>field.querySelectorAll('.spell-area,.spell-center,.attack-approach-path,.attack-approach-stop,.spell-inner,.spell-outer,.spell-landing').forEach(el=>{el.classList.remove('spell-area','spell-center','attack-approach-path','attack-approach-stop','spell-inner','spell-outer','spell-landing');el.querySelector('.approach-step')?.remove()});
+ const clear=()=>field.querySelectorAll('.spell-area,.spell-center,.attack-approach-path,.attack-approach-stop,.spell-inner,.spell-outer,.spell-landing,.spell-pull-path,.spell-pull-stop,.spell-collision-cell').forEach(el=>{el.classList.remove('spell-area','spell-center','attack-approach-path','attack-approach-stop','spell-inner','spell-outer','spell-landing','spell-pull-path','spell-pull-stop','spell-collision-cell');el.querySelector('.approach-step')?.remove()});
  const forecastLayer=document.createElement('div');forecastLayer.className='aoe-preview-layer';forecastLayer.setAttribute('data-live-overlay','');field.append(forecastLayer);
  const paint=preview=>{
-  clear();forecastLayer.innerHTML=areaForecastMarkup(preview,battle,escapeHTML);layoutAreaForecasts(forecastLayer);for(const zone of preview?.zones||[])for(const p of zone.cells||[]){const cell=field.querySelector(`[data-battle-cell="${p.x},${p.y}"]`);cell?.classList.add('spell-area');if(preview.landing)cell?.classList.add(Math.max(Math.abs(p.x-preview.landing.x),Math.abs(p.y-preview.landing.y))<=1?'spell-inner':'spell-outer')}
+  clear();forecastLayer.innerHTML=areaForecastMarkup(preview,battle,escapeHTML)+displacementPreviewMarkup(preview,battle,escapeHTML);layoutAreaForecasts(forecastLayer);for(const zone of preview?.zones||[])for(const p of zone.cells||[]){const cell=field.querySelector(`[data-battle-cell="${p.x},${p.y}"]`);cell?.classList.add('spell-area');if(preview.landing)cell?.classList.add(Math.max(Math.abs(p.x-preview.landing.x),Math.abs(p.y-preview.landing.y))<=1?'spell-inner':'spell-outer')}
   if(preview?.landing)field.querySelector(`[data-battle-cell="${preview.landing.x},${preview.landing.y}"]`)?.classList.add('spell-landing');
   for(const p of preview?.path||[])field.querySelector(`[data-battle-cell="${p.x},${p.y}"]`)?.classList.add('attack-approach-path');
   if(preview?.move_to)field.querySelector(`[data-battle-cell="${preview.move_to.x},${preview.move_to.y}"]`)?.classList.add('attack-approach-stop');
+  for(const effect of preview?.tactics||[]){
+   for(const p of effect.path||[])field.querySelector(`[data-battle-cell="${p.x},${p.y}"]`)?.classList.add('spell-pull-path');
+   const end=effect.destination,contact=effect.collision_cell;
+   if(end)field.querySelector(`[data-battle-cell="${end.x},${end.y}"]`)?.classList.add('spell-pull-stop');
+   if(contact&&effect.solid_collision)field.querySelector(`[data-battle-cell="${contact.x},${contact.y}"]`)?.classList.add('spell-collision-cell');
+  }
  };
  if(self){const preview=battle.skill_previews?.[skill.id]?.[actor.id];if(preview)paint(preview)}
  const point=e=>{const r=field.getBoundingClientRect();return {x:Math.floor((e.clientX-r.left)/r.width*battle.width),y:Math.floor((e.clientY-r.top)/r.height*battle.height)}};

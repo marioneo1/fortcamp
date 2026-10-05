@@ -30,7 +30,7 @@ export function tacticalPreviewText(preview){
     parts.push(`On hit: ${effect.type} toward cell ${dest.x+1}, ${dest.y+1} · ${effect.resistance}% resistance`);
     if(effect.blocked)parts.push(`Stopped: ${effect.blocked}`);
     if(effect.pit)parts.push(effect.pit==='lethal'?'Lethal fall · body and gear lost':`${effect.pit==='deep'?'Deep':'Shallow'} pit · ${effect.pit==='deep'?'must climb out':'fall damage and Slow'}`);
-    if(effect.collision_damage)parts.push(`${effect.collision_damage} collision damage`);
+    if(effect.collision_damage)parts.push(`${effect.collision_damage} collision damage if the hit and forced movement succeed${effect.collision_target_name?`; ${effect.collision_target_name} also takes ${effect.bystander_damage} damage`:''}`);
   }
   return parts.join(' · ');
 }

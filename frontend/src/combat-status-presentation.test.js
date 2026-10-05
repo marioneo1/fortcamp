@@ -23,9 +23,9 @@ test('supported effects reuse installed painted artwork',()=>{
   assert.ok(existsSync(new URL('../public'+visual.image,import.meta.url)),id);
  }
 });
-test('map limits clutter but tray and inspection retain every effect and its description',()=>{
+test('map, tray and inspection retain every effect and its description',()=>{
  const unit={id:'a',statuses:[{id:'poison',turns:2},{id:'stun',turns:1},{id:'rally_power'}]};
- const map=mapStatusMarkup(unit,defs,esc);assert.equal((map.match(/data-unit-status=/g)||[]).length,2);assert.match(map,/\+1/);
+ const map=mapStatusMarkup(unit,defs,esc);assert.equal((map.match(/data-unit-status=/g)||[]).length,3);assert.doesNotMatch(map,/status-overflow/);
  const tray=statusTrayMarkup(unit,defs,esc);assert.match(tray,/Buffs/);assert.match(tray,/Debuffs/);assert.equal((tray.match(/data-unit-status=/g)||[]).length,3);
  const list=statusListMarkup(unit,defs,esc);assert.match(list,/Cannot act/);assert.match(list,/Next attack \+25%/);assert.match(list,/2 activations/);
  assert.equal(mapStatusMarkup({...unit,alive:false},defs,esc),'');

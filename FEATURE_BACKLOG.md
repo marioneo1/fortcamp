@@ -891,3 +891,17 @@ authoring remains deferred. This pass does not implement the proposed 96 skills.
 - 232 frontend tests, build, audio checks and isolated browser review passed.
 - Pending: player quality review; Burn/Freeze/Barrier passes; distinct status
   artwork for conditions currently sharing existing ability icons.
+
+## October 5: painted commands and attached Chain Snare (implemented in dev)
+
+Completed in dev: larger status icons above portraits, wider commands,
+matching ranged/magic/pointer/loading/unavailable/hook art, attached Chain Snare
+through pull/rebound, endpoint/collision forecasts and removal of Earthbreaker's
+accidental magic cast. A new low crater boom layers beneath the landing.
+112 related backend tests, 236 frontend tests, build and isolated browser checks
+pass. No production or save changes.
+
+Remaining: distinct status-icon art, richer Barrier/Burn/Freeze presentation,
+player sound review and optional chain sparks. Effekseer is unnecessary for the
+hook's resolved movement. See `docs/design/FIGHTER_COMBAT_REVIEW.md` and
+`docs/art/COMBAT_CONTROLS_V2_PROMPT.md` for implementation and asset provenance.

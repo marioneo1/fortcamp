@@ -198,3 +198,11 @@ Superseding landing edit: Earthbreaker dry v3 (October 5) keeps only 0.22 second
 uses two 1 kHz low-pass stages and a 12 ms anti-click edge. The earlier long fade
 is removed completely. This edit is reproducible from the original MP3. No new
 paid generation. The game landing URL version is `20261005-landing-dry-v3`.
+
+## Fighter crater boom pack
+
+> Modern fantasy tactical RPG physical impact. Dark warm bass, softened treble, close grounded weight, no music, no voice, no magic, no pitched note or ringing metal.
+
+| File | Duration | Prompt |
+|---|---|---|
+| `earthbreaker_crater.wav` | 0.8 s | Single crater impact: immediate deep bass BOOM, dense low earth cracking, short soft grit falloff. Dry physical weight beneath a boot slam. No whistle, rising tone, shrill accent, bells, sparkle or repeated hits. |

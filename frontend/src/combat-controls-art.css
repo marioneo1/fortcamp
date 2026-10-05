@@ -1,0 +1,19 @@
+.combat-action-art.action-ranged{background-image:url('/assets/combat-controls-v2/ranged.png')}
+.combat-action-art.action-magic{background-image:url('/assets/combat-controls-v2/magic.png')}
+.battlefield .battle-cell.reachable,.battlefield .battle-object,.battlefield .battle-token,
+.battlefield.support-targeting .spell-self-target{cursor:url('/assets/combat-controls-v2/pointer_cursor.png') 4 4,pointer}
+.battlefield.support-targeting .spell-self-target{cursor:url('/assets/combat-controls-v2/pointer_cursor.png') 4 4,pointer!important}
+.battlefield .battle-token.invalid-target{cursor:url('/assets/combat-controls-v2/unavailable_cursor.png') 16 16,not-allowed!important}
+.battlefield.attack-kind-ranged.mode-attack .battle-token.valid-target,.battlefield.attack-kind-ranged.mode-attack .battle-terrain.attack-target{cursor:url('/assets/combat-controls-v2/ranged_cursor.png') 16 16,crosshair!important}
+.battlefield.attack-kind-magic.mode-attack .battle-token.valid-target,.battlefield.attack-kind-magic.mode-attack .battle-terrain.attack-target{cursor:url('/assets/combat-controls-v2/magic_cursor.png') 16 16,crosshair!important}
+.battle-playing .battlefield,.battle-playing .battlefield *{cursor:none!important}
+.battle-loading-cursor{position:fixed;z-index:10000;width:32px;height:32px;pointer-events:none;translate:2px 2px;filter:drop-shadow(0 1px 2px #000);animation:battle-hourglass 1.6s ease-in-out infinite}
+.battle-loading-cursor[hidden]{display:none}
+@keyframes battle-hourglass{0%{transform:rotate(0)}20%{transform:rotate(-12deg)}50%{transform:rotate(12deg)}85%,100%{transform:rotate(180deg)}}
+@media(prefers-reduced-motion:reduce){.battle-loading-cursor{animation:none}}
+
+.battlefield.ground-targeting .battle-cell:not(.spell-castable){cursor:url('/assets/combat-controls-v2/unavailable_cursor.png') 16 16,not-allowed}
+.battlefield.ground-targeting .battle-cell.spell-castable{cursor:url('/assets/combat-controls-v2/pointer_cursor.png') 4 4,pointer}
+.battlefield.chain-targeting .battle-token.valid-target{cursor:url('/assets/combat-controls-v2/chain_hook_cursor.png') 16 16,crosshair!important}
+
+body .battle-playing .battlefield[class] :is(.battle-token,.battle-terrain,.battle-object,.battle-cell){cursor:none!important}

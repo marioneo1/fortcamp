@@ -1083,18 +1083,40 @@ def _strike_preview(battle,actor,target,rule,reach,skill=None):
         preview['absorbed_damage']=min(amount,preview['barrier'])
         preview['damage_on_hit']=max(0,amount-preview['barrier'])
         preview['damage_note']='Direct hit only; collision, reactions and chance-based effects are separate.'
+        for displacement in preview['tactics']:
+            if displacement.get('solid_collision'):
+                collision=max(1,preview['damage_on_hit']//2) if preview['damage_on_hit'] else 0
+                displacement['collision_damage']=collision
+                other=battle['units'].get(displacement.get('collision_target_id'))
+                if other:
+                    barrier=max((s.get('amount',0) for s in other.get('statuses',[]) if s['id']=='barrier'),default=0)
+                    displacement.update(collision_target_name=other['name'],bystander_damage=max(0,collision-barrier))
     return preview
 
 
+def _solid_displacement_collision(battle,target,origin,stop,include_hidden=True):
+    """Shared solid-contact geometry; boundaries and cliffs alone are not impacts."""
+    if not stop or not (0<=stop[0]<battle['width'] and 0<=stop[1]<battle['height']):return False,None
+    obstacle=bool(crossed_walls(battle,origin,stop) or
+        any(t.get('blocking') and not t.get('destroyed') and not t.get('requires_flying') and stop in occupied_tiles(t) for t in battle.get('terrain',[])) or
+        any(o.get('blocking',True) and not o.get('carried_by') and o.get('state') not in {'removed','destroyed','broken'} and stop in occupied_tiles(o) for o in battle.get('objects',{}).values()))
+    bystander=None if obstacle else next((u for u in battle['units'].values() if u['id']!=target['id'] and _combat_active(u) and
+        (u['x'],u['y'])==stop and (include_hidden or not concealment.unseen(u))),None)
+    return obstacle,bystander
+
+
 def _displacement_preview(battle,actor,target,effect):
-    path=[];blocked=None;pit=None
+    path=[];blocked=None;pit=None;collision_cell=None;obstacle=False;bystander=None
     x,y=target['x'],target['y']
     for nx,ny in tactics.displacement_path(actor,target,effect['distance'],effect['mode']):
         if effect.get('stop_adjacent') and max(abs(nx-actor['x']),abs(ny-actor['y']))<1:break
         hazard=tactics.pit_at(battle,nx,ny)
         flying=target.get('movement_type')=='flying'
         if crossed_walls(battle,(x,y),(nx,ny)) or _blocked(battle,nx,ny,target['id'],'flying' if hazard else target.get('movement_type')):
-            blocked='Wall, object, occupied cell or map edge';break
+            blocked='Wall, object, occupied cell or map edge'
+            obstacle,bystander=_solid_displacement_collision(battle,target,(x,y),(nx,ny),include_hidden=False)
+            if obstacle or bystander:collision_cell={'x':nx,'y':ny}
+            break
         if not flying and abs(_tile_height(battle,nx,ny)-_tile_height(battle,x,y))>2:
             blocked='Impassable elevation';break
         if hazard and not flying:
@@ -1105,7 +1127,9 @@ def _displacement_preview(battle,actor,target,effect):
         path.append({'x':nx,'y':ny});x,y=nx,ny
         if pit:break
     return {'path':path,'destination':{'x':x,'y':y},'blocked':blocked,'pit':pit,
-        'resistance':tactics.displacement_resistance(target),'collision_damage':effect.get('collision_damage',0) if blocked else 0}
+        'resistance':tactics.displacement_resistance(target),'collision_damage':effect.get('collision_damage',0) if blocked else 0,
+        'solid_collision':bool(obstacle or bystander) and not pit,'collision_cell':collision_cell,
+        'collision_target_id':bystander['id'] if bystander else None}
 
 
 def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_packet=None):
@@ -1167,11 +1191,8 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
     remaining=tactics.displacement_path(actor,{'x':start[0],'y':start[1]},effect['distance'],effect['mode'])
     stop=remaining[len(path)] if len(path)<len(remaining) else None
     if effect.get('stop_adjacent') and stop == (actor['x'],actor['y']):stop=None
-    obstacle=bool(stop and 0<=stop[0]<battle['width'] and 0<=stop[1]<battle['height'] and
-        (crossed_walls(battle,(nx,ny),stop) or any(t.get('blocking') and not t.get('destroyed') and not t.get('requires_flying') and stop in occupied_tiles(t) for t in battle.get('terrain',[])) or
-         any(o.get('blocking',True) and not o.get('carried_by') and o.get('state') not in {'removed','destroyed','broken'} and stop in occupied_tiles(o) for o in battle.get('objects',{}).values())))
-    if stop and not obstacle and not bystander:
-        bystander=next((u for u in battle['units'].values() if u['id']!=target['id'] and _combat_active(u) and (u['x'],u['y'])==stop),None)
+    obstacle,contact_unit=_solid_displacement_collision(battle,target,(nx,ny),stop)
+    bystander=bystander or contact_unit
     solid=bool(obstacle or bystander) and not preview.get('pit')
     collision=max(1,int(original_damage)//2) if original_damage and solid else (preview['collision_damage'] if original_damage is None else 0)
     if solid:
@@ -2653,7 +2674,7 @@ def _resolve_ability(battle, actor, target, skill):
         if any(e.get('stop_adjacent') for e in skill['effects']):
             for event in battle.get('animation_events',[]):
                 if event.get('attack_packet')==attack_packet and event.get('attack_event'):
-                    event.update(type='chain_attack',from_point={'x':actor['x'],'y':actor['y']},to_point={'x':target['x'],'y':target['y']})
+                    event.update(type='chain_attack',hit=bool(hit),from_point={'x':actor['x'],'y':actor['y']},to_point={'x':target['x'],'y':target['y']})
         battle['log'].append(f"{actor['name']} uses {skill['name']} on {target['name']} for {damage} damage." if hit else
                              f"{actor['name']} misses {target['name']} ({roll} vs {preview['chance']}% accuracy).")
         return {'hit':hit,'damage':damage,'target':target,'attacked':True}
@@ -2760,8 +2781,8 @@ def _resolve_ability(battle, actor, target, skill):
         if any(e['type']=='guard' for e in skill['effects']):details.append('Guard granted')
         battle['log'].append(f"{actor['name']} uses {skill['name']} on {target['name']}"+(': '+', '.join(details) if details else '')+'.')
         _record_sound(battle,'magic_cast' if skill['elevation_rule']=='line_of_effect' else 'guard')
-    elif not result.get('attacked'):
-        _record_sound(battle,'guard' if any(e['type']=='guard' for e in skill['effects']) else 'magic_cast')
+    elif not result.get('attacked') and not result.get('area_attack'):
+        _record_sound(battle,'magic_cast' if skill['elevation_rule'] in {'ignore','line_of_effect'} else 'guard')
     actor['acted']=True
     return result
 

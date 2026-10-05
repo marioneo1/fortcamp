@@ -176,3 +176,20 @@ Walking is unchanged in this pass: free movement and attack-sequence walking use
 a 5 px midpoint hop, 2 degree tilt and 2.5% scale change; their keyframe phase is
 not identical. Forced movement remains a slide. Preserve these approved amounts
 and disclose future changes to their presentation.
+
+## October 5: painted commands and attached Chain Snare (implemented in dev)
+
+Chain Snare uses the shared contact timeline: hook reaches the target at
+220 ms, follows its rendered position through forced movement/rebound and fades
+after recovery. It receives the complete event batch even after the battle's
+pending event list is consumed. Misses retract and play miss audio.
+
+Preview and resolved movement share solid-contact geometry. Forecast collision
+power is half of predicted post-Barrier direct damage; bystander Barrier is
+shown separately. Map edges and height limits are not solid impacts. Hidden
+bystander names are omitted. Forecasts remain conditional on hit, resistance,
+survival and reactions.
+
+Earthbreaker's area attack no longer falls through to generic `magic_cast`.
+Its landing gain is 0.65 plus a new 0.38 crater layer at the same impact contact.
+See [Fighter review](FIGHTER_COMBAT_REVIEW.md) for verification and limitations.

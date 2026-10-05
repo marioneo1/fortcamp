@@ -1415,3 +1415,18 @@ softened. Original recordings preserved, no paid calls. 232 frontend tests,
 build and isolated browser checks passed. No gameplay rules, saves or prod
 changes. Canonical details: COMBAT_STATUS_PRESENTATION.md. Remaining visual
 passes are explicit pending work, including dedicated status artwork.
+
+## October 5: painted commands and attached Chain Snare (implemented in dev)
+
+Completed the current Fighter presentation pass in dev. Enlarged/wrapped status
+badges above portraits, widened commands, and generated one six-cell painted
+attack/cursor/hook atlas. Added attached hook travel/retraction and shared-geometry
+pull/collision forecasts, including bystander damage. Found and removed the
+unintended `magic_cast` fallback after Earthbreaker; generated one physical crater
+boom layer. Generation receipts and original sources remain in staging.
+
+112 relevant backend tests, 236 frontend tests and build pass. Browser fixtures
+checked status hover, reduced motion, weapon-aware art, cursor states, forecasts,
+hook tracking at paint time, effect cleanup and restored input. No live saves or
+production changed. Detailed rules/remaining work:
+`docs/design/FIGHTER_COMBAT_REVIEW.md`.

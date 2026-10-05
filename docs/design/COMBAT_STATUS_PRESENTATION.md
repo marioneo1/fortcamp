@@ -8,10 +8,10 @@ art with distinct positive/negative framing, adapted for a turn-based map.
 
 - The acting character has a full-width status strip in the bottom command dock.
   Green-framed Buffs, red-framed Debuffs and blue-framed Other effects are
-  separated and named. Icons are 40 px, with short names underneath.
-- Map units show two priority effects as 24 px square art, plus a count for any
-  remaining effects. Control statuses take priority, then damage over time.
-  This avoids covering portraits with an unbounded row. Hover the unit to see
+  separated and named. Icons are 48 px, with short names underneath.
+- Map units show all compact effects as 36 px square art, arranged above the
+  portrait from the upper-left of its enclosing box, wrapping into further rows.
+  Control statuses take priority, then damage over time. Hover the unit to see
   every effect; hovering a specific icon gives that effect's description.
 - Unit inspection lists every effect in its group with 36 px art, name,
   plain-English description, remaining activations/ticks and source when known.
@@ -28,8 +28,8 @@ art with distinct positive/negative framing, adapted for a turn-based map.
 Artwork is reused from the existing painted ability atlas. Some conditions
 share a relevant image; names, colored grouping and hover text identify their
 actual rules. A dedicated status-icon pack can refine those distinctions later.
-No new image generations, new status mechanics or gameplay balance changes were
-made in this pass.
+This status layout uses existing art; the accompanying command/cursor atlas
+is documented in `docs/art/COMBAT_CONTROLS_V2_PROMPT.md`. Status mechanics are unchanged.
 
 ## Stun visual
 
@@ -44,25 +44,23 @@ Poison's current cloud and particles are unchanged.
 
 ## Earthbreaker landing audio
 
-The previous 520 ms faded recording still had an unwanted late accent. The
-importer now keeps only the first 220 ms, filters out treble above roughly
-1 kHz using two low-pass stages, and uses a 12 ms edit edge to prevent a click.
-The later recording is discarded entirely, rather than faded underneath.
-Initial loudness gain is retained; there are no clipped samples. The original
-MP3 remains intact and rebuilding derives this edit from the original. No paid
-request was made. The game uses a new landing asset version after refresh.
+The dry 220 ms landing edit remains. The continuing shrill tail was actually
+an extra `magic_cast` emitted by the generic non-attack fallback after the area
+attack. Area attacks now use their own impact audio without that extra spell cue.
+Landing gain is 0.65; a new low crater boom is layered at the same landing contact
+at 0.38. The generated 573 ms mono 48 kHz boom has no clipped samples. Original
+sources and generation receipt are retained. Final aesthetic listening review
+remains with the player; automated metrics cannot judge the sound's character.
 
 ## Verification and remaining work
 
-232 frontend tests and frontend build passed. Tests cover grouping, ordering,
-finite absorption versus duration versus one-use counts, per-owner Marks,
-installed icon files, overflow, defeat/recovery and Stun contact timing.
-Isolated browser checks verified 40 px dock / 24 px map icons, uncropped square
-art, both groups, poison hover duration, three animated stars, static reduced
-motion and removal after recovery. Review capture:
-`staging-ui/combat-fighter-review/status-review.png`. Fixtures do not use live
-player saves. Production was not changed.
+236 frontend tests, 112 relevant backend tests and frontend build passed.
+Isolated browser checks verified 48 px dock / 36 px map icons, uncropped square
+art, all effects instead of an overflow counter, grouped poison hover duration,
+three animated stars, static reduced motion and removal after recovery.
+Review capture: `staging-ui/combat-fighter-review/controls-status-review.png`.
+Fixtures do not use live player saves. Production was not changed.
 
-Player listening/visual feedback remains the final quality check. Next focused
-visual passes: Burn, Freeze, Barrier; then remaining control effects and
-condition-specific icon artwork. These are pending, not implemented.
+Dedicated distinct status artwork and richer Barrier/Burn/Freeze presentation
+remain deferred. Large numbers of effects can occupy several map rows; the full
+inspection and dock strip remain available. Unknown statuses use a neutral badge.
