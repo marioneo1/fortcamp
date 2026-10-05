@@ -10,6 +10,7 @@ export function filterLabMissions(missions, {query='', rank='', source=''}={}) {
 
 export function createBattleLab({api, onStart, onError}) {
   let data=null, selection=null, variantId=null, filters={query:'', rank:'', source:''}, request=null, busy=false;
+  let labTesters=null, teamSource=null;
   const dialog=document.createElement('dialog');
   dialog.className='battle-lab';dialog.setAttribute('aria-label','Battle Lab');document.body.append(dialog);
   dialog.innerHTML=`<header class="lab-header"><div><span class="eyebrow">DEVELOPMENT SANDBOX</span><h2>Battle Lab</h2><p>Try any battlefield and its real approach outcomes.</p></div><button data-lab-close aria-label="Close Battle Lab">×</button></header>
@@ -37,8 +38,10 @@ export function createBattleLab({api, onStart, onError}) {
       <div class="lab-approach-help"></div><div class="lab-encounter"></div>
       <label class="lab-layout" hidden>Map layout<select data-lab-layout></select></label>
       <div class="lab-seed"><label>Generation seed<input data-lab-seed maxlength="100" value="${escape(request?.seed||'battle-test-1')}"></label><button data-lab-new-seed>New seed</button></div><small class="lab-hint">Choose a named layout to fill its repeatable seed, or enter your own. Keep the seed to repeat the map, enemies, and names.</small>
+      <label class="lab-team-source">Test characters<select data-lab-team-source><option value="jobs">Temporary Job testers</option><option value="roster">Copies of my roster</option></select></label>
+      <fieldset class="lab-job-party"><legend>Try starting Jobs</legend><p>Matching starter equipment and equal starting attributes. Change practice to try later skills; equip up to five actives and passives together.</p><div data-lab-job-rows></div><button data-lab-add-job>Add another Job tester</button></fieldset>
       <fieldset class="lab-party"><legend>Test party · Choose up to 4</legend><p>Copies of your roster with their current stats and equipment. Busy characters can be tested too.</p>${data.characters.map(c=>`<label class="lab-character"><input type="checkbox" data-lab-character="${escape(c.id)}" ${(request?.party_ids||[data.characters[0]?.id]).includes(c.id)?'checked':''}>${c.portrait?`<img src="${escape(c.portrait)}" alt="">`:'<span class="lab-face">◇</span>'}<span><b>${escape(c.name)}</b><small>${escape(c.race)} · ${escape(title(c.status))}</small></span></label>`).join('')||'<p>A temporary starter character will be used.</p>'}</fieldset>
-      <label class="lab-helper"><input data-lab-helper type="checkbox" ${request?.add_helper===false?'':'checked'}>Add a temporary companion if testing solo</label><div class="lab-error" role="alert"></div>`;
+      <label class="lab-helper"><input data-lab-helper type="checkbox" ${request?.add_helper?'checked':''}>Add a temporary companion if testing solo</label><div class="lab-error" role="alert"></div>`;
     find('.lab-footer small').textContent=`${mission.rank} Rank · ${mission.name}`;
     const updateOutcomes=()=>{
       const group=find('[data-lab-approach]').value;
@@ -67,10 +70,36 @@ export function createBattleLab({api, onStart, onError}) {
     const partyInputs=[...dialog.querySelectorAll('[data-lab-character]')];
     const updateParty=()=>{const full=partyInputs.filter(i=>i.checked).length>=4;partyInputs.forEach(i=>i.disabled=full&&!i.checked)};
     partyInputs.forEach(i=>i.onchange=updateParty);updateParty();
+    const jobs=data.job_loadouts?.jobs||{},skills=data.job_loadouts?.skills||{};
+    let testers=(labTesters||(request?.test_jobs?.length?request.test_jobs:[{job_id:'fighter',practice:0}])).map(t=>({...t,skill_ids:t.skill_ids?[...t.skill_ids]:undefined}));
+    const renderTesters=()=>{
+      find('[data-lab-job-rows]').innerHTML=testers.map((tester,index)=>{
+        const job=jobs[tester.job_id],learned=[...(job?.starter_skills||[]),...(job?.unlocks||[]).filter(u=>u.contracts<=tester.practice).map(u=>u.skill_id)];
+        tester.skill_ids=(tester.skill_ids||learned.slice(0,5)).filter(id=>learned.includes(id));
+        const kit=data.starting_jobs?.[tester.job_id];
+        return `<section class="lab-job-tester" data-tester="${index}"><div class="lab-job-controls"><label>Job<select data-tester-job>${Object.entries(jobs).map(([id,j])=>`<option value="${escape(id)}" ${id===tester.job_id?'selected':''}>${escape(j.name)}</option>`).join('')}</select></label><label>Practice<select data-tester-practice>${[0,2,5,9].map(p=>`<option value="${p}" ${p===tester.practice?'selected':''}>${p===0?'New starter':p+' successful contracts'}</option>`).join('')}</select></label><button data-tester-remove ${testers.length===1?'disabled':''} aria-label="Remove tester ${index+1}">Remove</button></div><p class="lab-hint">${escape(job?.description||'')}<br>Starter kit: ${escape((kit?.kit||[]).map(title).join(' + '))} + Worn Jacket + Work Boots</p><div class="lab-job-skills">${learned.map(id=>`<label title="${escape(skills[id]?.description||'')}"><input type="checkbox" data-tester-skill="${escape(id)}" ${tester.skill_ids.includes(id)?'checked':''} ${tester.skill_ids.length>=5&&!tester.skill_ids.includes(id)?'disabled':''}><span><b>${escape(skills[id]?.name||id)}</b><small>${escape(title(skills[id]?.type||'active'))} · ${escape(skills[id]?.description||'')}</small></span></label>`).join('')}</div><small>${tester.skill_ids.length}/5 skills equipped</small></section>`;
+      }).join('');
+      find('[data-lab-add-job]').disabled=testers.length>=4||!Object.keys(jobs).length;
+      labTesters=testers;
+      dialog.querySelectorAll('[data-tester]').forEach(row=>{
+        const index=Number(row.dataset.tester);
+        row.querySelector('[data-tester-job]').onchange=e=>{testers[index]={job_id:e.target.value,practice:testers[index].practice};renderTesters()};
+        row.querySelector('[data-tester-practice]').onchange=e=>{testers[index].practice=Number(e.target.value);testers[index].skill_ids=undefined;renderTesters()};
+        row.querySelector('[data-tester-remove]').onclick=()=>{testers.splice(index,1);renderTesters()};
+        row.querySelectorAll('[data-tester-skill]').forEach(input=>input.onchange=()=>{const t=testers[index];t.skill_ids=input.checked?[...t.skill_ids,input.dataset.testerSkill]:t.skill_ids.filter(id=>id!==input.dataset.testerSkill);renderTesters()});
+      });
+    };
+    find('[data-lab-add-job]').onclick=()=>{if(testers.length<4){testers.push({job_id:'fighter',practice:0});renderTesters()}};
+    renderTesters();
+    const source=find('[data-lab-team-source]');
+    source.value=teamSource||(request?.test_jobs?.length?'jobs':request||!Object.keys(jobs).length?'roster':'jobs');
+    const updateSource=()=>{teamSource=source.value;find('.lab-job-party').hidden=source.value!=='jobs';find('.lab-party').hidden=source.value==='jobs'};
+    source.onchange=updateSource;updateSource();
     find('[data-lab-start]').onclick=async()=>{
       if(busy)return;busy=true;find('[data-lab-start]').disabled=true;
       const next={mission_id:mission.id,variant_id:variantId,seed:find('[data-lab-seed]').value.trim(),party_ids:partyInputs.filter(i=>i.checked).map(i=>i.dataset.labCharacter),add_helper:find('[data-lab-helper]').checked};
-      if(data.characters.length&&!next.party_ids.length){find('.lab-error').textContent='Choose at least one character.';busy=false;find('[data-lab-start]').disabled=false;return}
+      if(source.value==='jobs'){next.party_ids=[];next.test_jobs=testers.map(t=>({...t,skill_ids:[...t.skill_ids]}))}
+      if(source.value==='roster'&&data.characters.length&&!next.party_ids.length){find('.lab-error').textContent='Choose at least one character.';busy=false;find('[data-lab-start]').disabled=false;return}
       try{const result=await api('/api/debug/battle-lab',{method:'POST',body:JSON.stringify(next)});request=next;dialog.close();onStart(result)}catch(error){find('.lab-error').textContent=error.message}finally{busy=false;find('[data-lab-start]').disabled=false}
     };
   }

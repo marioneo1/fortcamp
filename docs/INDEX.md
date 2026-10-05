@@ -1,5 +1,9 @@
 # Fortcamp documentation map
 
+Current Job testing: [Battle Lab](design/BATTLE_LAB.md) supports temporary parties
+of twelve starting Jobs, matching starter kits, practice presets and five-slot
+loadouts without changing roster saves.
+
 Current starting Jobs: [Jobs and character loadouts](design/JOB_LOADOUTS.md)
 covers twelve creator choices, matching poor equipment, 72 implemented skills,
 five shared slots, learned/equipped IDs and unlocks at 2/5/9 successful contracts.

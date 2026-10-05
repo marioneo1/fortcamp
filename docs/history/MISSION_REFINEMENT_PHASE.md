@@ -1,5 +1,15 @@
 # Mission Refinement Phase
 
+## October 4: Job testing in Battle Lab (dev)
+
+Added temporary parties of up to four starting Jobs, matching starter equipment,
+practice presets (0/2/5/9) and selectable learned skills with the regular five-slot
+limit. Roster-copy mode and mission/approach/seed controls remain. Helper defaults
+off; restart retains the request. Backend snapshot/isolation validation and
+isolated browser controls/payload checks pass; frontend build passes. No production
+or player-save changes. Canonical: docs/design/BATTLE_LAB.md. Broader balance,
+personality-aware skill AI and dedicated summon commands remain pending.
+
 ## October 4: Twelve starting Jobs and first unlocks (dev)
 
 Published all twelve Jobs together in character creation with matching Common

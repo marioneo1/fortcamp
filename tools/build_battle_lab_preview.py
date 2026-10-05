@@ -26,7 +26,8 @@ with patch.object(lab, 'settings', SimpleNamespace(environment='dev', game_debug
                 views[mid+'|'+variant['id']+'|'+preset['seed']]=lab.start_session(
                     identity,lab.StartRequest(mission_id=mid,variant_id=variant['id'],seed=preset['seed']),state)
 source = (ROOT / 'staging-ui/equipment-icons-v1/battle-preview.js').read_text(encoding='utf-8')
-source += '\nconst labFixture=' + json.dumps({'catalogue': {'missions': missions, 'characters': state['characters']},
+source += '\nconst labFixture=' + json.dumps({'catalogue': {'missions': missions, 'characters': state['characters'],
+                                                           'job_loadouts': lab.public_catalog(), 'starting_jobs': lab.STARTING_ROLES},
                                              'views': views}, ensure_ascii=True) + ';\n' + '''
 const labOriginalFetch=window.fetch;
 window.labRequests=[];

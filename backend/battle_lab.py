@@ -3,6 +3,7 @@ from copy import deepcopy
 from functools import lru_cache
 from time import monotonic
 from uuid import uuid4
+from typing import Literal
 
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field
@@ -21,6 +22,8 @@ from .location_templates import BUILDING_PLANS
 from .building_templates import BUILDINGS
 from .building_showcase import FAMILIES, presets as material_presets
 from .battle_maps import compile_generated_battle_map
+from .job_loadouts import JOBS, public_catalog
+from .starter_equipment import STARTING_ROLES
 
 router = APIRouter(prefix='/api/debug/battle-lab')
 _sessions = {}
@@ -141,12 +144,45 @@ def session_view(sid, row):
             'seed': row['seed'], 'battle': battle_view(row['battle'])}
 
 
+class JobTester(BaseModel):
+    job_id: str
+    practice: Literal[0, 2, 5, 9] = 0
+    skill_ids: list[str] | None = Field(default=None, max_length=5)
+
+
 class StartRequest(BaseModel):
     mission_id: str
     variant_id: str = 'direct'
     seed: str = Field(default='battle-test-1', min_length=1, max_length=100)
     party_ids: list[str] = Field(default_factory=list, max_length=4)
     add_helper: bool = True
+    test_jobs: list[JobTester] = Field(default_factory=list, max_length=4)
+
+
+def job_test_party(testers):
+    """Fresh starter kits in an ephemeral state; never rewrite roster characters."""
+    state = None
+    party = []
+    for index, tester in enumerate(testers):
+        if tester.job_id not in JOBS:
+            raise HTTPException(400, 'Choose a supported starting Job')
+        job = JOBS[tester.job_id]
+        fresh = new_game({'name': f'{job["name"]} Tester {index + 1}', 'starting_role': tester.job_id})
+        character = fresh['characters'][0]
+        character.update(id=f'lab_job_{index}', is_player=index == 0, loyalty=100,
+                         job_practice=tester.practice)
+        learned = list(job['starter_skills']) + [u['skill_id'] for u in job['unlocks'] if u['contracts'] <= tester.practice]
+        skills = tester.skill_ids if tester.skill_ids is not None else learned[:5]
+        if len(set(skills)) != len(skills) or any(key not in learned for key in skills):
+            raise HTTPException(400, 'Equip distinct skills unlocked at this practice level')
+        character.update(learned_skills=learned, equipped_skills=list(skills))
+        if state is None:
+            state = fresh
+        else:
+            state['characters'].append(character)
+            state['inventory'].extend(fresh['inventory'])
+        party.append(character['id'])
+    return state, party
 
 
 def start_session(identity, request, saved_state):
@@ -155,9 +191,14 @@ def start_session(identity, request, saved_state):
     variant = next((v for v in (mission or {}).get('variants', []) if v['id'] == request.variant_id), None)
     if not variant:
         raise HTTPException(400, 'Choose a supported mission and battle approach')
-    state = normalize_state(deepcopy(saved_state)) if saved_state else new_game({'name': 'Battle Tester'})
+    if request.test_jobs and request.party_ids:
+        raise HTTPException(400, 'Choose Job testers or your roster, not both')
+    if request.test_jobs:
+        state, party = job_test_party(request.test_jobs)
+    else:
+        state = normalize_state(deepcopy(saved_state)) if saved_state else new_game({'name': 'Battle Tester', 'starting_role': 'fighter'})
+        party = request.party_ids or [state['characters'][0]['id']]
     characters = {c['id']: c for c in state['characters']}
-    party = request.party_ids or [next(iter(characters))]
     if len(set(party)) != len(party) or any(cid not in characters for cid in party):
         raise HTTPException(400, 'Choose distinct characters from your roster')
     if request.add_helper and len(party) < 2:
@@ -206,7 +247,8 @@ async def list_battles(identity: IdentityDep):
     async with SessionLocal() as session:
         player = await session.get(PlayerState, {'guild_id': identity.guild_id, 'user_id': identity.user_id})
         characters = (player.state if player else {}).get('characters', [])
-    return {'missions': catalogue(), 'characters': [
+    return {'missions': catalogue(), 'job_loadouts': public_catalog(),
+            'starting_jobs': deepcopy(STARTING_ROLES), 'characters': [
         {'id': c['id'], 'name': c['name'], 'race': c.get('race', ''), 'status': c.get('status', ''),
          'portrait': c.get('portrait_thumbnail') or c.get('portrait', ''), 'attributes': c.get('attributes', {})}
         for c in characters]}

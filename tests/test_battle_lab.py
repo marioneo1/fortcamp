@@ -120,6 +120,45 @@ class BattleLabTests(unittest.TestCase):
             with self.assertRaises(HTTPException):
                 lab.start_session(self.identity, lab.StartRequest(mission_id='goblin_warcamp', **kwargs), self.state)
 
+    def test_all_job_testers_use_matching_kits_without_changing_save(self):
+        from backend.job_loadouts import JOBS
+        from backend.starter_equipment import STARTING_ROLES
+        from backend.content import ITEMS
+        snapshot = deepcopy(self.state)
+        for job_id, job in JOBS.items():
+            with self.subTest(job=job_id):
+                preview = self.start('rats_storehouse', test_jobs=[lab.JobTester(job_id=job_id)], add_helper=False)
+                unit = next(u for u in preview['battle']['units'].values() if u['team'] == 'player')
+                self.assertEqual(unit['weapon'], ITEMS[STARTING_ROLES[job_id]['kit'][0]]['name'])
+                self.assertEqual({s['id'] for s in unit['skills'] if s.get('source_kind') == 'character'},
+                                 {key for key in job['starter_skills'] if lab.public_catalog()['skills'][key]['type'] == 'active'})
+        self.assertEqual(self.state, snapshot)
+
+    def test_job_progress_loadouts_and_mixed_party_are_isolated(self):
+        from backend.job_loadouts import JOBS
+        later = JOBS['summoner']['unlocks'][-1]['skill_id']
+        testers = [lab.JobTester(job_id='summoner', practice=9, skill_ids=[later]),
+                   lab.JobTester(job_id='captor', practice=2)]
+        state, party = lab.job_test_party(testers)
+        self.assertEqual(len(party), 2)
+        self.assertEqual(state['characters'][0]['equipped_skills'], [later])
+        self.assertEqual(len(state['characters'][1]['learned_skills']), 4)
+        self.assertEqual(len({item['instance_id'] for item in state['inventory']}), len(state['inventory']))
+        preview = lab.start_session(self.identity, lab.StartRequest(mission_id='rats_storehouse', test_jobs=testers,
+                                                                  add_helper=False), None)
+        self.assertEqual(sum(u['team'] == 'player' for u in preview['battle']['units'].values()), 2)
+
+    def test_locked_duplicate_unknown_and_mixed_job_requests_rejected(self):
+        from backend.job_loadouts import JOBS
+        starter = JOBS['fighter']['starter_skills'][0]
+        locked = JOBS['fighter']['unlocks'][-1]['skill_id']
+        for tester in [lab.JobTester(job_id='missing'), lab.JobTester(job_id='fighter', skill_ids=[locked]),
+                       lab.JobTester(job_id='fighter', skill_ids=[starter, starter])]:
+            with self.assertRaises(HTTPException):
+                self.start(test_jobs=[tester])
+        with self.assertRaises(HTTPException):
+            self.start(test_jobs=[lab.JobTester(job_id='fighter')], party_ids=['player'])
+
 
 class BattleLabPersistenceTests(unittest.IsolatedAsyncioTestCase):
     async def test_playing_and_resolving_preview_never_changes_database(self):

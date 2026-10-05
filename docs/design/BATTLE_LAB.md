@@ -1,5 +1,26 @@
 # Battle Lab — implemented development tool
 
+## October 4: Temporary Job parties
+
+Battle Lab now defaults to Temporary Job testers. Choose up to four of the twelve
+starting Jobs independently, with matching poor starter gear and equal starting
+attributes. Practice presets are 0, 2, 5 and 9 successful contracts; they unlock
+the same skills as real progression without completing or awarding contracts.
+Each tester can equip zero to five learned active/passive skills. Skill cards
+show actual descriptions. At practice 9, select which one of six skills to omit.
+
+Use Test characters to switch back to Copies of my roster. The optional temporary
+companion is off by default; enable it explicitly for a solo test. Restart Same
+Test retains Jobs, practice, selected skills, approach and seed. No tester is
+added to the roster, and no gold, fatigue, injuries or save data are changed.
+Existing dev-only/admin restrictions, owner isolation and expiry remain enforced.
+
+Validation covers every Job's actual starter weapon/active snapshot, mixed parties,
+locked/duplicate skill rejection and unchanged saves. Browser checks cover twelve
+choices, skill unlocks, five-slot swaps, request payloads, retained settings and
+the roster toggle. Frontend build passes with the existing bundle-size warning.
+The browser fixture uses mocked responses; backend tests validate actual units.
+
 ## October 3: Named command-location variants
 
 Break the Rival Warband, End the Old Command, Chieftain's Redoubt and The Ironcap Vanguard now expose four verified layout presets through their actual encounter. E/D old-command jobs use compact posts; C–S use full compounds. Labels come from the generated map's template label, so roadside/camp assembly plans display readable names even when they contain multiple buildings. Start a new lab session to see the map; live saved battles are not rebuilt. This extends the existing mission/approach/seed controls without adding another launcher.
