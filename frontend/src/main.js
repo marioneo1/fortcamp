@@ -725,15 +725,15 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
         return;
       }
       if(event.type==='melee_attack'){
-        const attacker=battle.units?.[event.attacker_id],target=battle.units?.[event.target_id];
+        const attacker=battle.units?.[event.attacker_id],target=battle.units?.[event.target_id]||battle.terrain?.find(t=>t.id===event.target_id)||event.to;
         const attackerToken=tokenFor(event.attacker_id),targetToken=tokenFor(event.target_id);
-        if(!attacker||!target||!attackerToken||!targetToken)return;
+        if(!attacker||!target||!attackerToken)return;
         const from=event.from||attacker,to=event.to||target;
         const dx=Math.sign(to.x-from.x)*cellWidth*.42,dy=Math.sign(to.y-from.y)*cellHeight*.42;
         const attackerScale=attacker.id===battle.current_unit_id?1.15:1,targetScale=target.id===battle.current_unit_id?1.15:1;
         queueMotion(attackerToken,poseFrames(meleeFrames(dx,dy,attackerScale),from,attacker,cellWidth,cellHeight),{duration:COMBAT_MOTION.melee,delay},'is-attacking');
         const displaced=animationEvents.some(e=>['movement','collision_recoil'].includes(e.type)&&e.unit_id===event.target_id&&e.attack_packet===event.attack_packet&&(e.forced||e.type==='collision_recoil'));
-        if(event.hit&&!displaced){
+        if(event.hit&&!displaced&&targetToken&&event.target_kind!=='terrain'){
           queueMotion(targetToken,poseFrames(recoilFrames(Math.sign(to.x-from.x)*cellWidth*.12,Math.sign(to.y-from.y)*cellHeight*.12,targetScale),to,target,cellWidth,cellHeight),{duration:COMBAT_MOTION.recoil,delay:delay+COMBAT_MOTION.contact},'is-hit');
         }
         return;

@@ -3143,9 +3143,20 @@ def _damage_terrain(battle: dict, unit: dict, target_id: str) -> None:
         tile["movement_cost"] = int(tile.get("destroyed_movement_cost", 1))
         battle["log"].append(f"{tile['name']} collapses into {tile['kind'].replace('_', ' ')}.")
     rule = unit.get("attack_elevation_rule", "melee")
+    battle['attack_serial']=battle.get('attack_serial',0)+1
+    packet=battle['attack_serial']
+    if rule == 'melee':
+        _record_melee_animation(battle,unit,tile,True,rule)
+        battle['animation_events'][-1].update(attack_packet=packet,target_kind='terrain')
+    elif rule != 'ballistic':
+        battle.setdefault('animation_events',[]).append({'type':'magic_projectile',
+            'attacker_id':unit['id'],'target_id':tile['id'],'target_kind':'terrain','hit':True,
+            'from':{'x':unit['x'],'y':unit['y']},'to':{'x':tile['x'],'y':tile['y']},'attack_packet':packet})
     release = "bow_release" if rule == "ballistic" else "melee_swing" if rule == "melee" else "magic_cast"
     battle.setdefault("animation_events", []).append({
-        "type": "sound", "duration": 490,
+        "type": "sound", "duration": 490, 'attack_packet':packet,'attack_event':True,
+        'attacker_id':unit['id'],'target_id':tile['id'],'target_kind':'terrain',
+        'from':{'x':unit['x'],'y':unit['y']},'to':{'x':tile['x'],'y':tile['y']},
         "cues": [{"name": release, "offset": 45}, {"name": "structure_hit", "offset": 185}]
                 + ([{"name": "structure_break", "offset": 300}] if tile.get("destroyed") else []),
     })

@@ -1,5 +1,28 @@
 # Mission Refinement Phase
 
+## October 5: melee attacks against structures (implemented in dev)
+
+Standard melee attacks against weapon racks, walls, gates and other destructible
+terrain now emit a real melee swing, sharing its contact packet with structure
+hit/break sounds. The renderer can animate an attacker whose target is terrain,
+including terrain destroyed by that hit; it no longer requires a character token
+for the target. Magical structure attacks also emit their existing projectile.
+
+Validation: 120 related backend tests, 220 frontend tests and build pass; the 46-test
+location/wall/Fighter/audio subset also passes. An isolated browser test checks
+the rack lunge at the 185 ms contact marker and the playback input lock. Tests
+cover surviving and destroyed racks. Existing bundle-size warning remains.
+Dev only; no production or live saves changed.
+
+The screenshot-only pathing report near the lower corner/door was not reproduced
+by the player or in fresh-map checks. Deferred to the planned map/pathing rebuild
+at the player's request. No speculative collision changes or snapshot tool added.
+Walking is unchanged in this pass: free movement and attack-sequence walking use
+a 5 px midpoint hop, 2 degree tilt and 2.5% scale change; their keyframe phase is
+not identical. Forced movement remains a slide. Preserve these approved amounts
+and disclose future changes to their presentation.
+
+
 ## October 5: lethal knockback and movement origin (implemented in dev)
 
 Driving Strike and Earthbreaker retain their displacement when the impact kills

@@ -20,6 +20,21 @@ class FighterPresentationTests(unittest.TestCase):
         with patch('backend.combat._attack_hits',return_value=(True,{'damage_bonus':0,'chance':100},1)):
             return combat._resolve_ability(b,a,t,self.skill(key))
 
+    def test_melee_structure_strike_and_break_share_animation_contact_with_audio(self):
+        for hp in (100,1):
+            b,a,t=self.fixture()
+            rack={'id':'rack','name':'Weapon Rack','x':3,'y':2,'kind':'furniture',
+                  'destructible':True,'hp':hp,'max_hp':hp,'armor':0,'blocking':True}
+            b['terrain']=[rack]
+            combat._damage_terrain(b,a,rack['id'])
+            swing=next(e for e in b['animation_events'] if e['type']=='melee_attack')
+            sound=next(e for e in b['animation_events'] if e['type']=='sound')
+            self.assertEqual(swing['target_kind'],'terrain')
+            self.assertEqual(swing['to'],{'x':3,'y':2})
+            self.assertEqual(swing['attack_packet'],sound['attack_packet'])
+            self.assertEqual(rack.get('destroyed',False),hp==1)
+            self.assertTrue(a['physical_action'])
+
     def test_lethal_driving_hit_still_pushes_and_places_corpse_at_destination(self):
         b,a,t=self.fixture();t['hp']=1
         self.use(b,a,t,'bash')
