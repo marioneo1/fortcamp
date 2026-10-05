@@ -1,5 +1,32 @@
 # Mission Refinement Phase
 
+## October 5: lethal knockback and movement origin (implemented in dev)
+
+Driving Strike and Earthbreaker retain their displacement when the impact kills
+the target. A body can strike a solid object or living bystander; the surviving
+bystander takes half the original impact damage and collision stun, subject to
+existing immunity/resistance. Earthbreaker now declares collision stun as well.
+Open-ground pushes do not stun. Corpse HP is not damaged a second time and no new
+status is applied to a corpse. Bodies do not trigger ground damage/traps on their
+forced route; lethal pits make pushed bodies unrecoverable. Death facts use the
+final forced-movement cell, and presentation completes push/rebound before
+collapse. Enemy playback continues afterward. Misses do not displace targets.
+
+The provisional movement origin remains marked with a gold outline and START
+label, including after choosing another destination. It resets when the movement
+is committed or a new activation starts. Attack-sequence walking again has the
+small 5 px hop, 2 degree tilt and scale change already used for free positioning;
+forced movement remains a slide. This preserves the endpoint/rubberband repairs.
+
+Validation: 114 related backend tests and 220 frontend tests pass. Isolated browser
+checks confirm both lethal Fighter collisions finish motion before collapse,
+restore the corpse marker, stun the living bystander without stunning the corpse,
+and render the origin label. Tests cover open-ground lethal push, walls, a killed
+bystander and stun immunity. Build passes with the existing bundle-size warning.
+Use a new battle for the updated Earthbreaker skill definition; existing battles
+retain skill snapshots. No production or live saves changed.
+
+
 ## October 5: attack rubberband and area forecast audit (implemented in dev)
 
 Walking segments now end at their own path destination, rather than the final

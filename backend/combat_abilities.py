@@ -50,7 +50,7 @@ def validate(skill):
                    'cleanse': {'statuses','radius'}, 'guard': set(), 'status': {'status','turns','chance'},
                    'barrier': {'amount','turns'}, 'mark': {'turns','accuracy'},
                    'displace': {'mode','distance','collision_damage','stop_adjacent','collision_stun'},
-                   'leap_attack': {'radius','inner_push','outer_push','power_percent'},
+                   'leap_attack': {'radius','inner_push','outer_push','power_percent','collision_stun'},
                    'zone': {'zone','radius','turns'}, 'form': {'form','turns'}, 'deploy': {'entity'}}
         if kind not in allowed or set(effect) - (allowed[kind] | {'type','conditions'}):
             raise ValueError('Unsupported ability effect')
@@ -60,7 +60,7 @@ def validate(skill):
             _integer(effect.get('damage_bonus',0), -30, 30)
             _integer(effect.get('armor_pierce',0), 0, 30)
         if kind in {'attack','leap_attack'}:_integer(effect.get('power_percent',100),100,250)
-        if kind == 'displace' and 'collision_stun' in effect and not isinstance(effect['collision_stun'],bool):
+        if kind in {'displace','leap_attack'} and 'collision_stun' in effect and not isinstance(effect['collision_stun'],bool):
             raise ValueError('Invalid collision stun policy')
         if kind in {'heal','cleanse','guard','barrier'} and skill['target'] != 'ally':
             raise ValueError('Support effects require an ally target')
@@ -213,7 +213,10 @@ def resolve(skill, target, handlers):
     context={}
     for effect in skill['effects']:
         target=context.get('target',target)
-        if context.get('interrupted') or target.get('hp',0)<=0 or not target.get('conscious',True):break
+        if context.get('interrupted'):break
+        # A lethal hit still carries physical momentum, but cannot debuff a body.
+        if target.get('hp',0)<=0 or not target.get('conscious',True):
+            if effect['type']!='displace' or not context.get('hit'):continue
         if all(matches(c,target,context) for c in effect.get('conditions',[])):
             context.update(handlers[effect['type']](effect) or {})
     return context

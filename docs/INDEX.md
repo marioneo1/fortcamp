@@ -4,7 +4,8 @@ Current Fighter review: [Fighter combat and UI audit](design/FIGHTER_COMBAT_REVI
 records the current full-width map, bottom skills/three-by-two commands,
 cursor-following stats, per-victim area forecasts, plus utility dialogs,
 Fighter Chain Snare/Earthbreaker/area rally, 150%/200% attack power,
-collision stun, two-turn armor fracture and per-target shockwave contact,
+lethal body displacement/collision stun, START tile marking, two-turn armor
+fracture and per-target shockwave contact,
 contact/collision rules, continuous walking/attack poses, full push/wave recovery,
 composed token motion, enemy-playback input lock,
 controls and verification. Prior audits remain historical.

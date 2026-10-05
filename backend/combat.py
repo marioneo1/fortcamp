@@ -1113,7 +1113,7 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
         battle['log'].append(f"{target['name']} resists the forced movement.")
         feedback(battle,target,'resisted',**({'attack_packet':attack_packet} if attack_packet is not None else {}))
         return
-    start=(target['x'],target['y']);path=[];bystander=None
+    start=(target['x'],target['y']);path=[];bystander=None;was_active=_combat_active(target)
     for point in preview['path']:
         hidden=next((u for u in battle['units'].values() if u['id']!=target['id'] and _combat_active(u) and (u['x'],u['y'])==(point['x'],point['y'])),None)
         if hidden:
@@ -1129,13 +1129,15 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
         battle['animation_events'][-1]['forced']=True
         movement_event=battle['animation_events'][-1]
         battle['log'].append(f"{target['name']} is {'pushed' if effect['mode']=='push' else 'pulled'} {len(path)} cell{'s' if len(path)!=1 else ''}.")
-        _apply_zone_route(battle,target,path)
-        if not _combat_active(target):
+        if was_active:_apply_zone_route(battle,target,path)
+        if was_active and not _combat_active(target):
             reached=path.index((target['x'],target['y']))+1
             path=path[:reached]
             movement_event['points']=[{'x':start[0],'y':start[1]}]+[{'x':x,'y':y} for x,y in path]
         hazard=tactics.pit_at(battle,target['x'],target['y'])
-        if hazard and _combat_active(target) and target.get('movement_type')!='flying':
+        if hazard and not was_active and tactics.pit_kind(hazard)=='lethal':
+            target['lost_in_pit']=True
+        elif hazard and _combat_active(target) and target.get('movement_type')!='flying':
             kind=tactics.pit_kind(hazard)
             if kind=='lethal':
                 carried_id=target.get('carrying');object_id=target.get('carrying_object')
@@ -1156,7 +1158,7 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
                     else:conditions.apply(target,'slow',1,actor)
                 battle['log'].append(f"{target['name']} falls into a {kind} pit.")
             else:_apply_tile_entry(battle,target)
-        else:_apply_tile_entry(battle,target)
+        elif _combat_active(target):_apply_tile_entry(battle,target)
     # Only solid collisions qualify. Falls/elevation limits/map edges are not objects.
     nx,ny=(target['x'],target['y'])
     remaining=tactics.displacement_path(actor,{'x':start[0],'y':start[1]},effect['distance'],effect['mode'])
@@ -1169,15 +1171,16 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
         bystander=next((u for u in battle['units'].values() if u['id']!=target['id'] and _combat_active(u) and (u['x'],u['y'])==stop),None)
     solid=bool(obstacle or bystander) and not preview.get('pit')
     collision=max(1,int(original_damage)//2) if original_damage and solid else (preview['collision_damage'] if original_damage is None else 0)
-    if solid and _combat_active(target):
+    if solid:
         battle.setdefault('animation_events',[]).append({'type':'collision_recoil','unit_id':target['id'],
             'x':target['x'],'y':target['y'],'toward':{'x':stop[0],'y':stop[1]} if stop else {'x':target['x'],'y':target['y']},
             'bystander_id':bystander['id'] if bystander and not obstacle else None})
-    if collision and _combat_active(target):
+    if collision:
         source={'id':actor['id'],'name':actor['name'],'attack':collision,'status_tick':True,
                 'damage_kind':'collision','weapon':'a collision'}
-        _deal_damage(battle,source,target,armor_pierce=target.get('armor',0))
-        battle['log'].append(f"{target['name']} takes {collision} collision damage{' against '+bystander['name'] if bystander else ' against an obstacle'}.")
+        if _combat_active(target):
+            _deal_damage(battle,source,target,armor_pierce=target.get('armor',0))
+            battle['log'].append(f"{target['name']} takes {collision} collision damage{' against '+bystander['name'] if bystander else ' against an obstacle'}.")
         if bystander and not obstacle and _combat_active(bystander):
             concealment.reveal(battle,bystander,'contact')
             _deal_damage(battle,source,bystander,armor_pierce=bystander.get('armor',0))
@@ -1191,6 +1194,10 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
     for event in battle['animation_events'][event_begin:]:
         if attack_packet is not None:event['attack_packet']=attack_packet
         if event.get('type')!='movement':event['after_displacement']=True
+    # Collapse and the final corpse marker belong at the end of the forced route.
+    for event in battle['animation_events']:
+        if event.get('unit_id')==target['id'] and event.get('type') in {'death_burst','knockout'}:
+            event.update(x=target['x'],y=target['y'])
     concealment.refresh(battle)
 
 
@@ -2671,7 +2678,7 @@ def _resolve_ability(battle, actor, target, skill):
             if hit:impacts.append((ring,enemy,damage,child,offset))
         for ring,enemy,damage,child,offset in impacts:
             push_begin=len(battle['animation_events'])
-            if _combat_active(enemy):_apply_displacement(battle,actor,enemy,{'mode':'push','distance':effect['inner_push'] if ring<=1 else effect['outer_push']},damage,child)
+            _apply_displacement(battle,actor,enemy,{'mode':'push','distance':effect['inner_push'] if ring<=1 else effect['outer_push'],'collision_stun':effect.get('collision_stun',False)},damage,child)
             for event in battle['animation_events'][push_begin:]:
                 event.update(impact_origin_packet=packet,impact_offset=offset)
         for event in battle['animation_events'][begin:]:event.setdefault('attack_packet',packet)

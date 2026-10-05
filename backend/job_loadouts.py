@@ -91,7 +91,7 @@ def later(job, *skills):
 
 later('fighter',
     passive('riposte','Riposte','Counter a survived melee hit at half attack when in reach. Intercept and Riposte compete for one reaction.',reaction={'id':'riposte','name':'Riposte'}),
-    active('pull','Earthbreaker','Leap up to three cells onto open ground. The landing shockwave strikes enemies within two cells with 200% attack power: the inner ring pushes two cells, the outer ring one. Collisions add half the impact damage to both people. Walls, elevation and knockback resistance still matter. Ready again in five of your turns.',[{'type':'leap_attack','radius':2,'inner_push':2,'outer_push':1,'power_percent':200}],range=3,rule='melee',cooldown=5),
+    active('pull','Earthbreaker','Leap up to three cells onto open ground. The landing shockwave strikes enemies within two cells with 200% attack power: the inner ring pushes two cells, the outer ring one. Collisions add half the impact damage to both people and stun surviving units for one activation. Walls, elevation and knockback resistance still matter. Ready again in five of your turns.',[{'type':'leap_attack','radius':2,'inner_push':2,'outer_push':1,'power_percent':200,'collision_stun':True}],range=3,rule='melee',cooldown=5),
     active('rally','Hold Together','Rally yourself and all allies within two cells, removing Fear. Walls block the rally. Does not grant a Barrier.',[{'type':'cleanse','statuses':['fear'],'radius':2}],'ally',2,'physical_care',3))
 later('barbarian',
     passive('hide','Thick Hide','Gain 1 armor; offers durability instead of another active skill.',{'armor':1}),

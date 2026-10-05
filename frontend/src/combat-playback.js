@@ -22,12 +22,12 @@ export function poseFrames(frames,point,unit,cw,ch){
   return frames.map(frame=>({...frame,transform:`translate(${x}px,${y}px) ${frame.transform}`}));
 }
 
-export function walkingFrames(points,unit,cw,ch,scale=1,extracted=false){
+export function walkingFrames(points,unit,cw,ch,scale=1,extracted=false,style='walk'){
   const frames=[];
   for(let i=0;i<points.length-1;i++){
     const from=points[i],to=points[i+1];
     frames.push({transform:`translate(${(from.x-unit.x)*cw}px,${(from.y-unit.y)*ch}px) scale(${scale})`,opacity:1,offset:i/(points.length-1)});
-    frames.push({transform:`translate(${((from.x+to.x)/2-unit.x)*cw}px,${((from.y+to.y)/2-unit.y)*ch-3}px) scale(${scale*1.015})`,opacity:1,offset:(i+.5)/(points.length-1)});
+    frames.push({transform:`translate(${((from.x+to.x)/2-unit.x)*cw}px,${((from.y+to.y)/2-unit.y)*ch-(style==='walk'?5:0)}px) scale(${scale*(style==='walk'?1.025:1)}) rotate(${style==='walk'?(i%2?2:-2):0}deg)`,opacity:1,offset:(i+.5)/(points.length-1)});
   }
   const last=points.at(-1)||unit;
   frames.push({transform:`translate(${(last.x-unit.x)*cw}px,${(last.y-unit.y)*ch}px) scale(${scale})`,opacity:extracted?0:1,offset:1});

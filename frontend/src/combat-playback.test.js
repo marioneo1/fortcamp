@@ -90,3 +90,21 @@ test('a delayed hit reaction holds the neutral pose until contact',()=>{
  assert.equal(frames[0].filter,'brightness(1)');
  assert.equal(frames.at(-1).transform,'translate(0,0) scale(1)');
 });
+
+test('lethal knockback completes its rebound before collapse and the next enemy',()=>{
+ const rows=impactTimeline([{type:'melee_attack',attack_packet:42},
+  {type:'death_burst',unit_id:'e',attack_packet:42},
+  {type:'movement',unit_id:'e',forced:true,attack_packet:42,points:[{x:2,y:2},{x:3,y:2}]},
+  {type:'collision_recoil',unit_id:'e',attack_packet:42},
+  {type:'movement',unit_id:'next',points:[{x:4,y:2},{x:5,y:2}]}]);
+ const push=rows.find(r=>r.event.forced),death=rows.find(r=>r.event.type==='death_burst');
+ assert.ok(death.start>=push.start+push.duration);
+ assert.ok(rows.at(-1).start>=death.start+death.duration);
+});
+test('walking retains its hop and tilt; forced movement stays a slide',()=>{
+ const p=[{x:1,y:1},{x:2,y:1}],u={x:2,y:1};
+ const walk=walkingFrames(p,u,100,100),slide=walkingFrames(p,u,100,100,1,false,'slide');
+ assert.match(walk[1].transform,/,-5px/);assert.match(walk[1].transform,/rotate\(-2deg\)/);
+ assert.match(slide[1].transform,/,0px/);assert.match(slide[1].transform,/scale\(1\)/);
+ assert.equal(walk.at(-1).transform,'translate(0px,0px) scale(1)');
+});

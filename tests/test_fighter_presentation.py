@@ -20,6 +20,46 @@ class FighterPresentationTests(unittest.TestCase):
         with patch('backend.combat._attack_hits',return_value=(True,{'damage_bonus':0,'chance':100},1)):
             return combat._resolve_ability(b,a,t,self.skill(key))
 
+    def test_lethal_driving_hit_still_pushes_and_places_corpse_at_destination(self):
+        b,a,t=self.fixture();t['hp']=1
+        self.use(b,a,t,'bash')
+        self.assertEqual((t['hp'],t['condition'],t['x']),(0,'dead',4))
+        self.assertFalse(conditions.has(t,'stun'))
+        movement=next(e for e in b['animation_events'] if e['type']=='movement')
+        death=next(e for e in b['animation_events'] if e['type']=='death_burst')
+        self.assertEqual(movement['points'][-1],{'x':4,'y':2})
+        self.assertEqual((death['x'],death['y']),(4,2))
+        self.assertEqual(t['combat_record']['times_defeated'],1)
+
+    def test_lethal_driving_collision_damages_and_stuns_only_surviving_bystander(self):
+        for immune,hp in ((False,100),(True,100),(False,1)):
+            b,a,t=self.fixture();t['hp']=1
+            other=deepcopy(a);other.update(id='bystander',x=4,hp=hp,control_immunity=2 if immune else 0)
+            b['units'][other['id']]=other
+            self.use(b,a,t,'bash')
+            self.assertEqual(other['hp'],max(0,hp-9))
+            self.assertFalse(conditions.has(t,'stun'))
+            self.assertEqual(conditions.has(other,'stun'),not immune and hp>9)
+            self.assertTrue(any(e['type']=='collision_recoil' for e in b['animation_events']))
+
+    def test_lethal_earthbreaker_pushes_body_into_ally_outside_impact_area(self):
+        b,a,t=self.fixture();a.update(x=1,y=2);t.update(x=4,hp=1)
+        other=deepcopy(a);other.update(id='bystander',x=6,hp=100)
+        b['units'][other['id']]=other
+        with patch('backend.combat._attack_hits',return_value=(True,{'damage_bonus':0,'chance':100},1)):
+            combat._resolve_ability(b,a,{'id':'ground','x':3,'y':2,'hp':1},self.skill('pull'))
+        self.assertEqual((t['hp'],t['x'],other['hp']),(0,5,88))
+        self.assertFalse(conditions.has(t,'stun'));self.assertTrue(conditions.has(other,'stun'))
+        death=next(e for e in b['animation_events'] if e['type']=='death_burst')
+        self.assertEqual((death['x'],death['y']),(5,2))
+
+    def test_lethal_push_respects_wall_and_never_applies_status_to_corpse(self):
+        b,a,t=self.fixture();t['hp']=1
+        b['terrain']=[{'id':'wall','x':4,'y':2,'blocking':True}]
+        self.use(b,a,t,'bash')
+        self.assertEqual(t['x'],3);self.assertFalse(conditions.has(t,'stun'))
+        self.assertEqual(len([e for e in b['animation_events'] if e['type']=='death_burst']),1)
+
     def test_driving_strike_has_attack_contact_collision_and_final_cell(self):
         b,a,t=self.fixture();b['terrain']=[{'id':'wall','x':4,'y':2,'blocking':True}]
         self.use(b,a,t,'bash')

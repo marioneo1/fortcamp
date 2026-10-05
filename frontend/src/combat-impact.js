@@ -2,6 +2,15 @@ import {COMBAT_MOTION} from './combat-animation.js';
 // Shared contact markers for sound, visible contact, recoil and feedback.
 export function movementDuration(event){return event.preview_settle?Math.max(80,Math.min(350,event.duration||220)):event.leap?420:event.forced?(event.collision?COMBAT_MOTION.collisionMove:220):Math.max(220,Math.min(850,Math.max(1,(event.points||[]).length-1)*155))}
 export function impactTimeline(events){
+  // Defeat facts can precede their lethal hit's displacement in server order.
+  // Resolve the body's push/rebound first, then collapse at its final cell.
+  events=events.slice();
+  for(const defeat of events.filter(e=>['death_burst','knockout'].includes(e.type))){
+    const at=events.indexOf(defeat);
+    const end=events.findLastIndex(e=>e.attack_packet!=null&&e.attack_packet===defeat.attack_packet&&
+      (e.type==='movement'&&e.forced||e.type==='collision_recoil'));
+    if(end>at){events.splice(at,1);events.splice(end,0,defeat)}
+  }
   let cursor=0;const packets=new Map();
   const collisions=new Map(events.filter(e=>e.type==='collision_recoil').map(e=>[`${e.attack_packet}:${e.unit_id}`,e]));
   return events.map(event=>{
