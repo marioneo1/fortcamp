@@ -18,7 +18,9 @@ export function skillTiming(skill){
   return 'Ready';
 }
 export function skillPicker(actor,escape){
-  if((actor?.skills||[]).length<2)return '';
-  const modern=actor.skills.some(s=>s.ability_version);
-  return `<label class="battle-skill-picker">Equipped technique<select id="battle-gear-skill" ${actor.acted||!modern&&actor.special_used?'disabled':''}>${actor.skills.map(skill=>`<option value="${escape(skill.id)}" ${skill.id===actor.special?.id?'selected':''}>${escape(skill.name)}${skill.source_name?` · ${escape(skill.source_name)}`:''}${skillTiming(skill)?` · ${escape(skillTiming(skill))}`:''}</option>`).join('')}</select><small>${modern?'Each technique has its own cooldown or uses. Switching techniques does not spend an action.':'All equipped techniques share one use per battle.'}</small></label>`;
+  const skills=actor?.skills||[],passives=actor?.passives||[];
+  if(!skills.length&&!passives.length)return '';
+  const modern=skills.some(s=>s.ability_version);
+  const groups=[['Character skills',skills.filter(s=>s.source_kind==='character')],['Equipment and proficiency',skills.filter(s=>s.source_kind!=='character')]];
+  return (skills.length?`<label class="battle-skill-picker">Ability<select id="battle-gear-skill" ${actor.acted||!modern&&actor.special_used?'disabled':''}>${groups.filter(([,rows])=>rows.length).map(([label,rows])=>`<optgroup label="${label}">${rows.map(skill=>`<option value="${escape(skill.id)}" ${skill.id===actor.special?.id?'selected':''}>${escape(skill.name)}${skill.source_name?` · ${escape(skill.source_name)}`:''}${skillTiming(skill)?` · ${escape(skillTiming(skill))}`:''}</option>`).join('')}</optgroup>`).join('')}</select><small>${modern?'Each technique has its own cooldown or uses. Switching techniques does not spend an action.':'All equipped techniques share one use per battle.'}</small></label>`:'')+(passives.length?`<details class="battle-passives"><summary>Character passives (${passives.length})</summary>${passives.map(p=>`<p><b>${escape(p.name)}</b> · ${escape(p.description)}</p>`).join('')}</details>`:'');
 }

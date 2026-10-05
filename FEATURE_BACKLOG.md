@@ -628,3 +628,16 @@ edge crossing from blocked interior cells; base character walking is still defer
 Validation: 161 frontend tests, 15 construction backend tests, build and browser
 rotation/collision checks pass. Dev only; production and player saves untouched.
 See docs/design/BASE_CONSTRUCTION.md for implemented rules and limitations.
+# October 4 — Job loadout dependency pass
+
+Implemented: Roster Skills tab; deliberate regular-character Job selection;
+twelve initial toolboxes with two supported actives and one passive each; learned
+versus equipped IDs; five shared active/passive slots; idle-only validated save;
+persisted battle snapshots; grouped unrestricted gear techniques and passive
+inspection; basic auto support for deployments/forms. See
+[JOB_LOADOUTS.md](docs/design/JOB_LOADOUTS.md).
+
+Next: publish all twelve starting Jobs in creation together with matching poor
+equipment; remove Medic/proficiency starter selection while preserving existing
+work training. Then implement later unlocks and differentiated builds. Champion
+authoring remains deferred. This pass does not implement the proposed 96 skills.

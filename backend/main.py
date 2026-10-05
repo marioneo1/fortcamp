@@ -567,6 +567,27 @@ async def equip(req: EquipRequest, identity: IdentityDep):
             await session.close()
 
 
+class LoadoutRequest(BaseModel):
+    skill_ids: list[str]
+    job_id: str | None = None
+
+
+@app.post('/api/characters/{character_id}/loadout')
+async def character_loadout(character_id: str, req: LoadoutRequest, identity: IdentityDep):
+    from .services import _player_locks
+    from .job_loadouts import update
+    async with _player_locks.setdefault((identity.guild_id,identity.user_id),asyncio.Lock()):
+        session,row=await locked_player(identity)
+        try:
+            state=deepcopy(row.state)
+            update(state,character_id,req.skill_ids,req.job_id)
+            row.state=state;row.updated_at=int(time.time());await session.commit()
+            return {'state':state}
+        except ValueError as exc:
+            await session.rollback();raise HTTPException(400,str(exc))
+        finally:await session.close()
+
+
 class RelationshipRequest(BaseModel):
     action: str = "talk"
     topic: str = "recent"

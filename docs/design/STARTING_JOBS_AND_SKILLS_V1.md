@@ -7,6 +7,9 @@ consuming those slots, and Champion kits deferred. Individual abilities and
 balance values below remain proposals.
 
 Current runtime still has six starting roles and equipment-driven techniques.
+The [loadout foundation](JOB_LOADOUTS.md) now supplies twelve opt-in initial
+toolboxes through Roster → Skills; it does not yet replace starter creation or
+implement the full catalogue/progression proposed below.
 The [ability foundation](COMBAT_ABILITIES.md) is now implemented in dev. The
 twelve Jobs and proposed 96 skills are not playable yet.
 See CAPTURE_AND_STARTING_ROLES.md for live behavior. Do not present this draft

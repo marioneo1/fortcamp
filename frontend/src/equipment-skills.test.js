@@ -30,3 +30,11 @@ test('resistance descriptions only advertise the statuses actually resisted',()=
  const poison=describeGear({combat_rules:{resistances:['poison']}},{}).join(' ');
  assert.match(poison,/Poison procs blocked/);assert.doesNotMatch(poison,/Burn proc chance halved/);
 });
+
+test('character and all gear abilities remain accessible alongside passive descriptions',()=>{
+ const skills=Array.from({length:8},(_,i)=>({id:`s${i}`,name:`Skill ${i}`,ability_version:1,source_kind:i<3?'character':'equipment'}));
+ const html=skillPicker({skills,passives:[{name:'Footwork',description:'Gain 5 evasion.'}]},s=>s);
+ assert.equal((html.match(/<option /g)||[]).length,8);
+ assert.match(html,/Character skills/);assert.match(html,/Equipment and proficiency/);
+ assert.match(html,/Gain 5 evasion/);
+});

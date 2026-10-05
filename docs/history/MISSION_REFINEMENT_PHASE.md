@@ -1129,3 +1129,16 @@ passed; final tooltip tests passed. Isolated actual battle UI confirmed resource
 capacity, deployment tooltips/context controls and no extra turn chips or JS errors.
 Production and real saves untouched. Canonical: COMBAT_DEPLOYMENTS.md and
 SUMMON_DEVICE_ART.md.
+# October 4, 2026 — Regular character loadouts
+
+Added twelve initial opt-in Job toolboxes and the Roster Skills editor. Five
+shared slots cover actives/passives; learned and equipped skills persist
+separately. Job choice does not replace equipment/proficiencies, and Champions
+remain outside generic Job migration. Battle snapshots now carry character
+actives, real passive modifiers and reactions alongside every equipment ability.
+Auto support understands legal/resource-bounded deployment and self forms.
+
+Validated 230 related backend tests, 188 frontend tests, frontend build and an
+isolated actual-browser fixture. Existing frontend chunk warning remains. Full
+twelve-Job starter creation, progression and later skills are next; see
+`docs/design/JOB_LOADOUTS.md`. No production deployment or player-save edits.

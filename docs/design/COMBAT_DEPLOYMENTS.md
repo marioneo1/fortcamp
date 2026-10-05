@@ -1,7 +1,8 @@
 # Summons and Engineer devices
 
-Engine dependency implemented in dev, October 4, 2026. Starter Jobs and their
-loadouts are not released yet. No existing gear, vendor or drop pool has been
+Engine dependency implemented in dev, October 4, 2026. JOB_LOADOUTS.md now covers
+opt-in Engineer/Summoner skill grants; full starter creation remains pending.
+No existing gear, vendor or drop pool has been
 changed to grant deployments. Profiles below are tested trial values, not final
 Job progression balance.
 

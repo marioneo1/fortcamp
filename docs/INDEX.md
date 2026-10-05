@@ -1,10 +1,15 @@
 # Fortcamp documentation map
 
+Current loadout foundation: [Jobs and character loadouts](design/JOB_LOADOUTS.md)
+covers five shared slots, learned/equipped IDs, twelve opt-in three-skill
+toolboxes, battle snapshots, passive effects and roster UI. Full starting-Job
+creation and progression remain pending.
+
 Current summon/device foundation: [Owner-linked deployments](design/COMBAT_DEPLOYMENTS.md) documents action/resource rules, tested profiles, UI, rewards and pending Job integration. [Artwork plan](art/SUMMON_DEVICE_ART.md) records the staged atlas and portrait-circle decision for mobile units.
 
 Current spaces foundation: [Combat zones and forms](design/COMBAT_SPACES.md) documents engine rules, fixed effect IDs, expiry/stacking, reversible forms, presentation and remaining targeting/AI work. No Job release yet.
 
-Implemented tactical dependencies: [Combat ability foundation](design/COMBAT_ABILITIES.md) now also covers Barrier/Mark, control timing, shared reactions, knockback resistance and authored pit outcomes. Jobs, loadouts, summons, forms and zones remain future work.
+Implemented tactical dependencies: [Combat ability foundation](design/COMBAT_ABILITIES.md) now also covers Barrier/Mark, control timing, shared reactions, knockback resistance and authored pit outcomes. Linked documents above cover the subsequent spaces, deployments and loadout foundations.
 
 Implemented first dependency: [Combat ability foundation](design/COMBAT_ABILITIES.md) covers per-technique costs, ordered effects, activation timing and legacy saves. Twelve starting Jobs remain proposed.
 

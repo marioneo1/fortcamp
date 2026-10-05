@@ -321,7 +321,9 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
             skills.append({'id': 'field_care', 'name': 'Field Care', 'target': 'ally', 'effect': 'support',
                            'range': 1, 'heal': 8, 'cleanses': ['bleed'], 'scaling': 'int',
                            'elevation_rule': 'physical_care', 'description': 'One shared technique use per battle. Range 1: restore 8 + half INT HP and stop Bleed. Physical treatment works while muted; cannot revive.'})
-    skills = abilities.snapshot(skills, _effective_attribute(state, character, 'int'))
+    from .job_loadouts import snapshot as snapshot_loadout
+    job_skills, job_passives, job_modifiers = snapshot_loadout(character)
+    skills = abilities.snapshot(job_skills + skills, _effective_attribute(state, character, 'int'))
     special = skills[0] if skills else None
     rules=collect_rules(equipped)
     race = character.get("race", "Human")
@@ -332,10 +334,12 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
     return {
         "id": character["id"], "name": character.get("name", "Adventurer"), "team": "player",
         "x": x, "y": y, "hp": max_hp, "max_hp": max_hp,
-        "armor": max(0, vit // 3 + int(racial["armor_bonus"])) + perks.get('armor',0),
+        "armor": max(0, vit // 3 + int(racial["armor_bonus"])) + perks.get('armor',0) + job_modifiers.get('armor',0),
         "move": max(2, min(8, 3 + (1 if agi >= 8 else 0) + int(racial["move_bonus"]) + perks.get('move',0))),
         "initiative": 10 + agi + int(racial["initiative_bonus"]) + perks.get('initiative',0), "attack_range": attack_range,
-        "evasion": int(racial["evasion"]) + perks.get('evasion',0), "movement_type": racial["movement_type"],
+        "evasion": int(racial["evasion"]) + perks.get('evasion',0) + job_modifiers.get('evasion',0), "movement_type": racial["movement_type"],
+        "displacement_resistance": job_modifiers.get('knockback_resistance',0),
+        "job_id": character.get('job_id'), "passives": job_passives,
         "perk_modifiers":perks,
         "racial_resistances": sorted(set(racial["resistances"])|set(rules['resistances'])), "racial_weaknesses": list(racial["weaknesses"]),
         "gear_rules":rules,
@@ -357,7 +361,7 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
         "portrait_frame_key": character.get('portrait_frame_key'),
         "special": special, "skills":skills, "special_used": False, "ability_version": 1,
         "ability_activation": 0, "ability_state": {}, "guarding": rules.get('opening_guard',False),
-        "reactions": [deepcopy(item['combat_reaction']) for item in equipped if item.get('combat_reaction')],
+        "reactions": [deepcopy(item['combat_reaction']) for item in equipped if item.get('combat_reaction')] + [deepcopy(p['reaction']) for p in job_passives if p.get('reaction')],
         "moved": False, "acted": False, "alive": True, "conscious": True, "condition": "active",
         "statuses": ([{'id':'lifeline_ready'}] if rules.get('lifeline') else []), "carrying": None, "carrying_object": None, "carried_by": None, "panicked": False, "fled": False,
         "loyalty": ensure_character(character)["loyalty"],
@@ -2506,9 +2510,17 @@ def _auto_support(battle, unit):
         if not abilities.availability(unit,skill)['available'] or skill.get('target') != 'ally' or (conditions.has(unit, 'mute') and skill['elevation_rule'] == 'line_of_effect'):
             continue
         effect = _support_effect(skill, unit)
+        if effect.get('deployment') or effect.get('form_change'):
+            if not _visible_enemies(battle):continue
+            if effect.get('form_change') and unit.get('form'):continue
+            if not _support_eligible(battle,unit,unit,effect):continue
+            if effect.get('deployment'):
+                try:_deployment_positions(battle,unit,effect['deployment'])
+                except ValueError:continue
+            _resolve_ability(battle,unit,unit,skill);_finish_turn(battle);return True
         targets = [u for u in _living(battle, unit['team']) if _support_eligible(battle, unit, u, effect)
-                   and (u['hp'] <= u['max_hp'] * .65 or any(s['id'] in effect.get('cleanses', []) for s in u['statuses'])
-                        or (effect.get('barrier') and any(_distance(u,e)<=4 for e in _living(battle,'enemy'))))]
+                   and ((effect.get('heal') and u['hp'] <= u['max_hp'] * .65) or any(s['id'] in effect.get('cleanses', []) for s in u['statuses'])
+                        or ((effect.get('barrier') or effect.get('guard_ally')) and any(_distance(u,e)<=4 for e in _visible_enemies(battle))))]
         if targets:
             target = min(targets, key=lambda u: u['hp'] / u['max_hp'])
             if skill.get('ability_version'):_resolve_ability(battle,unit,target,skill)

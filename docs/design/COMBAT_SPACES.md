@@ -2,7 +2,9 @@
 
 Implemented engine foundation in dev, October 4, 2026. This is dependency work,
 not the release of Druid/Mage/Cleric Jobs. No existing item drops or starter kits
-were changed. The twelve Jobs, loadouts and summon/device economy remain pending.
+were changed. Subsequent dependency passes implement deployment resources and
+regular loadouts; see COMBAT_DEPLOYMENTS.md and JOB_LOADOUTS.md. Full starter
+creation/progression remains pending.
 
 The existing versioned ability resolver accepts two additional ordered effects:
 `zone` and `form`. Authored effects use fixed supported IDs, bounded numbers and

@@ -115,9 +115,11 @@ def new_game(character: dict[str, Any]) -> dict[str, Any]:
 
 
 def public_content() -> dict[str, Any]:
+    from .job_loadouts import public_catalog
     from .inventory import sale_price
     from .starter_equipment import STARTING_ROLES
     return {
+        "job_loadouts": public_catalog(),
         "starting_roles": STARTING_ROLES,
         "economy": public_economy({}),
         "personalities": {key:{"name":value[0],"description":value[1]} for key,value in PERSONALITIES.items()},
@@ -310,6 +312,8 @@ def normalize_state(state: dict) -> dict:
             char.pop("recovers_at", None)
             char.pop("recovery_location", None)
         ensure_character(char)
+        from .job_loadouts import initialize as initialize_loadout
+        initialize_loadout(char)
         initialize_stamina(char)
         char.setdefault("attributes", {attribute: 5 for attribute in ATTRIBUTE_NAMES})
         char.setdefault("portrait_thumbnail", char.get("portrait", ""))

@@ -1,6 +1,9 @@
 # Combat ability foundation
 
-Implemented in dev, October 4, 2026. The twelve starting Jobs, loadouts, Job passives, summons, forms and zones remain proposed. See STARTING_JOBS_AND_SKILLS_V1.md.
+Implemented in dev, October 4, 2026. Subsequent foundations now cover spaces,
+deployments and regular loadouts; see COMBAT_SPACES.md, COMBAT_DEPLOYMENTS.md and
+JOB_LOADOUTS.md. Full starting-Job creation/progression remains proposed in
+STARTING_JOBS_AND_SKILLS_V1.md.
 
 ## Player rules
 
@@ -30,7 +33,8 @@ Tests cover JSON reload, repeated views, independent charges, misses, invalid co
 
 Removing forced defeat exposed existing auto pathfinding stalls at walls in Locked Tool Shed and the former-command prison encounter. Auto pauses these fights; boundary-aware approach/pathfinding needs follow-up. Do not claim all maps complete automatically.
 
-Next: zones/forms/summons, regular five-slot loadouts and Job UI/AI. Publish all twelve starters together after planned encounter checks.
+Next: full twelve-Job starter creation, later unlocks, progression and kit-aware AI.
+Publish all twelve starters together after planned encounter checks.
 
 Validation: 420 backend tests and 183 frontend tests passed; Vite build passed (existing large-chunk warning). Isolated Chrome check confirmed cooldown labels, independent selection and action-button availability without JavaScript errors. No live API/database used for browser review.
 
@@ -54,4 +58,7 @@ Validation: full backend regression 432 tests passed, followed by 74 focused tes
 
 October 4 spaces dependency: zone/form effects, bounded activation clocks, route entry, reversible Prowler/Bulwark profiles and battle presentation are now implemented as engine vocabulary. No starter kits or gear drops changed. See COMBAT_SPACES.md for limitations; summon/device economy and the Job/loadout rollout are next.
 
-Deployment effects and owner-linked temporary units are now implemented as dependency vocabulary; COMBAT_DEPLOYMENTS.md is authoritative. Job granting/loadouts and the full placement/command UI remain pending.
+Deployment effects and owner-linked temporary units are implemented;
+COMBAT_DEPLOYMENTS.md is authoritative. JOB_LOADOUTS.md now documents opt-in
+starter skill grants and loadouts. Full starter creation and dedicated placement
+controls remain pending.
