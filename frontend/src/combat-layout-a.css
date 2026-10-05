@@ -41,3 +41,22 @@
 .layout-a .combat-actions kbd{font-size:12px}
 @media(max-width:1100px){.layout-a .battle-primary-panel{grid-column:1/-1}.layout-a .battle-primary-panel .combat-actions{grid-template-columns:repeat(6,minmax(0,1fr))}}
 @media(max-width:800px){.layout-a .battle-primary-panel .combat-actions{grid-template-columns:repeat(3,minmax(0,1fr))}}
+
+/* Unit cards spread forecasts and effects horizontally; status-only tips stay small. */
+.combat-unit-inspect:has(.inspect-columns){width:680px!important;padding:16px!important}
+.inspect-columns{display:grid;grid-template-columns:minmax(0,1.3fr) minmax(0,1fr);gap:18px;align-items:start}
+.inspect-overview,.inspect-effects{min-width:0}
+.inspect-effects{border-left:1px solid #8c986444;padding-left:16px}
+.inspect-effects .inspect-status-group:first-child h4{margin-top:0}
+.combat-unit-inspect .inspect-stat-grid{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px;margin:10px 0}
+.combat-unit-inspect .inspect-stat-grid>div{display:flex;align-items:baseline;justify-content:space-between;gap:6px;padding:6px}
+.combat-unit-inspect .inspect-stat-grid dt{font-size:11px;font-weight:700;white-space:nowrap}
+.combat-unit-inspect .inspect-stat-grid abbr{border:0;text-decoration:none}
+.combat-unit-inspect .inspect-stat-grid dd{font-size:16px;margin:0}
+.combat-unit-inspect .inspect-health{margin:9px 0}
+.combat-unit-inspect .inspect-forecast{padding:10px}
+.combat-unit-inspect .inspect-tactical-detail{margin:10px 0;line-height:1.5}
+@media(max-width:680px){.inspect-columns{grid-template-columns:1fr}.inspect-effects{border-left:0;border-top:1px solid #8c986444;padding:10px 0 0}}
+
+.inspect-columns.no-effects{grid-template-columns:1fr}.inspect-columns.no-effects .inspect-effects{display:none}.combat-unit-inspect .no-effects .inspect-stat-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+@media(max-width:680px){.combat-unit-inspect .no-effects .inspect-stat-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}

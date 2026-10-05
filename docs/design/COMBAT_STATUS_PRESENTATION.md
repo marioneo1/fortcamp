@@ -9,8 +9,10 @@ art with distinct positive/negative framing, adapted for a turn-based map.
 - The acting character has a full-width status strip in the bottom command dock.
   Green-framed Buffs, red-framed Debuffs and blue-framed Other effects are
   separated and named. Icons are 48 px, with short names underneath.
-- Map units show all compact effects as 36 px square art, arranged above the
-  portrait from the upper-left of its enclosing box, wrapping into further rows.
+- Map units show all compact effects as 36 px square art. The first row begins
+  slightly inside the unit upper-left (8% from the top, 4% from the left), with
+  further rows wrapping downward. The row is a child of the moving NPC token,
+  never a separate cell overlay. It no longer stacks upward into the cell above.
   Control statuses take priority, then damage over time. Hover the unit to see
   every effect; hovering a specific icon gives that effect's description.
 - Unit inspection lists every effect in its group with 36 px art, name,

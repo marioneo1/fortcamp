@@ -44,7 +44,9 @@ export function impactTimeline(events){
     }else if(event.type==='collision_recoil'){
       const moved=events.some(e=>e.type==='movement'&&e.forced&&e.unit_id===event.unit_id&&e.attack_packet===key);
       if(packet&&!moved){packet.land=packet.impact+COMBAT_MOTION.stationaryContact;packet.recovery=packet.impact+COMBAT_MOTION.stationaryBounce;start=packet.land}
-      duration=COMBAT_MOTION.recoil;cursor=Math.max(cursor,start+duration+50);
+      duration=COMBAT_MOTION.collisionRecoil;
+      if(packet)packet.recovery=Math.max(packet.recovery,start+duration);
+      cursor=Math.max(cursor,(packet?.recovery??start+duration)+COMBAT_MOTION.collisionRest);
     }else if(event.type==='death_burst'||event.type==='knockout'){
       if(packet)start=packet.recovery;
       duration=COMBAT_MOTION.collapse;cursor=Math.max(cursor,start+duration+60);

@@ -21,7 +21,7 @@ test('hover forecast distinguishes damage on hit, accuracy, barrier and intercep
   {damage_on_hit:11,chance:80,absorbed_damage:5,intercepted_by:'Protector',move_to:{x:2,y:2},movement_cost:3});
  assert.match(html,/11 HP damage on hit/);assert.match(html,/80% accuracy/);
  assert.match(html,/Barrier absorbs 5/);assert.match(html,/Intercepted by Protector/);
- assert.match(html,/Approach: 3 movement/);assert.match(html,/<dt>Armor<\/dt><dd>7<\/dd>/);
+ assert.match(html,/Approach: 3 movement/);assert.match(html,/title="Armor">ARM<\/abbr><\/dt><dd>7<\/dd>/);
  assert.match(html,/Cudgel/);
 });
 

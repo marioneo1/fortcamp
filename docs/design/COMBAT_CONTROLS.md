@@ -183,3 +183,29 @@ Dock status icons are 48 px. Existing keybinds remain.
 [Fighter review](FIGHTER_COMBAT_REVIEW.md) records attached chain movement,
 collision forecasts, audio correction and browser verification. Atlas source,
 prompt and import: `docs/art/COMBAT_CONTROLS_V2_PROMPT.md`.
+
+## October 5 follow-up: target cursors and wider inspection
+
+All weapon targeting cursors are 50% larger than their preceding sizes and face
+upper-left: sword, subdue gauntlet, thrown object, bow, magic wand and chain hook.
+The hook's actual effect still rotates toward its target; this direction rule is
+for the cursor. Native PNGs are derived reproducibly by the existing atlas importer.
+Cursor hotspots scale with the artwork; pointer/loading/unavailable cursors are
+unchanged. No paid generation was needed.
+
+Selected skills now determine their target cursor from the skill's own targeting
+rule and effects: ballistic shots use the bow (including Poisoned Dart/Dust Shot),
+magical targeting uses the wand, pulls use the hook, and support/deployment uses
+the pointer. Basic attacks retain equipped-weapon selection. Invalid targets and
+busy playback retain their respective X/hourglass rather than a weapon cursor.
+
+The unit hover card is 680 px wide within screen bounds. Forecasts and compact
+abbreviated stats sit beside effects; a unit without effects uses the full width.
+ATK/ARM/MOV/RNG/ACC/EVA/INIT/LVL/ELEV retain full labels in abbreviation titles.
+Narrow screens stack the columns. Status-only hover cards remain smaller.
+
+Map status rows now start slightly inside the moving unit's upper-left and wrap
+downward, keeping 36 px icons. Browser measured roughly 5 px top / 3 px left inset
+at the tested zoom. See [Status presentation](COMBAT_STATUS_PRESENTATION.md).
+Validation: 238 frontend tests, build and isolated browser inspection/targeting
+checks; review capture `staging-ui/combat-fighter-review/target-card-v3.png`.

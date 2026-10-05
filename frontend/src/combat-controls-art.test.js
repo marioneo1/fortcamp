@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {existsSync} from 'node:fs';
-import {basicAttackArt} from './combat-controls-art.js';
+import {basicAttackArt,targetingArt} from './combat-controls-art.js';
 import {chainLifetime,chainTravel,displacementPreviewMarkup} from './fighter-effects.js';
 
 test('basic attack art follows weapon rules and capture overrides ranged magic',()=>{
@@ -22,4 +22,11 @@ test('displacement markers distinguish endpoint and actual impact damage',()=>{
  const html=displacementPreviewMarkup({tactics:[{type:'pull',destination:{x:3,y:2},collision_cell:{x:2,y:2},solid_collision:true,collision_damage:6,collision_target_name:'Guard',bystander_damage:4}]},{width:8,height:8},String);
  assert.match(html,/PULL ENDS HERE/);assert.match(html,/IMPACT \+6 \/ Guard 4/);
  assert.equal(displacementPreviewMarkup(null,{width:8,height:8},String),'');
+});
+
+test('ranged status shots use bow cursors and skill rules override equipped weapons',()=>{
+ const mage={attack_elevation_rule:'line_of_effect'};
+ for(const id of ['job:ranger:poison','job:ranger:dust'])assert.equal(targetingArt(mage,{id,target:'enemy',elevation_rule:'ballistic',effects:[{type:'status'}]}),'ranged');
+ assert.equal(targetingArt(mage,{target:'enemy',elevation_rule:'melee',effects:[{type:'displace',mode:'pull'}]}),'chain_hook');
+ assert.equal(targetingArt(mage,{target:'ally',effects:[{type:'barrier'}]}),'pointer');
 });

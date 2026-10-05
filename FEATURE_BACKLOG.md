@@ -905,3 +905,17 @@ Remaining: distinct status-icon art, richer Barrier/Burn/Freeze presentation,
 player sound review and optional chain sparks. Effekseer is unnecessary for the
 hook's resolved movement. See `docs/design/FIGHTER_COMBAT_REVIEW.md` and
 `docs/art/COMBAT_CONTROLS_V2_PROMPT.md` for implementation and asset provenance.
+
+## October 5: cursor, hover and collision follow-up (implemented in dev)
+
+Moved attached status rows just inside the NPC upper-left, wrapping downward.
+Enlarged every weapon targeting cursor 50%, aligned them upper-left and made
+skill targeting choose bow/magic/hook/support art from its own mechanics.
+Widened unit inspection with compact abbreviated stats and responsive columns.
+Added collision hit-stop, clearer bystander recoil and complete recovery before
+an immediately following enemy attack. No paid generation or production changes.
+
+238 frontend tests, build and isolated full-command browser checks pass.
+Canonical details: `docs/design/COMBAT_CONTROLS.md`,
+`docs/design/COMBAT_IMPACT.md`, `docs/design/COMBAT_STATUS_PRESENTATION.md`.
+Further status artwork and Barrier/ground-effect presentation remain pending.

@@ -108,3 +108,13 @@ test('walking retains its hop and tilt; forced movement stays a slide',()=>{
  assert.match(slide[1].transform,/,0px/);assert.match(slide[1].transform,/scale\(1\)/);
  assert.equal(walk.at(-1).transform,'translate(0px,0px) scale(1)');
 });
+
+test('a pulled enemy cannot start its own attack until both collision rebounds finish',()=>{
+ const events=[{type:'chain_attack',attack_packet:1,attacker_id:'p',target_id:'e'},
+  {type:'movement',unit_id:'e',forced:true,attack_packet:1,points:[{x:5,y:2},{x:4,y:2}]},
+  {type:'collision_recoil',unit_id:'e',bystander_id:'ally',attack_packet:1,after_displacement:true},
+  {type:'melee_attack',attacker_id:'e',target_id:'ally',attack_packet:2}];
+ const rows=impactTimeline(events),collision=rows[2],attack=rows[3];
+ assert.ok(attack.start>=collision.start+collision.duration+100);
+ assert.ok(attack.start>=rows[1].start+rows[1].duration);
+});

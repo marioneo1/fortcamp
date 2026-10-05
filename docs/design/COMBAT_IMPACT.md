@@ -193,3 +193,18 @@ survival and reactions.
 Earthbreaker's area attack no longer falls through to generic `magic_cast`.
 Its landing gain is 0.65 plus a new 0.38 crater layer at the same impact contact.
 See [Fighter review](FIGHTER_COMBAT_REVIEW.md) for verification and limitations.
+
+## October 5 follow-up: collision recovery before the next attack
+
+Collisions retain their existing travel/contact times and distances, but hold
+the compressed contact pose for 70 ms before rebounding. The struck bystander
+has a 240 ms recoil with a visible compressed-pose hold. Shared packet recovery
+now includes both the forced movement and collision recipient recoil. A 100 ms
+settling interval precedes the next attack/move; collapse also waits for complete
+packet recovery. Walking hop/tilt, basic melee timings and gameplay are unchanged.
+
+A full backend command fixture pulls an enemy into an ally and immediately gives
+that enemy its turn. Browser sampling verifies contact, both rebounds, neutral
+settling, then the enemy lunge. Command input remains locked during playback.
+Frontend regression tests check the same sequencing and lethal/stationary cases.
+Fixture/review script: `staging-ui/combat-fighter-review/pull-followup-qa.mjs`.

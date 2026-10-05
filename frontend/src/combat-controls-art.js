@@ -5,6 +5,14 @@ export function basicAttackArt(unit){
  if(['ignore','line_of_effect'].includes(unit?.attack_elevation_rule))return 'magic';
  return 'attack';
 }
+export function targetingArt(unit,skill){
+ if(!skill)return basicAttackArt(unit);
+ if(skill.target==='ally'||(skill.effects||[]).some(e=>['deploy','form'].includes(e.type)))return 'pointer';
+ if((skill.effects||[]).some(e=>e.type==='displace'&&e.mode==='pull'))return 'chain_hook';
+ if(skill.elevation_rule==='ballistic')return 'ranged';
+ if(['ignore','line_of_effect'].includes(skill.elevation_rule))return 'magic';
+ return 'attack';
+}
 
 // One cursor overlay, event-driven. Native PNG cursors handle the non-animated states.
 export function createBattleCursor(){

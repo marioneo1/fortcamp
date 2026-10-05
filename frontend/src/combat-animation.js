@@ -1,4 +1,4 @@
-export const COMBAT_MOTION={contact:185,melee:400,recoil:170,collisionMove:420,collisionContact:220,stationaryBounce:320,stationaryContact:100,collapse:440};
+export const COMBAT_MOTION={contact:185,melee:400,recoil:170,collisionMove:420,collisionContact:220,collisionHold:70,collisionRecoil:240,collisionRest:100,stationaryBounce:320,stationaryContact:100,collapse:440};
 export function meleeFrames(dx,dy,scale=1){
   return [{transform:`translate(0,0) scale(${scale})`,offset:0},
     {transform:`translate(${-dx*.12}px,${-dy*.12}px) scale(${scale*.98})`,offset:.22},
@@ -17,10 +17,17 @@ export function collisionFrames(points,unit,toward,cw,ch,scale=1){
   const first=points[0]||unit,last=points.at(-1)||unit;
   const dx=Math.sign(toward.x-last.x)*cw*.28,dy=Math.sign(toward.y-last.y)*ch*.28;
   const moving=points.length>1,contact=(moving?COMBAT_MOTION.collisionContact:COMBAT_MOTION.stationaryContact)/(moving?COMBAT_MOTION.collisionMove:COMBAT_MOTION.stationaryBounce);
+  const hold=contact+COMBAT_MOTION.collisionHold/(moving?COMBAT_MOTION.collisionMove:COMBAT_MOTION.stationaryBounce);
   return [{transform:`translate(${(first.x-unit.x)*cw}px,${(first.y-unit.y)*ch}px) scale(${scale})`,filter:'brightness(1)',offset:0},
     {transform:`translate(${(last.x-unit.x)*cw+dx}px,${(last.y-unit.y)*ch+dy}px) scale(${scale*.88})`,filter:'brightness(1.65)',offset:contact},
-    {transform:`translate(${(last.x-unit.x)*cw-dx*.4}px,${(last.y-unit.y)*ch-dy*.4}px) scale(${scale})`,filter:'brightness(1)',offset:Math.min(.93,contact+.17)},
+    {transform:`translate(${(last.x-unit.x)*cw+dx}px,${(last.y-unit.y)*ch+dy}px) scale(${scale*.88})`,filter:'brightness(1.4)',offset:hold},
+    {transform:`translate(${(last.x-unit.x)*cw-dx*.4}px,${(last.y-unit.y)*ch-dy*.4}px) scale(${scale})`,filter:'brightness(1)',offset:Math.min(.93,hold+.14)},
     {transform:`translate(${(last.x-unit.x)*cw}px,${(last.y-unit.y)*ch}px) scale(${scale})`,filter:'brightness(1)',offset:1}];
+}
+export function collisionRecipientFrames(dx,dy,scale=1){
+ const frames=recoilFrames(dx,dy,scale);
+ return [frames[0],{...frames[1],offset:.08},{...frames[2],offset:.2},
+  {...frames[2],offset:.48},{...frames[3],offset:.78},frames[4]];
 }
 export function collapsePlacement(living,body){
   return {x:body.x+body.width/2-living.x-living.width/2,y:body.y+body.height/2-living.y-living.height/2,

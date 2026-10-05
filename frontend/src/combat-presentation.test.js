@@ -20,7 +20,7 @@ test('collision contact precedes bounce recovery and lethal collapse',()=>{
     {type:'death_burst',attack_packet:1,after_displacement:true}];
   const before=structuredClone(events),rows=impactTimeline(events);
   assert.equal(rows[3].start,185+COMBAT_MOTION.collisionContact);
-  assert.equal(rows[4].start,185+COMBAT_MOTION.collisionMove);
+  assert.equal(rows[4].start,185+Math.max(COMBAT_MOTION.collisionMove,COMBAT_MOTION.collisionContact+COMBAT_MOTION.collisionRecoil));
   const frames=collisionFrames(events[1].points,{x:2,y:0},{x:3,y:0},100,100);
   assert.equal(frames[1].offset*rows[1].duration,COMBAT_MOTION.collisionContact);
   assert.ok(Math.abs(parseFloat(frames[1].transform.split('(')[1])-28)<.01);
@@ -33,7 +33,7 @@ test('stationary collision still bounces before knockout and next attack',()=>{
     {type:'combat_feedback',attack_packet:1,after_displacement:true},
     {type:'knockout',attack_packet:1},{type:'melee_attack',attack_packet:2}]);
   assert.equal(rows[2].start,185+COMBAT_MOTION.stationaryContact);
-  assert.equal(rows[3].start,185+COMBAT_MOTION.stationaryBounce);
+  assert.equal(rows[3].start,185+Math.max(COMBAT_MOTION.stationaryBounce,COMBAT_MOTION.stationaryContact+COMBAT_MOTION.collisionRecoil));
   assert.ok(rows[4].start>=rows[3].start+COMBAT_MOTION.collapse);
   assert.equal(collapseFrames(true).at(-1).opacity,0);
 });
