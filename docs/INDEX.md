@@ -1,7 +1,8 @@
 # Fortcamp documentation map
 
 Current Fighter review: [Fighter combat and UI audit](design/FIGHTER_COMBAT_REVIEW.md)
-records the implemented Layout A with larger skills and right-hand commands,
+records the current full-width map, bottom skills/three-by-two commands,
+hover stats and damage forecasts, plus utility dialogs,
 Fighter Chain Snare/Earthbreaker/area rally, 150%/200% attack power,
 collision stun, two-turn armor fracture and per-target shockwave contact,
 contact/collision rules, composed token motion, enemy-playback input lock,

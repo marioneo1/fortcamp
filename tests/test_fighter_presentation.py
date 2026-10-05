@@ -63,6 +63,23 @@ class FighterPresentationTests(unittest.TestCase):
         self.assertEqual(t['hp'],94) # (18-4)*75%, rounded up, then 5 shield.
         self.assertFalse(t['guarding'])
 
+    def test_attack_forecast_matches_guard_armor_and_barrier_without_mutating_battle(self):
+        b,a,t=self.fixture();t.update(armor=4,guarding=True)
+        conditions.barrier(t,5,2,t);before=deepcopy(b)
+        skill=self.skill('bash')
+        preview=combat._strike_preview(b,a,t,'melee',1,skill)
+        self.assertEqual(b,before)
+        self.assertEqual(preview['damage_on_hit'],6)
+        self.assertEqual(preview['absorbed_damage'],5)
+        self.use(b,a,t,'bash')
+        self.assertEqual(100-t['hp'],preview['damage_on_hit'])
+
+    def test_forecast_uses_current_fractured_armor(self):
+        b,a,t=self.fixture();t.update(armor=10)
+        conditions.apply(t,'armor_fracture',2,a)
+        preview=combat._strike_preview(b,a,t,'melee',1,self.skill('bash'))
+        self.assertEqual(preview['damage_on_hit'],11)
+
     def test_chain_armor_fracture_does_not_stack_and_expires_after_two_turns(self):
         b,a,t=self.fixture();t.update(x=5,y=2,armor=11)
         self.use(b,a,t,'cover')

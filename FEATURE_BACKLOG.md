@@ -1,5 +1,14 @@
 # Fortcamp feature backlog
 
+## October 5: map-first combat workspace (implemented in dev)
+
+Moved commands beside skills (3x2), removed the inspector rail, added readable
+hover/focus unit stats and direct-hit forecasts using the actual damage rules.
+Supplies/passives/history/options use centered dialogs; retained both auto modes
+and exit confirmation. Wheel/pan plus one crosshair fit button replace zoom clutter.
+Validated 109 backend / 211 frontend tests, build and desktop/narrow browser UI.
+Ground AOE per-victim damage estimates remain deferred.
+
 ## October 5: push-before-contact regression repair (implemented in dev)
 
 Composed per-token motion prevents later enemy movement from overriding the

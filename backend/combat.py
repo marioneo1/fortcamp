@@ -1068,6 +1068,18 @@ def _strike_preview(battle,actor,target,rule,reach,skill=None):
         'description':spaces.ZONES[e['zone']]['description'],'cells':_zone_cells(battle,recipient,e),
         'turns':e['turns']} for e in (skill or {}).get('effects',[]) if e['type']=='zone']
     if not direct:preview.update(chance=100,damage_bonus=0,setup_only=True)
+    if direct:
+        effect=next((e for e in (skill or {}).get('effects',[]) if e['type']=='attack'),skill or {})
+        if skill and skill.get('ability_version')!=1:
+            effect={**effect,'damage_bonus':int(skill.get('damage_bonus',3)),
+                    'armor_pierce':int(skill.get('armor_pierce',2 if skill['id']=='precision_shot' else 0))}
+        source={**actor,'attack':(skill or {}).get('attack',actor['attack']),'attack_elevation_rule':rule,
+                'element':(skill or {}).get('element',actor.get('element'))}
+        bonus=preview['damage_bonus']+(_ability_power_bonus(actor,skill,effect) if skill else 0)
+        amount=_damage_before_barrier({'animation_events':[]},source,deepcopy(recipient),bonus,effect.get('armor_pierce',0))
+        preview['absorbed_damage']=min(amount,preview['barrier'])
+        preview['damage_on_hit']=max(0,amount-preview['barrier'])
+        preview['damage_note']='Direct hit only; collision, reactions and chance-based effects are separate.'
     return preview
 
 
@@ -1544,20 +1556,7 @@ def _ability_power_bonus(actor,skill,effect):
     return attack*effect.get('power_percent',100)//100-attack+effect.get('damage_bonus',0)
 
 
-def _deal_damage(
-    battle: dict, attacker: dict, target: dict, bonus: int = 0, armor_pierce: int = 0,
-    intent: str = "lethal", ability: dict | None = None,
-) -> int:
-    source_unit=battle.get('units',{}).get(attacker.get('id'))
-    if not attacker.get('status_tick') and source_unit and not _combat_active(source_unit):return 0
-    if not attacker.get("status_tick"):
-        _wake_ambush(battle, target)
-    if ability:
-        finisher = attacker.get('knockout_finisher',0) if ability.get('source_name', attacker.get('weapon')) == attacker.get('weapon') else 0
-        attacker = {**attacker, 'knockout_finisher':finisher, "attack": ability.get("attack", attacker["attack"]),
-                    "attack_elevation_rule": ability["elevation_rule"],
-                    "element": ability.get("element", attacker.get("element")),
-                    "on_hit": ability.get("on_hit", attacker.get("on_hit")),"weapon":ability.get('source_name',attacker.get('weapon',''))}
+def _damage_before_barrier(battle,attacker,target,bonus=0,armor_pierce=0,intent="lethal"):
     armor = max(0, _effective_armor(target) - armor_pierce)
     if conditions.has(target, 'vulnerable') and not attacker.get('status_tick'):
         armor = max(0, armor - 3)
@@ -1595,6 +1594,25 @@ def _deal_damage(
         damage = max(1, (damage * 3 + 2) // 4)
         target["guarding"] = False
         _record_sound(battle, "shield_block", offset=185)
+    return damage
+
+
+def _deal_damage(
+    battle: dict, attacker: dict, target: dict, bonus: int = 0, armor_pierce: int = 0,
+    intent: str = "lethal", ability: dict | None = None,
+) -> int:
+    source_unit=battle.get('units',{}).get(attacker.get('id'))
+    if not attacker.get('status_tick') and source_unit and not _combat_active(source_unit):return 0
+    if not attacker.get("status_tick"):
+        _wake_ambush(battle, target)
+    if ability:
+        finisher = attacker.get('knockout_finisher',0) if ability.get('source_name', attacker.get('weapon')) == attacker.get('weapon') else 0
+        attacker = {**attacker, 'knockout_finisher':finisher, "attack": ability.get("attack", attacker["attack"]),
+                    "attack_elevation_rule": ability["elevation_rule"],
+                    "element": ability.get("element", attacker.get("element")),
+                    "on_hit": ability.get("on_hit", attacker.get("on_hit")),"weapon":ability.get('source_name',attacker.get('weapon',''))}
+    damage = _damage_before_barrier(battle,attacker,target,bonus,armor_pierce,intent)
+    element = attacker.get('element')
     absorbed=0
     if not attacker.get('capture_only') and not attacker.get('environmental_fall'):
         damage,absorbed=conditions.absorb(target,damage)

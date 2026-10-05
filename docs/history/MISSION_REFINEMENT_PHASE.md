@@ -1285,3 +1285,11 @@ Driving Strike/Earthbreaker hold victims until contact, before their enemy turn.
 Commands and hotkeys lock through attacks/enemy animation, with a visible notice;
 pure player repositioning remains interruptible. 210 frontend tests, build and
 real-UI multi-motion browser checks pass. No gameplay/save/production changes.
+
+## October 5: combat dock/hover workspace
+
+Replaced the right rail with full-width map, bottom 3x2 commands, hover/focus
+unit details and direct-hit estimates. On-demand utility dialogs retain supplies,
+passives/history, auto and exit controls. Forecast shares damage math without
+consuming live defenses. 109 backend / 211 frontend tests, build and browser UI
+checks pass. Dev only; details/limits in FIGHTER_COMBAT_REVIEW.md.

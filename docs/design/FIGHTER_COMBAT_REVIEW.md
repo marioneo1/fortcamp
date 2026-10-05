@@ -258,3 +258,42 @@ movement on either axis. Map click, Space and direct move commands produce zero
 requests while locked; controls unlock after the sequence. Existing two-victim
 collision, chain/rally and 1440x900 layout browser checks also pass. No backend
 rules, production or player saves changed. Existing build-size warning remains.
+
+## October 5: map-first dock and hover cards (implemented in dev)
+
+Removed the right rail. The map spans the battle workspace, with acting character,
+large skill icons and a separate three-column/two-row command box in the bottom
+dock. Action Preview is a readable strip beneath the dock contents rather than
+a popup covering targets. Turn order uses compact framed portraits with clear
+position numbers and current-turn emphasis; it scrolls horizontally when needed.
+
+Hovering or keyboard-focusing any visible unit opens a 390px card beside it,
+clamped to the viewport. It includes HP, current armor, attack, movement, range,
+available accuracy/evasion/initiative/level, elevation, weapon, status explanations
+and passives. Long cards scroll; the pointer can enter the card to read details.
+During Attack/Subdue/targeted Skill selection it also shows the available attack
+forecast, including approach movement and interception. No concealed enemy
+identity is exposed by these cards.
+
+Damage previews report HP damage on a successful direct hit and accuracy,
+separately. They share the combat damage calculation: skill power, elevation,
+armor/Armor Fracture/Vulnerable, racial/perk/gear bonuses, element effects, Guard
+and current Barrier absorption. Previewing uses only a copied target and does
+not consume guard, statuses, shields or rolls. Collision, reactions, finishing
+safeguards and chance-based on-hit effects are not promised in this number.
+Throw previews label their existing raw impact power explicitly. Ground-targeted
+AOE forecasts remain area indicators rather than a per-victim damage forecast.
+
+A compact toolbar above the map opens Supplies, Passives, History and Battle
+options in centered dialogs. Supply targeting, per-battle usage rules, both auto
+buttons, tactic selection, exit and Retreat All confirmation are retained.
+Dialogs close via X, Escape or an outside click. Mousewheel zoom/right-drag pan
+remain; the redundant visible +/-/zoom buttons are removed. A small crosshair
+button fits the whole map. These changes retain playback locking.
+
+Validation: 109 related backend tests, 211 frontend tests and build pass. Browser
+checks at 1440x900 confirm the command box is in the dock with three columns,
+no right rail, a bounded hover card with live forecast/status data, working
+Supplies/options dialogs and both auto buttons. 1000x800 has no horizontal
+modal overflow; short screens can require vertical scrolling. Existing build
+size warning remains. Dev only; no player saves or production changed.

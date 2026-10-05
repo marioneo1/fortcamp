@@ -109,3 +109,11 @@ Commands and hotkeys wait for resolved attacks and all enemy motion to finish;
 a Resolving turn notice indicates the pause. Pure player movement previews
 remain interruptible, and lingering damage text does not block input. See
 [Fighter review](FIGHTER_COMBAT_REVIEW.md) for the bug and browser validation.
+
+## October 5: bottom commands and hover forecasts
+
+The full-width map now has commands beside skills in a three-by-two bottom box,
+with action guidance below it. Unit stats/statuses and direct-hit forecasts are
+in scrollable hover/focus cards. Supplies/passives/history/options open centered
+dialogs. Wheel/right-drag camera controls remain, with one small map-fit button.
+See [Fighter review](FIGHTER_COMBAT_REVIEW.md) for forecast limits and validation.
