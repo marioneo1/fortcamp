@@ -1,5 +1,9 @@
 # Fortcamp documentation map
 
+Current combat feel: [Impact and damage feedback](design/COMBAT_IMPACT.md)
+covers collision damage, Ember crossings, typed damage numbers, visible shields,
+shared hit/knockback/audio timing and the four new impact sounds.
+
 Current combat controls: [Hotbar, targeting and map controls](design/COMBAT_CONTROLS.md)
 covers 1-9/0 skills, ground area previews, combined movement/casting, automatic
 25% Guard, status cards, right-drag panning and sequential enemy animations.

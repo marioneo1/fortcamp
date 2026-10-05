@@ -32,11 +32,11 @@ def strike(key, name, description, extra):
 
 
 register('fighter','Fighter','Protect allies or break enemy positions.',
-    strike('bash','Driving Strike','Melee hit pushes one cell. Stable enemies resist.',{'type':'displace','mode':'push','distance':1}),
+    strike('bash','Driving Strike','Melee hit pushes one cell. Stable enemies resist. Hitting a solid obstacle adds half the hit as collision damage; hitting a person hurts both, including allies.',{'type':'displace','mode':'push','distance':1}),
     active('cover','Cover','Give an ally a 10 HP Barrier for one of their activations.',[{'type':'barrier','amount':10,'turns':1}], 'ally',2,'physical_care',3),
     passive('intercept','Intercept','Redirect one attack against an adjacent ally. Shares your reaction allowance.',reaction={'id':'intercept','name':'Intercept'}))
 register('barbarian','Barbarian','Disrupt nearby enemies, at the cost of staying exposed.',
-    strike('shove','Brutal Shove','Melee hit pushes one cell; walls stop displacement.',{'type':'displace','mode':'push','distance':1}),
+    strike('shove','Brutal Shove','Melee hit pushes one cell; walls stop displacement. Hitting a solid obstacle adds half the hit as collision damage; hitting a person hurts both, including allies.',{'type':'displace','mode':'push','distance':1}),
     strike('expose','Crack Defenses','Melee hit applies Vulnerable for one target activation.',{'type':'status','status':'vulnerable','turns':1}),
     passive('anchored','Anchored','50 extra knockback resistance; does not prevent damage.',{'knockback_resistance':50}))
 register('rogue','Rogue','Exploit weak targets and interfere with their attacks.',
@@ -48,7 +48,7 @@ register('ranger','Ranger','Set up accurate shots and control approaches.',
     active('snare','Snaring Ground','Create binding ground at a chosen cell and adjacent legal cells for two of your activations.',[{'type':'zone','zone':'binding','radius':1,'turns':2}],range=4,rule='ballistic',cooldown=3),
     passive('footwork','Field Footwork','Gain 5 evasion; no extra damage.',{'evasion':5}))
 register('mage','Mage','Create dangerous ground or protect a threatened ally.',
-    active('embers','Ember Ground','Create enemy-burning ground for two of your activations. No friendly fire.',[{'type':'zone','zone':'ember','radius':1,'turns':2}],range=3,rule='line_of_effect',cooldown=3),
+    active('embers','Ember Ground','Create burning ground for two of your activations. Entry deals 3 damage once per activation and applies Burn. Allies are safe.',[{'type':'zone','zone':'ember','radius':1,'turns':2}],range=3,rule='line_of_effect',cooldown=3),
     active('ward','Ward','Give an ally a 10 HP Barrier for two of their activations.',[{'type':'barrier','amount':10,'turns':2}],'ally',3,'line_of_effect',3),
     passive('footwork','Light Step','Gain 5 evasion. Mute still prevents spells.',{'evasion':5}))
 register('cleric','Cleric','Treat wounds and maintain a safe fighting position.',
@@ -56,7 +56,7 @@ register('cleric','Cleric','Treat wounds and maintain a safe fighting position.'
     active('cleanse','Cleanse','Remove Poison, Bleed, Burn and Slow from an ally.',[{'type':'cleanse','statuses':['poison','bleed','burn','slow']}],'ally',3,'line_of_effect',3),
     passive('steadfast','Steadfast','Gain 1 armor. Does not make healing mandatory.',{'armor':1}))
 register('monk','Monk','Fight nearby enemies with displacement and retaliation.',
-    strike('palm','Driving Palm','Melee hit pushes one cell. Knockback resistance applies.',{'type':'displace','mode':'push','distance':1}),
+    strike('palm','Driving Palm','Melee hit pushes one cell. Knockback resistance applies. Hitting a solid obstacle adds half the hit as collision damage; hitting a person hurts both, including allies.',{'type':'displace','mode':'push','distance':1}),
     active('brace','Brace','Guard a nearby ally against the next incoming hit.',[{'type':'guard'}],'ally',1,'physical_care'),
     passive('riposte','Riposte','After surviving a melee hit, counter at half attack if in reach. Uses the shared reaction.',reaction={'id':'riposte','name':'Riposte'}))
 register('bard','Bard','Keep allies fighting and weaken an enemy approach.',
@@ -91,11 +91,11 @@ def later(job, *skills):
 
 later('fighter',
     passive('riposte','Riposte','Counter a survived melee hit at half attack when in reach. Intercept and Riposte compete for one reaction.',reaction={'id':'riposte','name':'Riposte'}),
-    strike('pull','Break Formation','Melee hit pulls one cell toward you. Stable targets resist.',{'type':'displace','mode':'pull','distance':1}),
+    strike('pull','Break Formation','Melee hit pulls one cell toward you. Stable targets resist. Hitting a solid obstacle adds half the hit as collision damage; hitting a person hurts both, including allies.',{'type':'displace','mode':'pull','distance':1}),
     active('rally','Hold Together','Remove Fear and give a nearby ally a 12 HP Barrier for one activation.',[{'type':'cleanse','statuses':['fear']},{'type':'barrier','amount':12,'turns':1}],'ally',2,'physical_care',3))
 later('barbarian',
     passive('hide','Thick Hide','Gain 1 armor; offers durability instead of another active skill.',{'armor':1}),
-    active('drive','Drive Back','Melee hit pushes up to two cells. Walls stop the push; pit rules and resistance apply.',[{'type':'attack','damage_bonus':0},{'type':'displace','mode':'push','distance':2,'conditions':[{'type':'hit'}]}],cooldown=3),
+    active('drive','Drive Back','Melee hit pushes up to two cells. Walls stop the push; pit rules and resistance apply. Hitting a solid obstacle adds half the hit as collision damage; hitting a person hurts both, including allies.',[{'type':'attack','damage_bonus':0},{'type':'displace','mode':'push','distance':2,'conditions':[{'type':'hit'}]}],cooldown=3),
     active('stand','Stand Your Ground','Remove Fear from yourself or an adjacent ally and grant Guard.',[{'type':'cleanse','statuses':['fear']},{'type':'guard'}],'ally',1,'physical_care',3))
 later('rogue',
     strike('venom','Venom Edge','Melee hit attempts Poison for two target activations. Poison immunity applies.',{'type':'status','status':'poison','turns':2,'chance':75}),

@@ -1193,3 +1193,17 @@ Validated 230 related backend tests, 188 frontend tests, frontend build and an
 isolated actual-browser fixture. Existing frontend chunk warning remains. Full
 twelve-Job starter creation, progression and later skills are next; see
 `docs/design/JOB_LOADOUTS.md`. No production deployment or player-save edits.
+
+# October 4, 2026 ? Impact, collisions and burning ground
+
+Added proportional solid/person collision damage, friendly fire without player
+kill/damage credit, and immediate Ember crossing damage with activation dedup.
+Scorch remains a single-target Burn. Added resolved HP/absorption/healing/status
+feedback, visible finite barriers, impact-linked knockback and shared audio
+timing. Generated four compact impact WAVs (30 API character-cost reported), preserving
+originals and technical reports. See COMBAT_IMPACT.md and SFX_GENERATION_GUIDE.md.
+
+Validation: 88 related backend tests, 197 frontend tests, frontend build and
+isolated browser feedback/shield/particle review. Existing bundle warning remains.
+Audio technical checks pass; aesthetic listening review remains user judgment.
+No live saves, production, credentials or remote repository were changed.

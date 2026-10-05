@@ -1,5 +1,22 @@
 # Fortcamp Sound Effects Guide
 
+## Combat impact pack
+
+> Modern painted-fantasy tactical RPG, warm soft low-mid texture, compact readable one-shot, gentle at low volume, no piercing highs, no music, no voices, no ambience, no trailer boom.
+
+| Filename | Length | Prompt after the palette sentence |
+|---|---:|---|
+| `burn_tick.wav` | 0.7 s | A tiny close puff of magical fire scorching cloth, soft short ember crackle and rounded airy heat release. No roaring flame, no alarm. |
+| `poison_tick.wav` | 0.7 s | A muted viscous magical poison pulse, one soft liquid bubble with a low organic tap, subtle and ominous. No cartoon gulp, no squeak. |
+| `barrier_absorb.wav` | 0.8 s | A magical protective shell absorbs a hit, soft glassy thump and brief warm shimmering decay. Gentle rounded tone, no ringing high bell. |
+| `collision_hit.wav` | 0.8 s | A combatant bumps hard into a wooden obstacle, compact padded body thud and small dry wood rattle. Weighty but restrained, no voice, no gore. |
+
+Generate with `tools/generate_sfx_pack.py --pack combat-impact-v1`. Originals and
+technical checks stay in staging-sfx/combat-impact-v1. Playback uses the Battle
+channel at restrained gain; separate poison/fire cues avoid sounding like sword
+hits. Technical checks cannot certify how an effect sounds; listening remains
+part of the review.
+
 ## Sonic identity
 
 Current direction: warm, melodic fantasy MMORPG feedback, with Ragnarok Online and Tree of Savior as broad mood references. Use round bell and celesta tones, soft harp plucks, restrained strings, friendly readable motifs, and modern clean audio. Keep combat tactile but slightly stylized; keep UI soft and magical. Critical outcomes should be recognizable through melody and arrangement, not simply louder playback. Future action/UI passes should follow this direction too.

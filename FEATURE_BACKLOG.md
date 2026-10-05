@@ -1,5 +1,17 @@
 # Fortcamp feature backlog
 
+## October 4: Combat impact and damage feedback (dev)
+
+Implemented half-hit solid/person collision damage, including friendly fire and
+Barrier absorption. Ember crossings now deal 3 damage once per activation;
+Scorch remains a targeted Burn effect. Added typed floating actual-damage/heal/
+status numbers, absorbed damage labels, shield capacity/halo and distinct Guard
+outline. Knockback begins at impact; following enemies wait through the action.
+Four generated impact sounds share the visual timeline and Battle volume.
+88 backend / 197 frontend tests and build pass; isolated browser review confirms
+feedback/shields. See docs/design/COMBAT_IMPACT.md. Production and saves untouched.
+Skill-specific artwork and further VFX variety remain future work.
+
 ## October 4: Combat controls, targeting and animation timing (dev)
 
 Fixed provisional movement returning to its origin. Unused End Turn now grants

@@ -23,6 +23,7 @@ from . import combat_abilities as abilities
 from . import combat_tactics as tactics
 from . import combat_spaces as spaces
 from . import combat_entities as entities
+from .combat_feedback import record as feedback
 
 
 STATUS_DEFINITIONS = {
@@ -1033,8 +1034,16 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
             concealment.reveal(battle,target)
             battle['log'].append(f"{target['name']} intercepts the attack on {original['name']}.")
     hit,preview,roll=_attack_hits(battle,attacker,target,rule)
+    events=battle.setdefault('animation_events',[])
+    begin=len(events)
     damage=_deal_damage(battle,attacker,target,bonus+preview['damage_bonus'],pierce,intent,ability=ability) if hit else 0
+    if not hit:feedback(battle,target,'miss')
+    resolved=events[begin:];del events[begin:]
     _record_melee_animation(battle,attacker,target,hit,rule)
+    battle['attack_serial']=battle.get('attack_serial',0)+1
+    packet=battle['attack_serial']
+    events.extend(resolved)
+    for event in events[begin:]:event['attack_packet']=packet
     if not reaction and not defer_reaction and intent=='lethal':_react_after_attack(battle,attacker,target,hit,rule)
     return target,hit,damage,preview,roll
 
@@ -1075,16 +1084,18 @@ def _displacement_preview(battle,actor,target,effect):
         'resistance':tactics.displacement_resistance(target),'collision_damage':effect.get('collision_damage',0) if blocked else 0}
 
 
-def _apply_displacement(battle,actor,target,effect):
+def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_packet=None):
     preview=_displacement_preview(battle,actor,target,effect)
+    event_begin=len(battle.setdefault('animation_events',[]))
     counter=battle.get('displacement_counter',0);battle['displacement_counter']=counter+1
     if random.Random(f"{battle.get('seed')}:displace:{counter}:{actor['id']}:{target['id']}").randint(1,100)<=preview['resistance']:
         battle['log'].append(f"{target['name']} resists the forced movement.");return
-    start=(target['x'],target['y']);path=[]
+    start=(target['x'],target['y']);path=[];bystander=None
     for point in preview['path']:
         hidden=next((u for u in battle['units'].values() if u['id']!=target['id'] and _combat_active(u) and (u['x'],u['y'])==(point['x'],point['y'])),None)
         if hidden:
             if target['team']=='player':concealment.reveal(battle,hidden,'contact')
+            bystander=hidden
             break
         target.update(point);path.append((point['x'],point['y']))
         if target.get('carrying') in battle['units']:battle['units'][target['carrying']].update(point)
@@ -1093,9 +1104,15 @@ def _apply_displacement(battle,actor,target,effect):
         target['exit_ready']=False
         _record_movement(battle,target,start,path)
         battle['animation_events'][-1]['forced']=True
+        movement_event=battle['animation_events'][-1]
         battle['log'].append(f"{target['name']} is {'pushed' if effect['mode']=='push' else 'pulled'} {len(path)} cell{'s' if len(path)!=1 else ''}.")
+        _apply_zone_route(battle,target,path)
+        if not _combat_active(target):
+            reached=path.index((target['x'],target['y']))+1
+            path=path[:reached]
+            movement_event['points']=[{'x':start[0],'y':start[1]}]+[{'x':x,'y':y} for x,y in path]
         hazard=tactics.pit_at(battle,target['x'],target['y'])
-        if hazard and target.get('movement_type')!='flying':
+        if hazard and _combat_active(target) and target.get('movement_type')!='flying':
             kind=tactics.pit_kind(hazard)
             if kind=='lethal':
                 carried_id=target.get('carrying');object_id=target.get('carrying_object')
@@ -1117,8 +1134,28 @@ def _apply_displacement(battle,actor,target,effect):
                 battle['log'].append(f"{target['name']} falls into a {kind} pit.")
             else:_apply_tile_entry(battle,target)
         else:_apply_tile_entry(battle,target)
-    if preview['collision_damage'] and _combat_active(target):
-        _deal_damage(battle,{**actor,'attack':preview['collision_damage'],'status_tick':True,'element':None,'on_hit':None,'weapon':'a collision'},target,armor_pierce=target.get('armor',0))
+    # Only solid collisions qualify. Falls/elevation limits/map edges are not objects.
+    nx,ny=(target['x'],target['y'])
+    remaining=tactics.displacement_path(actor,{'x':start[0],'y':start[1]},effect['distance'],effect['mode'])
+    stop=remaining[len(path)] if len(path)<len(remaining) else None
+    obstacle=bool(stop and 0<=stop[0]<battle['width'] and 0<=stop[1]<battle['height'] and
+        (crossed_walls(battle,(nx,ny),stop) or any(t.get('blocking') and not t.get('destroyed') and not t.get('requires_flying') and stop in occupied_tiles(t) for t in battle.get('terrain',[])) or
+         any(o.get('blocking',True) and not o.get('carried_by') and o.get('state') not in {'removed','destroyed','broken'} and stop in occupied_tiles(o) for o in battle.get('objects',{}).values())))
+    if stop and not obstacle and not bystander:
+        bystander=next((u for u in battle['units'].values() if u['id']!=target['id'] and _combat_active(u) and (u['x'],u['y'])==stop),None)
+    solid=bool(obstacle or bystander) and not preview.get('pit')
+    collision=max(1,int(original_damage)//2) if original_damage and solid else (preview['collision_damage'] if original_damage is None else 0)
+    if collision and _combat_active(target):
+        source={'id':actor['id'],'name':actor['name'],'attack':collision,'status_tick':True,
+                'damage_kind':'collision','weapon':'a collision'}
+        _deal_damage(battle,source,target,armor_pierce=target.get('armor',0))
+        battle['log'].append(f"{target['name']} takes {collision} collision damage{' against '+bystander['name'] if bystander else ' against an obstacle'}.")
+        if bystander and not obstacle and _combat_active(bystander):
+            concealment.reveal(battle,bystander,'contact')
+            _deal_damage(battle,source,bystander,armor_pierce=bystander.get('armor',0))
+    for event in battle['animation_events'][event_begin:]:
+        if attack_packet is not None:event['attack_packet']=attack_packet
+        if event.get('type')!='movement':event['after_displacement']=True
     concealment.refresh(battle)
 
 
@@ -1295,7 +1332,8 @@ def _trigger_zones(battle, unit, event):
         if roll<=chance and conditions.apply(target,sid,1,owner):
             battle['log'].append(f"{target['name']} suffers {sid} from {owner['name']}'s zone.")
     def damage(owner,target,amount,name):
-        source={'id':owner['id'],'name':owner['name'],'attack':amount,'weapon':name,'status_tick':True}
+        source={'id':owner['id'],'name':owner['name'],'attack':amount,'weapon':name,'status_tick':True,
+                'damage_kind':'burn' if name==spaces.ZONES['ember']['name'] else 'thorns'}
         dealt=_deal_damage(battle,source,target,armor_pierce=target.get('armor',0))
         battle['log'].append(f"{target['name']} takes {dealt} damage from {name}.")
     spaces.trigger_zones(battle,unit,event,_combat_active,
@@ -1370,6 +1408,7 @@ def _current_unit(battle: dict, activate: bool = True) -> dict | None:
                 healing=min(unit.get('perk_modifiers',{}).get('regeneration',0),unit['max_hp']-unit['hp'])
                 if healing>0:
                     unit['hp']+=healing
+                    feedback(battle,unit,'heal',healing)
                     battle['log'].append(f"{unit['name']} regenerates {healing} HP.")
             alarm = battle.get("objects", {}).get("alarm_horn")
             if battle.get("encounter_id") == "goblin_warcamp" and battle["round"] == 5 and alarm and alarm.get("state") == "active":
@@ -1488,11 +1527,12 @@ def _deal_damage(
         damage = max(1, (damage * 3 + 2) // 4)
         target["guarding"] = False
         _record_sound(battle, "shield_block", offset=185)
+    absorbed=0
     if not attacker.get('capture_only') and not attacker.get('environmental_fall'):
         damage,absorbed=conditions.absorb(target,damage)
         if absorbed:
             battle['log'].append(f"{target['name']}'s Barrier absorbs {absorbed} damage.")
-            _record_sound(battle,'shield_block',offset=185)
+            _record_sound(battle,'barrier_absorb',offset=0 if attacker.get('status_tick') else 185)
     previous_hp = int(target["hp"])
     if intent == 'lethal' and not attacker.get('status_tick') and damage >= previous_hp and attacker.get('knockout_finisher'):
         counter = int(battle.get('finisher_counter', 0))
@@ -1551,7 +1591,7 @@ def _deal_damage(
             target.pop("carried_payload_penalty", None)
     source=battle.get("units",{}).get(attacker.get("id"))
     if source and source.get('temporary'):source=battle['units'].get(source['owner_id'])
-    if source and source.get("team")=="player" and not target.get('temporary'):
+    if source and source.get("team")=="player" and target.get('team')!='player' and not target.get('temporary'):
         facts=source.setdefault("combat_record",{})
         actual=0 if attacker.get("capture_only") else max(0,previous_hp-int(target["hp"]))
         facts["total_damage"]=facts.get("total_damage",0)+actual
@@ -1560,6 +1600,10 @@ def _deal_damage(
         if previous_hp>0 and target.get("condition") in {"dead","unconscious"}:
             key="kills" if target["condition"]=="dead" else "subdues"
             facts[key]=facts.get(key,0)+1
+    if not attacker.get('capture_only'):
+        kind=attacker.get('damage_kind') or ('fall' if attacker.get('environmental_fall') or attacker.get('weapon')=='a fall' else element or ('magic' if attacker.get('attack_elevation_rule') in {'line_of_effect','ignore'} else 'physical'))
+        feedback(battle,target,kind,max(0,previous_hp-int(target['hp'])),absorbed=absorbed)
+    elif target.get('condition')=='unconscious':feedback(battle,target,'captured')
     if previous_hp>0 and target.get("condition") in {"dead","unconscious"}:
         facts=target.setdefault("combat_record",{})
         facts["times_defeated"]=facts.get("times_defeated",0)+1
@@ -1583,12 +1627,18 @@ def _capture_attempt(battle: dict, actor: dict, target: dict) -> None:
     # The first attempt wakes the camp even when it fails; preview includes the initial sleep advantage.
     _wake_ambush(battle, target)
     success = roll <= preview['chance']
+    events=battle.setdefault('animation_events',[]);begin=len(events)
     if success:
         restrained = {**actor, 'attack': target['max_hp']*100 + target.get('armor',0),
                       'status_tick': True, 'capture_only': True, 'element': None, 'on_hit': None}
         _deal_damage(battle, restrained, target, intent='nonlethal')
     battle['log'].append(f"{actor['name']} attempts to capture {target['name']}: {'successful' if success else 'failed'} ({roll} vs {preview['chance']}% capture chance).")
+    if not success:feedback(battle,target,'miss')
+    resolved=events[begin:];del events[begin:]
     _record_melee_animation(battle, actor, target, success, actor['attack_elevation_rule'])
+    battle['attack_serial']=battle.get('attack_serial',0)+1
+    events.extend(resolved)
+    for event in events[begin:]:event['attack_packet']=battle['attack_serial']
 
 
 def _capture_preview(battle: dict, actor: dict, target: dict) -> dict:
@@ -1608,7 +1658,7 @@ def _tick_gear_statuses(battle: dict, unit: dict) -> None:
             continue
         damage = max(2, min(5, round(unit["max_hp"] * .04)))
         source = {"id": status.get("source_id"), "name": status.get("source_name") or status["id"].title(),
-                  "weapon": status.get("source_weapon", ""), "attack": damage, "status_tick": True}
+                  "weapon": status.get("source_weapon", ""), "attack": damage, "status_tick": True,"damage_kind":status['id']}
         dealt = _deal_damage(battle, source, unit, armor_pierce=int(unit.get("armor", 0)))
         battle["log"].append(f"{unit['name']} takes {dealt} damage from {status['id']}.")
         status["turns"] -= 1
@@ -1624,7 +1674,7 @@ def _tick_bleed(battle: dict, unit: dict) -> None:
     if not status or not _combat_active(unit) or not (unit.get('moved') or unit.get('physical_action')):
         return
     source = {'id': status.get('source_id'), 'name': status.get('source_name', 'Bleeding'),
-              'weapon': 'bleeding', 'attack': max(2, min(4, round(unit['max_hp'] * .04))), 'status_tick': True}
+              'weapon': 'bleeding', 'attack': max(2, min(4, round(unit['max_hp'] * .04))), 'status_tick': True,'damage_kind':'bleed'}
     dealt = _deal_damage(battle, source, unit, armor_pierce=int(unit.get('armor', 0)))
     battle['log'].append(f"{unit['name']} takes {dealt} bleeding damage after exertion.")
 
@@ -1938,11 +1988,13 @@ def _record_melee_animation(battle: dict, attacker: dict, target: dict, hit: boo
             cues.append({"name": "unit_death" if target["condition"] == "dead" else "unit_unconscious", "offset": 350})
         if not ranged:
             battle.setdefault("animation_events", []).append({"type":"magic_projectile", "attacker_id":attacker["id"],"target_id":target["id"],"from":{"x":attacker["x"],"y":attacker["y"]},"to":{"x":target["x"],"y":target["y"]},"hit":hit})
-        battle.setdefault("animation_events", []).append({"type":"sound", "cues":cues, "duration":490})
+        battle.setdefault("animation_events", []).append({"type":"sound", "cues":cues, "duration":490,
+            'attack_event':True,'attacker_id':attacker['id'],'target_id':target['id'],'from':{'x':attacker['x'],'y':attacker['y']},'to':{'x':target['x'],'y':target['y']}})
         return
     battle.setdefault("animation_events", []).append({
         "type": "melee_attack", "attacker_id": attacker["id"], "target_id": target["id"], "hit": bool(hit),
         "target_condition": target.get("condition", "active"),
+        'from':{'x':attacker['x'],'y':attacker['y']},'to':{'x':target['x'],'y':target['y']},
     })
 
 
@@ -2298,6 +2350,7 @@ def _guard(battle: dict,unit: dict) -> None:
     heal=min(unit.get('gear_rules',{}).get('guard_heal',0),unit['max_hp']-unit['hp'])
     if heal>0:
         unit['hp']+=heal
+        if heal:feedback(battle,unit,'heal',heal)
         battle['log'].append(f"{unit['name']} recovers {heal} HP while guarding.")
 
 
@@ -2322,6 +2375,7 @@ def _apply_support(battle, actor, target, effect):
     _commit_player_movement(battle, actor)
     healing = min(target['max_hp'] - target['hp'], int(effect.get('heal', 0)))
     target['hp'] += healing
+    if healing:feedback(battle,target,'heal',healing)
     conditions.remove(target, *effect.get('cleanses', []))
     if effect.get('guard_ally'):
         target['guarding'] = True
@@ -2425,6 +2479,7 @@ def _finish_entities(battle,owner):
         remaining-=share;owner['entity_budget_spent']=owner.get('entity_budget_spent',0)+share
         if profile.get('heal'):
             amount=min(share,target['max_hp']-target['hp']);target['hp']+=amount
+            if amount:feedback(battle,target,'heal',amount)
             unit['acted']=True;unit['fired_at']=owner.get('ability_activation',0)
             battle['log'].append(f"{unit['name']} restores {amount} HP to {target['name']}.")
         else:_entity_attack(battle,owner,unit,target,share)
@@ -2480,25 +2535,29 @@ def _resolve_ability(battle, actor, target, skill):
             raise ValueError('No legal ground for this zone')
     _commit_player_movement(battle, actor)
     if not _combat_active(actor):return {'interrupted':True}
+    last_damage=None;attack_packet=None
     def attack(effect):
-        nonlocal target
+        nonlocal target,last_damage,attack_packet
         target,hit,damage,preview,roll=_perform_attack(battle,actor,target,skill['elevation_rule'],
             effect.get('damage_bonus',0),effect.get('armor_pierce',0),ability=skill,defer_reaction=True)
+        last_damage=damage;attack_packet=battle.get('attack_serial')
         battle['log'].append(f"{actor['name']} uses {skill['name']} on {target['name']} for {damage} damage." if hit else
                              f"{actor['name']} misses {target['name']} ({roll} vs {preview['chance']}% accuracy).")
         return {'hit':hit,'damage':damage,'target':target,'attacked':True}
     def heal(effect):
         amount=min(target['max_hp']-target['hp'],effect['amount'])
         target['hp']+=amount
+        if amount:feedback(battle,target,'heal',amount)
         return {'healing':amount}
     def cleanse(effect):
         conditions.remove(target,*effect['statuses'])
         if not any(conditions.has(target,s) for s in ('stun','sleep','paralyze')):target.pop('forced_skip',None)
         if not conditions.has(target,'paralyze'):target.pop('paralyzed_move',None)
     def guard(effect):target['guarding']=True
-    def barrier(effect):conditions.barrier(target,effect['amount'],effect['turns'],actor)
+    def barrier(effect):
+        if conditions.barrier(target,effect['amount'],effect['turns'],actor):feedback(battle,target,'barrier',effect['amount'])
     def mark(effect):conditions.mark(battle,actor,target,effect['turns'],effect.get('accuracy',10))
-    def displace(effect):_apply_displacement(battle,actor,target,effect)
+    def displace(effect):_apply_displacement(battle,actor,target,effect,last_damage,attack_packet)
     def zone(effect):spaces.place_zone(battle,actor,effect,_zone_cells(battle,target,effect))
     def form(effect):
         spaces.change_form(actor,effect)
@@ -2514,6 +2573,7 @@ def _resolve_ability(battle, actor, target, skill):
         roll=random.Random(f"{battle.get('seed')}:ability-status:{counter}:{actor['id']}:{target['id']}").randint(1,100)
         if roll<=chance and conditions.apply(target,sid,effect['turns'],actor):
             battle['log'].append(f"{target['name']} suffers {sid}.")
+            feedback(battle,target,'status',status_id=sid,**({'attack_packet':attack_packet} if attack_packet is not None else {}))
     result=abilities.resolve(skill,target,{'attack':attack,'heal':heal,'cleanse':cleanse,'guard':guard,'status':status,
         'barrier':barrier,'mark':mark,'displace':displace,'zone':zone,'form':form,'deploy':deploy})
     abilities.spend(actor,skill)

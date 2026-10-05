@@ -27,6 +27,9 @@ let combatSkillPage=0;
 import {mountRelationships,mountServiceRecord} from './relationship-ui.js';
 import {createCombatEffects} from './combat-effects.js';
 import './combat-effects.css';
+import {impactTimeline,createImpactFeedback,protectionMarkup} from './combat-impact.js';
+import './combat-impact.css';
+const impactFeedback=createImpactFeedback();
 import './social-ui.css';
 const combatEffects=createCombatEffects();
 import {patchLiveHTML,captureMovingPositions,restartWalking,trackBattleAnimation} from './live-dom.js';
@@ -166,6 +169,7 @@ window.addEventListener('pointerdown',()=>ensureAudio(),{once:true});
 const sfxFiles={ui_click:'ui_click.wav',ui_confirm:'ui_confirm.wav',ui_cancel:'ui_cancel.wav',melee_swing:'melee_swing.wav',melee_hit_light:'melee_hit_light.wav',melee_hit_heavy:'melee_hit_heavy.wav',subdue_hit:'subdue_hit.wav',unit_death:'unit_death.wav',unit_unconscious:'unit_unconscious.wav',guard:'guard.wav',mission_success:'mission_success_v3.wav',mission_failure:'mission_failure_v3.wav',mission_critical_success:'mission_critical_success_v3.wav',mission_critical_failure:'mission_critical_failure_v3.wav'};
 for(const name of ['step_earth','step_stone','step_water','bow_release','arrow_hit','magic_cast','magic_hit','attack_miss','shield_block','throw_release','throw_hit','structure_hit','structure_break','cage_open','pickup','payload_drop','extraction','objective_interact'])sfxFiles[name]=`${name}.wav`;
 const unavailableSfx=new Set();
+for(const name of ['burn_tick','poison_tick','barrier_absorb','collision_hit'])sfxFiles[name]=`${name}.wav`;
 function playSfx(name,volume=.5,delay=0,fallback=null){
   const run=()=>{
     if(!sfxFiles[name]||unavailableSfx.has(name)){fallback?.();return}
@@ -209,28 +213,28 @@ function playWalkingSounds(battle,unit,points,duration,delay=0){
 }
 function playBattleSounds(battle,events=battle?.animation_events||[]){
   if(!battle)return 0;
-  let delay=0;
-  for(const event of events){
+  let end=0;const impactSounds=new Set();
+  for(const {event,start:delay,duration} of impactTimeline(events)){
+    end=Math.max(end,delay+duration);
     if(event.type==='sound'){
-      for(const cue of event.cues||[])playSfx(cue.name,cue.name==='shield_block'?.35:.4,delay+(cue.offset||0));
-      delay+=event.duration||0;
+      for(const cue of event.cues||[])playSfx(cue.name,cue.name==='barrier_absorb'?.28:cue.name==='shield_block'?.35:.4,delay+(cue.offset||0));
     }else if(event.type==='melee_attack'){
       playSfx('melee_swing',.42,delay+45);
       playSfx(event.hit?(event.target_condition==='unconscious'?'subdue_hit':'melee_hit_light'):'attack_miss',.5,delay+185);
       if(event.hit&&event.target_condition==='dead')playSfx('unit_death',.4,delay+330);
       else if(event.hit&&event.target_condition==='unconscious')playSfx('unit_unconscious',.4,delay+315);
-      delay+=490;
-    }else if(event.type==='magic_projectile'){
-      delay+=250;
-    }else if(event.type==='death_burst'){
-      delay+=550;
-    }else if(event.type==='movement'){
-      const points=event.points||[],duration=event.forced?220:Math.max(220,Math.min(850,Math.max(1,points.length-1)*155));
-      playWalkingSounds(battle,battle.units?.[event.unit_id],points,duration,delay);
-      delay+=duration+70;
+    }else if(event.type==='combat_feedback'){
+      if(event.kind==='collision'){
+        const key=`collision:${event.attack_packet??delay}`;
+        if(!impactSounds.has(key)){impactSounds.add(key);playSfx('collision_hit',.32,delay)}
+      }else if(['burn','poison'].includes(event.kind))playSfx(`${event.kind}_tick`,.22,delay);
+      else if(event.kind==='status'&&['burn','poison'].includes(event.status_id))playSfx(`${event.status_id}_tick`,.16,delay);
+      else if(['bleed','thorns'].includes(event.kind)&&!event.attack_packet)playSfx('melee_hit_light',.16,delay);
+    }else if(event.type==='movement'&&!event.forced){
+      playWalkingSounds(battle,battle.units?.[event.unit_id],event.points||[],duration,delay);
     }
   }
-  return delay;
+  return end;
 }
 
 async function rawApi(path, options={}){
@@ -575,7 +579,7 @@ function battleToken(unit,current,battle){
   const support=selectedCombatAction==='skill'&&battle.units?.[battle.current_unit_id]?.special?.target==='ally';
   const targeting=['attack','subdue','skill','throw'].includes(selectedCombatAction)&&(support?unit.team==='player':unit.team==='enemy'),validTarget=selectedCombatAction==='throw'?throwTarget:!!preview;
   const occupiedAbove=condition!=='active'&&Object.values(battle.units||{}).some(other=>other.id!==unit.id&&other.x===unit.x&&other.y===unit.y&&other.alive&&other.conscious!==false&&!other.extracted&&!other.carried_by);
-  return `<button class="battle-token ${unit.team} ${current?'current':''} ${boss?'boss':''} ${throwTarget?'throw-target':''} ${targeting?(validTarget?'valid-target':'invalid-target'):''} ${unit.extracted?'extracted':''} ${unit.carried_by?'carried':''} ${occupiedAbove?'body-under-unit':''} ${condition}" data-battle-unit="${unit.id}" style="grid-column:${unit.x+1};grid-row:${unit.y+1}" title="${esc(unit.name)} · ${unit.hp}/${unit.max_hp} HP · ${title(condition)} · elevation ${height}${boss?' · BOSS':''}${targeting?validTarget?' · valid target':' · out of range or line of sight':''}${throwTarget?` · ${battle.throw_profile.damage} throw damage`:''}${accuracy}${tacticalPreviewText(preview)?` | ${esc(tacticalPreviewText(preview))}`:''}">${boss?'<strong class="boss-label">BOSS</strong>':''}${height?`<strong class="height-badge">▲${height}</strong>`:''}${face}${condition==='active'?`<i><b>${unit.hp}</b><small>HP</small></i>`:''}${bodyLabel?`<em class="body-label">${condition==='dead'?'† CORPSE':'ZZZ · UNCONSCIOUS'}</em>`:''}${statuses?`<span class="status-row">${statuses}</span>`:''}</button>`;
+  return `<button class="battle-token ${unit.team} ${current?'current':''} ${boss?'boss':''} ${throwTarget?'throw-target':''} ${targeting?(validTarget?'valid-target':'invalid-target'):''} ${unit.extracted?'extracted':''} ${unit.carried_by?'carried':''} ${occupiedAbove?'body-under-unit':''} ${condition}" data-battle-unit="${unit.id}" style="grid-column:${unit.x+1};grid-row:${unit.y+1}" title="${esc(unit.name)} · ${unit.hp}/${unit.max_hp} HP · ${title(condition)} · elevation ${height}${boss?' · BOSS':''}${targeting?validTarget?' · valid target':' · out of range or line of sight':''}${throwTarget?` · ${battle.throw_profile.damage} throw damage`:''}${accuracy}${tacticalPreviewText(preview)?` | ${esc(tacticalPreviewText(preview))}`:''}">${boss?'<strong class="boss-label">BOSS</strong>':''}${height?`<strong class="height-badge">▲${height}</strong>`:''}${face}${protectionMarkup(unit)}${condition==='active'?`<i><b>${unit.hp}</b><small>HP</small></i>`:''}${bodyLabel?`<em class="body-label">${condition==='dead'?'† CORPSE':'ZZZ · UNCONSCIOUS'}</em>`:''}${statuses?`<span class="status-row">${statuses}</span>`:''}</button>`;
 }
 
 function tileActionsForBattle(b,x,y){
@@ -618,7 +622,7 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
   const animationEvents=[...(battle.animation_events||[])];
   battle.animation_events=[];
   if(!previous||previous.encounter_id!==battle.encounter_id)return;
-  const field=$('.battlefield');if(!field)return;combatEffects.mount(field);
+  const field=$('.battlefield');if(!field)return;combatEffects.mount(field);impactFeedback.mount(field);
   const cellWidth=field.getBoundingClientRect().width/battle.width,cellHeight=field.getBoundingClientRect().height/battle.height;
   if(animationEvents.length){
     const actingId=previous.current_unit_id,actingToken=field.querySelector(`[data-battle-unit="${CSS.escape(actingId||'')}"]`);
@@ -628,29 +632,35 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
     }
     const animatedUnits=new Set();
     playBattleSounds(battle,animationEvents);
-    let delay=0;
-    animationEvents.forEach(event=>{
+    impactTimeline(animationEvents).forEach(({event,start:delay,duration:plannedDuration})=>{
+      if(event.type==='combat_feedback'){impactFeedback.emit(event,battle,delay);return}
       if(event.type==='death_burst'){
-        combatEffects.emit(event,battle,delay+220);
+        combatEffects.emit(event,battle,delay);
         const before=previous.units?.[event.unit_id],finalToken=field.querySelector(`[data-battle-unit="${CSS.escape(event.unit_id)}"]`);
         if(before&&finalToken&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
           const holder=document.createElement('div');holder.innerHTML=battleToken({...before,x:event.x,y:event.y,alive:true,conscious:true,condition:'active'},false,previous);
           const ghost=holder.firstElementChild;
           if(ghost){
             ghost.dataset.battleUnit=`death-ghost-${event.unit_id}`;ghost.style.pointerEvents='none';ghost.style.zIndex='23';field.append(ghost);finalToken.style.visibility='hidden';
+            // A lethal collision must travel as a living unit before it collapses.
+            if(animationEvents.some(e=>e.type==='movement'&&e.forced&&e.unit_id===event.unit_id)){
+              const travel=finalToken.getAnimations().find(a=>a.effect.getKeyframes().some(k=>k.transform));
+              if(travel)ghost.animate(travel.effect.getKeyframes(),travel.effect.getTiming());
+            }
             const dying=ghost.animate([{opacity:1,filter:'brightness(1)',offset:0},{opacity:1,filter:'brightness(1.8)',offset:.48},{opacity:.55,filter:'brightness(.7)',offset:.64},{opacity:0,filter:'brightness(.6)',offset:1}],{duration:460,delay,fill:'both'});
             const finish=()=>{ghost.remove();finalToken.style.visibility=''};dying.onfinish=finish;dying.oncancel=finish;
           }
         }
-        delay+=550;return;
+        return;
       }
-      if(event.type==='magic_projectile'){combatEffects.emit(event,battle,delay);delay+=250;return}
-      if(event.type==='sound'){delay+=event.duration||0;return}
+      if(event.type==='magic_projectile'){combatEffects.emit(event,battle,delay);return}
+      if(event.type==='sound')return;
       if(event.type==='melee_attack'){
         const attacker=battle.units?.[event.attacker_id],target=battle.units?.[event.target_id];
         const attackerToken=field.querySelector(`[data-battle-unit="${CSS.escape(event.attacker_id)}"]`),targetToken=field.querySelector(`[data-battle-unit="${CSS.escape(event.target_id)}"]`);
         if(!attacker||!target||!attackerToken||!targetToken)return;
-        const dx=Math.sign(target.x-attacker.x)*cellWidth*.42,dy=Math.sign(target.y-attacker.y)*cellHeight*.42;
+        const from=event.from||attacker,to=event.to||target;
+        const dx=Math.sign(to.x-from.x)*cellWidth*.42,dy=Math.sign(to.y-from.y)*cellHeight*.42;
         const attackerScale=attacker.id===battle.current_unit_id?1.15:1,targetScale=target.id===battle.current_unit_id?1.15:1;
         attackerToken.classList.add('is-attacking');
         const lunge=attackerToken.animate([
@@ -660,7 +670,7 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
           {transform:`translate(0,0) scale(${attackerScale})`,offset:1},
         ],{duration:420,delay,easing:'cubic-bezier(.2,.8,.25,1)',fill:'forwards'});
         trackBattleAnimation(attackerToken,lunge,'is-attacking');
-        if(event.hit){
+        if(event.hit&&!animationEvents.some(e=>e.type==='movement'&&e.forced&&e.unit_id===event.target_id&&e.attack_packet===event.attack_packet)){
           targetToken.classList.add('is-hit');
           const impactX=Math.sign(target.x-attacker.x)*cellWidth*.12,impactY=Math.sign(target.y-attacker.y)*cellHeight*.12;
           const impact=targetToken.animate([
@@ -671,7 +681,6 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
           ],{duration:300,delay:delay+185,easing:'ease-out',fill:'forwards'});
           trackBattleAnimation(targetToken,impact,'is-hit');
         }
-        delay+=490;
         return;
       }
       const unit=battle.units?.[event.unit_id],points=event.points||[];
@@ -692,10 +701,10 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       if(offset)frames[0].transform=`translate(${offset.x}px,${offset.y}px) scale(${baseScale})`;
       token.classList.remove('extracted');
       token.classList.add('is-walking');
-      const duration=event.forced?220:Math.max(220,Math.min(850,Math.max(1,points.length-1)*155));
+      const duration=plannedDuration;
       const animation=token.animate(frames,{duration,delay,easing:'ease-in-out',fill:'both'});
       trackBattleAnimation(token,animation,'is-walking',()=>{if(event.extracted)token.classList.add('extracted')});
-      delay+=duration+70;
+
     });
     return;
   }
@@ -1172,7 +1181,7 @@ init();
 
 
 
-new MutationObserver(()=>{if($('#mission-modal')?.classList.contains('hidden'))combatEffects.pause()}).observe($('#mission-modal'),{attributes:true,attributeFilter:['class']});
+new MutationObserver(()=>{if($('#mission-modal')?.classList.contains('hidden')){combatEffects.pause();impactFeedback.clear()}}).observe($('#mission-modal'),{attributes:true,attributeFilter:['class']});
 
 mountHoverHelp();
 $('#mission-modal').addEventListener('click',event=>{if(event.target===$('#mission-modal'))$('#mission-close').click()});

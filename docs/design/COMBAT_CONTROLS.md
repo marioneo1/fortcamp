@@ -66,3 +66,6 @@ cards, right dragging, exact area highlights, self markers, destination markers
 and enemy movement/projectile ordering. Fixtures do not modify real saves.
 Production has not been deployed. Further authored AoE shapes and art remain
 future work; fixed tactical icons are used for this pass.
+
+Subsequent impact pass: COMBAT_IMPACT.md documents typed damage feedback, shield
+capacity/halos, half-hit collisions and knockback beginning at the melee impact.

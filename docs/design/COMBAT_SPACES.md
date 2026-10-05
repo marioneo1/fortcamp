@@ -9,8 +9,8 @@ creation/progression remains pending.
 The existing versioned ability resolver accepts two additional ordered effects:
 `zone` and `form`. Authored effects use fixed supported IDs, bounded numbers and
 ordinary main-action/cooldown costs. There is no arbitrary skill scripting.
-Current zone targeting is anchored to a selected conscious enemy/ally. Arbitrary
-empty-tile casting and expanded area-target UI are still future work.
+Pure zone skills can target empty ground with clipped area and combined approach
+previews; see COMBAT_CONTROLS.md. Mixed attack/zone skills retain their unit target.
 
 ## Zones
 
@@ -24,7 +24,7 @@ Supported fixed rules:
 
 | Zone | Affected side | Trigger | Result |
 |---|---|---|---|
-| Ember Patch | Hostile to owner | Committed entry or activation start | One-turn Burn |
+| Ember Patch | Hostile to owner | Committed entry or activation start | One-turn Burn; committed entry also deals 3 damage once per activation |
 | Binding Circle | Hostile to owner | Committed entry | One-turn Bind attempt; resistance/recovery apply |
 | Thornbed | Hostile to owner | Committed entry | 3 damage through the existing damage/Barrier/defeat path |
 | Consecrated Ground | Friendly to owner | Activation start | Up to 3 HP restored; Burn prevents healing |
@@ -93,3 +93,6 @@ weapon/character ability ownership and no attack damage from a dead caster.
 See history for final test counts and browser validation.
 
 Deployment dependency update: owner-linked temporary units and resource/action budgets are now implemented in COMBAT_DEPLOYMENTS.md. Dedicated ground targeting, personality-aware scoring and the full Job rollout remain pending.
+
+October 4 impact update: forced routes check crossed zone cells too. See
+COMBAT_IMPACT.md for Ember entry damage, Burn ticks, collisions and presentation.

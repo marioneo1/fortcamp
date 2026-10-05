@@ -1,10 +1,11 @@
 """Bounded battlefield zones and reversible forms; no general skill scripting."""
 from copy import deepcopy
 from . import combat_conditions as conditions
+from .combat_feedback import record as feedback
 
 ZONES = {
     'ember': {'name': 'Ember Patch', 'relation': 'enemy', 'events': ['entry', 'start'],
-              'status': 'burn', 'description': 'Applies Burn once per affected activation on committed entry or activation start.'},
+              'status': 'burn', 'entry_damage':3, 'description': 'Crossing deals 3 damage and applies Burn, once per activation. Burn also ticks at activation start. Allies are safe.'},
     'binding': {'name': 'Binding Circle', 'relation': 'enemy', 'events': ['entry'],
                 'status': 'bind', 'description': 'Committed entry attempts Bind. Control recovery and resistance apply.'},
     'thorns': {'name': 'Thornbed', 'relation': 'enemy', 'events': ['entry'], 'damage': 3,
@@ -91,10 +92,13 @@ def trigger_zones(battle, unit, event, active, hostile, apply_status, damage):
             apply_status(owner, unit, rule['status'])
         if rule.get('damage'):
             damage(owner, unit, rule['damage'], rule['name'])
+        if event=='entry' and rule.get('entry_damage'):
+            damage(owner,unit,rule['entry_damage'],rule['name'])
         if rule.get('heal') and not conditions.has(unit, 'burn'):
             amount = min(rule['heal'], max(0, unit['max_hp']-unit['hp']))
             unit['hp'] += amount
             if amount:
+                feedback(battle,unit,'heal',amount)
                 battle['log'].append(f"{unit['name']} recovers {amount} HP on {rule['name']}.")
         if not active(unit):
             break

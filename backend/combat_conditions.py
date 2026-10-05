@@ -1,6 +1,7 @@
 """Small persistent status rules; random choices are seeded by activation."""
 import random
 from copy import deepcopy
+from .combat_feedback import record as feedback
 
 CONTROL = {'stun', 'sleep', 'freeze', 'paralyze'}
 RECOVERY = CONTROL | {'bind'}
@@ -49,6 +50,7 @@ def start_activation(battle, unit):
         amount = min(max(0, unit['max_hp'] - unit['hp']), max(2, round(unit['max_hp'] * .05)))
         unit['hp'] += amount
         if amount:
+            feedback(battle,unit,'heal',amount)
             battle['log'].append(f"{unit['name']} recovers {amount} HP from regeneration.")
 
 def finish_activation(unit):
