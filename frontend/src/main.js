@@ -42,7 +42,7 @@ import {COMBAT_MOTION,recoilFrames,weaponAttackFrames,weaponHitFrames,collisionF
 import {composeMotion,poseFrames,walkingFrames,playbackDuration,needsPlaybackLock,createPlaybackGate} from './combat-playback.js';
 const combatPlayback=createPlaybackGate();
 const combatPlaybackKey=()=>`${activeBattleMissionId}:${activeBattleView?.encounter_id}:${activeBattleView?.seed}`;
-const combatPlaybackBlocked=()=>combatPlayback.blocked(combatPlaybackKey());
+const combatPlaybackBlocked=()=>combatPlayback.blocked(combatPlaybackKey())||(combatRequestPending&&inFlightCombatAction!=='move');
 let playbackUnlockTimer=null;
 function updatePlaybackControls(){
   const root=$('#mission-detail');if(!root)return;
@@ -141,6 +141,7 @@ let rosterDetailTab='overview',rosterNeedsRefresh=false,baseNeedsRefresh=true;
 const latestMovement=createLatestMovement();
 const selectedGearSkills=new Map();
 let inFlightCombatAction=null;
+let movementSubmitTimer=null;
 let missionMutationVersion=0,dynamicRefreshAgain=false;
 let baseBlueprintQuery='';
 let baseView='settlement',workshopView='facilities',rosterView='characters';
@@ -1002,6 +1003,21 @@ async function sendCombat(command,nextMode=null,queuedMovement=false){
       if(preview)renderBattle(preview);
     }
   }
+  if(command.action==='move'&&!queuedMovement){
+    latestMovement.remember(command,movementContext);
+    clearTimeout(movementSubmitTimer);
+    movementSubmitTimer=setTimeout(()=>{
+      const context=`${activeBattleMissionId}:${activeBattleView?.current_unit_id}:${activeBattleView?.round}`;
+      const move=latestMovement.take(context);
+      if(move&&activeBattleView?.status==='active'&&!$('#mission-modal').classList.contains('hidden'))sendCombat(move,null,true);
+    },100);
+    return;
+  }
+  if(command.action!=='move'){
+    clearTimeout(movementSubmitTimer);
+    const move=latestMovement.take(movementContext);
+    if(move)command={...command,position:{x:move.x,y:move.y}};
+  }
   if(combatRequestPending){
     if(inFlightCombatAction==='move'){
       if(command.action==='move')latestMovement.remember(command,movementContext);
@@ -1010,13 +1026,18 @@ async function sendCombat(command,nextMode=null,queuedMovement=false){
     return;
   }
   if(command.action!=='move')latestMovement.clear();
-  combatRequestPending=true;inFlightCombatAction=command.action;
+  combatRequestPending=true;inFlightCombatAction=command.action;updatePlaybackControls();
   try{
     const data=await rawApi(battleEndpoint('/command'),{method:'POST',body:JSON.stringify(command)});
     if(activeBattleMissionId!==requestMissionId||!activeBattleView||$('#mission-modal').classList.contains('hidden'))return;
     // An older acknowledgement must not pull the displayed unit away from the
     // newest click while that destination is waiting to be sent.
-    if(command.action==='move'&&latestMovement.peek(movementContext)&&data.battle?.current_unit_id===activeBattleView.current_unit_id&&data.battle?.round===activeBattleView.round)return;
+    if(command.action==='move'){
+      const actor=data.battle?.units?.[activeBattleView.current_unit_id];
+      const interrupted=actor&&(actor.x!==command.x||actor.y!==command.y);
+      if(interrupted){clearTimeout(movementSubmitTimer);latestMovement.clear()}
+      else if((latestMovement.peek(movementContext)||latestMovement.hasAction(movementContext))&&data.battle?.current_unit_id===activeBattleView.current_unit_id&&data.battle?.round===activeBattleView.round)return;
+    }
     tileActionMenu=null;
     selectedCombatAction=nextCombatMode(command.action,nextMode,selectedCombatAction);
     if(data.result?.scene_continuation){activeBattleView=null;await refreshDynamic(true);await openDecision(data.result.mission_id);return}if(data.result?.mercenary_interlude){await resumeMercenaryContract(data.result);return}
@@ -1033,16 +1054,15 @@ async function sendCombat(command,nextMode=null,queuedMovement=false){
     toast(e.message);
     if(activeBattleMissionId===requestMissionId&&activeBattleView&&!$('#mission-modal').classList.contains('hidden'))try{const fresh=await rawApi(battleEndpoint('',requestMissionId));if(activeBattleMissionId===requestMissionId&&activeBattleView&&!$('#mission-modal').classList.contains('hidden'))renderBattle(fresh.battle)}catch{}
   }finally{
-    combatRequestPending=false;inFlightCombatAction=null;
+    combatRequestPending=false;inFlightCombatAction=null;updatePlaybackControls();
     const context=`${activeBattleMissionId}:${activeBattleView?.current_unit_id}:${activeBattleView?.round}`;
     const pending=latestMovement.take(context);
     if(activeBattleView?.status==='active'&&!$('#mission-modal').classList.contains('hidden')&&!combatPlaybackBlocked()){
-      if(pending){
-        sendCombat(pending,null,true);
-      }else{
-        const action=latestMovement.takeAction(context);
-        if(action)sendCombat(action.command,action.nextMode);
-      }
+      const action=latestMovement.takeAction(context);
+      if(action){
+        const command=pending?{...action.command,position:{x:pending.x,y:pending.y}}:action.command;
+        sendCombat(command,action.nextMode);
+      }else if(pending)sendCombat(pending,null,true);
     }else latestMovement.clear();
   }
 }

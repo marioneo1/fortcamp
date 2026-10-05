@@ -34,6 +34,12 @@ def main():
         tile.thumbnail((256,256),Image.Resampling.LANCZOS)
         output=Image.new('RGBA',(256,256))
         output.alpha_composite(tile,((256-tile.width)//2,(256-tile.height)//2))
+        # These four atlas cells contain a disconnected neighbor fragment at left.
+        # Clear only the reviewed 48px gutter; preserve the intended effect and scale.
+        if args.flesh and name in {'crush_fade','hack_fade','slash_fade','stab_contact'}:
+            output.paste((0,0,0,0),(0,0,48,256))
+        if args.flesh and name=='slash_fade':
+            output.paste((0,0,0,0),(0,170,80,256))
         output.save(public/f'{name}.png',optimize=True)
         records.append({'name':name,'crop':box,'source':str(staging/'atlas.png'),'size':[256,256]})
     (staging/'manifest.json').write_text(json.dumps({'source_size':source.size,'cells':records},indent=2),encoding='utf-8')

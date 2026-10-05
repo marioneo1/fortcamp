@@ -131,3 +131,8 @@ October 5 movement correction: [Combat controls](design/COMBAT_CONTROLS.md) docu
 October 5 ground effects: [Combat zones](design/COMBAT_SPACES.md) defines committed per-cell damage; [Combat impact](design/COMBAT_IMPACT.md) covers crossing damage labels and animation timing.
 
 October 5 battle input: [Combat controls](design/COMBAT_CONTROLS.md) documents server command validation, immediate movement previews and the buffered Guard/action fix for pending movement requests.
+
+Combined battle submission: [Combat controls](design/COMBAT_CONTROLS.md) covers
+100ms movement coalescing, atomic final-position/action commands and scouting
+interruptions. [Flesh contacts](art/FLESH_CONTACT_V1.md) records reviewed crop masks,
+sword sound layering and slash fade changes.

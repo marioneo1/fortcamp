@@ -18,6 +18,26 @@ class AttackApproachTests(unittest.TestCase):
             if u['id'] not in ['player',self.target['id']]:u.update(x=7,y=i)
         b['turn_order']=['player',*[uid for uid in b['units'] if uid!='player']];b['turn_index']=0
 
+    def test_final_position_and_guard_are_one_validated_command(self):
+        with patch('backend.combat._advance_to_player'):
+            apply_player_command(self.battle, {'action':'guard','position':{'x':2,'y':5}})
+        self.assertEqual((self.actor['x'],self.actor['y']),(2,5))
+        self.assertTrue(self.actor['guarding'])
+        self.assertTrue(self.actor['acted'])
+
+    def test_combined_position_rejects_out_of_range_and_does_not_guard(self):
+        with self.assertRaises(ValueError):
+            apply_player_command(self.battle, {'action':'guard','position':{'x':99,'y':99}})
+        self.assertFalse(self.actor.get('guarding',False))
+
+    def test_discovery_interrupts_combined_guard_without_spending_the_action(self):
+        with patch('backend.combat._scout_path',return_value=[(1,4)]), patch('backend.combat._advance_to_player') as advance:
+            apply_player_command(self.battle, {'action':'guard','position':{'x':2,'y':4}})
+        self.assertEqual((self.actor['x'],self.actor['y']),(1,4))
+        self.assertFalse(self.actor.get('guarding',False))
+        self.assertFalse(self.actor.get('acted',False))
+        advance.assert_not_called()
+
     def test_preview_is_cheapest_legal_approach_without_moving_unit(self):
         preview=battle_view(self.battle)['attack_previews'][self.target['id']]['attack']
         self.assertEqual(preview['movement_cost'],2)

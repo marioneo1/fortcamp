@@ -19,6 +19,19 @@ class CombatSpacesTests(unittest.TestCase):
         effect={'type':'zone','zone':kind,'radius':1,'turns':turns}
         spaces.place_zone(b,a,effect,combat._zone_cells(b,t,effect))
 
+    def test_combined_position_guard_charges_each_ground_crossing_like_separate_commands(self):
+        b,a,t=self.fixture()
+        spaces.place_zone(b,t,{'zone':'ember','turns':2},[{'x':2,'y':3},{'x':2,'y':4}])
+        separate=deepcopy(b)
+        with patch('backend.combat._advance_to_player'):
+            combat.apply_player_command(separate,{'action':'move','x':2,'y':4})
+            combat.apply_player_command(separate,{'action':'guard'})
+            combat.apply_player_command(b,{'action':'guard','position':{'x':2,'y':4}})
+        self.assertLess(a['hp'],100)
+        self.assertEqual(a['hp'],separate['units'][a['id']]['hp'])
+        crossings=[e for e in b['animation_events'] if e.get('type')=='combat_feedback' and e.get('kind')=='burn']
+        self.assertEqual(len(crossings),2)
+
     def test_validation_snapshots_and_no_speculative_effects(self):
         skill=self.skill({'type':'zone','zone':'ember','radius':1,'turns':2})
         self.assertEqual(abilities.snapshot([skill],8),[skill])

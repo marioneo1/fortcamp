@@ -1474,3 +1474,20 @@ October 5 ground-effect correction: removed the per-activation damage cap for Em
 ## October 5: Guard after movement request (implemented in dev)
 
 Diagnosed a dropped-input bug rather than a measured frame-rate regression: sendCombat only retained additional movement while a move request was pending. It now retains one following action and sends it after the final selected destination. Context changes, errors and interrupting playback discard it. Delayed-request tests exercise the actual handler, including repeated Guard and actor changes. All 252 frontend tests and build pass; existing bundle warning remains. No backend rules, production, credentials or saves changed.
+
+## October 5: combined movement commands and flesh slash cleanup (dev)
+
+Reduced the movement/action request chain: immediate local previews, 100ms
+movement coalescing, action plus final position submitted together. Shared backend
+movement validation preserves scouting, START budgets, carried bodies and ground
+hazards. Interrupted scouting cancels buffered actions. Existing forced/enemy
+playback gates remain, and committed requests now disable inputs immediately.
+
+Reviewed and cleaned neighboring fragments from four flesh effect crops with
+reproducible importer masks. Successful flesh sword hits play the approved flesh
+contact without the steel swing layer. Flesh slash fade brightness reduced to
+avoid a second-cut appearance. Original sources preserved. 255 frontend tests,
+related backend tests and build pass (existing bundle-size warning). No new live
+browser/latency benchmark; subjective testing remains. Production/saves untouched.
+
+Melee mix follow-up: family/chain/structure swing gain reduced to .12; contacts raised to .55, misses .32. Flesh sword contact remains unlayered. These are playback gains, not a claim of equal measured loudness between clips. 256 frontend tests, 83 backend tests and build pass.

@@ -942,3 +942,15 @@ Implemented October 5: persistent damaging ground counts each committed crossed 
 ## October 5: battle input responsiveness (implemented in dev)
 
 Fixed Guard/other actions silently dropped during an in-flight movement request. One committed action follows the latest queued destination; repeated presses cannot affect the next actor. Local movement previews and authoritative server validation remain. 252 frontend tests and build pass; actual network latency remains unmeasured. See docs/design/COMBAT_CONTROLS.md.
+
+## October 5: combined input and flesh slash refinement (implemented in dev)
+
+Movement clicks coalesce locally for 100ms; immediate actions include final position
+in one validated command. An already pending scouting check retains one action,
+without an extra final-movement round trip. Scouting interruptions cancel queued
+actions. Committed requests and enemy/forced-movement playback lock inputs.
+Cleaned four flesh effect crops; retained flesh sword sound alone and softened
+slash fade. 255 frontend tests, related backend tests and build; live-network
+latency and subjective feel still need player testing.
+
+Melee mix follow-up: family/chain/structure swing gain reduced to .12; contacts raised to .55, misses .32. Flesh sword contact remains unlayered. These are playback gains, not a claim of equal measured loudness between clips. 256 frontend tests, 83 backend tests and build pass.

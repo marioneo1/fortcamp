@@ -139,7 +139,7 @@ export function createImpactFeedback(){
         const url=melee?`/assets/${flesh?'flesh-contact-v1':'melee-families-v1'}/${parts[1]}_${parts[2]}.png`:`/assets/combat-presentation-v2/effects/${art}.png`;
         sprite.style.cssText=`left:${x}%;top:${y}%;width:${size}px;height:${size}px;background-image:url('${url}')`;layer.append(sprite);
         const transform=s=>`translate(-50%,-50%) rotate(${angle}deg) scale(${s})`;
-        const frames=fade?[{transform:transform(.95),opacity:0},{transform:transform(1.08),opacity:.65,offset:.28},{transform:transform(1.2),opacity:0}]:[{transform:transform(.85),opacity:.9},{transform:transform(1.05),opacity:.72,offset:.3},{transform:transform(melee?1.1:1.25),opacity:0}];
+        const frames=fade?[{transform:transform(.95),opacity:0},{transform:transform(1.08),opacity:flesh&&parts[1]==='slash'?.22:.65,offset:.28},{transform:transform(1.2),opacity:0}]:[{transform:transform(.85),opacity:.9},{transform:transform(1.05),opacity:.72,offset:.3},{transform:transform(melee?1.1:1.25),opacity:0}];
         sprite.animate(frames,{duration:melee?(fade?220:160):art==='poison_cloud'?550:event.kind==='barrier'||event.absorbed?360:240,delay:fade?70:0,easing:'ease-out'}).onfinish=()=>sprite.remove();
       }
       if(event.kind==='status'||['intercept','counter','resisted'].includes(event.kind))return;

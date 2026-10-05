@@ -11,7 +11,7 @@ function harness(){
   const requests=[],renders=[];
   const battle=(x=0,unit='hero')=>({status:'active',current_unit_id:unit,round:1,units:{hero:{x,y:0}},x});
   const context={activeBattleMissionId:'lab',activeBattleView:battle(),combatRequestPending:false,inFlightCombatAction:null,
-    latestMovement:createLatestMovement(),combatPlaybackBlocked:()=>false,
+    latestMovement:createLatestMovement(),combatPlaybackBlocked:()=>false,movementSubmitTimer:null,setTimeout,clearTimeout,updatePlaybackControls:()=>{},
     $$:()=>[],$:selector=>selector==='#mission-modal'?{classList:{contains:()=>false}}:null,
     CSS:{escape:s=>s},previewMovement:()=>null,battleEndpoint:()=>'/command',
     rawApi:(_url,options)=>new Promise((resolve,reject)=>requests.push({command:options?JSON.parse(options.body):null,resolve,reject})),
@@ -24,28 +24,45 @@ function harness(){
 const settle=()=>new Promise(resolve=>setImmediate(resolve));
 test('one Guard press during slow movement executes once after the newest destination is acknowledged',async()=>{
   const {context:c,requests:r,battle}=harness();
-  const first=c.sendCombat({action:'move',x:1,y:0});
+  const first=c.sendCombat({action:'move',x:1,y:0},null,true);
   await c.sendCombat({action:'move',x:2,y:0});
   await c.sendCombat({action:'guard'});
   await c.sendCombat({action:'guard'});
   await c.sendCombat({action:'move',x:3,y:0});
   assert.equal(r.length,1);
   r[0].resolve({battle:battle(1)});await first;await settle();
-  assert.deepEqual(r.map(q=>q.command.action),['move','move']);assert.equal(r[1].command.x,2);
-  r[1].resolve({battle:battle(2)});await settle();
-  assert.deepEqual(r.map(q=>q.command.action),['move','move','guard']);
-  assert.equal(c.activeBattleView.x,2);
-  r[2].resolve({battle:battle(2,'next')});await settle();assert.equal(r.length,3);
+  assert.deepEqual(r.map(q=>q.command.action),['move','guard']);
+  assert.deepEqual(r[1].command.position,{x:2,y:0});
+  r[1].resolve({battle:battle(2,'next')});await settle();assert.equal(r.length,2);
 });
 test('Guard buffered behind movement cannot execute for a changed actor',async()=>{
   const {context:c,requests:r,battle}=harness();
-  const move=c.sendCombat({action:'move',x:1,y:0});await c.sendCombat({action:'guard'});
+  const move=c.sendCombat({action:'move',x:1,y:0},null,true);await c.sendCombat({action:'guard'});
   r[0].resolve({battle:battle(1,'next')});await move;await settle();assert.equal(r.length,1);
 });
 test('failed movement clears buffered Guard before resynchronizing the map',async()=>{
   const {context:c,requests:r,battle}=harness();
-  const move=c.sendCombat({action:'move',x:1,y:0});await c.sendCombat({action:'guard'});
+  const move=c.sendCombat({action:'move',x:1,y:0},null,true);await c.sendCombat({action:'guard'});
   r[0].reject(new Error('blocked'));await settle();
   assert.equal(r.length,2);assert.equal(r[1].command,null);
   r[1].resolve({battle:battle()});await move;await settle();assert.equal(r.length,2);
+});
+
+test('move then immediate Guard uses a single combined request without waiting for a move POST',async()=>{
+  const {context:c,requests:r,battle}=harness();
+  await c.sendCombat({action:'move',x:1,y:0});
+  await c.sendCombat({action:'move',x:2,y:0});
+  assert.equal(r.length,0);
+  const guard=c.sendCombat({action:'guard'});
+  assert.equal(r.length,1);assert.deepEqual(r[0].command,{action:'guard',position:{x:2,y:0}});
+  r[0].resolve({battle:battle(2,'next')});await guard;
+  await new Promise(resolve=>setTimeout(resolve,120));assert.equal(r.length,1);
+});
+
+test('a scouting interruption cancels buffered Guard rather than hiding the revealed map',async()=>{
+ const {context:c,requests:r,battle}=harness();
+ const move=c.sendCombat({action:'move',x:1,y:0},null,true);
+ await c.sendCombat({action:'guard'});
+ r[0].resolve({battle:battle(0)});await move;await settle();
+ assert.equal(r.length,1);assert.equal(c.activeBattleView.x,0);
 });

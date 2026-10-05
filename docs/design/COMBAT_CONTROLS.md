@@ -245,3 +245,26 @@ Validation: 252 frontend tests and Vite build pass, including delayed-request te
 of the real command handler for rapid movement plus one Guard press, repeated
 Guard presses, changed actor and failed movement recovery. No live-server network
 latency benchmark was performed. Existing bundle-size warning remains.
+
+## October 5: combined movement/action submission (implemented in dev)
+
+Local reposition previews remain immediate. Movement-only requests now coalesce
+behind a 100ms quiet interval. An action during that interval cancels the movement
+POST and submits the final position with the action in one command. If a movement
+request is already running, one action waits for it; its final position is included
+without another movement POST. Earlier replies cannot rewind the local preview.
+A reply whose actual position differs from the requested destination is treated as
+a scouting interruption: discard queued inputs and show the revealed map.
+
+The backend shares the existing movement validation/scouting implementation for
+standalone and combined commands. Final positions retain START movement budgets,
+carried-body updates and per-tile committed ground damage. A discovery that stops
+the route does not execute the following action. This is request coalescing plus
+combined submission, not completely offline movement; isolated movement pauses
+still check scouting with the server.
+
+Committed requests immediately disable combat inputs and show the existing
+resolving indicator. The enemy/attack/forced movement playback lock remains in
+place after the response; subsequent turns cannot bypass knockback/collision
+playback. No server latency benchmark or new live browser measurement is claimed.
+Validation: 256 frontend tests, 83 related backend tests and Vite build.

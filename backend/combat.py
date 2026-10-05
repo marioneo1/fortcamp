@@ -3696,6 +3696,32 @@ def _apply_preparation_command(battle: dict, command: dict) -> dict:
     return battle_view(battle)
 
 
+def _position_player(battle, unit, destination):
+    if unit.get("acted"):
+        raise ValueError("This unit already committed its action")
+    x, y = int(destination.get("x", -1)), int(destination.get("y", -1))
+    if not unit.get("movement_origin"):
+        unit["movement_origin"] = {"x": unit["x"], "y": unit["y"]}
+    reachable, parents = _movement_tree(battle, unit)
+    if (x, y) not in reachable:
+        raise ValueError("That tile is outside this unit's movement range")
+    route = _scout_path(battle, unit, _reposition_route(battle, unit, (x, y), reachable))
+    if route:
+        x, y = route[-1]
+    else:
+        x, y = unit['x'], unit['y']
+    origin = unit["movement_origin"]
+    if (x, y) != (unit["x"], unit["y"]):
+        unit["exit_ready"] = False
+    unit["x"], unit["y"] = x, y
+    if unit.get("carrying") in battle["units"]:
+        carried = battle["units"][unit["carrying"]]
+        carried["x"], carried["y"] = x, y
+    unit["moved"] = (x, y) != (int(origin["x"]), int(origin["y"]))
+    unit["movement_path"] = _movement_path(parents, reachable, (x, y))
+    return (x, y) != (int(destination["x"]), int(destination["y"]))
+
+
 def apply_player_command(battle: dict, command: dict) -> dict:
     _ensure_battle_schema(battle)
     concealment.refresh(battle)
@@ -3737,6 +3763,12 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         _advance_to_player(battle)
         battle["action_count"]+=1
         return battle_view(battle)
+    if action != 'move' and command.get('position') is not None:
+        if not isinstance(command['position'], dict):
+            raise ValueError('Choose a valid final position')
+        if _position_player(battle, unit, command['position']):
+            # Discovery interrupts the combined action; the player must reconsider.
+            return battle_view(battle)
     selected_skill=next((s for s in unit.get('skills',[]) if s['id']==command.get('skill_id',(unit.get('special') or {}).get('id'))),None) if action=='skill' else None
     if action in {'summon_move','summon_attack','operate_turret','dismiss_summon'}:
         _entity_command(battle,unit,command)
@@ -3781,28 +3813,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         unit['special']=selected_skill
         _resolve_ability(battle,unit,target,selected_skill)
     elif action == "move":
-        if unit.get("acted"):
-            raise ValueError("This unit already committed its action")
-        x, y = int(command.get("x", -1)), int(command.get("y", -1))
-        if not unit.get("movement_origin"):
-            unit["movement_origin"] = {"x": unit["x"], "y": unit["y"]}
-        reachable, parents = _movement_tree(battle, unit)
-        if (x, y) not in reachable:
-            raise ValueError("That tile is outside this unit's movement range")
-        route = _scout_path(battle, unit, _reposition_route(battle, unit, (x, y), reachable))
-        if route:
-            x, y = route[-1]
-        else:
-            x, y = unit['x'], unit['y']
-        origin = unit["movement_origin"]
-        if (x, y) != (unit["x"], unit["y"]):
-            unit["exit_ready"] = False
-        unit["x"], unit["y"] = x, y
-        if unit.get("carrying") in battle["units"]:
-            carried = battle["units"][unit["carrying"]]
-            carried["x"], carried["y"] = x, y
-        unit["moved"] = (x, y) != (int(origin["x"]), int(origin["y"]))
-        unit["movement_path"] = _movement_path(parents, reachable, (x, y))
+        _position_player(battle, unit, command)
     elif action == 'use_item':
         if unit.get('acted') or remaining_uses(battle) < 1:
             raise ValueError('No supply action is available this battle')

@@ -33,3 +33,23 @@ Six dry contact clips use the existing ElevenLabs generator: python tools/genera
 Audition at /assets/sfx/preview-flesh-contact-v1.html. Technical checks are not a claim of human listening approval.
 
 117 related backend tests, 247 frontend tests and build pass. Isolated browser checks exercise six flesh families, metal/Automaton contacts and net capture/escape/miss, with real damage labels and correctly selected assets. Screenshots: staging-ui/flesh-contact-v1/*-browser.png. The static fixture has no live backend/favicon; all combat assets load. Existing bundle-size warning remains. Ranged presentation is deferred.
+
+## October 5: reviewed crop and sword-contact correction
+
+Reviewed all eight runtime crops on a contact sheet. The importer now clears the
+left 48px neighbor-fragment gutter in crush_fade, hack_fade, slash_fade and
+stab_contact, plus the remaining lower-left fragment in slash_fade (x<80,y>=170).
+These masks operate on the existing 256px output canvases without shifting,
+rescaling or changing the intended effect. Reimported all eight; source retained.
+
+Previously sword flesh contact combined melee_slash_swing and melee_slash_flesh.
+Successful flesh sword hits now keep the approved melee_slash_flesh alone at
+185ms; metal hits and misses retain the swing. Death/barrier sounds keep their
+normal rules. No new paid audio/image generation.
+
+Contact/fade sprites do overlap: contact lasts 160ms; fade starts at 70ms and
+lasts 220ms. Flesh slash fade peak opacity is reduced from .65 to .22 so its
+bright arc reads as a dissipating continuation. Other family fades retain their
+existing timing/opacity. Runtime subjective approval remains the player's choice.
+
+Melee mix follow-up: family/chain/structure swing gain reduced to .12; contacts raised to .55, misses .32. Flesh sword contact remains unlayered. These are playback gains, not a claim of equal measured loudness between clips. 256 frontend tests, 83 backend tests and build pass.
