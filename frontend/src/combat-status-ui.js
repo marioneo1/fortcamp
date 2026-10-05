@@ -21,7 +21,10 @@ export function tacticalPreviewText(preview){
   const parts=[];
   if(preview.intercepted_by)parts.push(`Intercepted by ${preview.intercepted_by}`);
   if(preview.barrier)parts.push(`${preview.barrier}-point Barrier`);
-  for(const zone of preview.zones||[])parts.push(`${zone.name} · ${zone.cells.length} tiles · ${zone.turns} owner activations · ${zone.description}`);
+  for(const zone of preview.zones||[]){
+    if(zone.kind==='rally')parts.push('Hold Together: remove Fear, next direct hit -25%, next attack +25%');
+    else if(zone.name)parts.push(`${zone.name} · ${zone.cells.length} tiles · ${zone.turns} owner activations · ${zone.description}`);
+  }
   for(const effect of preview.tactics||[]){
     const dest=effect.destination;
     parts.push(`On hit: ${effect.type} toward cell ${dest.x+1}, ${dest.y+1} · ${effect.resistance}% resistance`);

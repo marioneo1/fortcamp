@@ -6,7 +6,7 @@ from . import combat_entities as entities
 
 VERSION = 1
 STATUSES = {'stun','sleep','poison','bleed','charm','confuse','berserk','freeze',
-            'burn','blind','bind','slow','paralyze','mute','fear','vulnerable','regeneration','braced','hobbled','armor_fracture'}
+            'burn','blind','bind','slow','paralyze','mute','fear','vulnerable','regeneration','braced','hobbled','armor_fracture','rally_protection','rally_power'}
 RULES = {'melee','ballistic','ignore','line_of_effect','physical_care'}
 
 
@@ -47,7 +47,7 @@ def validate(skill):
             raise ValueError('Ability effect must be an object')
         kind = effect.get('type')
         allowed = {'attack': {'damage_bonus','armor_pierce','power_percent'}, 'heal': {'amount'},
-                   'cleanse': {'statuses','radius'}, 'guard': set(), 'status': {'status','turns','chance'},
+                   'cleanse': {'statuses','radius'}, 'guard': set(), 'status': {'status','turns','chance','radius'},
                    'barrier': {'amount','turns'}, 'mark': {'turns','accuracy'},
                    'displace': {'mode','distance','collision_damage','stop_adjacent','collision_stun'},
                    'leap_attack': {'radius','inner_push','outer_push','power_percent','collision_stun'},
@@ -99,6 +99,10 @@ def validate(skill):
             if not isinstance(effect.get('statuses'), list) or not effect['statuses'] or any(s not in STATUSES for s in effect['statuses']):
                 raise ValueError('Unsupported cleansing status')
         if kind == 'status':
+            if 'radius' in effect:
+                _integer(effect['radius'],1,2)
+                if skill['target']!='ally' or effect.get('status') not in {'rally_protection','rally_power'} or effect.get('chance',100)!=100:
+                    raise ValueError('Area status effects support guaranteed one-use rally bonuses only')
             if effect.get('status') not in STATUSES:
                 raise ValueError('Unsupported status')
             _integer(effect.get('turns'),1,3)

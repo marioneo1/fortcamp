@@ -22,7 +22,7 @@ the command dock instead of clipping the bottom of the map.
 | Driving Strike | Existing single-target melee hit and one-cell push | 2 owner activations; accuracy, walls and resistance apply |
 | Chain Snare (formerly Cover) | Weapon-power hit; clear three-cell reach in any direction (square range). Pull up to two cells along the dominant cardinal direction, stopping beside the caster. On hit, Hobbled halves movement, rounded down with minimum 1, for two target activations | 3 owner activations. Miss prevents both pull and Hobbled. Displacement resistance can stop the pull; ordinary accuracy/elevation, walls and existing status resistance apply |
 | Earthbreaker (formerly Break Formation) | Ground-targeted leap up to three Manhattan cells after any legal walking approach. Weapon-power physical landing hit against enemies in a two-cell square radius. Inner ring pushes two cells; outer ring one. Damage resolves first for all targets; pushes then resolve inner-first so bodies can collide | 5 owner activations. Each enemy has its own accuracy roll. Resistance stops movement, not the landing hit. Open landing only, clear sight and no crossed wall; at most two levels of height change. Can leap over a gap, but cannot land in water/pits, carry payloads, or leap while movement is disabled. Area impact is not an interceptable direct strike and does not trigger a melee counter |
-| Hold Together | Self-targeted rally removes Fear from self and every living ally within a two-cell square radius and line of sight. No Barrier or healing | 3 owner activations. No valid cast when nobody in the area has Fear. Walls block the rally |
+| Hold Together | Click the fighter. Remove Fear from self and living allies within two cells; grant separate next-hit protection (-25%) and next-attack direct damage (+25%, all targets of an area attack) | 3 owner activations. Available without Fear when a nearby ally is missing either bonus. No stacking, healing or Barrier; walls block the effect. A miss spends the attack bonus |
 | Intercept | Existing adjacent ally protection | One shared reaction |
 | Riposte | Existing survived-melee counter at half attack | Competes with Intercept for the shared reaction |
 
@@ -32,7 +32,7 @@ Existing authored pit/fall rules and knockback resistance remain in force. The
 rings are snapshotted before movement. Dead bodies do not become solid obstacles.
 Capture weapons cannot use the two damaging techniques; Hold Together remains
 available. Automatic play chooses a useful legal leap for groups, avoids nearby
-allies and protected capture targets, and uses rally when Fear can be removed.
+allies and protected capture targets, and uses Hold Together when Fear can be removed or a useful one-use bonus is missing.
 
 Stable learned/equipped IDs are retained (`cover`, `pull`, `rally`); new battles
 receive the new definitions. Existing active battle snapshots finish with their
@@ -379,3 +379,41 @@ Walking is unchanged in this pass: free movement and attack-sequence walking use
 a 5 px midpoint hop, 2 degree tilt and 2.5% scale change; their keyframe phase is
 not identical. Forced movement remains a slide. Preserve these approved amounts
 and disclose future changes to their presentation.
+
+
+## October 5: Hold Together, wall contact and Fighter sound weight
+
+Implemented in dev:
+- Hold Together has three ordered effects: Fear removal, next-hit protection,
+  next-attack power. Cast by selecting the skill then clicking the fighter.
+  Both one-use statuses remain for this battle until independently consumed;
+  they do not expire when that ally starts a turn. A recast cannot stack them.
+- Protection reduces a direct hit by 25% before Barrier absorption. It does not
+  multiply with ordinary Guard or absorb damage over time/collisions/falls.
+  Power increases direct attack damage by 25% before target protection. Every
+  Earthbreaker victim receives that increase; the bonus is spent once after the
+  attack, including a miss. Counterattacks and damage-over-time ticks do not
+  receive or consume it. Structure attacks receive and consume power normally.
+- Plain skill text, status hover descriptions and area forecasts explain the
+  actual bonuses. Corpse hover uses the neutral cursor; friendly self-casting
+  uses a pointer, with exactly one command per click.
+- Melee attacks aim at an edge wall's boundary, even from the same floor cell.
+  Multi-cell structures use the closest occupied cell. Structure hits play
+  structure audio without an additional flesh hit or duplicate swing.
+- Four new ElevenLabs sounds: Earthbreaker launch, Earthbreaker landing,
+  body into body, body into wall. Launch/landing/rebound use the animation
+  timeline; corpse collisions still have a sound even without HP feedback.
+- The landing ring reaches its full radius in the same 400 ms, then fades for
+  100 ms. Walking hop/tilt values and shockwave contact times are unchanged.
+
+Validation: 124 related backend tests, 224 frontend tests, production frontend
+build; isolated browser verified same-cell north-wall lunge at contact, input
+lock, self-rally preview/cast, and neutral corpse cursor. Audio files are mono
+48 kHz, normalized near -19 dBFS RMS with zero clipped samples. Human listening
+review remains necessary for artistic quality; preview is
+`/assets/sfx/preview-fighter-weight-v1.html`. Four paid generations were made
+(API-reported total character cost: 32); later preview regeneration reused them.
+
+Existing active battles retain their skill snapshots. Start a fresh Battle Lab
+battle to test the revised Hold Together. No player saves or production files
+were changed. The intermittent pathing report remains deferred.

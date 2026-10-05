@@ -173,3 +173,14 @@ API reference: https://elevenlabs.io/docs/api-reference/text-to-sound-effects/co
 | File | Duration | Prompt |
 |---|---|---|
 | `body_collision.wav` | 1.0 s | One heavy padded body slams into a timber barrier: immediate low chesty flesh thud, short wood creak and scrape, then a tiny rebound scuff. Firm weight, no gore, no grunt, no explosion. Impact at the start, single hit. |
+
+## Fighter weight pack
+
+> Modern fantasy tactical RPG Foley. Warm low-mid weight, softened treble, close dry sound, no music, no voices, no gore, no UI chimes.
+
+| File | Duration | Prompt |
+|---|---|---|
+| `earthbreaker_launch.wav` | 0.5 s | One powerful armored fighter launches into a jump: short boot push-off and dense air rush, a single rising whoosh. No footsteps, no landing, no rattling metal. Immediate start. |
+| `earthbreaker_land.wav` | 1.2 s | One enormous boot-and-body slam into solid earth, instantaneous deep punchy impact, cracking dirt and stone, followed by a short expanding bass shockwave and settling grit. Powerful grounded weight, no footsteps, no repeated hits, no explosion. |
+| `body_into_body.wav` | 0.7 s | One heavy clothed human body collides with another human body: immediate muffled chesty flesh thump, compressed fabric and a tiny rebound shuffle. Dense soft-body impact, no wood, no stone, no punch swish, no vocal grunt. |
+| `body_into_wall.wav` | 0.8 s | One heavy clothed human body slams against a rigid wall: immediate dull flesh thud layered with a short hard masonry knock, gritty scrape and tiny rebound. Heavier rigid contact than body-to-body, no shattering, no explosion, no voices. |

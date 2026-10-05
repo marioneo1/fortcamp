@@ -28,6 +28,9 @@ def apply(unit, sid, turns, source=None):
     if unit.get('status_version'):
         status['expiry'] = 'target_start' if sid in {'poison','burn'} else 'target_end'
         status['applied_activation'] = deepcopy(unit.get('status_activation'))
+    if sid in {'rally_protection','rally_power'}:
+        status.pop('turns',None)  # One-use bonuses remain until consumed, within this battle.
+        status.pop('expiry',None)
     unit.setdefault('statuses', []).append(status)
     return True
 

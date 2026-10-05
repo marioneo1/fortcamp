@@ -2,6 +2,12 @@ import {test} from 'node:test';
 import assert from 'node:assert/strict';
 import {statusDetails,tacticalPreviewText} from './combat-status-ui.js';
 import {describeGear} from './equipment-ui.js';
+
+test('rally area explains both one-use bonuses without undefined zone fields',()=>{
+ const text=tacticalPreviewText({zones:[{kind:'rally',cells:[{x:0,y:0}]}]});
+ assert.match(text,/next direct hit -25%, next attack \+25%/);
+ assert.doesNotMatch(text,/undefined/);
+});
 test('statuses show finite absorption, owner, clock and reaction availability',()=>{
  assert.match(statusDetails({id:'barrier',amount:6,turns:1,expiry:'target_end'}).details.join(' '),/6 damage.*activation end/);
  assert.match(statusDetails({id:'mark',source_name:'Aya',accuracy:10,turns:2}).details.join(' '),/Owner: Aya.*10 accuracy/);

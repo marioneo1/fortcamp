@@ -26,7 +26,7 @@ export function areaForecastMarkup(preview,battle,escape){
   .map(unit=>{
    const forecast=forecasts[unit.id];
    const zones=(preview.zones||[]).filter(z=>(z.cells||[]).some(p=>p.x===unit.x&&p.y===unit.y));
-   const labels=zones.map(z=>({ember:'Burn on entry',binding:'Bind on entry',thorns:'3 damage on entry',sanctuary:'3 HP next turn',rally:'Fear relief'}[z.kind])).filter(Boolean);
+   const labels=zones.map(z=>({ember:'Burn on entry',binding:'Bind on entry',thorns:'3 damage on entry',sanctuary:'3 HP next turn',rally:'Remove Fear / next hit -25% / next attack +25%'}[z.kind])).filter(Boolean);
    if(!forecast&&!labels.length||zones.every(z=>['ember','binding','thorns'].includes(z.kind))&&unit.team===actor?.team||zones.every(z=>['sanctuary','rally'].includes(z.kind))&&unit.team!==actor?.team)return '';
    return `<div class="aoe-preview-chip" style="left:${(unit.x+.5)/battle.width*100}%;top:${(unit.y+.5)/battle.height*100}%" data-aoe-preview="${escape(unit.id)}"><b>${forecast?`${forecast.damage_on_hit} damage` :escape(labels.join(' / '))}</b>${forecast?`<small>${forecast.chance}% hit · Push ${forecast.push}${forecast.resistance?` · ${forecast.resistance}% resist`:''}</small>`:''}</div>`;
   }).join('');
@@ -89,6 +89,10 @@ export function bindSpellTargets(field,battle,mode,onCast){
   field.addEventListener('click',field._spellClick,true);
  }else{
   field._spellClick=null;
+  if(self){
+   field._spellClick=e=>{const token=e.target.closest?.('[data-battle-unit]'),preview=battle.skill_previews?.[skill.id]?.[actor.id];if(token?.dataset.battleUnit!==actor.id)return;e.stopImmediatePropagation();e.preventDefault();if(preview)onCast({action:'skill',skill_id:skill.id,target_id:actor.id})};
+   field.addEventListener('click',field._spellClick,true);
+  }
   field.onpointerleave=()=>{clear();forecastLayer.innerHTML=''};
   field.onpointermove=e=>{if(self)return;const token=e.target.closest?.('[data-battle-unit]');if(token)paint(battle.attack_previews?.[token.dataset.battleUnit]?.skill);else{clear();forecastLayer.innerHTML=''}};
  }

@@ -8,7 +8,8 @@ lethal body displacement/collision stun, START tile marking, two-turn armor
 fracture and per-target shockwave contact,
 contact/collision rules, continuous walking/attack poses, full push/wave recovery,
 composed token motion, enemy-playback input lock,
-melee structure attacks and verification. The intermittent corner/door pathing
+melee structure attacks, boundary contact, one-use Hold Together bonuses,
+landing fade, distinct Fighter collision/landing audio and verification. The intermittent corner/door pathing
 report is deferred to the rebuild. Prior audits remain historical.
 [New Fighter art prompt](art/FIGHTER_V3_PROMPT.md) records the compact six-cell pack.
 Mage ground/barrier art is still awaiting redesign.

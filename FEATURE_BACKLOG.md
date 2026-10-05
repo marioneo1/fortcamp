@@ -861,3 +861,14 @@ authoring remains deferred. This pass does not implement the proposed 96 skills.
 - Proposed: tactical workspace A with bottom dock/one inspector (recommended), floating layout B. Interactive local comparison in staging-ui/combat-fighter-review/proposals.html.
 - Rejected/pending replacement: stretched AOE imagery and static bubble protection. Fighter protection and ground cast/state/trigger proposals in docs/design/FIGHTER_COMBAT_REVIEW.md.
 - Validation: 96 backend / 203 frontend tests, build and browser checks. Subjective audio review pending. No production changes.
+
+
+### Completed October 5 - Fighter support and impact contact
+- Hold Together: self-cast area Fear removal, next-hit -25%, next-attack +25%;
+  independent consumption, no stacking, clear targeting/hover text.
+- Same-cell edge-wall melee lunge; nearest-cell multi-cell structure contact.
+- Corpse/friendly cursor cleanup; four synchronized launch/landing/collision
+  sounds; ring reaches radius then fades. Walking animation retained.
+- Tested 124 backend / 224 frontend plus build and isolated browser checks.
+- Remaining: player listening/visual balance review of this pack; broader Mage
+  ground/Barrier redesign and deferred intermittent pathing/rebuild review.

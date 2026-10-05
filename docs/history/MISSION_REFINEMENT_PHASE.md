@@ -1378,3 +1378,17 @@ unit details and direct-hit estimates. On-demand utility dialogs retain supplies
 passives/history, auto and exit controls. Forecast shares damage math without
 consuming live defenses. 109 backend / 211 frontend tests, build and browser UI
 checks pass. Dev only; details/limits in FIGHTER_COMBAT_REVIEW.md.
+
+
+## October 5 - Fighter rally and impact polish (dev only)
+Hold Together now clears Fear and grants separate one-use 25% protection/damage
+bonuses in a two-cell allied area; self-casting works without existing Fear.
+Boundary-aware wall strikes fix zero-direction melee lunges. Friendly casts and
+corpse hover no longer inherit the old attack cursor. Generated four normalized
+Fighter-weight sounds and tied launch, landing, and body/body versus body/wall
+contact to the shared playback timeline; eliminated duplicate structure hit
+sounds. Landing ring fades after expansion without changing hit/walk timing.
+124 related backend tests, 224 frontend tests and build passed; isolated browser
+verified wall contact and one-command self-cast. Audio artistic review remains
+pending. Existing active snapshots need a fresh battle for new skill definitions.
+No production/save changes. Canonical detail: FIGHTER_COMBAT_REVIEW.md.

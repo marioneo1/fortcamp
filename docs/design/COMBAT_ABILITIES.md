@@ -62,3 +62,16 @@ Deployment effects and owner-linked temporary units are implemented;
 COMBAT_DEPLOYMENTS.md is authoritative. JOB_LOADOUTS.md now documents opt-in
 starter skill grants and loadouts. Full starter creation and dedicated placement
 controls remain pending.
+
+
+### One-use rally bonuses (implemented October 5)
+
+Hold Together demonstrates three ordered effects in one skill. Its two allied
+status effects accept a radius of 1-2 and only the guaranteed `rally_power` and
+`rally_protection` statuses. They have no activation expiry: consumed separately
+by the next normal direct attack (miss included) and next direct hit. Area attack
+power covers the whole attack. Both are battle-local and do not stack. Guard
+and rally protection provide one 25% reduction together, not two reductions.
+Other area statuses remain unsupported; validation rejects them rather than
+silently applying incorrect resistance/chance rules. Existing single-target
+status effects retain their original behavior.

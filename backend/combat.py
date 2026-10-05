@@ -27,6 +27,8 @@ from .combat_feedback import record as feedback
 
 
 STATUS_DEFINITIONS = {
+    "rally_protection":{"name":"Hold Together: Protection","icon":"25%","description":"Take 25% less damage from the next direct hit. Consumed separately from the attack bonus. Does not stack with Guard; damage over time does not consume it."},
+    "rally_power":{"name":"Hold Together: Attack","icon":"+25%","description":"Deal 25% more direct damage with the next attack, including every target of an area attack. A miss spends it. Does not boost damage over time, collision damage or counterattacks. Does not stack."},
     "armor_fracture": {"name":"Armor Fracture", "icon":"◇↓", "description":"Armor is reduced by 30%, rounded up, for the listed activations. Does not stack."},
     "hobbled": {"name":"Hobbled", "icon":"⛓", "description":"Movement is halved, rounded down, with a minimum of 1. Lasts for the listed activations."},
     "lifeline_ready":{"name":"Survival safeguard","icon":"✧","description":"Equipped gear can prevent one lethal defeat this battle, leaving this unit at 1 HP. Does not prevent a nonlethal capture."},
@@ -1052,6 +1054,7 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
         feedback(battle,target,'intercept',attack_packet=packet,before_contact=True)
     if reaction:
         feedback(battle,attacker,'counter',attack_packet=packet,before_contact=True)
+    if not reaction and intent=='lethal':conditions.remove(battle['units'].get(attacker['id'],attacker),'rally_power')
     if not reaction and not defer_reaction and intent=='lethal':_react_after_attack(battle,attacker,target,hit,rule)
     return target,hit,damage,preview,roll
 
@@ -1597,9 +1600,12 @@ def _damage_before_barrier(battle,attacker,target,bonus=0,armor_pierce=0,intent=
         if {element, affinity}.intersection(target.get("racial_weaknesses", [])):
             factor += .25
         damage = max(1, round(damage * factor))
-    if target.get("guarding") and not attacker.get("status_tick") and not attacker.get('environmental_fall'):
+    if conditions.has(attacker,'rally_power') and not any(attacker.get(k) for k in ('status_tick','environmental_fall','reaction_attack','collision_attack')):
+        damage=max(1,round(damage*1.25))
+    if (target.get("guarding") or conditions.has(target,'rally_protection')) and not attacker.get("status_tick") and not attacker.get('environmental_fall'):
         damage = max(1, (damage * 3 + 2) // 4)
         target["guarding"] = False
+        conditions.remove(target,"rally_protection")
         _record_sound(battle, "shield_block", offset=185)
     return damage
 
@@ -2452,7 +2458,11 @@ def _support_eligible(battle, actor, target, effect):
     if not target or target.get('team') != actor.get('team') or not _combat_active(target):
         return False
     if effect.get('area_cleanse'):
-        return target['id']==actor['id'] and any(u['team']==actor['team'] and _combat_active(u) and any(conditions.has(u,s) for s in effect['cleanses']) and {'x':u['x'],'y':u['y']} in _area_cells(battle,actor,effect['area_cleanse_radius']) for u in battle['units'].values())
+        cells=_area_cells(battle,actor,effect['area_cleanse_radius'])
+        return target['id']==actor['id'] and any(
+            u['team']==actor['team'] and _combat_active(u) and {'x':u['x'],'y':u['y']} in cells
+            and (any(conditions.has(u,s) for s in effect['cleanses']) or any(not conditions.has(u,s) for s in effect.get('support_statuses',[])))
+            for u in battle['units'].values())
     if _distance(actor, target) > int(effect.get('range', 1)) or not _line_of_sight(battle, actor, target):
         return False
     return ((effect.get('deployment') and target['id']==actor['id'] and entities.available(battle,actor,effect['deployment']))
@@ -2490,7 +2500,7 @@ def _support_effect(skill, actor):
         effect['heal']=sum(e['amount'] for e in skill['effects'] if e['type']=='heal')
         effect['cleanses']=[s for e in skill['effects'] if e['type']=='cleanse' for s in e['statuses']]
         effect['guard_ally']=any(e['type']=='guard' for e in skill['effects'])
-        effect['support_statuses']=[e['status'] for e in skill['effects'] if e['type']=='status' and e['status'] in {'regeneration','braced'}]
+        effect['support_statuses']=[e['status'] for e in skill['effects'] if e['type']=='status' and e['status'] in {'regeneration','braced','rally_protection','rally_power'}]
         effect['barrier']=max((e['amount'] for e in skill['effects'] if e['type']=='barrier'),default=0)
         effect['form_change']=any(e['type']=='form' for e in skill['effects'])
         effect['zone_setup']=any(e['type']=='zone' for e in skill['effects'])
@@ -2682,7 +2692,7 @@ def _resolve_ability(battle, actor, target, skill):
             for event in battle['animation_events'][push_begin:]:
                 event.update(impact_origin_packet=packet,impact_offset=offset)
         for event in battle['animation_events'][begin:]:event.setdefault('attack_packet',packet)
-        _record_sound(battle,'collision_hit');battle['animation_events'][-1]['attack_packet']=packet
+        conditions.remove(actor,'rally_power')
         return {'area_attack':True}
     def heal(effect):
         amount=min(target['max_hp']-target['hp'],effect['amount'])
@@ -2721,6 +2731,14 @@ def _resolve_ability(battle, actor, target, skill):
         for unit in entities.deploy(battle,actor,effect['entity'],_deployment_positions(battle,actor,effect['entity'])):
             feedback(battle,unit,'deploy')
     def status(effect):
+        if effect.get('radius'):
+            cells=_area_cells(battle,actor,effect['radius'])
+            for ally in battle['units'].values():
+                if ally['team']==actor['team'] and _combat_active(ally) and {'x':ally['x'],'y':ally['y']} in cells:
+                    if not conditions.has(ally,effect['status']):
+                        conditions.apply(ally,effect['status'],effect['turns'],actor)
+                        feedback(battle,ally,'status',status_id=effect['status'])
+            return
         sid=effect['status']
         if sid=='poison' and ('poison' in target.get('racial_resistances',[]) or target.get('race') in {'Undead','Revenant','Banshee','Golem','Automaton'}):return
         chance=effect.get('chance',100)
@@ -3128,11 +3146,21 @@ def _throw_payload(battle: dict, unit: dict, target: dict) -> None:
     )
 
 
+def _terrain_contact_point(unit, tile):
+    offsets={'north':(0,-.5),'east':(.5,0),'south':(0,.5),'west':(-.5,0)}
+    points=[{'x':tile['x']+offsets[e][0],'y':tile['y']+offsets[e][1]} for e in tile.get('wall_edges',[]) if e in offsets]
+    if not points:points=[{'x':x,'y':y} for x,y in occupied_tiles(tile)]
+    return min(points,key=lambda p:(p['x']-unit['x'])**2+(p['y']-unit['y'])**2)
+
+
 def _damage_terrain(battle: dict, unit: dict, target_id: str) -> None:
     tile = next((item for item in battle.get("terrain", []) if item.get("id") == target_id), None)
     if not tile or not tile.get("destructible") or tile.get("destroyed"):
         raise ValueError("That terrain cannot be damaged")
     damage = max(1, int(unit.get("attack", 1)) - int(tile.get("armor", 0))+unit.get('gear_rules',{}).get('breach_damage',0))
+    contact=_terrain_contact_point(unit,tile)
+    if conditions.has(unit,"rally_power"):
+        damage=max(1,round(damage*1.25));conditions.remove(unit,"rally_power")
     tile["hp"] = max(0, int(tile.get("hp", tile.get("max_hp", 10))) - damage)
     battle["log"].append(f"{unit['name']} strikes {tile['name']} for {damage} damage.")
     if tile["hp"] <= 0:
@@ -3147,16 +3175,16 @@ def _damage_terrain(battle: dict, unit: dict, target_id: str) -> None:
     packet=battle['attack_serial']
     if rule == 'melee':
         _record_melee_animation(battle,unit,tile,True,rule)
-        battle['animation_events'][-1].update(attack_packet=packet,target_kind='terrain')
+        battle['animation_events'][-1].update(attack_packet=packet,target_kind='terrain',to=contact)
     elif rule != 'ballistic':
         battle.setdefault('animation_events',[]).append({'type':'magic_projectile',
             'attacker_id':unit['id'],'target_id':tile['id'],'target_kind':'terrain','hit':True,
-            'from':{'x':unit['x'],'y':unit['y']},'to':{'x':tile['x'],'y':tile['y']},'attack_packet':packet})
+            'from':{'x':unit['x'],'y':unit['y']},'to':contact,'attack_packet':packet})
     release = "bow_release" if rule == "ballistic" else "melee_swing" if rule == "melee" else "magic_cast"
     battle.setdefault("animation_events", []).append({
         "type": "sound", "duration": 490, 'attack_packet':packet,'attack_event':True,
         'attacker_id':unit['id'],'target_id':tile['id'],'target_kind':'terrain',
-        'from':{'x':unit['x'],'y':unit['y']},'to':{'x':tile['x'],'y':tile['y']},
+        'from':{'x':unit['x'],'y':unit['y']},'to':contact,
         "cues": [{"name": release, "offset": 45}, {"name": "structure_hit", "offset": 185}]
                 + ([{"name": "structure_break", "offset": 300}] if tile.get("destroyed") else []),
     })

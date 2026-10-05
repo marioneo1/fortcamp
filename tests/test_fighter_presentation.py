@@ -35,6 +35,62 @@ class FighterPresentationTests(unittest.TestCase):
             self.assertEqual(rack.get('destroyed',False),hp==1)
             self.assertTrue(a['physical_action'])
 
+    def test_edge_wall_strikes_aim_at_boundary_even_from_the_same_cell(self):
+        for side,dx,dy in [('north',0,-.5),('east',.5,0),('south',0,.5),('west',-.5,0)]:
+            b,a,t=self.fixture()
+            wall={'id':'wall','name':'Wall','x':a['x'],'y':a['y'],'wall_edges':[side],
+                  'edge_wall':True,'destructible':True,'hp':1,'armor':0,'blocking':True}
+            b['terrain']=[wall]
+            combat._damage_terrain(b,a,'wall')
+            swing=next(e for e in b['animation_events'] if e['type']=='melee_attack')
+            self.assertEqual(swing['to'],{'x':a['x']+dx,'y':a['y']+dy})
+            self.assertTrue(wall['destroyed'])
+
+    def test_rally_is_castable_without_fear_and_grants_separate_one_use_bonuses(self):
+        b,a,t=self.fixture();t.update(team=a['team'],x=4,y=4)
+        skill=self.skill('rally');a.update(skills=[skill],special=skill)
+        view=combat.battle_view(b)
+        self.assertIsNotNone(view['skill_previews'][skill['id']][a['id']])
+        self.use(b,a,a,'rally')
+        for u in (a,t):
+            self.assertTrue(conditions.has(u,'rally_power'))
+            self.assertTrue(conditions.has(u,'rally_protection'))
+            u['status_activation']='later';conditions.finish_activation(u)
+            self.assertTrue(conditions.has(u,'rally_power'))
+        t.update(team='enemy',armor=0);a['attack']=20
+        # Protection does not consume the attack bonus; Guard cannot double it.
+        a['guarding']=True
+        self.assertEqual(combat._deal_damage(b,{'id':'hit','name':'Hit','attack':20},a),15)
+        self.assertFalse(conditions.has(a,'rally_protection'))
+        self.assertTrue(conditions.has(a,'rally_power'))
+        conditions.remove(t,'rally_protection')
+        with patch('backend.combat._attack_hits',return_value=(True,{'damage_bonus':0,'chance':100},1)):
+            self.assertEqual(combat._perform_attack(b,a,t,'melee')[2],25)
+            self.assertEqual(combat._perform_attack(b,a,t,'melee')[2],20)
+        self.assertFalse(conditions.has(a,'rally_power'))
+
+    def test_rally_miss_spends_power_and_area_attack_boosts_every_victim(self):
+        b,a,t=self.fixture();conditions.apply(a,'rally_power',1,a)
+        with patch('backend.combat._attack_hits',return_value=(False,{'damage_bonus':0,'chance':0},100)):
+            combat._perform_attack(b,a,t,'melee')
+        self.assertFalse(conditions.has(a,'rally_power'))
+        b,a,t=self.fixture();a.update(x=1,y=2);t.update(x=4,displacement_resistance=100)
+        other=deepcopy(t);other.update(id='other',y=3);b['units']['other']=other
+        conditions.apply(a,'rally_power',1,a)
+        self.use(b,a,combat._ground_target(3,2),'pull')
+        self.assertEqual((t['hp'],other['hp']),(70,70))
+        self.assertFalse(conditions.has(a,'rally_power'))
+
+    def test_rally_excludes_corpses_and_allies_behind_walls_and_does_not_stack(self):
+        b,a,t=self.fixture();t.update(team=a['team'])
+        dead=deepcopy(a);dead.update(id='dead',alive=False,conscious=False,hp=0);b['units']['dead']=dead
+        b['terrain']=[{'id':'wall','x':a['x'],'y':a['y'],'wall_edges':['east'],'edge_wall':True,'blocking':True}]
+        self.use(b,a,a,'rally')
+        self.assertFalse(conditions.has(t,'rally_power'));self.assertFalse(conditions.has(dead,'rally_power'))
+        for sid in ('rally_power','rally_protection'):
+            self.assertEqual(len([s for s in a['statuses'] if s['id']==sid]),1)
+        self.assertFalse(combat._support_eligible(b,a,a,combat._support_effect(self.skill('rally'),a)))
+
     def test_lethal_driving_hit_still_pushes_and_places_corpse_at_destination(self):
         b,a,t=self.fixture();t['hp']=1
         self.use(b,a,t,'bash')
