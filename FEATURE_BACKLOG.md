@@ -1,5 +1,7 @@
 # Fortcamp feature backlog
 
+October 4 deployment foundation (dev): seven trial profiles, owner-linked clocks, finite Components/capacity, shared automatic output, commanded movement/attacks, manual turret operation and dismissal implemented. No extra initiative turns, immediate deployment shots, corpse loot or prisoners. Context controls/resources and tooltips installed; no starter Jobs released. Next: dedicated ground placement/command UI, repairs/reclaim/release skills and full Job loadouts/AI/catalogues. Canonical: docs/design/COMBAT_DEPLOYMENTS.md.
+
 October 4 spaces foundation (dev): four bounded zone rules, real committed-route entry, overlap/expiry/owner checks, and two reversible form profiles implemented. No HP refill, race rewrite or new starter kits. Zone/form overlays and tooltips installed. Canonical: docs/design/COMBAT_SPACES.md. Next: owner-linked summons/devices, ground-target/command UI and Job loadouts; all twelve Jobs still launch together.
 
 October 4 tactical dependency pass: finite Barrier, owned Mark, status expiry/recovery, shared bounded interception/counters, straight displacement and authored pit outcomes implemented in dev. Tower Shield, Duelist Gloves, Precision Shot, Hook Thrust and Titan Thrust are pilots. Next: zones/forms/summon economy, then loadouts/UI/AI and all twelve Jobs together. Canonical: docs/design/COMBAT_ABILITIES.md. Production untouched.

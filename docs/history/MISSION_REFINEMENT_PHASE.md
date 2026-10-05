@@ -1099,3 +1099,33 @@ passed (existing large-chunk warning). Isolated actual battle UI confirmed zone
 cells, tooltip ownership/timing, form tooltip and click-through overlay without
 JavaScript errors; screenshot inspected. No real saves or production touched.
 Canonical: docs/design/COMBAT_SPACES.md.
+
+## October 4 - owner-linked summon/device foundation
+
+Implemented seven fixed trial profiles in combat_entities.py and validated deploy
+effects in the existing ability resolver. Finite encounter Components, concurrent
+capacity/group identity, once-per-encounter history, delayed deployment timing,
+owner-linked status clocks and shared automatic output persist through JSON.
+Commanded movement preserves its own budget; attacks use the owner's main action.
+Manual turret operation replaces automatic fire. No new initiative slots.
+Physical devices work while muted; magical links do not. Enemy owners use the
+same clock. Owner defeat/extraction dismisses units; temporary targets cannot
+create prisoner/corpse loot or mission kill credit. Owner damage credit occurs once.
+
+Context actions, resource readout and unit status tooltips are installed. No
+existing starter kit, gear drop, vendor or Job catalogue grants the new profiles
+yet. Dedicated placement/command UI, repair/reclaim/release and personality-aware
+scoring remain pending before all twelve starting Jobs launch together.
+
+Generated one transparent 4x4 painted atlas with the built-in imagegen tool,
+retaining source, exact prompt and ordered manifest in summons-devices-v1. User
+steered mobile units to portrait circles; atlas remains staged reference, not
+runtime mobile sprites. Stationary idle/winding/firing/projectile/destroyed states
+are documented for a later coherent pack. No source assets overwritten.
+
+Validation: 221 related backend checks passed, then 55 focused checks covering
+final enemy-clock/owner-validity changes. All 186 frontend tests and Vite build
+passed; final tooltip tests passed. Isolated actual battle UI confirmed resources,
+capacity, deployment tooltips/context controls and no extra turn chips or JS errors.
+Production and real saves untouched. Canonical: COMBAT_DEPLOYMENTS.md and
+SUMMON_DEVICE_ART.md.

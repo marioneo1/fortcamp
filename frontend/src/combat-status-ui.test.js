@@ -8,6 +8,8 @@ test('statuses show finite absorption, owner, clock and reaction availability',(
  assert.equal(statusDetails({id:'reaction',ready:false,reactions:['Riposte']}).name,'Reaction spent');
  assert.match(statusDetails({id:'footing',resistance:25}).description,/25%/);
  assert.match(statusDetails({id:'poison',turns:2,expiry:'target_start'}).details.join(' '),/2 damage ticks/);
+ assert.match(statusDetails({id:'deployment',owner_name:'Aya',policy:'commanded',ready:false}).description,/Aya.*owner action.*No extra initiative/);
+ assert.match(statusDetails({id:'deployment',owner_name:'Aya',policy:'automatic',ready:true,stationary:true}).details.join(' '),/Ready this owner activation.*Stationary/);
 });
 test('previews explain redirection, resistance, collision and lethal loot loss',()=>{
  const text=tacticalPreviewText({intercepted_by:'Guard',barrier:6,tactics:[{type:'push',destination:{x:4,y:2},resistance:25,pit:'lethal',blocked:null}]});

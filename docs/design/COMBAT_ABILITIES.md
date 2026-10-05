@@ -53,3 +53,5 @@ The battle UI explains remaining Barrier, Mark ownership, reaction availability,
 Validation: full backend regression 432 tests passed, followed by 74 focused tests covering final changes. Frontend suite 185 tests passed; final status tests and Vite build passed (existing large-chunk warning). Isolated actual battle UI check confirmed Barrier, Mark, resistance, reactions and skill previews without JavaScript errors. Live saves and production were untouched.
 
 October 4 spaces dependency: zone/form effects, bounded activation clocks, route entry, reversible Prowler/Bulwark profiles and battle presentation are now implemented as engine vocabulary. No starter kits or gear drops changed. See COMBAT_SPACES.md for limitations; summon/device economy and the Job/loadout rollout are next.
+
+Deployment effects and owner-linked temporary units are now implemented as dependency vocabulary; COMBAT_DEPLOYMENTS.md is authoritative. Job granting/loadouts and the full placement/command UI remain pending.

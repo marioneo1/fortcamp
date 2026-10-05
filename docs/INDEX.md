@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Current summon/device foundation: [Owner-linked deployments](design/COMBAT_DEPLOYMENTS.md) documents action/resource rules, tested profiles, UI, rewards and pending Job integration. [Artwork plan](art/SUMMON_DEVICE_ART.md) records the staged atlas and portrait-circle decision for mobile units.
+
 Current spaces foundation: [Combat zones and forms](design/COMBAT_SPACES.md) documents engine rules, fixed effect IDs, expiry/stacking, reversible forms, presentation and remaining targeting/AI work. No Job release yet.
 
 Implemented tactical dependencies: [Combat ability foundation](design/COMBAT_ABILITIES.md) now also covers Barrier/Mark, control timing, shared reactions, knockback resistance and authored pit outcomes. Jobs, loadouts, summons, forms and zones remain future work.

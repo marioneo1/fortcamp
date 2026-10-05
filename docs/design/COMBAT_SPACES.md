@@ -89,3 +89,5 @@ Tests cover JSON reload, repeated previews, route entry, owner removal, clipping
 overlap limits, control recovery, invalid casts, no HP refill, exact restoration,
 weapon/character ability ownership and no attack damage from a dead caster.
 See history for final test counts and browser validation.
+
+Deployment dependency update: owner-linked temporary units and resource/action budgets are now implemented in COMBAT_DEPLOYMENTS.md. Dedicated ground targeting, personality-aware scoring and the full Job rollout remain pending.

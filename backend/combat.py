@@ -22,6 +22,7 @@ from . import concealment
 from . import combat_abilities as abilities
 from . import combat_tactics as tactics
 from . import combat_spaces as spaces
+from . import combat_entities as entities
 
 
 STATUS_DEFINITIONS = {
@@ -861,6 +862,7 @@ def _blocked(
 
 
 def _movement_limit(unit: dict) -> int:
+    if unit.get('stationary'):return 0
     if conditions.has(unit, 'freeze') or conditions.has(unit, 'bind') or conditions.has(unit,'pit_trapped') or unit.get('paralyzed_move'):
         return 0
     penalty = int(unit.get("carried_payload_penalty", 2 if unit.get("carrying") else 0))
@@ -1357,6 +1359,7 @@ def _current_unit(battle: dict, activate: bool = True) -> dict | None:
                 unit["status_activation"] = stamp
                 if unit.get('ability_version'):
                     abilities.start_activation(unit, stamp)
+                    unit['entity_budget_spent']=0
                 spaces.expire_form(unit)
                 if battle.get('zones'):
                     spaces.expire_zones(battle,unit)
@@ -1370,6 +1373,7 @@ def _current_unit(battle: dict, activate: bool = True) -> dict | None:
                 if any(s.get("id") in {"burn", "poison"} and "turns" in s for s in unit.get("statuses", [])):
                     _tick_gear_statuses(battle, unit)
                     _check_end(battle)
+                if _combat_active(unit):_start_entities(battle,unit)
                 if battle["status"] != "active" or battle.get("decision_pending"):
                     return None
                 if not _combat_active(unit):
@@ -1496,7 +1500,10 @@ def _deal_damage(
     if target["hp"] <= 0:
         target["conscious"] = False
         target["guarding"] = False
-        if intent == "nonlethal":
+        if target.get('temporary'):
+            target.update(alive=False,extracted=True,condition='dismissed')
+            battle['log'].append(f"{target['name']} is destroyed. It leaves no prisoner or loot.")
+        elif intent == "nonlethal":
             target["alive"] = True; target["condition"] = "unconscious"
             battle["log"].append(f"{target['name']} is knocked unconscious.")
         else:
@@ -1517,7 +1524,8 @@ def _deal_damage(
             target["carrying_object"] = None
             target.pop("carried_payload_penalty", None)
     source=battle.get("units",{}).get(attacker.get("id"))
-    if source and source.get("team")=="player":
+    if source and source.get('temporary'):source=battle['units'].get(source['owner_id'])
+    if source and source.get("team")=="player" and not target.get('temporary'):
         facts=source.setdefault("combat_record",{})
         actual=0 if attacker.get("capture_only") else max(0,previous_hp-int(target["hp"]))
         facts["total_damage"]=facts.get("total_damage",0)+actual
@@ -1536,6 +1544,7 @@ def _deal_damage(
 
 def _capture_attempt(battle: dict, actor: dict, target: dict) -> None:
     if not _combat_active(actor):return
+    if target.get('temporary'):raise ValueError('Temporary deployments cannot become prisoners')
     if not actor.get('capture_weapon'):
         raise ValueError('Equip a capture weapon to attempt Subdue')
     if not _combat_active(target) or not _can_attack(battle, actor, target):
@@ -1624,12 +1633,12 @@ def _secure_battlefield_loot(battle: dict) -> None:
         return
     recovered = {
         unit["id"] for unit in battle["units"].values()
-        if unit["team"] == "enemy" and unit.get("condition") == "dead" and not unit.get("fled") and not unit.get('lost_in_pit')
+        if unit["team"] == "enemy" and unit.get("condition") == "dead" and not unit.get("fled") and not unit.get('lost_in_pit') and not unit.get('temporary')
     }
     battle["auto_looted_ids"] = sorted(recovered)
     battle["auto_captured_ids"] = sorted(
         unit["id"] for unit in battle["units"].values()
-        if unit["team"] == "enemy" and unit.get("condition") == "unconscious" and not unit.get("fled") and not unit.get('lost_in_pit')
+        if unit["team"] == "enemy" and unit.get("condition") == "unconscious" and not unit.get("fled") and not unit.get('lost_in_pit') and not unit.get('temporary')
     )
     battle["loot_secured"] = True
     battle["log"].append(
@@ -1785,6 +1794,7 @@ def _check_frontier_watch_end(battle: dict) -> None:
 
 
 def _check_end(battle: dict) -> None:
+    entities.cleanup(battle,_combat_active)
     spaces.cleanup_zones(battle,_combat_active)
     if battle.get('mercenary_interlude') or battle.get("encounter_id", "").startswith("contract:"):
         _check_contract_end(battle)
@@ -1799,7 +1809,7 @@ def _check_end(battle: dict) -> None:
     hostile = any(u.get('mercenary_hostile') and u.get('condition') not in ('dead','unconscious') for u in battle['units'].values())
     for objective in battle.get('objectives',[]):
         if objective.get('id')=='mercenary_threat':objective['complete']=not hostile
-    crew = [u for u in battle['units'].values() if u['team']=='player' and not u.get('mercenary_guest')]
+    crew = [u for u in battle['units'].values() if u['team']=='player' and not u.get('mercenary_guest') and not u.get('temporary')]
     if hostile and not battle.get('mercenary_interlude'):
         if any(u.get('mercenary_hostile') and u.get('fled') for u in battle['units'].values()):
             battle.update(status='complete',outcome='failure',battle_won=False,decision_pending=False)
@@ -1817,6 +1827,7 @@ def _finish_turn(battle: dict) -> None:
     unit = battle["units"].get(order[index]) if index < len(order) else None
     if unit:
         _tick_bleed(battle, unit)
+        _finish_entities(battle,unit)
         conditions.finish_activation(unit)
         unit.pop('physical_action', None)
         unit.pop("movement_origin", None)
@@ -2269,7 +2280,8 @@ def _support_eligible(battle, actor, target, effect):
         return False
     if _distance(actor, target) > int(effect.get('range', 1)) or not _line_of_sight(battle, actor, target):
         return False
-    return ((effect.get('form_change') and target['id']==actor['id'] and not actor.get('capture_weapon') and not actor.get('carrying') and not actor.get('carrying_object'))
+    return ((effect.get('deployment') and target['id']==actor['id'] and entities.available(battle,actor,effect['deployment']))
+            or (effect.get('form_change') and target['id']==actor['id'] and not actor.get('capture_weapon') and not actor.get('carrying') and not actor.get('carrying_object'))
             or effect.get('zone_setup')
             or (effect.get('heal', 0) > 0 and target['hp'] < target['max_hp'])
             or (effect.get('barrier',0)>max((s.get('amount',0) for s in target.get('statuses',[]) if s['id']=='barrier'),default=0))
@@ -2304,10 +2316,123 @@ def _support_effect(skill, actor):
         effect['barrier']=max((e['amount'] for e in skill['effects'] if e['type']=='barrier'),default=0)
         effect['form_change']=any(e['type']=='form' for e in skill['effects'])
         effect['zone_setup']=any(e['type']=='zone' for e in skill['effects'])
+        effect['deployment']=next((e['entity'] for e in skill['effects'] if e['type']=='deploy'),None)
         return effect
     if effect.get('heal'):
         effect['heal'] += int(actor.get('intelligence', 4)) // 2
     return effect
+
+
+def _deployment_positions(battle,owner,kind):
+    profile=entities.PROFILES[kind]
+    candidates=[]
+    for dx,dy in ((0,-1),(1,0),(0,1),(-1,0)):
+        x,y=owner['x']+dx,owner['y']+dy
+        probe={**owner,'movement_type':'flying' if profile.get('flying') else 'ground'}
+        material,_=_ground_at(battle,x,y)
+        if (not _blocked(battle,x,y,None,probe['movement_type']) and material!='water'
+            and not tactics.pit_at(battle,x,y) and _can_step(battle,owner['x'],owner['y'],x,y,probe)):
+            candidates.append((x,y))
+    count=profile.get('count',1)
+    if len(candidates)<count:raise ValueError('Not enough open adjacent ground for deployment')
+    return candidates[:count]
+
+
+def _start_entities(battle,owner):
+    if not entities.owned(battle,owner):return
+    def start(unit):
+        conditions.start_activation(battle,unit)
+        unit['zone_location']=[unit['x'],unit['y']]
+        _trigger_zones(battle,unit,'start')
+        if _combat_active(unit):_tick_gear_statuses(battle,unit)
+    entities.start_owner(battle,owner,start)
+    entities.cleanup(battle,_combat_active)
+
+
+def _entity_targets(battle,entity):
+    owner=battle['units'].get(entity['owner_id'])
+    if not owner:return []
+    # The entity adopts owner allegiance; it never reads concealed enemies.
+    targets=conditions.hostile_units(battle,owner,_living(battle))
+    return [u for u in targets if not concealment.unseen(u)]
+
+
+def _entity_attack(battle,owner,entity,target,power):
+    source={**entity,'attack':power,'credit_owner_id':owner['id']}
+    _,hit,damage,_,_=_perform_attack(battle,source,target,entity['attack_elevation_rule'])
+    battle['log'].append(f"{entity['name']} hits {target['name']} for {damage} damage." if hit else f"{entity['name']} misses {target['name']}.")
+    entity['acted']=True
+    entity['fired_at']=owner.get('ability_activation',0)
+
+
+def _finish_entities(battle,owner):
+    crew=entities.owned(battle,owner)
+    if not crew:return
+    stamp=owner.get('ability_stamp')
+    if owner.get('entities_finished_stamp')==stamp:return
+    owner['entities_finished_stamp']=deepcopy(stamp)
+    if not _combat_active(owner) or owner.get('forced_skip'):
+        for unit in crew:conditions.finish_activation(unit)
+        return
+    ready=[u for u in crew if u['deployed_at']<owner.get('ability_activation',0)
+           and u['policy']=='automatic' and not u.get('forced_skip') and not u.get('panicked')
+           and not (u['resource_pool']=='capacity' and conditions.has(owner,'mute'))
+           and not u.get('acted') and u.get('fired_at')!=owner.get('ability_activation',0)]
+    remaining=max(0,entities.budget(owner)-owner.get('entity_budget_spent',0))
+    for i,unit in enumerate(ready):
+        share=min(unit['entity_output'],remaining//max(1,len(ready)-i))
+        if share<1:continue
+        profile=entities.PROFILES[unit['entity_kind']]
+        if profile.get('heal'):
+            hostile_ids={u['id'] for u in _entity_targets(battle,unit)}
+            friends=[u for u in _living(battle) if u['id'] not in hostile_ids and not u.get('temporary') and u['hp']<u['max_hp'] and not conditions.has(u,'burn')]
+            target=min(friends,key=lambda u:(u['hp']/u['max_hp'],u['id'])) if friends else None
+        else:
+            targets=_entity_targets(battle,unit)
+            target=min(targets,key=lambda u:(not _can_attack(battle,unit,u,unit['attack_range']),_distance(unit,u),u['id'])) if targets else None
+        if not target:continue
+        if not unit.get('stationary') and not _can_attack(battle,unit,target,unit['attack_range']):_move_toward(battle,unit,target)
+        if not _combat_active(unit) or not _can_attack(battle,unit,target,unit['attack_range']):continue
+        # Budget is spent for an attempted shot, including misses and absorption.
+        remaining-=share;owner['entity_budget_spent']=owner.get('entity_budget_spent',0)+share
+        if profile.get('heal'):
+            amount=min(share,target['max_hp']-target['hp']);target['hp']+=amount
+            unit['acted']=True;unit['fired_at']=owner.get('ability_activation',0)
+            battle['log'].append(f"{unit['name']} restores {amount} HP to {target['name']}.")
+        else:_entity_attack(battle,owner,unit,target,share)
+    for unit in crew:
+        if unit.get('movement_origin'):_commit_player_movement(battle,unit)
+        conditions.finish_activation(unit)
+
+
+def _entity_command(battle,owner,command):
+    unit=battle['units'].get(command.get('entity_id'))
+    if not entities.can_command(battle,owner,unit):raise ValueError('Choose an owned deployment ready this activation')
+    action=command['action']
+    if action=='dismiss_summon':
+        _commit_player_movement(battle,owner);entities.dismiss(battle,owner,unit);owner['acted']=True;return
+    if unit['resource_pool']=='capacity' and conditions.has(owner,'mute'):raise ValueError('Mute interrupts magical summon commands')
+    if unit['policy']!='commanded' and action!='operate_turret':raise ValueError('This entity follows its automatic policy')
+    if action=='summon_move':
+        x,y=int(command.get('x',-1)),int(command.get('y',-1))
+        costs,parents=_movement_tree(battle,unit)
+        if (x,y) not in costs:raise ValueError('Destination is outside this deployment movement budget')
+        start=(unit['x'],unit['y']);origin=unit.get('movement_origin') or {'x':start[0],'y':start[1]}
+        unit.update(x=x,y=y,movement_origin=origin,movement_path=_movement_path(parents,costs,(x,y)),moved=(x,y)!=(origin['x'],origin['y']))
+        _record_movement(battle,unit,start,[(x,y)])
+        return
+    if action=='operate_turret' and (not unit.get('stationary') or _distance(owner,unit)>1):raise ValueError('Stand beside an owned turret to operate it')
+    target=battle['units'].get(command.get('target_id'))
+    if not target or target not in _entity_targets(battle,unit) or not _can_attack(battle,unit,target,unit['attack_range']):raise ValueError('Choose a visible hostile target in deployment range and sight')
+    if unit.get('acted') or unit.get('fired_at')==owner.get('ability_activation',0):raise ValueError('This deployment has already acted')
+    power=unit['attack']
+    if action=='operate_turret':
+        power=min(power,max(0,entities.budget(owner)-owner.get('entity_budget_spent',0)))
+        if power<1:raise ValueError('Automatic output budget is spent')
+    _commit_player_movement(battle,owner);_commit_player_movement(battle,unit)
+    if not _combat_active(owner) or not _combat_active(unit):return
+    if action=='operate_turret':owner['entity_budget_spent']=owner.get('entity_budget_spent',0)+power
+    _entity_attack(battle,owner,unit,target,power);owner['acted']=True
 
 
 def _resolve_ability(battle, actor, target, skill):
@@ -2318,6 +2443,9 @@ def _resolve_ability(battle, actor, target, skill):
     if actor.get('capture_weapon') and any(e['type']=='attack' for e in skill['effects']):
         raise ValueError('Capture weapons cannot perform damaging techniques')
     for effect in skill['effects']:
+        if effect['type']=='deploy':
+            if target['id']!=actor['id'] or not entities.available(battle,actor,effect['entity']):raise ValueError('Choose self with available deployment resources')
+            _deployment_positions(battle,actor,effect['entity'])
         if effect['type']=='form' and (target['id']!=actor['id'] or actor.get('capture_weapon') or actor.get('carrying') or actor.get('carrying_object')):
             raise ValueError('Forms require self targeting without a payload or capture weapon')
         if effect['type']=='zone' and not _zone_cells(battle,target,effect):
@@ -2347,6 +2475,7 @@ def _resolve_ability(battle, actor, target, skill):
     def form(effect):
         spaces.change_form(actor,effect)
         battle['log'].append(f"{actor['name']} returns to normal form." if effect['form']=='normal' else f"{actor['name']} takes {spaces.FORMS[effect['form']]['name']} form.")
+    def deploy(effect):entities.deploy(battle,actor,effect['entity'],_deployment_positions(battle,actor,effect['entity']))
     def status(effect):
         sid=effect['status']
         if sid=='poison' and ('poison' in target.get('racial_resistances',[]) or target.get('race') in {'Undead','Revenant','Banshee','Golem','Automaton'}):return
@@ -2358,7 +2487,7 @@ def _resolve_ability(battle, actor, target, skill):
         if roll<=chance and conditions.apply(target,sid,effect['turns'],actor):
             battle['log'].append(f"{target['name']} suffers {sid}.")
     result=abilities.resolve(skill,target,{'attack':attack,'heal':heal,'cleanse':cleanse,'guard':guard,'status':status,
-        'barrier':barrier,'mark':mark,'displace':displace,'zone':zone,'form':form})
+        'barrier':barrier,'mark':mark,'displace':displace,'zone':zone,'form':form,'deploy':deploy})
     abilities.spend(actor,skill)
     if result.get('attacked'):_react_after_attack(battle,actor,target,result['hit'],skill['elevation_rule'])
     if skill['target']=='ally':
@@ -2562,7 +2691,7 @@ def _carry_body(battle: dict, unit: dict, target_id: str) -> None:
     if unit.get("carrying") or unit.get("carrying_object"):
         raise ValueError("This unit is already carrying something")
     target = battle["units"].get(target_id)
-    if not target or target.get("extracted") or target.get("carried_by") or target.get('lost_in_pit'):
+    if not target or target.get("extracted") or target.get("carried_by") or target.get('lost_in_pit') or target.get('temporary'):
         raise ValueError("That body cannot be carried")
     if target.get("conscious", True) or target.get("condition") not in {"unconscious", "dead"}:
         raise ValueError("Only unconscious units or corpses can be carried")
@@ -2723,6 +2852,30 @@ def _damage_terrain(battle: dict, unit: dict, target_id: str) -> None:
 def _context_actions(battle: dict, unit: dict) -> list[dict]:
     actions: list[dict] = []
     if not unit.get("acted"):
+        for entity in entities.owned(battle,unit):
+            if not entities.can_command(battle,unit,entity):continue
+            actions.append({'id':f"dismiss:{entity['id']}",'label':f"Dismiss {entity['name']}",'target':entity['name'],
+                'description':'Remove this deployment. Releases capacity, but never refunds Components or refreshes an ability.',
+                'cost':'Main action','command':{'action':'dismiss_summon','entity_id':entity['id']}})
+            magical_block=entity['resource_pool']=='capacity' and conditions.has(unit,'mute')
+            if magical_block:continue
+            if entity['policy']=='commanded':
+                costs,_=_movement_tree(battle,entity)
+                for dx,dy in ((0,-1),(1,0),(0,1),(-1,0)):
+                    x,y=entity['x']+dx,entity['y']+dy
+                    if (x,y) in costs:actions.append({'id':f"entity_move:{entity['id']}:{x}:{y}",
+                        'label':f"Move {entity['name']} to {x+1}, {y+1}",'target':entity['name'],
+                        'description':'Reposition within its own movement budget. Does not grant an extra attack.',
+                        'cost':'Deployment movement','command':{'action':'summon_move','entity_id':entity['id'],'x':x,'y':y}})
+            operating=entity.get('stationary') and _distance(unit,entity)<=1
+            if entity['policy']=='commanded' or operating:
+                for target in _entity_targets(battle,entity):
+                    if not _can_attack(battle,entity,target,entity['attack_range']):continue
+                    action='operate_turret' if operating else 'summon_attack'
+                    actions.append({'id':f"entity_attack:{entity['id']}:{target['id']}",
+                        'label':f"{entity['name']}: attack {target['name']}",'target':target['name'],
+                        'description':'Uses your main action. Operating a turret replaces its automatic firing opportunity.',
+                        'cost':'Owner main action','command':{'action':action,'entity_id':entity['id'],'target_id':target['id']}})
         for x,y in _pit_exits(battle,unit):
             actions.append({'id':f'climb:{x}:{y}','label':f'Climb Out ({x+1}, {y+1})','target':'Safe ground',
                 'description':'Climb into this adjacent safe cell. Uses the main action.','cost':'Main action',
@@ -2809,6 +2962,7 @@ def battle_view(battle: dict) -> dict:
     hidden_names = [view['units'][uid]['name'] for uid in hidden]
     view['log'] = [line for line in view.get('log', []) if not any(name in line for name in hidden_names)]
     view['units'] = {uid:unit for uid,unit in view['units'].items() if uid not in hidden}
+    view['entity_rules']='Deployments have no extra initiative turn. Commands spend the owner action; automatic entities share output. Newly deployed entities act from the next owner activation.'
     view['zones']=[z for z in view['zones'] if z['owner_id'] not in hidden]
     if 'spawn_zones' in view:
         view['spawn_zones'].pop('enemy', None)
@@ -2839,7 +2993,16 @@ def battle_view(battle: dict) -> dict:
         if objective.get('id') == 'alarm':
             objective['name'] = 'Disable the alarm bell'
     current = _current_unit(view, activate=False)
+    if current and (entities.owned(view,current) or any(e['type']=='deploy' for s in current.get('skills',[]) for e in s.get('effects',[]))):
+        view['deployment_resources']={'components':current.get('components',3),'capacity_used':entities.usage(view,current),
+            'capacity':current.get('summon_capacity',2),'automatic_budget':entities.budget(current),
+            'automatic_spent':current.get('entity_budget_spent',0)}
     for unit in view['units'].values():
+        if unit.get('temporary'):
+            owner=view['units'].get(unit['owner_id'],{})
+            unit['statuses'].append({'id':'deployment','owner_name':owner.get('name','Owner'),
+                'policy':unit['policy'],'ready':unit['deployed_at']<owner.get('ability_activation',0),
+                'stationary':unit.get('stationary',False)})
         for choice in unit.get('skills',[]):
             choice['availability']=abilities.availability(unit,choice)
         if unit.get('special'):
@@ -3100,7 +3263,9 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         battle["action_count"]+=1
         return battle_view(battle)
     selected_skill=next((s for s in unit.get('skills',[]) if s['id']==command.get('skill_id',(unit.get('special') or {}).get('id'))),None) if action=='skill' else None
-    if selected_skill and selected_skill.get('ability_version'):
+    if action in {'summon_move','summon_attack','operate_turret','dismiss_summon'}:
+        _entity_command(battle,unit,command)
+    elif selected_skill and selected_skill.get('ability_version'):
         abilities.validate(selected_skill)
         availability=abilities.availability(unit,selected_skill)
         if not availability['available']:raise ValueError(availability['reason'])
@@ -3313,7 +3478,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
 
     if action == "end_turn":
         _commit_player_movement(battle, unit)
-    if action == "end_turn" or action in {"attack", "skill", "subdue", "drop", "drop_object", "throw", "guard", "use_item", "climb_out"}:
+    if action == "end_turn" or action in {"attack", "skill", "subdue", "drop", "drop_object", "throw", "guard", "use_item", "climb_out",'summon_attack','operate_turret','dismiss_summon'}:
         _finish_turn(battle)
     concealment.refresh(battle)
     _check_end(battle)

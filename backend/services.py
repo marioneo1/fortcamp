@@ -1169,7 +1169,7 @@ def _store_captured_prisoners(state: dict, battle: dict, mission: MissionInstanc
     mission_name = MISSION_TEMPLATES.get(mission.template_id, {}).get("name", mission.template_id)
     for unit_id in sorted(captured_ids):
         unit = battle.get("units", {}).get(unit_id)
-        if not unit or unit.get("team") != "enemy" or unit.get("condition") != "unconscious" or unit.get('creature') or unit.get('mercenary_id'):
+        if not unit or unit.get("team") != "enemy" or unit.get("condition") != "unconscious" or unit.get('creature') or unit.get('mercenary_id') or unit.get('temporary'):
             continue
         capture_key = f"{mission.id}:{unit_id}"
         if capture_key in existing_sources:
@@ -1328,7 +1328,7 @@ async def _finish_battle(
     loot_rng = random.Random(f"{mission.id}:corpse-loot")
     for unit_id in sorted(recovered_ids):
         unit = battle.get("units", {}).get(unit_id)
-        if not unit or unit.get("team") != "enemy" or unit.get("condition") != "dead" or unit.get('lost_in_pit'):
+        if not unit or unit.get("team") != "enemy" or unit.get("condition") != "dead" or unit.get('lost_in_pit') or unit.get('temporary'):
             continue
         kind = unit.get("kind", "raider")
         gold_low, gold_high = (6, 12) if kind == "chieftain" else (1, 5) if kind == "archer" else (0, 4)
@@ -1363,7 +1363,7 @@ async def _finish_battle(
             if character.get("id") not in temporary_ids
         ]
     objectives = [objective["name"] for objective in battle.get("objectives", []) if objective.get("complete")]
-    extracted = [unit["name"] for unit in battle.get("units", {}).values() if unit.get("extracted")]
+    extracted = [unit["name"] for unit in battle.get("units", {}).values() if unit.get("extracted") and not unit.get('temporary')]
     unconscious = [
         unit["name"] for unit in battle.get("units", {}).values()
         if unit.get("condition") == "unconscious" and not unit.get("extracted")

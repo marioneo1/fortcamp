@@ -2,6 +2,7 @@
 from copy import deepcopy
 import math
 from . import combat_spaces as spaces
+from . import combat_entities as entities
 
 VERSION = 1
 STATUSES = {'stun','sleep','poison','bleed','charm','confuse','berserk','freeze',
@@ -39,6 +40,7 @@ def validate(skill):
     if not isinstance(effects, list) or not 1 <= len(effects) <= 4:
         raise ValueError('Ability needs one to four ordered effects')
     attacks = 0
+    deployments = 0
     for effect in effects:
         if not isinstance(effect, dict):
             raise ValueError('Ability effect must be an object')
@@ -47,7 +49,7 @@ def validate(skill):
                    'cleanse': {'statuses'}, 'guard': set(), 'status': {'status','turns','chance'},
                    'barrier': {'amount','turns'}, 'mark': {'turns','accuracy'},
                    'displace': {'mode','distance','collision_damage'},
-                   'zone': {'zone','radius','turns'}, 'form': {'form','turns'}}
+                   'zone': {'zone','radius','turns'}, 'form': {'form','turns'}, 'deploy': {'entity'}}
         if kind not in allowed or set(effect) - (allowed[kind] | {'type','conditions'}):
             raise ValueError('Unsupported ability effect')
         if kind == 'attack':
@@ -67,6 +69,11 @@ def validate(skill):
                 raise ValueError('Forms require a self/ally target')
             if kind=='zone' and (skill['target']=='ally') != (spaces.ZONES[effect['zone']]['relation']=='ally'):
                 raise ValueError('Zone target must match its ally/enemy policy')
+        if kind=='deploy' and (effect.get('entity') not in entities.PROFILES or skill['target']!='ally'):
+            raise ValueError('Deployment requires a supported entity and self/ally target')
+        if kind=='deploy':
+            deployments+=1
+            if deployments>1:raise ValueError('Use one grouped deployment profile per ability')
         if kind in {'barrier','mark'}:
             _integer(effect.get('turns'),1,3)
             _integer(effect.get('amount') if kind=='barrier' else effect.get('accuracy',10),1,200 if kind=='barrier' else 15)
