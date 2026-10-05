@@ -984,12 +984,14 @@ document.addEventListener('keydown',event=>{
   if(!button||button.disabled)return;
   event.preventDefault();button.click();
 });
-async function sendCombat(command,nextMode=null){
+async function sendCombat(command,nextMode=null,queuedMovement=false){
   if(combatPlaybackBlocked())return;
   $$('.battle-utility-dialog[open]').forEach(d=>d.close());
   if(command.action==='skill'&&activeBattleView?.units?.[activeBattleView.current_unit_id]?.special)command={...command,skill_id:activeBattleView.units[activeBattleView.current_unit_id].special.id};
   const movementContext=`${activeBattleMissionId}:${activeBattleView?.current_unit_id}:${activeBattleView?.round}`;
   const requestMissionId=activeBattleMissionId;
+  // Once an action is buffered, freeze the chosen destination until it resolves.
+  if(latestMovement.hasAction(movementContext)&&!queuedMovement)return;
   if(command.action==='move'&&(!combatRequestPending||inFlightCombatAction==='move')){
     const field=$('.battlefield'),token=field?.querySelector(`[data-battle-unit="${CSS.escape(activeBattleView?.current_unit_id||'')}"]`);
     const current=activeBattleView?.units?.[activeBattleView.current_unit_id];
@@ -1000,7 +1002,13 @@ async function sendCombat(command,nextMode=null){
       if(preview)renderBattle(preview);
     }
   }
-  if(combatRequestPending){if(command.action==='move'&&inFlightCombatAction==='move')latestMovement.remember(command,movementContext);return}
+  if(combatRequestPending){
+    if(inFlightCombatAction==='move'){
+      if(command.action==='move')latestMovement.remember(command,movementContext);
+      else latestMovement.commit(command,movementContext,nextMode);
+    }
+    return;
+  }
   if(command.action!=='move')latestMovement.clear();
   combatRequestPending=true;inFlightCombatAction=command.action;
   try{
@@ -1026,8 +1034,16 @@ async function sendCombat(command,nextMode=null){
     if(activeBattleMissionId===requestMissionId&&activeBattleView&&!$('#mission-modal').classList.contains('hidden'))try{const fresh=await rawApi(battleEndpoint('',requestMissionId));if(activeBattleMissionId===requestMissionId&&activeBattleView&&!$('#mission-modal').classList.contains('hidden'))renderBattle(fresh.battle)}catch{}
   }finally{
     combatRequestPending=false;inFlightCombatAction=null;
-    const pending=latestMovement.take(`${activeBattleMissionId}:${activeBattleView?.current_unit_id}:${activeBattleView?.round}`);
-    if(pending&&activeBattleView?.status==='active'&&!$('#mission-modal').classList.contains('hidden'))sendCombat(pending);
+    const context=`${activeBattleMissionId}:${activeBattleView?.current_unit_id}:${activeBattleView?.round}`;
+    const pending=latestMovement.take(context);
+    if(activeBattleView?.status==='active'&&!$('#mission-modal').classList.contains('hidden')&&!combatPlaybackBlocked()){
+      if(pending){
+        sendCombat(pending,null,true);
+      }else{
+        const action=latestMovement.takeAction(context);
+        if(action)sendCombat(action.command,action.nextMode);
+      }
+    }else latestMovement.clear();
   }
 }
 async function resumeMercenaryContract(result){

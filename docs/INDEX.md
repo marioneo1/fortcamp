@@ -129,3 +129,5 @@ October 5 movement correction: [Combat controls](design/COMBAT_CONTROLS.md) docu
 
 
 October 5 ground effects: [Combat zones](design/COMBAT_SPACES.md) defines committed per-cell damage; [Combat impact](design/COMBAT_IMPACT.md) covers crossing damage labels and animation timing.
+
+October 5 battle input: [Combat controls](design/COMBAT_CONTROLS.md) documents server command validation, immediate movement previews and the buffered Guard/action fix for pending movement requests.

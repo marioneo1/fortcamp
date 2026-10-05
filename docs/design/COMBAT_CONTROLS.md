@@ -218,3 +218,30 @@ Fixed origin-tree backtracking in immediate movement previews and server movemen
 Movement remains refundable until an action commits, with the original activation origin and budget preserved. Repeated clicks do not refill movement. The action preview shows the current position's cost against the effective movement allowance. The reported Goblin Warcamp screenshot has an empty adjacent destination outside a three-movement Fighter's origin range; direct routing does not expand that range. No unseen occupant was established by the screenshot.
 
 Validation: 84 movement/approach, ground-zone, concealment, wall and Fighter presentation backend tests; 239 frontend tests; production frontend build. Regression checks cover adjacent movement between different origin-tree branches, wall-blocked direct steps and retained original budget. No production deployment or save changes.
+
+## October 5: actions pressed during pending movement (implemented in dev)
+
+Battle commands, including provisional moves, are server validated. The browser
+immediately previews legal movement using the server's movement graph, coalesces
+rapid clicks to the latest destination and ignores obsolete movement acknowledgements.
+Modes and targeting selections are local. Movement remains server checked because
+scouting can reveal concealed enemies and interrupt a route; committed paths also
+feed ground hazards, carrying and exit rules.
+
+Previously Guard or another action pressed while a move POST was pending was
+silently discarded. The input handler now buffers one action, finishes the latest
+chosen movement and then submits that action once. Further movement/action presses
+cannot alter that buffered commitment. It is discarded on request failure, battle
+closure, actor/round change or an interrupting playback lock. Enemy/action playback
+still blocks inputs. Server acknowledgements are still required; this does not
+remove network latency or let the client resolve combat outcomes.
+
+The pool/private/active/state GET requests remain general five-second refreshes.
+Visible-panel rendering already skips roster/base/board replacement during combat;
+these requests do not submit combat actions. No polling change or measured claim
+about Cloudflare latency is part of this fix.
+
+Validation: 252 frontend tests and Vite build pass, including delayed-request tests
+of the real command handler for rapid movement plus one Guard press, repeated
+Guard presses, changed actor and failed movement recovery. No live-server network
+latency benchmark was performed. Existing bundle-size warning remains.

@@ -1470,3 +1470,7 @@ Validation: 84 movement/approach, ground-zone, concealment, wall and Fighter pre
 
 
 October 5 ground-effect correction: removed the per-activation damage cap for Ember/Thorn Ground; each entered cell/re-entry on the committed path causes its own hit. Discarded preview paths remain free. Existing labeled damage feedback now links to crossing steps for movement playback. Non-damaging ground keeps its own rules. Validation: 116 backend tests, 240 frontend tests, build. Production and saves untouched.
+
+## October 5: Guard after movement request (implemented in dev)
+
+Diagnosed a dropped-input bug rather than a measured frame-rate regression: sendCombat only retained additional movement while a move request was pending. It now retains one following action and sends it after the final selected destination. Context changes, errors and interrupting playback discard it. Delayed-request tests exercise the actual handler, including repeated Guard and actor changes. All 252 frontend tests and build pass; existing bundle warning remains. No backend rules, production, credentials or saves changed.

@@ -938,3 +938,7 @@ Further status artwork and Barrier/ground-effect presentation remain pending.
 
 
 Implemented October 5: persistent damaging ground counts each committed crossed tile/re-entry, discarded previews free; same-kind overlaps deduplicate per entry. Burn/Thorns numbers show each crossing; recorded movement schedules them at the matching step. See COMBAT_SPACES.md and COMBAT_IMPACT.md.
+
+## October 5: battle input responsiveness (implemented in dev)
+
+Fixed Guard/other actions silently dropped during an in-flight movement request. One committed action follows the latest queued destination; repeated presses cannot affect the next actor. Local movement previews and authoritative server validation remain. 252 frontend tests and build pass; actual network latency remains unmeasured. See docs/design/COMBAT_CONTROLS.md.
