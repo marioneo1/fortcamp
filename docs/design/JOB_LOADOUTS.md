@@ -109,3 +109,13 @@ impact radius 2, inner push 2 / outer push 1, cooldown 5). Hold Together
 clears Fear from all allies within 2 cells of the caster; no Barrier. Stable
 loadout IDs and unlock thresholds are retained; active snapshots are not migrated.
 See FIGHTER_COMBAT_REVIEW.md for exact legality, collision and auto-play rules.
+
+## October 5: Fighter power and wave contact
+
+Driving Strike now uses 150% attack power and stuns surviving solid-collision
+participants for one activation. Chain Snare adds nonstacking 30% armor loss for
+two target activations. Earthbreaker uses 200% attack power, with per-target
+contact markers following the expanding wave after landing. Existing cooldowns
+and defensive rules remain. See [Fighter review](FIGHTER_COMBAT_REVIEW.md) for
+exact rules, balance proposals and validation. Fresh battles use these changes;
+existing snapshots and production are unchanged.

@@ -182,3 +182,50 @@ Validation: frontend build, 205 frontend tests and isolated browser inspection
 at 1440x1100 and 1440x900. All six command buttons retain icons/keycaps; skill
 art fills the enlarged squares; Fighter previews/contact/C cancellation still
 work. Production and saves are unchanged.
+
+## October 5: Fighter power and shockwave contact (implemented in dev)
+
+Driving Strike uses 150% attack power before armor and other defenses. It still
+pushes one cell, with half the actual hit as solid collision damage. Surviving
+units involved in a wall/person collision receive one activation of Stun; a
+person collision affects both people, including allies. No collision stun is
+applied on resisted displacement, map edges, elevation limits or pits. Existing
+control recovery immunity applies; racial stun resistance halves its chance.
+Cooldown remains 2 owner activations.
+
+Chain Snare retains its hit, three-cell square reach, pull and half movement.
+On a hit it also applies Armor Fracture for two target activations: reduce armor
+by 30%, rounding the reduction up, with a floor of zero. Reapplication refreshes
+rather than stacks. The initial chain hit happens before the reduction. Base
+armor remains intact; the unit inspector displays current effective armor.
+Cooldown remains 3 owner activations.
+
+Earthbreaker uses 200% attack power before defenses, retaining its five-owner-
+activation cooldown and inner push 2 / outer push 1. The 420ms leap completes
+before the ground burst. Each victim receives an independent impact packet,
+delayed from landing by its distance along the expanding wave (400ms to a
+three-cell radius). Damage text, push and subsequent collision contact follow
+those markers; one victim's recoil cannot move another victim's impact marker.
+Authoritative damage still resolves against the snapshotted area before pushes.
+Earthbreaker does not gain Driving Strike's collision stun.
+
+Design recommendation: retain the current six-skill Fighter pool and five-slot
+choice. Chain Snare sets up a target; Driving Strike rewards obstacle placement;
+Earthbreaker enters and breaks a group; Intercept, Riposte and Hold Together
+provide protection, retaliation and Fear relief. Adding another attack now
+would blur these uses. A future alternative passive could briefly brace the
+Fighter after Earthbreaker, replacing another equipped choice rather than
+adding free durability. That passive is a proposal, not implemented.
+
+Existing active battles retain their saved skill snapshots. Start a fresh Battle
+Lab encounter to test the new definitions. No production or player saves changed.
+
+Validation: 107 related backend tests, 205 frontend tests and frontend build
+passed. Tests cover pre-armor scaling, wall/person collision stun and immunity,
+resisted push, nonstacking armor loss/restoration, ring packets and delayed
+wave/impact/collision timing. The existing large-bundle build warning remains.
+
+Browser validation: isolated real-UI fixtures at 1440x1100 and 1440x900 show
+Earthbreaker hit/collision numbers over tokens after the landing burst, correctly
+centered expanding shockwave, Chain Snare hit/Hobbled/Armor Fracture feedback,
+area rally targeting and retained auto controls. No live save was used.

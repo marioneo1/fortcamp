@@ -2,7 +2,8 @@
 
 Current Fighter review: [Fighter combat and UI audit](design/FIGHTER_COMBAT_REVIEW.md)
 records the implemented Layout A with larger skills and right-hand commands,
-Fighter Chain Snare/Earthbreaker/area rally,
+Fighter Chain Snare/Earthbreaker/area rally, 150%/200% attack power,
+collision stun, two-turn armor fracture and per-target shockwave contact,
 contact/collision rules, controls and verification. Prior audits remain historical.
 [New Fighter art prompt](art/FIGHTER_V3_PROMPT.md) records the compact six-cell pack.
 Mage ground/barrier art is still awaiting redesign.

@@ -26,14 +26,14 @@ def register(key, name, description, first, second, third):
     JOBS[key]={'name':name, 'description':description, 'starter_skills':ids}
 
 
-def strike(key, name, description, extra):
-    return active(key,name,description,[{'type':'attack','damage_bonus':0},
+def strike(key, name, description, extra, power_percent=100):
+    return active(key,name,description,[{'type':'attack','damage_bonus':0,'power_percent':power_percent},
         {**extra,'conditions':[{'type':'hit'}]}])
 
 
 register('fighter','Fighter','Protect allies or break enemy positions.',
-    strike('bash','Driving Strike','Melee hit pushes one cell. Stable enemies resist. Hitting a solid obstacle adds half the hit as collision damage; hitting a person hurts both, including allies.',{'type':'displace','mode':'push','distance':1}),
-    active('cover','Chain Snare','Hit an enemy within three cells, pull it up to two cells toward you, stopping beside you, and halve its movement for two activations. Requires a clear chain path; displacement resistance applies.',[{'type':'attack','damage_bonus':0},{'type':'displace','mode':'pull','distance':2,'stop_adjacent':True,'conditions':[{'type':'hit'}]},{'type':'status','status':'hobbled','turns':2,'conditions':[{'type':'hit'}]}],range=3,rule='ballistic',cooldown=3,range_shape='square'),
+    strike('bash','Driving Strike','Strike with 150% attack power and push one cell. Solid collisions add half the hit as damage and stun for one activation. Colliding with a person damages and stuns both, including allies. Knockback resistance and stun immunity apply.',{'type':'displace','mode':'push','distance':1,'collision_stun':True},150),
+    active('cover','Chain Snare','Hit an enemy within three cells, pull it up to two cells toward you, stopping beside you, halve its movement and reduce armor by 30% for two activations. Requires a clear chain path; displacement resistance applies.',[{'type':'attack','damage_bonus':0},{'type':'displace','mode':'pull','distance':2,'stop_adjacent':True,'conditions':[{'type':'hit'}]},{'type':'status','status':'hobbled','turns':2,'conditions':[{'type':'hit'}]},{'type':'status','status':'armor_fracture','turns':2,'conditions':[{'type':'hit'}]}],range=3,rule='ballistic',cooldown=3,range_shape='square'),
     passive('intercept','Intercept','Redirect one attack against an adjacent ally. Shares your reaction allowance.',reaction={'id':'intercept','name':'Intercept'}))
 register('barbarian','Barbarian','Disrupt nearby enemies, at the cost of staying exposed.',
     strike('shove','Brutal Shove','Melee hit pushes one cell; walls stop displacement. Hitting a solid obstacle adds half the hit as collision damage; hitting a person hurts both, including allies.',{'type':'displace','mode':'push','distance':1}),
@@ -91,7 +91,7 @@ def later(job, *skills):
 
 later('fighter',
     passive('riposte','Riposte','Counter a survived melee hit at half attack when in reach. Intercept and Riposte compete for one reaction.',reaction={'id':'riposte','name':'Riposte'}),
-    active('pull','Earthbreaker','Leap up to three cells onto open ground. Strike enemies within two cells of landing: the inner ring pushes two cells, the outer ring one. Collisions add half the impact damage to both people. Walls, elevation and knockback resistance still matter. Ready again in five of your turns.',[{'type':'leap_attack','radius':2,'inner_push':2,'outer_push':1}],range=3,rule='melee',cooldown=5),
+    active('pull','Earthbreaker','Leap up to three cells onto open ground. The landing shockwave strikes enemies within two cells with 200% attack power: the inner ring pushes two cells, the outer ring one. Collisions add half the impact damage to both people. Walls, elevation and knockback resistance still matter. Ready again in five of your turns.',[{'type':'leap_attack','radius':2,'inner_push':2,'outer_push':1,'power_percent':200}],range=3,rule='melee',cooldown=5),
     active('rally','Hold Together','Rally yourself and all allies within two cells, removing Fear. Walls block the rally. Does not grant a Barrier.',[{'type':'cleanse','statuses':['fear'],'radius':2}],'ally',2,'physical_care',3))
 later('barbarian',
     passive('hide','Thick Hide','Gain 1 armor; offers durability instead of another active skill.',{'armor':1}),

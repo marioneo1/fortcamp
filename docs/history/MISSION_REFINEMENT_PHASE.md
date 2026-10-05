@@ -1267,3 +1267,13 @@ portrait to 76px. Larger turn order now sits between title and objectives. Fixed
 Action Preview below commands and larger sidebar typography improve reading.
 Sidebar height uses its actual position. Frontend build, 205 tests and isolated
 browser checks passed; combat rules/production/saves unchanged.
+
+## October 5: Fighter disruption tuning
+
+Implemented 150% Driving Strike with solid collision stun, 30% two-target-turn
+Chain Snare armor fracture and 200% Earthbreaker. Earthbreaker now gives each
+target its own distance-based wave marker after landing, keeping damage, pushes
+and collision contact separate. Current cooldowns, immunities, resistance and
+saved battle snapshots retained. Canonical details and balancing proposals are
+in FIGHTER_COMBAT_REVIEW.md. 107 backend / 205 frontend tests and build passed;
+no live saves or production changes.

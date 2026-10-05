@@ -6,7 +6,7 @@ from . import combat_entities as entities
 
 VERSION = 1
 STATUSES = {'stun','sleep','poison','bleed','charm','confuse','berserk','freeze',
-            'burn','blind','bind','slow','paralyze','mute','fear','vulnerable','regeneration','braced','hobbled'}
+            'burn','blind','bind','slow','paralyze','mute','fear','vulnerable','regeneration','braced','hobbled','armor_fracture'}
 RULES = {'melee','ballistic','ignore','line_of_effect','physical_care'}
 
 
@@ -46,11 +46,11 @@ def validate(skill):
         if not isinstance(effect, dict):
             raise ValueError('Ability effect must be an object')
         kind = effect.get('type')
-        allowed = {'attack': {'damage_bonus','armor_pierce'}, 'heal': {'amount'},
+        allowed = {'attack': {'damage_bonus','armor_pierce','power_percent'}, 'heal': {'amount'},
                    'cleanse': {'statuses','radius'}, 'guard': set(), 'status': {'status','turns','chance'},
                    'barrier': {'amount','turns'}, 'mark': {'turns','accuracy'},
-                   'displace': {'mode','distance','collision_damage','stop_adjacent'},
-                   'leap_attack': {'radius','inner_push','outer_push'},
+                   'displace': {'mode','distance','collision_damage','stop_adjacent','collision_stun'},
+                   'leap_attack': {'radius','inner_push','outer_push','power_percent'},
                    'zone': {'zone','radius','turns'}, 'form': {'form','turns'}, 'deploy': {'entity'}}
         if kind not in allowed or set(effect) - (allowed[kind] | {'type','conditions'}):
             raise ValueError('Unsupported ability effect')
@@ -59,6 +59,9 @@ def validate(skill):
                 raise ValueError('Only one enemy attack is supported')
             _integer(effect.get('damage_bonus',0), -30, 30)
             _integer(effect.get('armor_pierce',0), 0, 30)
+        if kind in {'attack','leap_attack'}:_integer(effect.get('power_percent',100),100,250)
+        if kind == 'displace' and 'collision_stun' in effect and not isinstance(effect['collision_stun'],bool):
+            raise ValueError('Invalid collision stun policy')
         if kind in {'heal','cleanse','guard','barrier'} and skill['target'] != 'ally':
             raise ValueError('Support effects require an ally target')
         if kind in {'mark','displace'} and skill['target'] != 'enemy':

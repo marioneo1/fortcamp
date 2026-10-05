@@ -1,5 +1,15 @@
 # Fortcamp feature backlog
 
+## October 5: Fighter power and wave contact (implemented in dev)
+
+Driving Strike: 150% attack power, solid collision stun on both surviving people.
+Chain Snare: two-activation, nonstacking 30% armor reduction alongside pull/slow.
+Earthbreaker: 200% attack power; per-target wave contact after landing, with
+separate collision timing. Existing cooldowns and resistance rules retained.
+See docs/design/FIGHTER_COMBAT_REVIEW.md for rules and proposed future tradeoffs.
+Validated 107 backend / 205 frontend tests and build; fresh battles required.
+
+
 ## October 5: battle readability follow-up (implemented in dev)
 
 Moved primary actions to the right, enlarged skills/acting portrait/turn order,

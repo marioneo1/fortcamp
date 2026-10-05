@@ -8,6 +8,10 @@ export function impactTimeline(events){
     if(event.type==='movement'&&event.forced)event={...event,collision:collisions.get(`${event.attack_packet}:${event.unit_id}`)};
     const key=event.attack_packet;
     let packet=packets.get(key),start=cursor,duration=0;
+    if(!packet&&event.impact_origin_packet!=null){
+      const origin=packets.get(event.impact_origin_packet);
+      if(origin){const impact=origin.impact+(event.impact_offset||0);packet={start:impact,impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
+    }
     const attack=event.type==='melee_attack'||event.attack_event||event.type==='magic_projectile'||event.type==='chain_attack'||event.type==='ground_impact';
     if(key!=null&&attack){
       if(!packet){const impact=cursor+(event.type==='ground_impact'?0:event.type==='melee_attack'?COMBAT_MOTION.contact:220);packet={start:cursor,impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}

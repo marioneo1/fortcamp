@@ -27,6 +27,7 @@ from .combat_feedback import record as feedback
 
 
 STATUS_DEFINITIONS = {
+    "armor_fracture": {"name":"Armor Fracture", "icon":"◇↓", "description":"Armor is reduced by 30%, rounded up, for the listed activations. Does not stack."},
     "hobbled": {"name":"Hobbled", "icon":"⛓", "description":"Movement is halved, rounded down, with a minimum of 1. Lasts for the listed activations."},
     "lifeline_ready":{"name":"Survival safeguard","icon":"✧","description":"Equipped gear can prevent one lethal defeat this battle, leaving this unit at 1 HP. Does not prevent a nonlethal capture."},
     "lifeline_spent":{"name":"Safeguard spent","icon":"◇","description":"This unit's once-per-battle survival safeguard has been used. The next lethal hit can defeat them."},
@@ -1168,6 +1169,13 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
         if bystander and not obstacle and _combat_active(bystander):
             concealment.reveal(battle,bystander,'contact')
             _deal_damage(battle,source,bystander,armor_pierce=bystander.get('armor',0))
+    if solid and effect.get('collision_stun'):
+        for victim in [target]+([bystander] if bystander and not obstacle else []):
+            if not _combat_active(victim):continue
+            chance=50 if 'stun' in victim.get('racial_resistances',[]) else 100
+            if random.Random(f"{battle.get('seed')}:collision-stun:{counter}:{victim['id']}").randint(1,100)<=chance and conditions.apply(victim,'stun',1,actor):
+                feedback(battle,victim,'status',status_id='stun')
+                battle['log'].append(f"{victim['name']} is stunned by the collision.")
     for event in battle['animation_events'][event_begin:]:
         if attack_packet is not None:event['attack_packet']=attack_packet
         if event.get('type')!='movement':event['after_displacement']=True
@@ -1526,6 +1534,16 @@ def _wake_ambush(battle: dict, target: dict | None = None) -> None:
     battle["log"].append("The attack wakes the whole camp." if target is not None else "The camp wakes. The ambush preparation window has ended.")
 
 
+def _effective_armor(unit):
+    armor=max(0,int(unit.get('armor',0)))
+    return max(0,armor-(armor*30+99)//100) if conditions.has(unit,'armor_fracture') else armor
+
+
+def _ability_power_bonus(actor,skill,effect):
+    attack=int(skill.get('attack',actor['attack']))
+    return attack*effect.get('power_percent',100)//100-attack+effect.get('damage_bonus',0)
+
+
 def _deal_damage(
     battle: dict, attacker: dict, target: dict, bonus: int = 0, armor_pierce: int = 0,
     intent: str = "lethal", ability: dict | None = None,
@@ -1540,7 +1558,7 @@ def _deal_damage(
                     "attack_elevation_rule": ability["elevation_rule"],
                     "element": ability.get("element", attacker.get("element")),
                     "on_hit": ability.get("on_hit", attacker.get("on_hit")),"weapon":ability.get('source_name',attacker.get('weapon',''))}
-    armor = max(0, int(target.get("armor", 0)) - armor_pierce)
+    armor = max(0, _effective_armor(target) - armor_pierce)
     if conditions.has(target, 'vulnerable') and not attacker.get('status_tick'):
         armor = max(0, armor - 3)
         conditions.remove(target, 'vulnerable')
@@ -2595,7 +2613,7 @@ def _resolve_ability(battle, actor, target, skill):
     def attack(effect):
         nonlocal target,last_damage,attack_packet
         target,hit,damage,preview,roll=_perform_attack(battle,actor,target,skill['elevation_rule'],
-            effect.get('damage_bonus',0),effect.get('armor_pierce',0),ability=skill,defer_reaction=True)
+            _ability_power_bonus(actor,skill,effect),effect.get('armor_pierce',0),ability=skill,defer_reaction=True)
         last_damage=damage;attack_packet=battle.get('attack_serial')
         if any(e.get('stop_adjacent') for e in skill['effects']):
             for event in battle.get('animation_events',[]):
@@ -2621,14 +2639,23 @@ def _resolve_ability(battle, actor, target, skill):
         for ring,uid in victims:
             enemy=battle['units'][uid]
             if not _combat_active(enemy):continue
+            battle['attack_serial']+=1
+            # The rendered wave reaches a three-cell radius in 400ms.
+            child=battle['attack_serial'];offset=round(((enemy['x']-actor['x'])**2+(enemy['y']-actor['y'])**2)**.5*400/3)
+            hit_begin=len(battle['animation_events'])
             concealment.reveal(battle,enemy,'contact')
             hit,preview,roll=_attack_hits(battle,actor,enemy,'melee')
-            damage=_deal_damage(battle,actor,enemy,preview['damage_bonus'],ability=skill) if hit else 0
+            damage=_deal_damage(battle,actor,enemy,preview['damage_bonus']+_ability_power_bonus(actor,skill,effect),ability=skill) if hit else 0
             if not hit:feedback(battle,enemy,'miss')
+            for event in battle['animation_events'][hit_begin:]:
+                event.update(attack_packet=child,impact_origin_packet=packet,impact_offset=offset)
             battle['log'].append(f"{actor['name']} lands {skill['name']} on {enemy['name']} for {damage} damage." if hit else f"{enemy['name']} avoids {skill['name']}.")
-            if hit:impacts.append((ring,enemy,damage))
-        for ring,enemy,damage in impacts:
-            if _combat_active(enemy):_apply_displacement(battle,actor,enemy,{'mode':'push','distance':effect['inner_push'] if ring<=1 else effect['outer_push']},damage,packet)
+            if hit:impacts.append((ring,enemy,damage,child,offset))
+        for ring,enemy,damage,child,offset in impacts:
+            push_begin=len(battle['animation_events'])
+            if _combat_active(enemy):_apply_displacement(battle,actor,enemy,{'mode':'push','distance':effect['inner_push'] if ring<=1 else effect['outer_push']},damage,child)
+            for event in battle['animation_events'][push_begin:]:
+                event.update(impact_origin_packet=packet,impact_offset=offset)
         for event in battle['animation_events'][begin:]:event.setdefault('attack_packet',packet)
         _record_sound(battle,'collision_hit');battle['animation_events'][-1]['attack_packet']=packet
         return {'area_attack':True}
@@ -3204,6 +3231,7 @@ def battle_view(battle: dict) -> dict:
     _ensure_battle_schema(view)
     view['zones']=spaces.presentation(view)
     for unit in view['units'].values():
+        unit['effective_armor']=_effective_armor(unit)
         if unit.get('form'):
             rule=spaces.FORMS[unit['form']['id']]
             unit['statuses'].append({'id':'wild_form','name':rule['name'],'description':rule['description'],

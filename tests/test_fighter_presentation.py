@@ -26,10 +26,55 @@ class FighterPresentationTests(unittest.TestCase):
         events=b['animation_events']
         hit=next(e for e in events if e['type']=='melee_attack')
         collision=next(e for e in events if e.get('kind')=='collision')
-        self.assertEqual(collision['amount'],6)
+        self.assertEqual(collision['amount'],9)
         self.assertEqual(hit['attack_packet'],collision['attack_packet'])
         self.assertEqual((t['x'],t['y']),(3,2))
         self.assertTrue(any(e['type']=='collision_recoil' for e in events))
+        self.assertTrue(conditions.has(t,'stun'))
+
+    def test_driving_person_collision_stuns_both_and_respects_immunity(self):
+        for immune in (False,True):
+            b,a,t=self.fixture()
+            other=deepcopy(t);other.update(id='bystander',x=4,team=a['team'],control_immunity=2 if immune else 0)
+            b['units'][other['id']]=other
+            self.use(b,a,t,'bash')
+            self.assertEqual((t['hp'],other['hp']),(73,91))
+            self.assertTrue(conditions.has(t,'stun'))
+            self.assertEqual(conditions.has(other,'stun'),not immune)
+
+    def test_driving_armor_reduces_scaled_power_and_resisted_push_cannot_stun(self):
+        b,a,t=self.fixture();t.update(armor=4,displacement_resistance=100)
+        b['terrain']=[{'id':'wall','x':4,'y':2,'blocking':True}]
+        self.use(b,a,t,'bash')
+        self.assertEqual(t['hp'],86)
+        self.assertFalse(conditions.has(t,'stun'))
+        self.assertFalse(any(e.get('kind')=='collision' for e in b['animation_events']))
+
+    def test_driving_open_ground_push_does_not_stun(self):
+        b,a,t=self.fixture()
+        self.use(b,a,t,'bash')
+        self.assertEqual((t['x'],t['hp']),(4,82))
+        self.assertFalse(conditions.has(t,'stun'))
+
+    def test_driving_scaled_hit_still_respects_guard_and_barrier(self):
+        b,a,t=self.fixture();t.update(armor=4,guarding=True)
+        conditions.barrier(t,5,2,t)
+        self.use(b,a,t,'bash')
+        self.assertEqual(t['hp'],94) # (18-4)*75%, rounded up, then 5 shield.
+        self.assertFalse(t['guarding'])
+
+    def test_chain_armor_fracture_does_not_stack_and_expires_after_two_turns(self):
+        b,a,t=self.fixture();t.update(x=5,y=2,armor=11)
+        self.use(b,a,t,'cover')
+        self.assertEqual(t['hp'],99) # The hit precedes the armor reduction.
+        self.assertEqual(combat._effective_armor(t),7)
+        self.assertEqual(combat.battle_view(b)['units'][t['id']]['effective_armor'],7)
+        conditions.apply(t,'armor_fracture',2,a)
+        self.assertEqual(sum(s['id']=='armor_fracture' for s in t['statuses']),1)
+        for turn,expected in ((1,7),(2,11)):
+            t['status_activation']=turn;conditions.finish_activation(t)
+            self.assertEqual(combat._effective_armor(t),expected)
+        self.assertEqual(t['armor'],11)
 
     def test_chain_hits_pulls_and_halves_movement_without_hitting_caster(self):
         b,a,t=self.fixture();t.update(x=5,y=2,move=7);before=a['hp']
@@ -71,16 +116,23 @@ class FighterPresentationTests(unittest.TestCase):
         outer=deepcopy(t);outer.update(id='outer',x=5);b['units']['outer']=outer
         self.use(b,a,combat._ground_target(3,2),'pull')
         self.assertEqual((a['x'],a['y']),(3,2))
-        self.assertEqual(t['hp'],82) # 12 impact + 6 collision
-        self.assertEqual(outer['hp'],82) # 6 from other body + 12 impact
+        self.assertEqual(t['hp'],64) # 24 impact + 12 collision
+        self.assertEqual(outer['hp'],64) # 12 from other body + 24 impact
         self.assertEqual((t['x'],outer['x']),(4,6))
         self.assertEqual(a['ability_state']['job:fighter:pull']['ready_at'],a.get('ability_activation',0)+5)
         self.assertTrue(any(e.get('leap') for e in b['animation_events']))
+        root=next(e['attack_packet'] for e in b['animation_events'] if e['type']=='ground_impact')
+        hits=[e for e in b['animation_events'] if e.get('kind')=='physical']
+        self.assertEqual(len({e['attack_packet'] for e in hits}),2)
+        self.assertTrue(all(e['impact_origin_packet']==root for e in hits))
+        self.assertEqual(sorted(e['impact_offset'] for e in hits),[133,267])
+        moves=[e for e in b['animation_events'] if e.get('forced')]
+        self.assertTrue(all(e['impact_origin_packet']==root and e['impact_offset']>0 for e in moves))
 
     def test_leap_resistance_does_not_cancel_impact_and_illegal_landing_spends_nothing(self):
         b,a,t=self.fixture();a.update(x=1,y=2);t.update(x=4,y=2,armor=0,displacement_resistance=100)
         self.use(b,a,combat._ground_target(3,2),'pull')
-        self.assertEqual((t['x'],t['hp']),(4,88))
+        self.assertEqual((t['x'],t['hp']),(4,76))
         b,a,t=self.fixture();state=deepcopy(a)
         with self.assertRaises(ValueError):self.use(b,a,combat._ground_target(t['x'],t['y']),'pull')
         self.assertEqual(a,state)

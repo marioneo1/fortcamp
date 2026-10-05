@@ -92,3 +92,13 @@ cell, explicitly preventing accidental caster collisions. Other pull skills
 retain their existing rules. Generated chain/earth-impact components, animated
 chain links and a short rally wave are in combat-fighter-v3. Damage overlays stay
 in front. The broader rejected persistent-ground/Barrier redesign is deferred.
+
+## October 5: Fighter power and wave contact
+
+Driving Strike now uses 150% attack power and stuns surviving solid-collision
+participants for one activation. Chain Snare adds nonstacking 30% armor loss for
+two target activations. Earthbreaker uses 200% attack power, with per-target
+contact markers following the expanding wave after landing. Existing cooldowns
+and defensive rules remain. See [Fighter review](FIGHTER_COMBAT_REVIEW.md) for
+exact rules, balance proposals and validation. Fresh battles use these changes;
+existing snapshots and production are unchanged.
