@@ -7,7 +7,8 @@ export function meleeFrames(dx,dy,scale=1){
     {transform:`translate(0,0) scale(${scale})`,offset:1}];
 }
 export function recoilFrames(dx,dy,scale=1){
-  return [{transform:`translate(${dx*.12}px,${dy*.12}px) scale(${scale*.95})`,filter:'brightness(1.65)',offset:0},
+  return [{transform:`translate(0px,0px) scale(${scale})`,filter:'brightness(1)',offset:0},
+    {transform:`translate(${dx*.12}px,${dy*.12}px) scale(${scale*.95})`,filter:'brightness(1.65)',offset:.08},
     {transform:`translate(${dx}px,${dy}px) scale(${scale*.94})`,filter:'brightness(1.15)',offset:.25},
     {transform:`translate(${-dx*.22}px,${-dy*.22}px) scale(${scale})`,filter:'brightness(1)',offset:.65},
     {transform:`translate(0,0) scale(${scale})`,filter:'brightness(1)',offset:1}];

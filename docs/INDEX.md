@@ -2,10 +2,11 @@
 
 Current Fighter review: [Fighter combat and UI audit](design/FIGHTER_COMBAT_REVIEW.md)
 records the current full-width map, bottom skills/three-by-two commands,
-hover stats and damage forecasts, plus utility dialogs,
+cursor-following stats, per-victim area forecasts, plus utility dialogs,
 Fighter Chain Snare/Earthbreaker/area rally, 150%/200% attack power,
 collision stun, two-turn armor fracture and per-target shockwave contact,
-contact/collision rules, composed token motion, enemy-playback input lock,
+contact/collision rules, continuous walking/attack poses, full push/wave recovery,
+composed token motion, enemy-playback input lock,
 controls and verification. Prior audits remain historical.
 [New Fighter art prompt](art/FIGHTER_V3_PROMPT.md) records the compact six-cell pack.
 Mage ground/barrier art is still awaiting redesign.

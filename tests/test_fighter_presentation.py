@@ -80,6 +80,17 @@ class FighterPresentationTests(unittest.TestCase):
         preview=combat._strike_preview(b,a,t,'melee',1,self.skill('bash'))
         self.assertEqual(preview['damage_on_hit'],11)
 
+    def test_ground_forecasts_match_each_visible_victim_and_do_not_mutate_battle(self):
+        b,a,t=self.fixture();a.update(x=1,y=2,skills=[self.skill('pull')]);a['special']=a['skills'][0]
+        t.update(x=4,y=2,armor=4)
+        outer=deepcopy(t);outer.update(id='outer',x=5,armor=0);b['units']['outer']=outer
+        before=deepcopy(b);view=combat.battle_view(b)
+        forecasts=view['ground_skill_previews'][a['special']['id']]['3,2']['target_forecasts']
+        self.assertEqual(b['units'],before['units'])
+        self.assertEqual(forecasts[t['id']]['damage_on_hit'],20)
+        self.assertEqual(forecasts['outer']['damage_on_hit'],24)
+        self.assertEqual((forecasts[t['id']]['push'],forecasts['outer']['push']),(2,1))
+
     def test_chain_armor_fracture_does_not_stack_and_expires_after_two_turns(self):
         b,a,t=self.fixture();t.update(x=5,y=2,armor=11)
         self.use(b,a,t,'cover')

@@ -19,3 +19,13 @@
 .combat-unit-inspect[hidden]{display:none!important}
 
 .layout-a-header .turn-chip>.portrait-crop img{width:100%;height:100%;border-radius:50%}
+
+.combat-unit-inspect{pointer-events:none!important}
+.aoe-preview-layer{position:absolute;inset:0;pointer-events:none;z-index:105}
+.aoe-preview-chip{position:absolute;transform:translate(-50%,calc(-100% - 28px));padding:5px 8px;border:1px solid #e8c57888;border-radius:7px;background:#192319f2;color:#ffe1a0;text-align:center;white-space:nowrap;box-shadow:0 3px 10px #0008;font-size:14px;line-height:1.4}
+.aoe-preview-chip b,.aoe-preview-chip small{display:block}.aoe-preview-chip small{font-size:11px;color:#dbdfca}
+
+/* Playback feedback must not resize a fitted map during its animations. */
+.battle-primary-panel{position:relative}.battle-playback-notice{position:absolute;bottom:calc(100% + 6px);right:0;padding:5px 10px;border-radius:6px;background:#14201af2;z-index:110;white-space:nowrap}
+
+.aoe-preview-chip::after{content:"";position:absolute;left:50%;top:100%;height:var(--forecast-leader,0px);border-left:1px solid #e8c57888}.aoe-preview-chip.forecast-below::after{top:auto;bottom:100%}

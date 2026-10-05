@@ -1,5 +1,40 @@
 # Mission Refinement Phase
 
+## October 5: attack rubberband and area forecast audit (implemented in dev)
+
+Walking segments now end at their own path destination, rather than the final
+position of the entire response. A unit can walk, attack, react and walk again
+without jumping between the later saved tile and the attack tile. An attack
+interrupting an unfinished player preview first settles the short visible path.
+Hit reactions start neutral instead of showing recoil before contact.
+
+The resolving-turn notice is positioned outside layout flow: it no longer
+resizes a fitted map halfway through pixel-based motion. Earthbreaker's complete
+650 ms landing effect and every victim push, rebound and collapse finish before
+the next unit begins movement. Per-victim wave contacts remain distance-based;
+floating damage labels can linger without delaying the next turn. One composed
+transform animation per token is retained, not a separate rules engine.
+
+Unit stats follow the lower right of the cursor, clamped to the screen, and hide
+immediately when the pointer leaves the unit. Cards do not intercept the pointer.
+Ground previews show compact labels at each affected visible unit. Earthbreaker
+forecasts include damage after armor/guard/barrier, accuracy, push and resistance;
+zone labels distinguish future entry damage/control or activation healing from
+an immediate hit. Adjacent labels stagger with connector lines. Forecasts do not
+consume statuses, shields, RNG or mutate the battle. Hidden enemies are excluded.
+Collision damage, reactions and random on-hit bonuses remain conditional, not
+included in the direct-hit estimate. Large crowds and extreme zoom still warrant
+manual visual review; this is not a claim of exhaustive visual verification.
+
+Validation: 110 related backend tests, 218 frontend tests and build pass. Isolated
+browser tests verify walk/attack/later-walk poses at four timeline samples, no
+premature shift in Driving Strike/Earthbreaker, rejected commands during playback,
+unlock afterward, collision feedback, cursor following/immediate hide, and two
+nonoverlapping area forecasts. A two-enemy fixture averaged about 10 ms per
+battle_view call over ten runs; this is not a large-map benchmark. Existing bundle
+size warning remains. No live saves or production changed.
+
+
 ## October 4: Combat controls, targeting and animation timing (dev)
 
 Fixed provisional movement returning to its origin. Unused End Turn now grants

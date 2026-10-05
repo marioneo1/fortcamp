@@ -1,6 +1,6 @@
 ﻿import test from 'node:test';
 import assert from 'node:assert/strict';
-import {hotbarPage,hotbarMarkup,unitInspectMarkup} from './combat-hotbar.js';
+import {hotbarPage,hotbarMarkup,unitInspectMarkup,cursorCardPosition,areaForecastMarkup} from './combat-hotbar.js';
 const esc=s=>String(s??'').replaceAll('<','&lt;');
 test('hotbar preserves all skills and assigns ten keys per page',()=>{
  const skills=Array.from({length:23},(_,i)=>({id:`skill-${i}`,name:`Skill ${i}`,description:'Description',source_kind:i<5?'character':'gear',availability:{available:true},range:2,target:'enemy'}));
@@ -23,4 +23,16 @@ test('hover forecast distinguishes damage on hit, accuracy, barrier and intercep
  assert.match(html,/Barrier absorbs 5/);assert.match(html,/Intercepted by Protector/);
  assert.match(html,/Approach: 3 movement/);assert.match(html,/<dt>Armor<\/dt><dd>7<\/dd>/);
  assert.match(html,/Cudgel/);
+});
+
+test('cursor card follows the lower right and stays within screen edges',()=>{
+ assert.deepEqual(cursorCardPosition(100,100,390,500,1440,900),{left:118,top:118});
+ assert.deepEqual(cursorCardPosition(1400,880,390,500,1440,900),{left:1042,top:392});
+});
+
+test('area forecasts show each affected enemy, excluding allies and absent enemies',()=>{
+ const battle={width:8,height:8,current_unit_id:'p',units:{p:{id:'p',team:'player',alive:true,x:2,y:2},a:{id:'a',team:'enemy',alive:true,x:3,y:2},b:{id:'b',team:'enemy',alive:true,x:4,y:2},c:{id:'c',team:'enemy',alive:true,x:7,y:7}}};
+ const preview={zones:[{kind:'impact',cells:[{x:3,y:2},{x:4,y:2}]}],target_forecasts:{a:{damage_on_hit:24,chance:80,push:2,resistance:0},b:{damage_on_hit:19,chance:75,push:1,resistance:50}}};
+ const html=areaForecastMarkup(preview,battle,esc);
+ assert.equal((html.match(/data-aoe-preview=/g)||[]).length,2);assert.match(html,/24 damage/);assert.match(html,/19 damage/);assert.match(html,/50% resist/);assert.doesNotMatch(html,/data-aoe-preview="[pc]"/);
 });

@@ -3373,6 +3373,23 @@ def battle_view(battle: dict) -> dict:
                         if actor:
                             zones=([{'cells':_area_cells(view,target,choice['effects'][0]['radius']),'kind':'impact'}] if _leap_skill(choice) else [{'cells':_zone_cells(view,target,e),'kind':e['zone']} for e in choice['effects']])
                             ground_entries[f'{x},{y}']={'zones':zones,**({'leap_from':{'x':actor['x'],'y':actor['y']},'landing':{'x':x,'y':y}} if _leap_skill(choice) else {}),**(approach or {})}
+                            if _leap_skill(choice):
+                                landing_actor={**actor,'x':x,'y':y}
+                                forecasts={};effect=choice['effects'][0]
+                                for enemy in _living(view,'enemy'):
+                                    if {'x':enemy['x'],'y':enemy['y']} not in zones[0]['cells']:continue
+                                    hit=_attack_preview(view,landing_actor,enemy,'melee')
+                                    source={**landing_actor,'attack':choice.get('attack',actor['attack']),
+                                            'attack_elevation_rule':choice['elevation_rule'],'element':choice.get('element',actor.get('element'))}
+                                    probe={**enemy,'statuses':[dict(s) for s in enemy.get('statuses',[])]}
+                                    amount=_damage_before_barrier({'animation_events':[]},source,probe,
+                                        hit['damage_bonus']+_ability_power_bonus(landing_actor,choice,effect))
+                                    shield=max((s.get('amount',0) for s in enemy.get('statuses',[]) if s['id']=='barrier'),default=0)
+                                    ring=max(abs(enemy['x']-x),abs(enemy['y']-y))
+                                    forecasts[enemy['id']]={'damage_on_hit':max(0,amount-shield),'chance':hit['chance'],
+                                        'push':effect['inner_push'] if ring<=1 else effect['outer_push'],
+                                        'resistance':tactics.displacement_resistance(enemy)}
+                                ground_entries[f'{x},{y}']['target_forecasts']=forecasts
                 view['ground_skill_previews'][choice['id']]=ground_entries
             if choice.get('target') == 'ally':
                 for target in _living(view, 'player'):

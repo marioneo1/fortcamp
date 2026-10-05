@@ -33,7 +33,7 @@ import {createCombatEffects} from './combat-effects.js';
 import './combat-effects.css';
 import {impactTimeline,createImpactFeedback,protectionMarkup} from './combat-impact.js';
 import {COMBAT_MOTION,meleeFrames,recoilFrames,collisionFrames,collapseFrames,collapsePlacement} from './combat-animation.js';
-import {composeMotion,poseFrames,playbackDuration,needsPlaybackLock,createPlaybackGate} from './combat-playback.js';
+import {composeMotion,poseFrames,walkingFrames,playbackDuration,needsPlaybackLock,createPlaybackGate} from './combat-playback.js';
 const combatPlayback=createPlaybackGate();
 const combatPlaybackKey=()=>`${activeBattleMissionId}:${activeBattleView?.encounter_id}:${activeBattleView?.seed}`;
 const combatPlaybackBlocked=()=>combatPlayback.blocked(combatPlaybackKey());
@@ -656,10 +656,13 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
   const field=$('.battlefield');if(!field)return;combatEffects.mount(field);impactFeedback.mount(field);
   const cellWidth=field.getBoundingClientRect().width/battle.width,cellHeight=field.getBoundingClientRect().height/battle.height;
   if(animationEvents.length){
-    const actingId=previous.current_unit_id,actingToken=field.querySelector(`[data-battle-unit="${CSS.escape(actingId||'')}"]`);
+    const actingId=previous.current_unit_id;
     if(movingPositions.has(actingId)&&!animationEvents.some(event=>event.unit_id===actingId&&event.type==='movement')){
-      const remaining=Math.max(0,...(actingToken?.getAnimations()||[]).map(a=>Number(a.effect.getTiming().duration)-Number(a.currentTime||0)));
-      if(remaining>0)animationEvents.unshift({type:'sound',cues:[],duration:Math.min(remaining,350)});
+      // Finish the visible preview before contact, rather than jump to the saved tile.
+      const position=movingPositions.get(actingId),rect=field.getBoundingClientRect();
+      const from={x:(position.x-rect.left)/cellWidth-.5,y:(position.y-rect.top)/cellHeight-.5};
+      const to=animationEvents.find(event=>event.unit_id===actingId&&event.from)?.from||previous.units?.[actingId];
+      if(to&&Math.hypot(from.x-to.x,from.y-to.y)>.02)animationEvents.unshift({type:'movement',unit_id:actingId,preview_settle:true,duration:220,points:[from,{x:to.x,y:to.y}]});
     }
     const timeline=impactTimeline(animationEvents),ghosts=new Map(),offsets=new Map();
     if(needsPlaybackLock(animationEvents,battle)){
@@ -742,14 +745,7 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       let frames=[];
       if(event.leap){const from=points[0],to=points.at(-1);frames=[{transform:`translate(${(from.x-unit.x)*cellWidth}px,${(from.y-unit.y)*cellHeight}px) scale(${baseScale})`,offset:0},{transform:`translate(${((from.x+to.x)/2-unit.x)*cellWidth}px,${((from.y+to.y)/2-unit.y)*cellHeight-cellHeight*.8}px) scale(${baseScale*1.08})`,offset:.5},{transform:`translate(${(to.x-unit.x)*cellWidth}px,${(to.y-unit.y)*cellHeight}px) scale(${baseScale*.94})`,offset:.94},{transform:`translate(${(to.x-unit.x)*cellWidth}px,${(to.y-unit.y)*cellHeight}px) scale(${baseScale})`,offset:1}]}
       else if(event.collision)frames=collisionFrames(points,unit,event.collision.toward,cellWidth,cellHeight,baseScale);
-      else{
-        for(let index=0;index<points.length-1;index++){
-          const from=points[index],to=points[index+1],start=index/(points.length-1),middle=(index+.5)/(points.length-1);
-          frames.push({transform:`translate(${(from.x-unit.x)*cellWidth}px,${(from.y-unit.y)*cellHeight}px) scale(${baseScale})`,opacity:1,offset:start});
-          frames.push({transform:`translate(${((from.x+to.x)/2-unit.x)*cellWidth}px,${((from.y+to.y)/2-unit.y)*cellHeight-3}px) scale(${baseScale*1.015})`,opacity:1,offset:middle});
-        }
-        frames.push({transform:`translate(0,0) scale(${baseScale})`,opacity:event.extracted?0:1,offset:1});
-      }
+      else frames=walkingFrames(points,unit,cellWidth,cellHeight,baseScale,event.extracted);
       if(offset)frames[0].transform=`translate(${offset.x}px,${offset.y}px) scale(${baseScale})`;
       token.classList.remove('extracted');
       queueMotion(token,frames,{duration:plannedDuration,delay},'is-walking',()=>{if(event.extracted)token.classList.add('extracted')});

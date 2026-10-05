@@ -1,7 +1,8 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {composeMotion,poseFrames,createPlaybackGate,needsPlaybackLock,playbackDuration} from './combat-playback.js';
+import {composeMotion,poseFrames,walkingFrames,createPlaybackGate,needsPlaybackLock,playbackDuration} from './combat-playback.js';
 import {impactTimeline} from './combat-impact.js';
+import {recoilFrames} from './combat-animation.js';
 
 const move=(from,to,delay,duration)=>({frames:[{transform:`translate(${from}px,0)`,offset:0},{transform:`translate(${to}px,0)`,offset:1}],delay,duration});
 test('later enemy movement cannot prefill the pose before the initial push',()=>{
@@ -42,4 +43,50 @@ test('free player repositioning stays interruptible; attacks and enemy movement 
   assert.equal(needsPlaybackLock([{type:'movement',unit_id:'p'}],battle),false);
   assert.equal(needsPlaybackLock([{type:'movement',unit_id:'e'}],battle),true);
   assert.equal(needsPlaybackLock([{type:'melee_attack'}],battle),true);
+});
+
+test('every walking segment ends at its destination, never a later response position',()=>{
+ for(const [dx,dy] of [[1,0],[-1,0],[0,1],[0,-1],[1,1],[-1,-1],[1,-1],[-1,1]]){
+  const actor={x:5+dx,y:5+dy},points=[{x:2,y:2},{x:2+dx,y:2+dy}];
+  const frames=walkingFrames(points,actor,80,60);
+  assert.equal(frames.at(-1).transform,`translate(${(points[1].x-actor.x)*80}px,${(points[1].y-actor.y)*60}px) scale(1)`);
+ }
+});
+
+test('walk, attack, counter and walk again share continuous standing poses',()=>{
+ const actor={x:5,y:2};
+ const first=walkingFrames([{x:1,y:2},{x:3,y:2}],actor,100,100);
+ const attack=poseFrames([{transform:'translate(0px,0px) scale(1)',offset:0},{transform:'translate(40px,0px) scale(1)',offset:.5},{transform:'translate(0px,0px) scale(1)',offset:1}],{x:3,y:2},actor,100,100);
+ const next=walkingFrames([{x:3,y:2},{x:5,y:2}],actor,100,100);
+ const result=composeMotion([{frames:first,delay:0,duration:220},{frames:attack,delay:290,duration:400},{frames:next,delay:760,duration:220}]);
+ const held=result.frames.find(f=>f.offset===760/result.duration);
+ assert.equal(held.transform,'translate(-200px,0px) translate(0px,0px) scale(1)');
+ assert.equal(result.frames.at(-1).transform,'translate(0px,0px) scale(1)');
+ assert.ok(result.frames.every((f,i)=>!i||f.offset>=result.frames[i-1].offset));
+});
+
+test('enemy pursuit waits for the whole landing effect and all collision recovery',()=>{
+ const rows=impactTimeline([{type:'ground_impact',attack_packet:1},
+  {type:'movement',unit_id:'a',forced:true,attack_packet:2,impact_origin_packet:1,impact_offset:133,points:[{x:1,y:1},{x:2,y:1}]},
+  {type:'movement',unit_id:'b',forced:true,attack_packet:3,impact_origin_packet:1,impact_offset:377,points:[{x:1,y:2},{x:2,y:2}]},
+  {type:'collision_recoil',unit_id:'b',attack_packet:3,after_displacement:true},
+  {type:'movement',unit_id:'a',points:[{x:2,y:1},{x:3,y:1}]}]);
+ assert.ok(rows.at(-1).start>=rows[0].start+rows[0].duration);
+ for(const row of rows.slice(1,-1))assert.ok(rows.at(-1).start>=row.start+row.duration);
+});
+
+test('an interrupted preview settles before attack contact, without a pose jump',()=>{
+ const actor={x:3,y:2},points=[{x:1.4,y:2},{x:3,y:2}];
+ const rows=impactTimeline([{type:'movement',unit_id:'p',preview_settle:true,duration:220,points},
+  {type:'melee_attack',attacker_id:'p',attack_packet:1}]);
+ assert.equal(rows[1].start,290);
+ const frames=walkingFrames(points,actor,100,100);
+ assert.equal(frames[0].transform,'translate(-160px,0px) scale(1)');
+ assert.equal(frames.at(-1).transform,'translate(0px,0px) scale(1)');
+});
+test('a delayed hit reaction holds the neutral pose until contact',()=>{
+ const frames=recoilFrames(12,0);
+ assert.equal(frames[0].transform,'translate(0px,0px) scale(1)');
+ assert.equal(frames[0].filter,'brightness(1)');
+ assert.equal(frames.at(-1).transform,'translate(0,0) scale(1)');
 });

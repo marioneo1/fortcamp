@@ -22,6 +22,18 @@ export function poseFrames(frames,point,unit,cw,ch){
   return frames.map(frame=>({...frame,transform:`translate(${x}px,${y}px) ${frame.transform}`}));
 }
 
+export function walkingFrames(points,unit,cw,ch,scale=1,extracted=false){
+  const frames=[];
+  for(let i=0;i<points.length-1;i++){
+    const from=points[i],to=points[i+1];
+    frames.push({transform:`translate(${(from.x-unit.x)*cw}px,${(from.y-unit.y)*ch}px) scale(${scale})`,opacity:1,offset:i/(points.length-1)});
+    frames.push({transform:`translate(${((from.x+to.x)/2-unit.x)*cw}px,${((from.y+to.y)/2-unit.y)*ch-3}px) scale(${scale*1.015})`,opacity:1,offset:(i+.5)/(points.length-1)});
+  }
+  const last=points.at(-1)||unit;
+  frames.push({transform:`translate(${(last.x-unit.x)*cw}px,${(last.y-unit.y)*ch}px) scale(${scale})`,opacity:extracted?0:1,offset:1});
+  return frames;
+}
+
 export function playbackDuration(timeline){
   // Floating labels can linger after control returns. Actual motion cannot.
   return Math.max(0,...timeline.filter(r=>r.event.type!=='combat_feedback').map(r=>

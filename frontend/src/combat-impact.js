@@ -1,6 +1,6 @@
 import {COMBAT_MOTION} from './combat-animation.js';
 // Shared contact markers for sound, visible contact, recoil and feedback.
-export function movementDuration(event){return event.leap?420:event.forced?(event.collision?COMBAT_MOTION.collisionMove:220):Math.max(220,Math.min(850,Math.max(1,(event.points||[]).length-1)*155))}
+export function movementDuration(event){return event.preview_settle?Math.max(80,Math.min(350,event.duration||220)):event.leap?420:event.forced?(event.collision?COMBAT_MOTION.collisionMove:220):Math.max(220,Math.min(850,Math.max(1,(event.points||[]).length-1)*155))}
 export function impactTimeline(events){
   let cursor=0;const packets=new Map();
   const collisions=new Map(events.filter(e=>e.type==='collision_recoil').map(e=>[`${e.attack_packet}:${e.unit_id}`,e]));
@@ -22,7 +22,7 @@ export function impactTimeline(events){
       if(event.forced&&packet){start=packet.impact;packet.land=start+(event.collision?COMBAT_MOTION.collisionContact:duration);packet.recovery=start+duration}
       cursor=Math.max(cursor,start+duration+70);
     }else if(event.type==='ground_impact'){
-      duration=170;cursor=Math.max(cursor,start+duration);
+      duration=650;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='chain_attack'){
       duration=400;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='melee_attack'){

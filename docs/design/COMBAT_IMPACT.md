@@ -116,6 +116,15 @@ remain interruptible, and lingering damage text does not block input. See
 
 The full-width map now has commands beside skills in a three-by-two bottom box,
 with action guidance below it. Unit stats/statuses and direct-hit forecasts are
-in scrollable hover/focus cards. Supplies/passives/history/options open centered
+in hover/focus cards. Supplies/passives/history/options open centered
 dialogs. Wheel/right-drag camera controls remain, with one small map-fit button.
 See [Fighter review](FIGHTER_COMBAT_REVIEW.md) for forecast limits and validation.
+
+## October 5: motion continuity and cursor forecasts
+
+Walking endpoints use each segment destination; interrupted previews settle before
+attacks. The playback notice does not resize the map. Full landing waves and all
+push/rebound/collapse motions conclude before subsequent turns. Stats follow the
+cursor and vanish on leaving a unit. Area forecasts show affected visible units
+with staggered labels; direct-hit forecasts use defenses without changing state.
+See [Fighter audit](FIGHTER_COMBAT_REVIEW.md) for tested cases and limitations.
