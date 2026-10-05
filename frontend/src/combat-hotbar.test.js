@@ -36,3 +36,13 @@ test('area forecasts show each affected enemy, excluding allies and absent enemi
  const html=areaForecastMarkup(preview,battle,esc);
  assert.equal((html.match(/data-aoe-preview=/g)||[]).length,2);assert.match(html,/24 damage/);assert.match(html,/19 damage/);assert.match(html,/50% resist/);assert.doesNotMatch(html,/data-aoe-preview="[pc]"/);
 });
+
+test('cooldowns use a large overlay and keep counts when the main action is spent',()=>{
+ const skill={id:'rally',name:'Hold Together',description:'Support',range:1,target:'ally',availability:{available:false,cooldown_remaining:4,uses_remaining:null,reason:'Ready in 4 turns'}};
+ const html=hotbarMarkup({acted:true,skills:[skill]},0,null,esc);
+ assert.match(html,/class="skill-cooldown" aria-hidden="true">4</);
+ assert.match(html,/cooling-down/);assert.match(html,/Ready in 4 turns/);
+ assert.doesNotMatch(html,/<small>Ready/);
+ const ready=hotbarMarkup({skills:[{...skill,availability:{available:true,cooldown_remaining:0,uses_remaining:null}}]},0,null,esc);
+ assert.doesNotMatch(ready,/class="skill-cooldown"/);assert.doesNotMatch(ready,/<small>Ready/);
+});

@@ -28,3 +28,9 @@ test('Terrain gets structure impact rather than flesh impact and duplicate swing
   {type:'sound',attack_packet:1,attack_event:true,cues:[{name:'melee_swing',offset:45},{name:'structure_hit',offset:185}]}]).cues;
  assert.deepEqual(cues.map(c=>c.name),['melee_swing','structure_hit']);
 });
+
+test('wall collisions play slightly louder than body collisions',()=>{
+ const body=combatAudioSchedule({},[{type:'collision_recoil',bystander_id:'other'}]).cues[0];
+ const wall=combatAudioSchedule({},[{type:'collision_recoil',bystander_id:null}]).cues[0];
+ assert.equal(body.volume,.5);assert.equal(wall.volume,.63);
+});

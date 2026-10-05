@@ -184,3 +184,11 @@ API reference: https://elevenlabs.io/docs/api-reference/text-to-sound-effects/co
 | `earthbreaker_land.wav` | 1.2 s | One enormous boot-and-body slam into solid earth, instantaneous deep punchy impact, cracking dirt and stone, followed by a short expanding bass shockwave and settling grit. Powerful grounded weight, no footsteps, no repeated hits, no explosion. |
 | `body_into_body.wav` | 0.7 s | One heavy clothed human body collides with another human body: immediate muffled chesty flesh thump, compressed fabric and a tiny rebound shuffle. Dense soft-body impact, no wood, no stone, no punch swish, no vocal grunt. |
 | `body_into_wall.wav` | 0.8 s | One heavy clothed human body slams against a rigid wall: immediate dull flesh thud layered with a short hard masonry knock, gritty scrape and tiny rebound. Heavier rigid contact than body-to-body, no shattering, no explosion, no voices. |
+
+
+Fighter weight pack playback revision (October 5): the importer preserves the
+initial Earthbreaker landing impact, fades its existing tail from 0.28 seconds,
+and ends it at 0.52 seconds. This is applied from the retained original on each
+run, so rebuilding cannot accumulate edits. Wall collision gain is set in the
+combat audio schedule at 0.63, versus body collision 0.50 (about +2 dB).
+No regeneration/purchase was needed for these adjustments.

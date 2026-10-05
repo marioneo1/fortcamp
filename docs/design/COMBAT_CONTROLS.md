@@ -152,3 +152,11 @@ and render the origin label. Tests cover open-ground lethal push, walls, a kille
 bystander and stun immunity. Build passes with the existing bundle-size warning.
 Use a new battle for the updated Earthbreaker skill definition; existing battles
 retain skill snapshots. No production or live saves changed.
+
+
+### October 5 hotbar readability
+Cooldowns appear as a large centered remaining-turn number over faded art.
+Unlimited ready skills have no Ready badge. Limited-use counts remain visible;
+hover help and accessible button names retain the reason a skill is unavailable.
+The countdown remains visible after using the main action. Bottom Layout A
+command descriptions use 18 px text.

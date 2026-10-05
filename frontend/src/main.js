@@ -204,7 +204,7 @@ function playSfx(name,volume=.5,delay=0,fallback=null){
   const run=()=>{
     if(!sfxFiles[name]||unavailableSfx.has(name)){fallback?.();return}
     if(audioMixer.volume(audioCategory(name),volume)===0)return;
-    const audio=new Audio(`/assets/sfx/${sfxFiles[name]}?v=20260930-actions-v1`);audio.preload='auto';
+    const audio=new Audio(`/assets/sfx/${sfxFiles[name]}?v=${name==='earthbreaker_land'?'20261005-landing-tail-v2':'20260930-actions-v1'}`);audio.preload='auto';
     const release=audioMixer.track(audio,audioCategory(name),volume);
     audio.play().catch(error=>{release();if(error.name!=='NotAllowedError'){unavailableSfx.add(name);fallback?.()}});
   };

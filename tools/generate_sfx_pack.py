@@ -53,6 +53,16 @@ def process(source, destination, ui, melodic=False):
         frame = i // channels
         envelope = min(1, frame / fade, (frames-1-frame) / tail_fade)
         samples[i] = round(samples[i] * gain * envelope)
+    # Keep the landing's initial weight; remove the unwanted late accent.
+    # Derive from the retained source on every run, never from an edited WAV.
+    if destination.stem == 'earthbreaker_land':
+        end_frame=min(frames,round(.52*48000))
+        fade_start=round(.28*48000)
+        for i in range(fade_start*channels,end_frame*channels):
+            t=(i//channels-fade_start)/max(1,end_frame-fade_start)
+            samples[i]=round(samples[i]*math.cos(t*math.pi/2)**2)
+        samples=samples[:end_frame*channels]
+        frames=end_frame
     peak = max(abs(s) for s in samples)
     final_rms = math.sqrt(sum(s*s for s in samples) / len(samples))
     if sys.byteorder != 'little':

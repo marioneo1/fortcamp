@@ -872,3 +872,11 @@ authoring remains deferred. This pass does not implement the proposed 96 skills.
 - Tested 124 backend / 224 frontend plus build and isolated browser checks.
 - Remaining: player listening/visual balance review of this pack; broader Mage
   ground/Barrier redesign and deferred intermittent pathing/rebuild review.
+
+
+### Completed October 5 - Fighter tuning follow-up
+- Hold Together radius 1 / cooldown 4; independent 25% bonuses unchanged.
+- Large cooldown counters over faded art; removed Ready badge; 18 px action help.
+- Shortened/faded existing Earthbreaker audio tail; wall collision +2 dB.
+- 58 related backend tests / 226 frontend tests, build and browser sizing check.
+- Player listening review remains; new skill definitions require fresh battles.

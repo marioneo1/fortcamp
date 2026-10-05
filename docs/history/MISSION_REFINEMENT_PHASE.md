@@ -1392,3 +1392,13 @@ sounds. Landing ring fades after expansion without changing hit/walk timing.
 verified wall contact and one-command self-cast. Audio artistic review remains
 pending. Existing active snapshots need a fresh battle for new skill definitions.
 No production/save changes. Canonical detail: FIGHTER_COMBAT_REVIEW.md.
+
+
+## October 5 - Support tuning and hotbar readability (dev only)
+Reduced Hold Together to the caster/eight neighbors and increased its cooldown
+from three to four owner turns. Added large on-icon cooldown counts over faded
+art, retained charges/hover explanations, removed Ready badges and enlarged
+bottom action help to 18 px. Edited the retained Earthbreaker landing tail
+(280-520 ms fade) and increased wall collision playback about 2 dB. No paid
+requests or production/save changes. 58 backend/226 frontend tests and build
+passed; isolated browser confirmed countdown/fade/help sizes.

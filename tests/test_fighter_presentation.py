@@ -47,7 +47,7 @@ class FighterPresentationTests(unittest.TestCase):
             self.assertTrue(wall['destroyed'])
 
     def test_rally_is_castable_without_fear_and_grants_separate_one_use_bonuses(self):
-        b,a,t=self.fixture();t.update(team=a['team'],x=4,y=4)
+        b,a,t=self.fixture();t.update(team=a['team'],x=3,y=3)
         skill=self.skill('rally');a.update(skills=[skill],special=skill)
         view=combat.battle_view(b)
         self.assertIsNotNone(view['skill_previews'][skill['id']][a['id']])
@@ -68,6 +68,20 @@ class FighterPresentationTests(unittest.TestCase):
             self.assertEqual(combat._perform_attack(b,a,t,'melee')[2],25)
             self.assertEqual(combat._perform_attack(b,a,t,'melee')[2],20)
         self.assertFalse(conditions.has(a,'rally_power'))
+
+    def test_rally_one_cell_radius_and_four_turn_cooldown(self):
+        from backend import combat_abilities as abilities
+        b,a,t=self.fixture();t.update(team=a['team'],x=a['x']+2,y=a['y'])
+        near=deepcopy(t);near.update(id='near',x=a['x']+1,y=a['y']+1);b['units']['near']=near
+        skill=self.skill('rally');start=a.get('ability_activation',0);self.use(b,a,a,'rally')
+        self.assertTrue(conditions.has(near,'rally_power'))
+        self.assertFalse(conditions.has(t,'rally_power'))
+        a['acted']=False
+        for activation,remaining in [(0,4),(1,3),(2,2),(3,1),(4,0)]:
+            a['ability_activation']=start+activation
+            state=abilities.availability(a,skill)
+            self.assertEqual(state['cooldown_remaining'],remaining)
+            self.assertEqual(state['available'],remaining==0)
 
     def test_rally_miss_spends_power_and_area_attack_boosts_every_victim(self):
         b,a,t=self.fixture();conditions.apply(a,'rally_power',1,a)
@@ -241,8 +255,8 @@ class FighterPresentationTests(unittest.TestCase):
             self.assertFalse(any(e.get('kind')=='collision' for e in b['animation_events']))
 
     def test_rally_cleanses_all_nearby_fear_but_does_not_grant_barriers(self):
-        b,a,t=self.fixture();t.update(team=a['team'],x=4,y=4)
-        far=deepcopy(t);far.update(id='far',x=5,y=5);b['units']['far']=far
+        b,a,t=self.fixture();t.update(team=a['team'],x=3,y=3)
+        far=deepcopy(t);far.update(id='far',x=4,y=4);b['units']['far']=far
         for u in (a,t,far):conditions.apply(u,'fear',2,a)
         self.use(b,a,a,'rally')
         for u in (a,t):

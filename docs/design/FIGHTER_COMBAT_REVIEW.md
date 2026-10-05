@@ -22,7 +22,7 @@ the command dock instead of clipping the bottom of the map.
 | Driving Strike | Existing single-target melee hit and one-cell push | 2 owner activations; accuracy, walls and resistance apply |
 | Chain Snare (formerly Cover) | Weapon-power hit; clear three-cell reach in any direction (square range). Pull up to two cells along the dominant cardinal direction, stopping beside the caster. On hit, Hobbled halves movement, rounded down with minimum 1, for two target activations | 3 owner activations. Miss prevents both pull and Hobbled. Displacement resistance can stop the pull; ordinary accuracy/elevation, walls and existing status resistance apply |
 | Earthbreaker (formerly Break Formation) | Ground-targeted leap up to three Manhattan cells after any legal walking approach. Weapon-power physical landing hit against enemies in a two-cell square radius. Inner ring pushes two cells; outer ring one. Damage resolves first for all targets; pushes then resolve inner-first so bodies can collide | 5 owner activations. Each enemy has its own accuracy roll. Resistance stops movement, not the landing hit. Open landing only, clear sight and no crossed wall; at most two levels of height change. Can leap over a gap, but cannot land in water/pits, carry payloads, or leap while movement is disabled. Area impact is not an interceptable direct strike and does not trigger a melee counter |
-| Hold Together | Click the fighter. Remove Fear from self and living allies within two cells; grant separate next-hit protection (-25%) and next-attack direct damage (+25%, all targets of an area attack) | 3 owner activations. Available without Fear when a nearby ally is missing either bonus. No stacking, healing or Barrier; walls block the effect. A miss spends the attack bonus |
+| Hold Together | Click the fighter. Remove Fear from self and living allies within one cell; grant separate next-hit protection (-25%) and next-attack direct damage (+25%, all targets of an area attack) | 4 owner activations. Available without Fear when a nearby ally is missing either bonus. No stacking, healing or Barrier; walls block the effect. A miss spends the attack bonus |
 | Intercept | Existing adjacent ally protection | One shared reaction |
 | Riposte | Existing survived-melee counter at half attack | Competes with Intercept for the shared reaction |
 
@@ -417,3 +417,30 @@ review remains necessary for artistic quality; preview is
 Existing active battles retain their skill snapshots. Start a fresh Battle Lab
 battle to test the revised Hold Together. No player saves or production files
 were changed. The intermittent pathing report remains deferred.
+
+
+## October 5 follow-up: tighter support and readable cooldowns
+
+Current Hold Together has a one-cell square radius (caster plus eight neighboring
+cells, still blocked by walls) and a four-owner-turn cooldown, increased from
+three. Both 25% one-use bonuses and Fear removal remain unchanged.
+
+The hotbar no longer prints Ready under unlimited skills. Cooling-down skills
+have faded artwork and a centered 28-40 px turn counter, independent of the main
+button opacity. Keycaps and skill names remain; limited-use skills retain their
+use count. Tooltip/accessible labels explain cooldowns and other restrictions,
+including when the main action is already spent. Bottom action descriptions
+in Layout A increased from 15 px to 18 px.
+
+Earthbreaker's retained landing recording now fades from 280 ms and ends at
+520 ms, preserving its initial impact samples and removing the late tail.
+The generator applies this edit reproducibly from its original recording.
+Wall collision playback rose from 0.50 to 0.63 (about +2 dB); body collision
+stays at 0.50. No new paid audio generation was made. Landing audio uses a new
+asset version so refreshing dev fetches the edited recording.
+
+Validation: 58 Fighter/ability/impact backend tests, 226 frontend tests and build.
+Isolated browser confirmed a visible 4 cooldown counter at 40 px, faded art at
+0.4 opacity, readable number/button at full opacity and 18 px help text. Audio
+has no clipping; final subjective listening review remains with the player.
+New battles use the revised skill definition; ongoing snapshots remain stable.

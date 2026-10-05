@@ -8,7 +8,7 @@ export function combatAudioSchedule(battle,events=battle?.animation_events||[]){
     end=Math.max(end,delay+duration);
     if(event.type==='movement'&&event.leap)playSfx('earthbreaker_launch',.4,delay);
     else if(event.type==='ground_impact')playSfx('earthbreaker_land',.5,delay);
-    else if(event.type==='collision_recoil')playSfx(event.bystander_id?'body_into_body':'body_into_wall',.5,delay);
+    else if(event.type==='collision_recoil')playSfx(event.bystander_id?'body_into_body':'body_into_wall',event.bystander_id ? .5 : .63,delay);
     else if(event.type==='chain_attack'){playSfx('melee_swing',.35,delay+40);playSfx('melee_hit_light',.4,delay+220)}
     else if(event.type==='sound'){
       for(const cue of event.cues||[]){if(['unit_death','unit_unconscious'].includes(cue.name)&&events.some(e=>['death_burst','knockout'].includes(e.type)&&e.attack_packet===event.attack_packet))continue;playSfx(cue.name,cue.name==='barrier_absorb'?.28:cue.name==='shield_block'?.35:.4,delay+(cue.offset||0))}
