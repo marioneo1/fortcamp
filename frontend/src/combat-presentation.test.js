@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {existsSync} from 'node:fs';
-import {COMBAT_MOTION,meleeFrames,collisionFrames,collapseFrames} from './combat-animation.js';
+import {COMBAT_MOTION,meleeFrames,collisionFrames,collapseFrames,collapsePlacement} from './combat-animation.js';
 import {impactTimeline,impactArtwork} from './combat-impact.js';
 import {JOB_ICON_ART} from './ability-icon-manifest.js';
 import {skillCategory,skillIcon} from './ability-icons.js';
@@ -23,7 +23,7 @@ test('collision contact precedes bounce recovery and lethal collapse',()=>{
   assert.equal(rows[4].start,185+COMBAT_MOTION.collisionMove);
   const frames=collisionFrames(events[1].points,{x:2,y:0},{x:3,y:0},100,100);
   assert.equal(frames[1].offset*rows[1].duration,COMBAT_MOTION.collisionContact);
-  assert.match(frames[1].transform,/translate\(18px,0px\)/);
+  assert.ok(Math.abs(parseFloat(frames[1].transform.split('(')[1])-28)<.01);
   assert.match(frames.at(-1).transform,/translate\(0px,0px\)/);
   assert.deepEqual(events,before);
 });
@@ -52,4 +52,10 @@ test('ground art covers only real affected cells and omits internal grid borders
   assert.match(html,/clip-path="url\(#zone-art-test\)"/);
   assert.match(html,/ember_ground.png/);
   assert.doesNotMatch(html,/M100,0v100/);
+});
+
+test("collapse ends at the final body centre, including edge-aligned corpses",()=>{
+ const placement=collapsePlacement({x:100,y:100,width:80,height:80},{x:92,y:123,width:60,height:60});
+ const frame=collapseFrames(false,placement).at(-1);
+ assert.equal(frame.translate,"-18px 13px");assert.equal(frame.scale,"0.75");assert.equal(frame.rotate,"-18deg");
 });

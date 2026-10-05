@@ -29,7 +29,7 @@ import {mountRelationships,mountServiceRecord} from './relationship-ui.js';
 import {createCombatEffects} from './combat-effects.js';
 import './combat-effects.css';
 import {impactTimeline,createImpactFeedback,protectionMarkup} from './combat-impact.js';
-import {COMBAT_MOTION,meleeFrames,recoilFrames,collisionFrames,collapseFrames} from './combat-animation.js';
+import {COMBAT_MOTION,meleeFrames,recoilFrames,collisionFrames,collapseFrames,collapsePlacement} from './combat-animation.js';
 import './combat-impact.css';
 import './combat-painted-effects.css';
 const impactFeedback=createImpactFeedback();
@@ -173,6 +173,7 @@ const sfxFiles={ui_click:'ui_click.wav',ui_confirm:'ui_confirm.wav',ui_cancel:'u
 for(const name of ['step_earth','step_stone','step_water','bow_release','arrow_hit','magic_cast','magic_hit','attack_miss','shield_block','throw_release','throw_hit','structure_hit','structure_break','cage_open','pickup','payload_drop','extraction','objective_interact'])sfxFiles[name]=`${name}.wav`;
 const unavailableSfx=new Set();
 for(const name of ['burn_tick','poison_tick','barrier_absorb','collision_hit'])sfxFiles[name]=`${name}.wav`;
+sfxFiles.collision_hit='body_collision.wav';
 function playSfx(name,volume=.5,delay=0,fallback=null){
   const run=()=>{
     if(!sfxFiles[name]||unavailableSfx.has(name)){fallback?.();return}
@@ -231,7 +232,7 @@ function playBattleSounds(battle,events=battle?.animation_events||[]){
     }else if(event.type==='combat_feedback'){
       if(event.kind==='collision'){
         const key=`collision:${event.attack_packet??delay}`;
-        if(!impactSounds.has(key)){impactSounds.add(key);playSfx('collision_hit',.32,delay)}
+        if(!impactSounds.has(key)){impactSounds.add(key);playSfx('collision_hit',.5,delay)}
       }else if(['burn','poison'].includes(event.kind))playSfx(`${event.kind}_tick`,.22,delay);
       else if(event.kind==='status'&&['burn','poison'].includes(event.status_id))playSfx(`${event.status_id}_tick`,.16,delay);
       else if(['bleed','thorns'].includes(event.kind)&&!event.attack_packet)playSfx('melee_hit_light',.16,delay);
@@ -648,7 +649,9 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       const holder=document.createElement('div');holder.innerHTML=battleToken({...before,x:event.x,y:event.y,alive:true,conscious:true,condition:'active'},false,previous);
       const ghost=holder.firstElementChild;if(!ghost)continue;
       ghost.dataset.battleUnit=`transition-${event.unit_id}`;ghost.style.pointerEvents='none';ghost.style.zIndex='23';field.append(ghost);finalToken.style.visibility='hidden';
-      ghosts.set(event.unit_id,{ghost,finalToken});
+      // Measure the final corpse pose, not its inherited CSS transition halfway through.
+      const bodyTransition=finalToken.style.transition;finalToken.style.transition='none';
+      ghosts.set(event.unit_id,{ghost,finalToken,bodyTransition,placement:{...collapsePlacement(ghost.getBoundingClientRect(),finalToken.getBoundingClientRect()),scale:parseFloat(getComputedStyle(finalToken).width)/parseFloat(getComputedStyle(ghost).width)}});
     }
     const tokenFor=id=>ghosts.get(id)?.ghost||field.querySelector(`[data-battle-unit="${CSS.escape(id)}"]`);
     const animatedUnits=new Set();
@@ -658,10 +661,10 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       if(event.type==='death_burst'||event.type==='knockout'){
         if(event.type==='death_burst')combatEffects.emit(event,battle,delay+120);
         const transition=ghosts.get(event.unit_id);if(!transition)return;
-        const {ghost,finalToken}=transition;
+        const {ghost,finalToken,placement,bodyTransition}=transition;
         const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-        const dying=ghost.animate(reduced?[{opacity:1},{opacity:0}]:collapseFrames(event.type==='knockout'),{duration:plannedDuration,delay,fill:'both',easing:'linear'});
-        const finish=()=>{ghost.remove();finalToken.style.visibility=''};dying.onfinish=finish;dying.oncancel=finish;
+        const dying=ghost.animate(reduced?[{opacity:1},{opacity:0}]:collapseFrames(event.type==='knockout',placement),{duration:plannedDuration,delay,fill:'both',easing:'linear'});
+        const finish=()=>{ghost.remove();finalToken.style.visibility='';finalToken.style.transition=bodyTransition};dying.onfinish=finish;dying.oncancel=finish;
         return;
       }
       if(event.type==='magic_projectile'){combatEffects.emit(event,battle,delay);return}
@@ -676,7 +679,7 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
         }
         const bystander=battle.units?.[event.bystander_id],other=event.bystander_id&&tokenFor(event.bystander_id);
         if(other&&bystander){
-          const recoil=other.animate(recoilFrames(Math.sign(event.toward.x-event.x)*cellWidth*.14,Math.sign(event.toward.y-event.y)*cellHeight*.14,bystander.id===battle.current_unit_id?1.15:1),{duration:COMBAT_MOTION.recoil,delay,easing:'linear',fill:'forwards'});
+          const recoil=other.animate(recoilFrames(Math.sign(event.toward.x-event.x)*cellWidth*.24,Math.sign(event.toward.y-event.y)*cellHeight*.24,bystander.id===battle.current_unit_id?1.15:1),{duration:COMBAT_MOTION.recoil,delay,easing:'linear',fill:'forwards'});
           trackBattleAnimation(other,recoil,'is-hit');
         }
         return;
@@ -900,6 +903,7 @@ document.addEventListener('keydown',event=>{
   const key=event.code==='Space'?'space':event.key.toLowerCase();
   if(/^[0-9]$/.test(key)){const skill=$(`[data-hotbar-key="${key}"]`);if(skill&&!skill.disabled){event.preventDefault();skill.click()}return}
   if(key==='s'){const skill=$('[data-hotbar-skill]:not(:disabled)');if(skill){event.preventDefault();skill.click()}return}
+  if((key==='c'||key==='escape')&&selectedCombatAction==='skill'){event.preventDefault();selectedCombatAction='move';tileActionMenu=null;contextMenuOpen=false;retreatAllArmed=false;renderBattle(activeBattleView);return}
   if(key==='escape'&&retreatAllArmed){event.preventDefault();retreatAllArmed=false;renderBattle(activeBattleView);return}
   if(!activeBattleView.current_unit_id&&key!=='r')return;
   if(['c','d','p','x'].includes(key)){

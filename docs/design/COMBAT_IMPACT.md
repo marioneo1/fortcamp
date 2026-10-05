@@ -44,8 +44,8 @@ shell and visible remaining capacity; Guard has a separate dashed gold outline.
 Existing hover cards still give complete status explanations.
 
 Melee impact lands at 185 ms. Associated knockback starts at that moment and
-normally lasts 220 ms. Solid collisions use a 320 ms bounce, with feedback at
-220 ms contact; immediately blocked targets contact at 80 ms during a 220 ms bounce. Attack
+normally lasts 220 ms. Solid collisions use a 420 ms bounce, with feedback at
+220 ms contact; immediately blocked targets contact at 100 ms during a 320 ms bounce. Attack
 coordinates are captured before displacement so the lunge aims at the original
 position. A lethal collision carries the living portrait into the collapse.
 Subsequent enemy animations wait for the current action/death to finish. Floating
@@ -63,7 +63,7 @@ the audition page is `/assets/sfx/preview-combat-impact-v1.html`.
 
 ## Verification and limits
 
-91 related backend tests and 202 frontend tests pass. New checks cover solid/
+96 related backend tests and 203 frontend tests pass. New checks cover solid/
 person/friendly collisions, barriers, resistance, boundaries, crossing hazards,
 overkill numbers, event order, shared sound/visual timing and visible protection.
 The frontend builds with the existing large-chunk warning. An isolated real UI
@@ -76,3 +76,7 @@ remaining bespoke presentation work.
 
 Design reference: [Xbox Accessibility Guideline 103](https://learn.microsoft.com/en-us/gaming/accessibility/xbox-accessibility-guidelines/103)
 recommends conveying essential information through more than color alone.
+
+Fighter-first follow-up: see FIGHTER_COMBAT_REVIEW.md for overlay ordering,
+separated overlapping numbers, exact corpse handoff, stronger rebound and new
+body collision sound. Shared AOE/barrier art is not an approved final direction.

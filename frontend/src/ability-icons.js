@@ -6,6 +6,8 @@ export function skillCategory(skill){
   const effects=skill.effects||[],has=type=>effects.some(e=>e.type===type);
   if(has('deploy'))return 'summon';
   if(skill.heal||skill.cleanses||has('heal')||has('cleanse')||effects.some(e=>e.status==='regeneration'))return 'heal';
+  if(skill.reaction?.id==='intercept')return 'ally';
+  if(['riposte','returning_hand'].includes(skill.reaction?.id))return 'damage';
   if(has('form')||skill.type==='passive')return 'self';
   if(skill.guard_ally||has('barrier')||has('guard'))return skill.target==='self'?'self':'ally';
   if(effects.some(e=>['burn','poison','bleed'].includes(e.status)||['ember','thorns'].includes(e.zone))||['burn','poison','bleed'].includes(skill.on_hit?.id))return 'dot';

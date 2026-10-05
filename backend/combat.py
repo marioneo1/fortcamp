@@ -1044,6 +1044,10 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
     packet=battle['attack_serial']
     events.extend(resolved)
     for event in events[begin:]:event['attack_packet']=packet
+    if target is not original:
+        feedback(battle,target,'intercept',attack_packet=packet,before_contact=True)
+    if reaction:
+        feedback(battle,attacker,'counter',attack_packet=packet,before_contact=True)
     if not reaction and not defer_reaction and intent=='lethal':_react_after_attack(battle,attacker,target,hit,rule)
     return target,hit,damage,preview,roll
 
@@ -1089,7 +1093,9 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
     event_begin=len(battle.setdefault('animation_events',[]))
     counter=battle.get('displacement_counter',0);battle['displacement_counter']=counter+1
     if random.Random(f"{battle.get('seed')}:displace:{counter}:{actor['id']}:{target['id']}").randint(1,100)<=preview['resistance']:
-        battle['log'].append(f"{target['name']} resists the forced movement.");return
+        battle['log'].append(f"{target['name']} resists the forced movement.")
+        feedback(battle,target,'resisted',**({'attack_packet':attack_packet} if attack_packet is not None else {}))
+        return
     start=(target['x'],target['y']);path=[];bystander=None
     for point in preview['path']:
         hidden=next((u for u in battle['units'].values() if u['id']!=target['id'] and _combat_active(u) and (u['x'],u['y'])==(point['x'],point['y'])),None)

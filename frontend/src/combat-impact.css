@@ -7,3 +7,7 @@
 .battle-token .unit-barrier-halo{position:absolute;inset:-5%;border:2px solid #b2dfff;border-radius:50%;background:radial-gradient(circle,transparent 57%,#91c6ff26 69%,#b5dfff40 75%,transparent 80%);box-shadow:0 0 10px #9bcaff85,inset 0 0 7px #afd9ff75;pointer-events:none;z-index:3}
 .battle-token .unit-barrier-capacity{position:absolute;top:5%;left:50%;transform:translateX(-50%);z-index:6;padding:1px 5px;border:1px solid #b3d9ff;border-radius:8px;background:#142e46ee;color:#d9efff;font:700 11px/1.3 system-ui;white-space:nowrap}
 .battle-token .unit-guard-halo{position:absolute;inset:-2%;border:2px dashed #dac28a;border-radius:50%;pointer-events:none;z-index:2;box-shadow:0 0 5px #c2a36c66}
+
+.combat-feedback-layer{position:absolute;inset:0;z-index:100;pointer-events:none;overflow:visible;isolation:isolate}.combat-feedback-layer .combat-float{z-index:3}.combat-feedback-layer .painted-hit-sprite{z-index:1}.combat-feedback-layer .combat-impact-particle{z-index:2}
+
+.combat-feedback-layer .combat-float{transition:margin-left .08s ease-out}

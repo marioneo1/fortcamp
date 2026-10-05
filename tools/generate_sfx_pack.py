@@ -71,10 +71,10 @@ def process(source, destination, ui, melodic=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--pack', choices=['first-pack', 'mission-melodic-v2', 'mission-outcomes-v3', 'action-expansion-v1','combat-impact-v1'], default='mission-outcomes-v3')
+    parser.add_argument('--pack', choices=['first-pack', 'mission-melodic-v2', 'mission-outcomes-v3', 'action-expansion-v1','combat-impact-v1','fighter-contact-v1'], default='mission-outcomes-v3')
     args = parser.parse_args()
     raw = ROOT / 'staging-sfx' / args.pack
-    melodic = args.pack not in {'first-pack','combat-impact-v1'}
+    melodic = args.pack not in {'first-pack','combat-impact-v1','fighter-contact-v1'}
     key = os.getenv('ELEVENLABS_API_KEY') or dotenv_values(ROOT / '.env').get('ELEVENLABS_API_KEY')
     if not key:
         raise SystemExit('ELEVENLABS_API_KEY is not configured')
@@ -83,11 +83,12 @@ def main():
     guide = (ROOT / 'SFX_GENERATION_GUIDE.md').read_text(encoding='utf-8')
     headings = {'first-pack': 'First production pack', 'mission-melodic-v2': 'Modern melodic mission pack', 'mission-outcomes-v3': 'Distinct mission outcomes v3', 'action-expansion-v1': 'Action expansion pack'}
     headings['combat-impact-v1']='Combat impact pack'
+    headings['fighter-contact-v1']='Fighter contact pack'
     section = guide.split('## ' + headings[args.pack])[1].split('\n## ')[0]
-    palette_section = section if melodic or args.pack=='combat-impact-v1' else guide
+    palette_section = section if melodic or args.pack in {'combat-impact-v1','fighter-contact-v1'} else guide
     palette = next(line[2:] for line in palette_section.splitlines() if line.startswith('> '))
     rows = re.findall(r'\| `([a-z_0-9]+\.wav)` \| ([\d.]+) s \| (.*?) \|', section)
-    expected_count = {'first-pack': 12, 'mission-melodic-v2': 7, 'mission-outcomes-v3': 4, 'action-expansion-v1': 18,'combat-impact-v1':4}[args.pack]
+    expected_count = {'first-pack': 12, 'mission-melodic-v2': 7, 'mission-outcomes-v3': 4, 'action-expansion-v1': 18,'combat-impact-v1':4,'fighter-contact-v1':1}[args.pack]
     if len(rows) != expected_count:
         raise SystemExit(f'Expected exactly {expected_count} effects')
     raw.mkdir(parents=True, exist_ok=True)

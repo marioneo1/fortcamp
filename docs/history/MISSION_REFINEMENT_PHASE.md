@@ -1231,3 +1231,20 @@ Validation: 91 backend and 202 frontend checks, frontend build, four-zone/barrie
 screenshot review and lethal collision fixture confirming both damage labels and
 corpse reveal after collapse. Existing build-size warning remains. No live saves,
 production deployment or remote push. See docs/art/COMBAT_PRESENTATION_V2.md.
+
+# October 4 ? Fighter-first combat correction
+
+User rejected ground/barrier visuals and reported hidden attacks, oversized skill
+containers and body position jumps. Found transient tokens above hit/number layers,
+labels obscuring other labels, and corpse CSS transitions corrupting collapse
+destination measurement. Repaired dedicated overlay ordering/preservation, label
+spacing, icon button fill, C/Escape cancellation, exact body handoff and rebound
+visibility. Generated one body collision Foley variant and retained its prompt.
+Audited all six Fighter skills against real outcomes; Intercept/Counter/Resisted
+now have explicit cues. Break Formation normally pulls into the caster: documented
+for redesign, mechanics preserved.
+
+Prepared two map/dock/inspector layout prototypes and protection/ground effect
+directions. These remain proposals. Validation: 96 backend and 203 frontend tests,
+frontend build, isolated real-outcome browser checks including subpixel corpse
+alignment. No production, save or remote repository changes.

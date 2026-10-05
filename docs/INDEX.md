@@ -1,5 +1,9 @@
 # Fortcamp documentation map
 
+Current Fighter review: [Fighter combat and UI audit](design/FIGHTER_COMBAT_REVIEW.md)
+records layer/collapse/hotbar repairs, all six skills, Break Formation
+self-collision and two proposed layouts. Ground/barrier art is awaiting redesign.
+
 Combat presentation rollout: [Presentation plan](design/COMBAT_PRESENTATION_PLAN.md)
 records contact timing, collision bounce, painted ability icons, volumetric
 barriers, coherent ground effects and deferred damage typography. The first rollout is implemented;

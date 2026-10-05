@@ -1,6 +1,8 @@
 # Combat presentation V2
 
 Implemented in development October 4, 2026. Production is unchanged.
+Subsequent user review rejected the AOE/barrier visual direction. See
+../design/FIGHTER_COMBAT_REVIEW.md for corrections and proposed replacements.
 
 ## Assets and usage
 

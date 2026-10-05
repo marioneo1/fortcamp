@@ -165,3 +165,11 @@ Use `tools/generate_event_ambience.py` for the seven authored environmental acce
 The shared palette is distant fantasy environmental detail with softened treble, no music or instruments, no intelligible speech, no screams or jump scares. Goblin chatter/camp activity, dragging undead procession, arcane disturbance, beast call/passage, and damaged Starfall machinery play sparsely; runtime does not continuously loop them. Preview at `staging-sfx/event-ambience-v1/LISTEN.html` or the Sound settings ambience link. The Ambient Sounds slider is independent of the other channels.
 
 API reference: https://elevenlabs.io/docs/api-reference/text-to-sound-effects/convert
+
+## Fighter contact pack
+
+> Modern painted-fantasy tactical RPG Foley, warm rounded transient, no voices, no music, no metallic chime, dry close sound, no long reverb.
+
+| File | Duration | Prompt |
+|---|---|---|
+| `body_collision.wav` | 1.0 s | One heavy padded body slams into a timber barrier: immediate low chesty flesh thud, short wood creak and scrape, then a tiny rebound scuff. Firm weight, no gore, no grunt, no explosion. Impact at the start, single hit. |

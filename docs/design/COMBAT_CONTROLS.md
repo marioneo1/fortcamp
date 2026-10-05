@@ -21,7 +21,8 @@ use the same finish. This changes the prior 50% rule.
 
 The map hotbar replaces the ability dropdown and duplicate selected-skill button.
 Job actives appear first, then all equipment/proficiency techniques. Number keys
-1-9 and 0 select ten skills on the current page; arrows expose further pages
+1-9 and 0 select ten skills on the current page; C or Escape cancels skill
+targeting and returns to Move. Artwork fills each 64px button; names sit below. Arrows expose further pages
 without restricting gear abilities. Hover/focus explains source, range, target,
 description and availability. Passives remain inspectable in the sidebar.
 

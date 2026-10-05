@@ -723,3 +723,11 @@ authoring remains deferred. This pass does not implement the proposed 96 skills.
 - Support/form/deployment feedback and old shield/portrait CSS conflict repaired.
 - Remaining: full per-skill manual playthrough, mobile density review, unique gear/Champion signatures, custom damage typography.
 - Validation: 91 backend / 202 frontend checks, build and isolated browser review. Production untouched.
+
+## October 4 ? Fighter-first correction and UI review
+
+- Implemented: damage/hit overlay above moving tokens; separated overlapping numbers; full-art 64px skill buttons; C/Escape cancel; precise corpse handoff; stronger rebound and body collision sound; Intercept/Counter/Resisted cues.
+- All six Fighter skills audited. Break Formation self-collision confirmed; needs an explicit redesign, not a silent rule exception.
+- Proposed: tactical workspace A with bottom dock/one inspector (recommended), floating layout B. Interactive local comparison in staging-ui/combat-fighter-review/proposals.html.
+- Rejected/pending replacement: stretched AOE imagery and static bubble protection. Fighter protection and ground cast/state/trigger proposals in docs/design/FIGHTER_COMBAT_REVIEW.md.
+- Validation: 96 backend / 203 frontend tests, build and browser checks. Subjective audio review pending. No production changes.

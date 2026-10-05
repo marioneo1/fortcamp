@@ -33,7 +33,7 @@ function children(parent,fresh){
     else if(node.nodeValue!==incoming.nodeValue)node.nodeValue=incoming.nodeValue;
     cursor=node.nextSibling;
   }
-  for(const node of old)if(!used.has(node))node.remove();
+  for(const node of old)if(!used.has(node)&&!node.hasAttribute?.('data-live-overlay'))node.remove();
 }
 export function patchLiveHTML(root,html){
   const previous=rendered.get(root);

@@ -12,7 +12,7 @@ export function impactTimeline(events){
     if(key!=null&&attack){
       if(!packet){const impact=cursor+(event.type==='melee_attack'?COMBAT_MOTION.contact:220);packet={start:cursor,impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
       start=packet.start;
-    }else if(packet){start=event.after_displacement?packet.land:packet.impact}
+    }else if(packet){start=event.before_contact?packet.start:event.after_displacement?packet.land:packet.impact}
     if(event.type==='movement'){
       duration=movementDuration(event);
       if(event.forced&&packet){start=packet.impact;packet.land=start+(event.collision?COMBAT_MOTION.collisionContact:duration);packet.recovery=start+duration}
@@ -50,6 +50,7 @@ export const feedbackStyles={
   heal:{label:'Heal',icon:'+',color:'#9beeb9'},barrier:{label:'Barrier',icon:'◇',color:'#b5dfff'},
   guard:{label:'Guard',icon:'◇',color:'#dfc788'},cleanse:{label:'Cleansed',icon:'+',color:'#9beeb9'},
   form:{label:'Form changed',icon:'◆',color:'#9beeb9'},deploy:{label:'Deployed',icon:'◆',color:'#a8ded8'},
+  intercept:{label:'Intercept',icon:'◇',color:'#b5dfff'},counter:{label:'Counter',icon:'↶',color:'#ffe6b5'},resisted:{label:'Resisted',icon:'◆',color:'#dccfae'},
   miss:{label:'Miss',icon:'↗',color:'#ded9cb'},captured:{label:'Subdued',icon:'◇',color:'#d5c6ff'},
   status:{label:'Status',icon:'•',color:'#dfcbff'},
 };
@@ -64,6 +65,7 @@ export function protectionMarkup(unit){
   return `${barrier?`<span class="unit-barrier-halo" aria-hidden="true"></span><span class="unit-barrier-front" aria-hidden="true"></span><span class="unit-barrier-capacity" title="Barrier: absorbs ${Number(barrier.amount)} damage">◇ ${Number(barrier.amount)}</span>`:''}${unit.guarding?'<span class="unit-guard-halo" aria-hidden="true"></span>':''}`;
 }
 export function impactArtwork(event){
+  if(['intercept','counter','resisted'].includes(event.kind))return [];
   if(event.absorbed)return [event.barrier_broken?'barrier_break':'barrier_hit'];
   if(event.kind==='barrier')return ['barrier_shell'];
   if(['heal','cleanse','form'].includes(event.kind))return ['restoration_wisp'];
@@ -75,9 +77,12 @@ export function impactArtwork(event){
   return event.kind==='miss'?[]:['physical_hit'];
 }
 export function createImpactFeedback(){
-  let field,epoch=0;const timers=new Set();
+  let field,layer,epoch=0;const timers=new Set();
   function clear(){epoch++;for(const timer of timers)clearTimeout(timer);timers.clear();field?.querySelectorAll('.combat-float,.combat-impact-ring,.combat-impact-particle,.painted-hit-sprite').forEach(n=>n.remove())}
-  function mount(next){if(field!==next){clear();field=next}}
+  function mount(next){
+    if(field!==next){clear();field=next}
+    if(field&&!layer?.isConnected){layer=document.createElement('div');layer.className='combat-feedback-layer';layer.setAttribute('aria-hidden','true');layer.setAttribute('data-live-overlay','');field.append(layer)}
+  }
   function emit(event,battle,delay=0){
     const generation=epoch;
     const timer=setTimeout(()=>{
@@ -91,20 +96,23 @@ export function createImpactFeedback(){
       node.append(value,label);
       if(event.absorbed){const shield=document.createElement('em');shield.textContent=`◇ ${event.absorbed} absorbed`;node.append(shield)}
       // Alternate overlapping labels around the same tile, without covering the face.
-      const siblings=[...field.querySelectorAll('.combat-float')].filter(n=>n.style.left===`${x}%`&&n.style.top===`${y}%`).length;
-      node.style.setProperty('--float-lane',`${siblings%3*22}px`);
-      field.append(node);node.animate([{opacity:1,transform:'translate(-50%,-65%) scale(1.1)'},{opacity:1,transform:'translate(-50%,-85%) scale(1)',offset:.15},{opacity:1,transform:'translate(-50%,-115%) scale(1)',offset:.68},{opacity:0,transform:'translate(-50%,-150%) scale(.96)'}],{duration:reduced?1400:950,fill:'forwards'}).onfinish=()=>node.remove();
+      const tile=`${event.x},${event.y}`;node.dataset.impactTile=tile;
+      const siblings=[...field.querySelectorAll('.combat-float')].filter(n=>n.dataset.impactTile===tile);
+      const spread=field.clientWidth/battle.width*.48;
+      if(siblings.length===1){siblings[0].style.marginLeft=`${-spread}px`;node.style.marginLeft=`${spread}px`}
+      else if(siblings.length>1)node.style.setProperty('--float-lane',`${(siblings.length-1)*48}px`);
+      layer.append(node);node.animate([{opacity:1,transform:'translate(-50%,-65%) scale(1.1)'},{opacity:1,transform:'translate(-50%,-85%) scale(1)',offset:.15},{opacity:1,transform:'translate(-50%,-115%) scale(1)',offset:.68},{opacity:0,transform:'translate(-50%,-150%) scale(.96)'}],{duration:reduced?1400:950,fill:'forwards'}).onfinish=()=>node.remove();
       if(reduced||event.kind==='miss')return;
       for(const art of impactArtwork(event)){
         const sprite=document.createElement('i');sprite.className=`painted-hit-sprite ${event.absorbed||event.kind==='barrier'?'barrier-impact-sprite':''}`;
         const size=field.clientWidth/battle.width*(event.absorbed||event.kind==='barrier'?1.5:1.05);
-        sprite.style.cssText=`left:${x}%;top:${y}%;width:${size}px;height:${size}px;background-image:url('/assets/combat-presentation-v2/effects/${art}.png')`;field.append(sprite);
+        sprite.style.cssText=`left:${x}%;top:${y}%;width:${size}px;height:${size}px;background-image:url('/assets/combat-presentation-v2/effects/${art}.png')`;layer.append(sprite);
         sprite.animate([{transform:'translate(-50%,-50%) scale(.85)',opacity:.9},{transform:'translate(-50%,-50%) scale(1.05)',opacity:.72,offset:.3},{transform:'translate(-50%,-50%) scale(1.25)',opacity:0}],{duration:art==='poison_cloud'?550:event.kind==='barrier'||event.absorbed?360:240,easing:'ease-out'}).onfinish=()=>sprite.remove();
       }
-      if(event.kind==='status')return;
+      if(event.kind==='status'||['intercept','counter','resisted'].includes(event.kind))return;
       const count=['burn','fire','poison','bleed','collision','thorns'].includes(event.kind)?7:4;
       for(let i=0;i<count;i++){
-        const p=document.createElement('i');p.className=`combat-impact-particle kind-${event.kind}`;p.style.cssText=`left:${x}%;top:${y}%;--impact-color:${style.color}`;field.append(p);
+        const p=document.createElement('i');p.className=`combat-impact-particle kind-${event.kind}`;p.style.cssText=`left:${x}%;top:${y}%;--impact-color:${style.color}`;layer.append(p);
         const angle=i/count*Math.PI*2,span=field.clientWidth/battle.width*.38;
         const dx=Math.cos(angle)*span,dy=Math.sin(angle)*span;
         p.animate([{transform:'translate(-50%,-50%) scale(1)',opacity:.95},{transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.2)`,opacity:0}],{duration:event.kind==='poison'?600:380}).onfinish=()=>p.remove();
