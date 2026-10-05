@@ -268,3 +268,43 @@ resolving indicator. The enemy/attack/forced movement playback lock remains in
 place after the response; subsequent turns cannot bypass knockback/collision
 playback. No server latency benchmark or new live browser measurement is claimed.
 Validation: 256 frontend tests, 83 related backend tests and Vite build.
+
+## October 5: persistent movement intent and doorway navigation (dev)
+
+The latest chosen destination now survives consuming the request queue. Guard
+and other committing commands attach that position even when the debounce already
+sent it. Server acknowledgements update confirmed movement without overwriting a
+newer chosen destination; a genuine scouting interruption still cancels intent.
+A confirmed destination is not resent merely because it was queued again. Errors,
+battle closure and forced/enemy playback clear pending intent as before.
+
+Rapid reversal near a destination can round the visible position to that same
+cell. Such previews now contain a real fractional-position-to-destination segment,
+instead of one keyframe that holds until a jump. Walking hop/tilt and forced-motion
+playback retain their existing tuning.
+
+Clicking floor beyond current reach now plans a route toward it, including closed
+doors. The server compares walking cost first and number of closed doors second,
+so equal-distance open entrances win. Closed-door shortcuts are also marked in
+the view when a longer open detour happens to fit the movement budget. This uses
+existing walls, terrain costs, elevation and occupancy. The route stops at the
+last legal reachable tile or beside its first closed door. It never opens doors
+automatically or grants extra movement. Door operation remains a main action.
+A painted-hand Open Door button appears by a closed door when it can be operated.
+Opening it removes the prompt. Multi-turn navigation is not an automatic order;
+the player chooses again on the next activation.
+
+Route data uses one bounded graph search per player view only when a closed door
+exists; routes are not recomputed separately for every possible destination.
+Enemy door AI retains its existing opening-action policy.
+
+Validation: 260 frontend tests, 94 related backend tests and Vite build. Regression
+cases include 200 alternating inputs plus Guard, a destination already consumed
+by the debounce, and a fractional mid-step reversal. In an isolated real browser,
+60 alternating inputs with 180ms artificial responses followed by Guard finish
+at the chosen cell, with under .02px portrait-centre error and no stuck walking
+animation. The real prompt renders and sends the explicit interact command.
+Backend cases cover open entrance ties, a closed shortcut versus an in-range open
+detour, insufficient movement, sealed walls and edge-mounted doors. Existing
+bundle warning remains. No live Cloudflare latency benchmark; production/saves
+unchanged.

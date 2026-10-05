@@ -66,3 +66,26 @@ test('a scouting interruption cancels buffered Guard rather than hiding the reve
  r[0].resolve({battle:battle(0)});await move;await settle();
  assert.equal(r.length,1);assert.equal(c.activeBattleView.x,0);
 });
+
+test('Guard retains the destination after the debounce has taken it for an in-flight request',async()=>{
+ const {context:c,requests:r,battle}=harness();
+ await c.sendCombat({action:'move',x:2,y:0});
+ await new Promise(resolve=>setTimeout(resolve,120));
+ assert.equal(r.length,1);assert.equal(c.latestMovement.peek('lab:hero:1'),null);
+ await c.sendCombat({action:'guard'});
+ r[0].resolve({battle:battle(2)});await settle();
+ assert.equal(r.length,2);assert.deepEqual(r[1].command.position,{x:2,y:0});
+ r[1].resolve({battle:battle(2,'next')});await settle();
+});
+
+test('a flood of alternating clicks followed by Guard commits only the final intended cell',async()=>{
+ const {context:c,requests:r,battle}=harness();
+ const first=c.sendCombat({action:'move',x:1,y:0},null,true);
+ for(let i=0;i<200;i++)await c.sendCombat({action:'move',x:i%2?2:1,y:0});
+ await c.sendCombat({action:'guard'});
+ r[0].resolve({battle:battle(1)});await first;await settle();
+ assert.equal(r.length,2);assert.equal(r[1].command.action,'guard');
+ assert.deepEqual(r[1].command.position,{x:2,y:0});
+ r[1].resolve({battle:battle(2,'next')});await settle();
+ assert.equal(c.activeBattleView.x,2);
+});

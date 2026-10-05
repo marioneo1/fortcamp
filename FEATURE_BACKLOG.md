@@ -954,3 +954,15 @@ slash fade. 255 frontend tests, related backend tests and build; live-network
 latency and subjective feel still need player testing.
 
 Melee mix follow-up: family/chain/structure swing gain reduced to .12; contacts raised to .55, misses .32. Flesh sword contact remains unlayered. These are playback gains, not a claim of equal measured loudness between clips. 256 frontend tests, 83 backend tests and build pass.
+
+## October 5: persistent move destination and entrance navigation (dev implemented)
+
+Separated chosen destination from pending request work; Guard no longer loses the
+position after debounce consumption. Fixed one-point mid-step reversal animation.
+Older acknowledgements preserve newer destinations; scouting still interrupts.
+Floor clicks can approach the nearest route through entrances, preferring open
+entrances at equal walking cost, and stop within the START movement budget.
+Closed-door shortcuts get a hand-icon Open Door prompt; no automatic opening.
+260 frontend / 94 backend tests, build and isolated delayed-response browser QA
+pass. Live player feel still needs testing. Axe/bludgeon sound refinement deferred
+at the player's request; this pass makes no audio changes.

@@ -39,6 +39,9 @@ export function previewMovement(battle,destination,visiblePosition){
       const node=nodes.get(here);points.unshift({x:node.x,y:node.y,cost:node.cost});
     }
   }
+  // A mid-step redirect can round to the destination itself. Still interpolate
+  // from the visible position; a single keyframe would hold and then teleport.
+  if(points.length===1&&Math.hypot(position.x-destination.x,position.y-destination.y)>.001)points.unshift({x:position.x,y:position.y});
   const preview=structuredClone(battle),actor=preview.units[unit.id];
   actor.x=destination.x;actor.y=destination.y;
   const origin=path[0];actor.movement_origin={x:origin.x,y:origin.y};

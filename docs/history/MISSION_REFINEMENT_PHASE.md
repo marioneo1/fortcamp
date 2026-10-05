@@ -1491,3 +1491,25 @@ related backend tests and build pass (existing bundle-size warning). No new live
 browser/latency benchmark; subjective testing remains. Production/saves untouched.
 
 Melee mix follow-up: family/chain/structure swing gain reduced to .12; contacts raised to .55, misses .32. Flesh sword contact remains unlayered. These are playback gains, not a claim of equal measured loudness between clips. 256 frontend tests, 83 backend tests and build pass.
+
+## October 5: rapid movement state and entrance routing (implemented in dev)
+
+The request queue now keeps chosen destination separately from queued work, fixing
+the debounce-to-Guard gap. Stale acknowledgements preserve newer intent, and equal
+confirmed positions avoid duplicate movement submission. Fractional reversals use
+a real animation segment rather than a holding single frame. Existing hop/tilt,
+attack/knockback/enemy playback locks and scouting interruptions are preserved.
+
+Added player entrance navigation using existing traversal boundaries. Shortest
+walking route wins; equal-distance routes prefer fewer closed doors. Includes
+closed-door shortcuts even with an available longer open detour. Movement stops
+within its original activation budget or beside the first closed door. A painted
+hand prompt lets the player explicitly spend the existing door-operation action.
+No auto-open, extra movement or new enemy AI policy.
+
+260 frontend tests, 94 related backend tests and build pass. Isolated real browser
+QA uses 60 alternating clicks, delayed 180ms replies and Guard: final portrait
+centre within .02px of target, no stuck walking class. Prompt renders and submits
+interact. 200-input regression, debounce-consumption regression, fractional
+reversal and six entrance cases also pass. Existing bundle warning remains.
+No live network benchmark, production/save changes or audio changes.

@@ -46,3 +46,12 @@ test('adjacent redirect uses validated cross-branch step instead of returning to
   const q=previewMovement(b,{x:1,y:1});
   assert.deepEqual(q.preview_movement_points.map(({x,y})=>[x,y]),[[1,0],[0,0],[0,1],[1,1]]);
 });
+
+test('redirect from a fractional position near the destination still has a real movement segment',()=>{
+ const b=battle();b.units.p.x=1;
+ b.movement_tree[0].steps=[[1,0,1]];b.movement_tree[1].steps=[[0,0,1]];
+ const p=previewMovement(b,{x:0,y:0},{x:.2,y:0});
+ assert.ok(p.preview_movement_points.length>=2);
+ assert.deepEqual(p.preview_movement_points[0],{x:.2,y:0});
+ assert.equal(p.preview_movement_points.at(-1).x,0);
+});

@@ -136,3 +136,7 @@ Combined battle submission: [Combat controls](design/COMBAT_CONTROLS.md) covers
 100ms movement coalescing, atomic final-position/action commands and scouting
 interruptions. [Flesh contacts](art/FLESH_CONTACT_V1.md) records reviewed crop masks,
 sword sound layering and slash fade changes.
+
+Movement/entrance refinement: [Combat controls](design/COMBAT_CONTROLS.md) documents
+persistent destination intent, fractional reversal animation, nearest doorway
+routing and explicit painted-hand door prompts.

@@ -42,3 +42,9 @@ test('buffered actions are discarded after a failed move, scouting interruption 
   const queue=createLatestMovement();queue.commit({action:'attack',target_id:'enemy'},'a');
   queue.clear();assert.equal(queue.hasAction('a'),false);assert.equal(queue.takeAction('a'),null);
 });
+
+test('consuming pending work does not discard the chosen position for the following action',()=>{
+ const q=createLatestMovement();q.remember({action:'move',x:2,y:1},'turn');
+ q.take('turn');assert.deepEqual(q.destination('turn'),{x:2,y:1});
+ assert.equal(q.destination('next'),null);q.clear();assert.equal(q.destination('turn'),null);
+});

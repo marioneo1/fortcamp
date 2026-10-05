@@ -2226,6 +2226,47 @@ def _route_with_gates(battle, unit, goals):
     return path,costs,route_gates
 
 
+def _navigation_tree(battle, unit):
+    planning={**battle,'terrain':[{**t,'blocking':False} if t.get('kind')=='gate' and not t.get('destroyed') else t for t in battle.get('terrain',[])]}
+    gates={cell:t for t in battle.get('terrain',[]) if t.get('kind')=='gate' and not t.get('destroyed') and t.get('state')!='opened' and not t.get('edge_wall') for cell in occupied_tiles(t)}
+    start=(unit['x'],unit['y']);queue=[(0,0,*start)];costs={start:(0,0)};parents={start:None};doors={}
+    while queue:
+        cost,closed,x,y=heapq.heappop(queue);cell=(x,y)
+        if (cost,closed)!=costs[cell]:continue
+        for nx,ny in ((x+1,y),(x-1,y),(x,y+1),(x,y-1)):
+            if not _can_step(planning,x,y,nx,ny,unit):continue
+            door=gates.get((nx,ny)) or next((t for t in crossed_walls(battle,cell,(nx,ny)) if t.get('kind')=='gate'),None)
+            score=(cost+_step_cost(planning,x,y,nx,ny,unit),closed+bool(door))
+            if score>=costs.get((nx,ny),(10**9,10**9)):continue
+            costs[(nx,ny)]=score;parents[(nx,ny)]=cell;doors[(nx,ny)]=door
+            heapq.heappush(queue,(*score,nx,ny))
+    return parents, costs, doors
+
+
+def _player_navigation(battle, unit, destination):
+    """Plan a shortest walking route, breaking equal-distance ties by closed doors."""
+    goal=(int(destination.get('x',-1)),int(destination.get('y',-1)))
+    if not (0<=goal[0]<battle['width'] and 0<=goal[1]<battle['height']):
+        raise ValueError('Choose a destination inside the map')
+    parents,costs,doors=_navigation_tree(battle,unit)
+    start=(unit['x'],unit['y'])
+    if goal not in parents:raise ValueError('No entrance or walking route reaches that destination')
+    route=[];cell=goal
+    while cell!=start:route.append(cell);cell=parents[cell]
+    route.reverse();reachable,_=_movement_tree(battle,unit);accepted=[];door=None
+    for cell in route:
+        if doors.get(cell):door=doors[cell];break
+        if cell not in reachable:break
+        accepted.append(cell)
+    # Remember the first doorway even when movement runs out before reaching it.
+    door=door or next((doors.get(cell) for cell in route if doors.get(cell)),None)
+    battle.pop('navigation_hint',None)
+    if accepted:_position_player(battle,unit,{'x':accepted[-1][0],'y':accepted[-1][1]})
+    if door:
+        battle['navigation_hint']={'unit_id':unit['id'],'round':battle['round'],'gate_id':door['id']}
+    return battle_view(battle)
+
+
 def _pursuit_goals(battle, unit, target):
     gate_cells={cell for t in battle.get('terrain',[]) if t.get('kind')=='gate' and not t.get('destroyed') for cell in occupied_tiles(t)}
     return {(target['x']+dx,target['y']+dy) for dx,dy in ((1,0),(-1,0),(0,1),(0,-1))
@@ -3482,6 +3523,20 @@ def battle_view(battle: dict) -> dict:
         view["can_subdue"] = bool(current.get("capture_weapon"))
         view["can_drop"] = bool(current.get("carrying") or current.get("carrying_object"))
         view["context_actions"] = _context_actions(view, current)
+        # One bounded graph search, rather than a search for every potential click.
+        view['navigation_doors']={}
+        if any(t.get('kind')=='gate' and not t.get('destroyed') and t.get('state')!='opened' for t in view.get('terrain',[])):
+            nav_parents,nav_costs,nav_doors=_navigation_tree(view,current)
+            first_doors={}
+            for cell in sorted(nav_parents,key=lambda p:nav_costs[p]):
+                first_doors[cell]=first_doors.get(nav_parents[cell]) or nav_doors.get(cell)
+            view['navigation_doors']={f'{x},{y}':door['id'] for (x,y),door in first_doors.items() if door}
+        hint=battle.get('navigation_hint') or {}
+        if hint.get('unit_id')==current['id'] and hint.get('round')==battle['round']:
+            gate=next((t for t in view.get('terrain',[]) if t.get('id')==hint.get('gate_id') and not t.get('destroyed') and t.get('state')!='opened'),None)
+            if gate and can_operate_gate(current,gate):
+                view['navigation_prompt']={'x':gate['x'],'y':gate['y'],'label':f"Open {gate.get('name','Door')}",'command':{'action':'interact','target_id':gate['id']}}
+
         view["carry_targets"] = [
             target["id"] for target in view["units"].values()
             if not target.get("conscious", True) and target.get("condition") in {"unconscious", "dead"}
@@ -3769,6 +3824,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         if _position_player(battle, unit, command['position']):
             # Discovery interrupts the combined action; the player must reconsider.
             return battle_view(battle)
+    if action=='navigate':return _player_navigation(battle,unit,command)
     selected_skill=next((s for s in unit.get('skills',[]) if s['id']==command.get('skill_id',(unit.get('special') or {}).get('id'))),None) if action=='skill' else None
     if action in {'summon_move','summon_attack','operate_turret','dismiss_summon'}:
         _entity_command(battle,unit,command)
