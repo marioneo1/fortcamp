@@ -192,3 +192,9 @@ and ends it at 0.52 seconds. This is applied from the retained original on each
 run, so rebuilding cannot accumulate edits. Wall collision gain is set in the
 combat audio schedule at 0.63, versus body collision 0.50 (about +2 dB).
 No regeneration/purchase was needed for these adjustments.
+
+
+Superseding landing edit: Earthbreaker dry v3 (October 5) keeps only 0.22 seconds,
+uses two 1 kHz low-pass stages and a 12 ms anti-click edge. The earlier long fade
+is removed completely. This edit is reproducible from the original MP3. No new
+paid generation. The game landing URL version is `20261005-landing-dry-v3`.

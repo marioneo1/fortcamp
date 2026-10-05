@@ -160,3 +160,12 @@ Unlimited ready skills have no Ready badge. Limited-use counts remain visible;
 hover help and accessible button names retain the reason a skill is unavailable.
 The countdown remains visible after using the main action. Bottom Layout A
 command descriptions use 18 px text.
+
+
+### October 5 status readability
+The bottom command dock separates Buffs/Debuffs with 40 px square painted icons,
+short names and duration/absorption/one-use badges. Map units show two priority
+24 px icons plus an overflow count; unit hover shows every effect. Hover/focus
+on a status opens its own readable description. See
+[Status presentation](COMBAT_STATUS_PRESENTATION.md) for the current rules and
+persistent Stun orbit. Existing ability targeting and combat rules are retained.

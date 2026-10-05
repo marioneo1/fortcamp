@@ -1402,3 +1402,16 @@ bottom action help to 18 px. Edited the retained Earthbreaker landing tail
 (280-520 ms fade) and increased wall collision playback about 2 dB. No paid
 requests or production/save changes. 58 backend/226 frontend tests and build
 passed; isolated browser confirmed countdown/fade/help sizes.
+
+
+## October 5 - Status presentation and dry landing (dev only)
+Replaced tiny status glyphs with painted square icons and a full grouped status
+strip for the acting unit. Map overflow and grouped inspection preserve all
+conditions; focused hover explains individual effects, durations and one-use
+bonuses. Added persistent three-star Stun orbit at contact, removed binding art
+from Stun and retained Poison. Reduced motion and defeat/recovery are handled.
+Earthbreaker keeps a dry 220 ms impact; the later accent is discarded and treble
+softened. Original recordings preserved, no paid calls. 232 frontend tests,
+build and isolated browser checks passed. No gameplay rules, saves or prod
+changes. Canonical details: COMBAT_STATUS_PRESENTATION.md. Remaining visual
+passes are explicit pending work, including dedicated status artwork.

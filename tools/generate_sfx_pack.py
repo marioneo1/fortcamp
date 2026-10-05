@@ -56,11 +56,17 @@ def process(source, destination, ui, melodic=False):
     # Keep the landing's initial weight; remove the unwanted late accent.
     # Derive from the retained source on every run, never from an edited WAV.
     if destination.stem == 'earthbreaker_land':
-        end_frame=min(frames,round(.52*48000))
-        fade_start=round(.28*48000)
-        for i in range(fade_start*channels,end_frame*channels):
-            t=(i//channels-fade_start)/max(1,end_frame-fade_start)
-            samples[i]=round(samples[i]*math.cos(t*math.pi/2)**2)
+        end_frame=min(frames,round(.22*48000))
+        # Dry low-frequency impact only: discard the entire later accent.
+        # Two one-pole filters soften tonal/treble content; 12 ms ending avoids a click.
+        alpha=1-math.exp(-2*math.pi*1000/48000)
+        for channel in range(channels):
+            low=low2=0.0
+            for i in range(channel,end_frame*channels,channels):
+                low+=alpha*(samples[i]-low);low2+=alpha*(low-low2)
+                frame=i//channels
+                edge=min(1,(end_frame-1-frame)/576)
+                samples[i]=round(low2*max(0,edge))
         samples=samples[:end_frame*channels]
         frames=end_frame
     peak = max(abs(s) for s in samples)

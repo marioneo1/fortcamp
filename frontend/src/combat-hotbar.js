@@ -1,3 +1,4 @@
+import {statusListMarkup,statusInspectMarkup,visibleStatuses} from './combat-status-presentation.js';
 import {skillAvailability,skillTiming} from './equipment-skills.js';
 import {statusDetails} from './combat-status-ui.js';
 import {skillIconMarkup} from './ability-icons.js';
@@ -12,7 +13,7 @@ export function unitInspectMarkup(unit,definitions,escape,preview=null,battle=nu
  const stats=[['Attack',unit.attack],['Armor',unit.effective_armor??unit.armor],['Movement',unit.move],['Range',unit.attack_range],['Accuracy',unit.accuracy],['Evasion',unit.evasion],['Initiative',unit.initiative],['Level',unit.level]];
  const forecast=preview?`<section class="inspect-forecast"><b>${preview.capture?'Capture attempt':preview.support?'Support preview':'Attack forecast'}</b>${preview.damage_on_hit!=null?`<strong>${preview.damage_on_hit} ${preview.raw_damage?'impact power':'HP damage on hit'}</strong>`:''}<p>${preview.capture?`${preview.chance}% capture chance`:preview.chance!=null?`${preview.chance}% accuracy`:''}${preview.absorbed_damage?` · Barrier absorbs ${preview.absorbed_damage}`:''}</p>${preview.intercepted_by?`<p>Intercepted by ${escape(preview.intercepted_by)}</p>`:''}${preview.move_to?`<p>Approach: ${preview.movement_cost} movement</p>`:''}${preview.damage_note?`<small>${escape(preview.damage_note)}</small>`:''}</section>`:'';
  const height=battle?.elevation?.find(t=>t.x===unit.x&&t.y===unit.y)?.height||0;
- return `<header><strong>${escape(unit.name)}</strong><small>${escape(unit.boss?'Boss':unit.team==='enemy'?'Enemy':'Ally')} · ${escape(unit.race||'')} · ${escape(unit.condition||'active')}</small></header><div class="inspect-health"><b>${unit.hp}/${unit.max_hp} HP</b><meter min="0" max="${Math.max(1,unit.max_hp)}" value="${Math.max(0,unit.hp)}"></meter></div>${forecast}<dl class="inspect-stat-grid">${stats.filter(([,value])=>value!=null).map(([label,value])=>`<div><dt>${label}</dt><dd>${escape(value)}</dd></div>`).join('')}<div><dt>Elevation</dt><dd>${height}</dd></div></dl>${unit.weapon?`<p class="inspect-weapon">${escape(unit.weapon)}</p>`:''}<div class="inspect-statuses">${statuses.map(s=>{const d=s.id==='guard'?{name:'Guard',icon:'⬡',description:'The next direct hit deals 25% less damage. Consumed by that hit; expires at the next activation.',details:[]}:statusDetails(s,definitions);return `<article><b>${escape(d.icon)} ${escape(d.name)}</b><p>${escape(d.description)}</p>${d.details.map(t=>`<small>${escape(t)}</small>`).join('')}</article>`}).join('')||'<p>No active status effects.</p>'}</div>${unit.passives?.length?`<details><summary>Passives (${unit.passives.length})</summary>${unit.passives.map(p=>`<article><b>${escape(p.name)}</b><p>${escape(p.description)}</p></article>`).join('')}</details>`:''}`;
+ return `<header><strong>${escape(unit.name)}</strong><small>${escape(unit.boss?'Boss':unit.team==='enemy'?'Enemy':'Ally')} · ${escape(unit.race||'')} · ${escape(unit.condition||'active')}</small></header><div class="inspect-health"><b>${unit.hp}/${unit.max_hp} HP</b><meter min="0" max="${Math.max(1,unit.max_hp)}" value="${Math.max(0,unit.hp)}"></meter></div>${forecast}<dl class="inspect-stat-grid">${stats.filter(([,value])=>value!=null).map(([label,value])=>`<div><dt>${label}</dt><dd>${escape(value)}</dd></div>`).join('')}<div><dt>Elevation</dt><dd>${height}</dd></div></dl>${unit.weapon?`<p class="inspect-weapon">${escape(unit.weapon)}</p>`:''}<div class="inspect-statuses">${statusListMarkup(unit,definitions,escape)}</div>${unit.passives?.length?`<details><summary>Passives (${unit.passives.length})</summary>${unit.passives.map(p=>`<article><b>${escape(p.name)}</b><p>${escape(p.description)}</p></article>`).join('')}</details>`:''}`;
 }
 export function cursorCardPosition(x,y,width,height,viewportWidth,viewportHeight){
  return {left:Math.max(8,Math.min(viewportWidth-width-8,x+18)),top:Math.max(8,Math.min(viewportHeight-height-8,y+18))};
@@ -49,14 +50,14 @@ export function layoutAreaForecasts(layer){
 export function bindUnitInspect(field,battle,escape,mode=()=> 'move'){
  let tip=document.getElementById('combat-unit-inspect');
  if(!tip){tip=document.createElement('aside');tip.id='combat-unit-inspect';tip.className='combat-unit-inspect';tip.setAttribute('role','tooltip');document.body.append(tip)}
- tip.hidden=true;
+ tip.hidden=true;tip.dataset.inspectKey='';
  const hide=()=>tip.hidden=true;
  tip.onmouseenter=hide;tip.onmouseleave=hide;
  const position=(token,event)=>{const r=token.getBoundingClientRect(),p=cursorCardPosition(event?.clientX??r.right,event?.clientY??r.bottom,tip.offsetWidth,tip.offsetHeight,window.innerWidth,window.innerHeight);tip.style.left=p.left+'px';tip.style.top=p.top+'px'};
  field?.querySelectorAll('[data-battle-unit]').forEach(token=>{
-  const show=event=>{const unit=battle.units[token.dataset.battleUnit];if(!unit||field.closest('.is-panning'))return;const action=mode(),preview=['attack','subdue','skill'].includes(action)?battle.attack_previews?.[unit.id]?.[action]:action==='throw'&&battle.throw_profile?.target_ids?.includes(unit.id)?{damage_on_hit:battle.throw_profile.damage,raw_damage:true,damage_note:'Impact power before target defenses.'}:null;tip.innerHTML=unitInspectMarkup(unit,battle.status_definitions,escape,preview,battle);tip.hidden=false;position(token,event)};
+  const show=event=>{const unit=battle.units[token.dataset.battleUnit];if(!unit||field.closest('.is-panning'))return;const action=mode(),preview=['attack','subdue','skill'].includes(action)?battle.attack_previews?.[unit.id]?.[action]:action==='throw'&&battle.throw_profile?.target_ids?.includes(unit.id)?{damage_on_hit:battle.throw_profile.damage,raw_damage:true,damage_note:'Impact power before target defenses.'}:null;const badge=event?.target?.closest?.('[data-unit-status]'),status=badge&&visibleStatuses(unit).find(s=>s.id===badge.dataset.unitStatus&&(!badge.dataset.statusOwner||s.source_id===badge.dataset.statusOwner)),key=unit.id+':'+(status?status.id+':'+(status.source_id||''):'unit');if(tip.dataset.inspectKey!==key){tip.innerHTML=status?statusInspectMarkup(unit,status,battle.status_definitions,escape):unitInspectMarkup(unit,battle.status_definitions,escape,preview,battle);tip.dataset.inspectKey=key}tip.hidden=false;position(token,event)};
   if(token._inspectBindings)for(const [event,handler] of token._inspectBindings)token.removeEventListener(event,handler);
-  token._inspectBindings=[['mouseenter',show],['mousemove',event=>{if(tip.hidden)show(event);else position(token,event)}],['focus',show],['mouseleave',hide],['blur',hide]];
+  token._inspectBindings=[['mouseenter',show],['mousemove',show],['focus',show],['mouseleave',hide],['blur',hide]];
   token.removeAttribute('title');for(const [event,handler] of token._inspectBindings)token.addEventListener(event,handler);
   if(token.matches(':hover')||token===document.activeElement)show();
  });
@@ -99,3 +100,16 @@ export function bindSpellTargets(field,battle,mode,onCast){
 }
 
 function escapeHTML(value){return String(value??'').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;')}
+
+export function bindStatusTray(root,battle,escape){
+ const tip=document.getElementById('combat-unit-inspect');if(!tip)return;
+ root?.querySelectorAll('[data-unit-status]').forEach(badge=>{
+  const show=event=>{const unit=battle.units[badge.dataset.statusUnit],status=visibleStatuses(unit).find(s=>s.id===badge.dataset.unitStatus&&(!badge.dataset.statusOwner||s.source_id===badge.dataset.statusOwner));if(!status)return;
+   const key='tray:'+unit.id+':'+status.id+':'+(status.source_id||'');if(tip.dataset.inspectKey!==key){tip.innerHTML=statusInspectMarkup(unit,status,battle.status_definitions,escape);tip.dataset.inspectKey=key}tip.hidden=false;
+   const r=badge.getBoundingClientRect(),p=cursorCardPosition(event?.clientX??r.right,event?.clientY??r.bottom,tip.offsetWidth,tip.offsetHeight,window.innerWidth,window.innerHeight);tip.style.left=p.left+'px';tip.style.top=p.top+'px';
+  };
+  if(badge._statusBindings)for(const [name,handler] of badge._statusBindings)badge.removeEventListener(name,handler);
+  badge._statusBindings=[['mouseenter',show],['mousemove',show],['focus',show],['mouseleave',()=>tip.hidden=true],['blur',()=>tip.hidden=true]];
+  for(const [name,handler] of badge._statusBindings)badge.addEventListener(name,handler);
+ });
+}

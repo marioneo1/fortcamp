@@ -73,7 +73,7 @@ export const feedbackStyles={
 };
 export function feedbackText(event,definitions={}){
   const style=feedbackStyles[event.kind]||feedbackStyles.physical;
-  if(event.kind==='status')return {...style,label:definitions[event.status_id]?.name||event.status_id,icon:definitions[event.status_id]?.icon||style.icon,value:''};
+  if(event.kind==='status')return {...style,...(event.status_id==='stun'?{color:'#f2ce72'}:{}),label:definitions[event.status_id]?.name||event.status_id,icon:definitions[event.status_id]?.icon||style.icon,value:''};
   return {...style,value:event.amount?`${['heal','barrier'].includes(event.kind)?'+':'−'}${event.amount}`:event.absorbed?'Blocked':''};
 }
 export function protectionMarkup(unit){
@@ -87,6 +87,7 @@ export function impactArtwork(event){
   if(event.kind==='barrier')return ['barrier_shell'];
   if(['heal','cleanse','form'].includes(event.kind))return ['restoration_wisp'];
   if(['guard','deploy'].includes(event.kind))return ['magic_hit'];
+  if(event.kind==='status'&&event.status_id==='stun')return [];
   if(event.kind==='status')return ['bind','mute','slow','hobbled','stun','freeze'].includes(event.status_id)?['binding_tether']:event.status_id==='burn'?['flame_lick']:event.status_id==='poison'?['poison_cloud']:['magic_hit'];
   if(['burn','fire'].includes(event.kind))return ['flame_lick'];
   if(event.kind==='poison')return ['poison_cloud'];

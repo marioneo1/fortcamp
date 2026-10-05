@@ -1,5 +1,10 @@
 # Fortcamp documentation map
 
+Current buff/debuff UI: [Status presentation](design/COMBAT_STATUS_PRESENTATION.md)
+covers readable grouped icons, counts, cursor descriptions, the persistent Stun
+star orbit, reduced motion and dry Earthbreaker landing audio. Burn/Freeze/Barrier
+visual redesign remains pending.
+
 Current Fighter review: [Fighter combat and UI audit](design/FIGHTER_COMBAT_REVIEW.md)
 records the current full-width map, bottom skills/three-by-two commands,
 cursor-following stats, per-victim area forecasts, plus utility dialogs,

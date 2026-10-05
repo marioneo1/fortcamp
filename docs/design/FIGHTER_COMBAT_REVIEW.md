@@ -444,3 +444,14 @@ Isolated browser confirmed a visible 4 cooldown counter at 40 px, faded art at
 0.4 opacity, readable number/button at full opacity and 18 px help text. Audio
 has no clipping; final subjective listening review remains with the player.
 New battles use the revised skill definition; ongoing snapshots remain stable.
+
+
+## October 5: dry landing and readable conditions
+Supersedes the earlier shortened/faded landing tail: only the first 220 ms of
+Earthbreaker's recording now remains, with treble filtering and a 12 ms anti-click
+edge. The entire later accent is discarded. No new paid generation.
+[Status presentation](COMBAT_STATUS_PRESENTATION.md) records the new grouped
+buff/debuff strip, square painted map badges, specific hover explanations and
+Stun stars synchronized to application contact. Poison visuals are retained.
+232 frontend tests, build and isolated browser checks passed. Broader effects
+remain a staged follow-up; player listening review is still needed.

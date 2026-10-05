@@ -880,3 +880,14 @@ authoring remains deferred. This pass does not implement the proposed 96 skills.
 - Shortened/faded existing Earthbreaker audio tail; wall collision +2 dB.
 - 58 related backend tests / 226 frontend tests, build and browser sizing check.
 - Player listening review remains; new skill definitions require fresh battles.
+
+
+### Completed October 5 - Readable statuses and Stun
+- Grouped Buffs/Debuffs/Other strip; painted square icons, useful counts,
+  status-specific hover/focus and complete grouped unit inspection.
+- Map prioritizes two effects plus overflow; no active badges on defeated units.
+- Persistent Stun star orbit with contact onset, recovery removal and reduced
+  motion. Poison retained. Earthbreaker late audio tail discarded entirely.
+- 232 frontend tests, build, audio checks and isolated browser review passed.
+- Pending: player quality review; Burn/Freeze/Barrier passes; distinct status
+  artwork for conditions currently sharing existing ability icons.
