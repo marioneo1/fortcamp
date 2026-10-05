@@ -1207,3 +1207,27 @@ Validation: 88 related backend tests, 197 frontend tests, frontend build and
 isolated browser feedback/shield/particle review. Existing bundle warning remains.
 Audio technical checks pass; aesthetic listening review remains user judgment.
 No live saves, production, credentials or remote repository were changed.
+
+# October 4, 2026 — Combat presentation review plan
+
+Recorded user feedback: collision needs visible bounce, basic melee numbers still
+miss visible contact, generic barriers/ground overlays are not final quality.
+Inspected timing and identified independent lunge/recoil/feedback markers.
+Documented representative-scene-first rollout, painted skill icon atlas/category
+accents, volumetric forcefields, coherent zones and deferred custom damage fonts
+in COMBAT_PRESENTATION_PLAN.md. No gameplay or production changes in this pass.
+
+# October 4, 2026 ? Combat presentation V2 implementation
+
+Generated three 24-icon packs and one 16-component transparent effects pack; imported
+relative to actual sheet dimensions with stable manifests. Connected all current
+Job icons, painted barriers/ground regions and shared hit families. Replaced lunge
+peak mismatch with explicit contact frames; collision bounce, bystander recoil,
+collapse and defeat sounds now follow shared markers. Added actual support and
+deployment feedback. Browser review found legacy portrait CSS overriding shields;
+selectors now exclude presentation overlays.
+
+Validation: 91 backend and 202 frontend checks, frontend build, four-zone/barrier
+screenshot review and lethal collision fixture confirming both damage labels and
+corpse reveal after collapse. Existing build-size warning remains. No live saves,
+production deployment or remote push. See docs/art/COMBAT_PRESENTATION_V2.md.

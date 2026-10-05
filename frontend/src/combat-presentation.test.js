@@ -1,0 +1,55 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {existsSync} from 'node:fs';
+import {COMBAT_MOTION,meleeFrames,collisionFrames,collapseFrames} from './combat-animation.js';
+import {impactTimeline,impactArtwork} from './combat-impact.js';
+import {JOB_ICON_ART} from './ability-icon-manifest.js';
+import {skillCategory,skillIcon} from './ability-icons.js';
+import {zoneOverlay} from './combat-spaces-ui.js';
+
+test('melee peak is the exact shared sound and number contact marker',()=>{
+  assert.equal(meleeFrames(30,0)[2].offset*COMBAT_MOTION.melee,COMBAT_MOTION.contact);
+  const events=[{type:'melee_attack',attack_packet:1},{type:'combat_feedback',attack_packet:1}];
+  assert.equal(impactTimeline(events)[1].start,COMBAT_MOTION.contact);
+});
+test('collision contact precedes bounce recovery and lethal collapse',()=>{
+  const events=[{type:'melee_attack',attack_packet:1},
+    {type:'movement',unit_id:'target',forced:true,attack_packet:1,points:[{x:1,y:0},{x:2,y:0}]},
+    {type:'collision_recoil',unit_id:'target',attack_packet:1,after_displacement:true,toward:{x:3,y:0}},
+    {type:'combat_feedback',kind:'collision',attack_packet:1,after_displacement:true},
+    {type:'death_burst',attack_packet:1,after_displacement:true}];
+  const before=structuredClone(events),rows=impactTimeline(events);
+  assert.equal(rows[3].start,185+COMBAT_MOTION.collisionContact);
+  assert.equal(rows[4].start,185+COMBAT_MOTION.collisionMove);
+  const frames=collisionFrames(events[1].points,{x:2,y:0},{x:3,y:0},100,100);
+  assert.equal(frames[1].offset*rows[1].duration,COMBAT_MOTION.collisionContact);
+  assert.match(frames[1].transform,/translate\(18px,0px\)/);
+  assert.match(frames.at(-1).transform,/translate\(0px,0px\)/);
+  assert.deepEqual(events,before);
+});
+test('stationary collision still bounces before knockout and next attack',()=>{
+  const rows=impactTimeline([{type:'melee_attack',attack_packet:1},
+    {type:'collision_recoil',unit_id:'t',attack_packet:1,after_displacement:true},
+    {type:'combat_feedback',attack_packet:1,after_displacement:true},
+    {type:'knockout',attack_packet:1},{type:'melee_attack',attack_packet:2}]);
+  assert.equal(rows[2].start,185+COMBAT_MOTION.stationaryContact);
+  assert.equal(rows[3].start,185+COMBAT_MOTION.stationaryBounce);
+  assert.ok(rows[4].start>=rows[3].start+COMBAT_MOTION.collapse);
+  assert.equal(collapseFrames(true).at(-1).opacity,0);
+});
+test('all 72 Job icons resolve to actual runtime assets; gear uses same art family',()=>{
+  assert.equal(Object.keys(JOB_ICON_ART).length,72);
+  for(const path of Object.values(JOB_ICON_ART))assert.ok(existsSync(new URL('../public'+path,import.meta.url)),path);
+  assert.ok(skillIcon({id:'gear:test',heal:5}));
+  assert.equal(skillCategory({heal:5}),'heal');
+  assert.equal(skillCategory({guard_ally:true}),'ally');
+  assert.equal(skillCategory({effects:[{type:'status',status:'poison'}]}),'dot');
+  assert.deepEqual(impactArtwork({absorbed:5,barrier_broken:true}),['barrier_break']);
+});
+test('ground art covers only real affected cells and omits internal grid borders',()=>{
+  const html=zoneOverlay([{id:'test',kind:'ember',cells:[{x:1,y:1},{x:2,y:1},{x:1,y:2}],name:'Ember',remaining:2}],String);
+  assert.equal((html.match(/<rect /g)||[]).length,3);
+  assert.match(html,/clip-path="url\(#zone-art-test\)"/);
+  assert.match(html,/ember_ground.png/);
+  assert.doesNotMatch(html,/M100,0v100/);
+});

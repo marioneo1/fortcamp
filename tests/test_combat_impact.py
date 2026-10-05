@@ -84,6 +84,34 @@ class CombatImpactTests(unittest.TestCase):
         self.assertEqual(event['amount'],3)
         before=deepcopy(b);battle_view(b);battle_view(b);self.assertEqual(b,before)
 
+    def test_collision_animation_identifies_obstacle_and_preserves_final_occupancy(self):
+        b,a,t=self.fixture()
+        b['terrain']=[{'id':'wall','x':5,'y':2,'blocking':True}]
+        _apply_displacement(b,a,t,{'mode':'push','distance':3},original_damage=20,attack_packet=8)
+        recoil=next(e for e in b['animation_events'] if e['type']=='collision_recoil')
+        self.assertEqual((t['x'],t['y']),(4,2))
+        self.assertEqual(recoil['toward'],{'x':5,'y':2})
+        self.assertTrue(recoil['after_displacement'])
+        self.assertEqual(recoil['attack_packet'],8)
+
+    def test_barrier_break_is_reported_only_when_the_shield_is_spent(self):
+        b,a,t=self.fixture()
+        conditions.barrier(t,3,2,a)
+        _deal_damage(b,{**a,'attack':50,'on_hit':None,'element':None},t)
+        hit=next(e for e in b['animation_events'] if e['type']=='combat_feedback')
+        self.assertTrue(hit['barrier_broken'])
+
+    def test_guard_and_cleanse_have_feedback_without_invented_damage(self):
+        b,a,t=self.fixture()
+        t['statuses']=[{'id':'poison','turns':2}]
+        skill={**deepcopy(a['skills'][0]),'target':'ally','effects':[
+            {'type':'cleanse','statuses':['poison']},{'type':'guard'}]}
+        _resolve_ability(b,a,t,skill)
+        events=[e for e in b['animation_events'] if e['type']=='combat_feedback']
+        self.assertEqual([e['kind'] for e in events],['cleanse','guard'])
+        self.assertTrue(all(e['amount']==0 for e in events))
+        self.assertEqual(t['hp'],100)
+
     def test_forced_crossing_over_ember_has_entry_damage(self):
         b,a,t=self.fixture()
         spaces.place_zone(b,a,{'zone':'ember','turns':2},[{'x':4,'y':2}])

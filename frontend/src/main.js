@@ -23,12 +23,15 @@ import {attributeHelp,attributeTotalHelp,mountHoverHelp} from './roster-help.js'
 import {sizeBattleMap,bindMapWheel,bindMapPan} from './battle-camera.js';
 import {hotbarMarkup,bindUnitInspect,bindSpellTargets} from './combat-hotbar.js';
 import './combat-hotbar.css';
+import './ability-icons.css';
 let combatSkillPage=0;
 import {mountRelationships,mountServiceRecord} from './relationship-ui.js';
 import {createCombatEffects} from './combat-effects.js';
 import './combat-effects.css';
 import {impactTimeline,createImpactFeedback,protectionMarkup} from './combat-impact.js';
+import {COMBAT_MOTION,meleeFrames,recoilFrames,collisionFrames,collapseFrames} from './combat-animation.js';
 import './combat-impact.css';
+import './combat-painted-effects.css';
 const impactFeedback=createImpactFeedback();
 import './social-ui.css';
 const combatEffects=createCombatEffects();
@@ -217,12 +220,14 @@ function playBattleSounds(battle,events=battle?.animation_events||[]){
   for(const {event,start:delay,duration} of impactTimeline(events)){
     end=Math.max(end,delay+duration);
     if(event.type==='sound'){
-      for(const cue of event.cues||[])playSfx(cue.name,cue.name==='barrier_absorb'?.28:cue.name==='shield_block'?.35:.4,delay+(cue.offset||0));
+      for(const cue of event.cues||[]){if(['unit_death','unit_unconscious'].includes(cue.name)&&events.some(e=>['death_burst','knockout'].includes(e.type)&&e.attack_packet===event.attack_packet))continue;playSfx(cue.name,cue.name==='barrier_absorb'?.28:cue.name==='shield_block'?.35:.4,delay+(cue.offset||0))}
     }else if(event.type==='melee_attack'){
       playSfx('melee_swing',.42,delay+45);
       playSfx(event.hit?(event.target_condition==='unconscious'?'subdue_hit':'melee_hit_light'):'attack_miss',.5,delay+185);
-      if(event.hit&&event.target_condition==='dead')playSfx('unit_death',.4,delay+330);
-      else if(event.hit&&event.target_condition==='unconscious')playSfx('unit_unconscious',.4,delay+315);
+      if(event.hit&&!events.some(e=>e.type==='death_burst'&&e.attack_packet===event.attack_packet)&&event.target_condition==='dead')playSfx('unit_death',.4,delay+330);
+      else if(event.hit&&!events.some(e=>e.type==='knockout'&&e.attack_packet===event.attack_packet)&&event.target_condition==='unconscious')playSfx('unit_unconscious',.4,delay+315);
+    }else if(event.type==='death_burst'||event.type==='knockout'){
+      playSfx(event.type==='knockout'?'unit_unconscious':'unit_death',.4,delay+COMBAT_MOTION.collapse*.65);
     }else if(event.type==='combat_feedback'){
       if(event.kind==='collision'){
         const key=`collision:${event.attack_packet??delay}`;
@@ -630,81 +635,86 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       const remaining=Math.max(0,...(actingToken?.getAnimations()||[]).map(a=>Number(a.effect.getTiming().duration)-Number(a.currentTime||0)));
       if(remaining>0)animationEvents.unshift({type:'sound',cues:[],duration:Math.min(remaining,350)});
     }
+    const timeline=impactTimeline(animationEvents),ghosts=new Map(),offsets=new Map();
+    // Cancel only movement left from the preceding preview, before scheduling this action.
+    for(const event of animationEvents.filter(e=>e.type==='movement')){
+      if(offsets.has(event.unit_id))continue;
+      const token=field.querySelector(`[data-battle-unit="${CSS.escape(event.unit_id)}"]`);
+      if(token)offsets.set(event.unit_id,restartWalking(token,movingPositions.get(event.unit_id)));
+    }
+    for(const {event} of timeline.filter(r=>['death_burst','knockout'].includes(r.event.type))){
+      const before=previous.units?.[event.unit_id],finalToken=field.querySelector(`[data-battle-unit="${CSS.escape(event.unit_id)}"]`);
+      if(!before||!finalToken)continue;
+      const holder=document.createElement('div');holder.innerHTML=battleToken({...before,x:event.x,y:event.y,alive:true,conscious:true,condition:'active'},false,previous);
+      const ghost=holder.firstElementChild;if(!ghost)continue;
+      ghost.dataset.battleUnit=`transition-${event.unit_id}`;ghost.style.pointerEvents='none';ghost.style.zIndex='23';field.append(ghost);finalToken.style.visibility='hidden';
+      ghosts.set(event.unit_id,{ghost,finalToken});
+    }
+    const tokenFor=id=>ghosts.get(id)?.ghost||field.querySelector(`[data-battle-unit="${CSS.escape(id)}"]`);
     const animatedUnits=new Set();
     playBattleSounds(battle,animationEvents);
-    impactTimeline(animationEvents).forEach(({event,start:delay,duration:plannedDuration})=>{
+    timeline.forEach(({event,start:delay,duration:plannedDuration})=>{
       if(event.type==='combat_feedback'){impactFeedback.emit(event,battle,delay);return}
-      if(event.type==='death_burst'){
-        combatEffects.emit(event,battle,delay);
-        const before=previous.units?.[event.unit_id],finalToken=field.querySelector(`[data-battle-unit="${CSS.escape(event.unit_id)}"]`);
-        if(before&&finalToken&&!window.matchMedia('(prefers-reduced-motion: reduce)').matches){
-          const holder=document.createElement('div');holder.innerHTML=battleToken({...before,x:event.x,y:event.y,alive:true,conscious:true,condition:'active'},false,previous);
-          const ghost=holder.firstElementChild;
-          if(ghost){
-            ghost.dataset.battleUnit=`death-ghost-${event.unit_id}`;ghost.style.pointerEvents='none';ghost.style.zIndex='23';field.append(ghost);finalToken.style.visibility='hidden';
-            // A lethal collision must travel as a living unit before it collapses.
-            if(animationEvents.some(e=>e.type==='movement'&&e.forced&&e.unit_id===event.unit_id)){
-              const travel=finalToken.getAnimations().find(a=>a.effect.getKeyframes().some(k=>k.transform));
-              if(travel)ghost.animate(travel.effect.getKeyframes(),travel.effect.getTiming());
-            }
-            const dying=ghost.animate([{opacity:1,filter:'brightness(1)',offset:0},{opacity:1,filter:'brightness(1.8)',offset:.48},{opacity:.55,filter:'brightness(.7)',offset:.64},{opacity:0,filter:'brightness(.6)',offset:1}],{duration:460,delay,fill:'both'});
-            const finish=()=>{ghost.remove();finalToken.style.visibility=''};dying.onfinish=finish;dying.oncancel=finish;
-          }
-        }
+      if(event.type==='death_burst'||event.type==='knockout'){
+        if(event.type==='death_burst')combatEffects.emit(event,battle,delay+120);
+        const transition=ghosts.get(event.unit_id);if(!transition)return;
+        const {ghost,finalToken}=transition;
+        const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const dying=ghost.animate(reduced?[{opacity:1},{opacity:0}]:collapseFrames(event.type==='knockout'),{duration:plannedDuration,delay,fill:'both',easing:'linear'});
+        const finish=()=>{ghost.remove();finalToken.style.visibility=''};dying.onfinish=finish;dying.oncancel=finish;
         return;
       }
       if(event.type==='magic_projectile'){combatEffects.emit(event,battle,delay);return}
       if(event.type==='sound')return;
+      if(event.type==='collision_recoil'){
+        const target=battle.units?.[event.unit_id],token=tokenFor(event.unit_id);
+        const moved=animationEvents.some(e=>e.type==='movement'&&e.forced&&e.unit_id===event.unit_id&&e.attack_packet===event.attack_packet);
+        if(target&&token&&!moved){
+          const scale=target.id===battle.current_unit_id?1.15:1;
+          const bounce=token.animate(collisionFrames([{x:event.x,y:event.y}],target,event.toward,cellWidth,cellHeight,scale),{duration:COMBAT_MOTION.stationaryBounce,delay:Math.max(0,delay-COMBAT_MOTION.stationaryContact),easing:'linear',fill:'both'});
+          trackBattleAnimation(token,bounce,'is-hit');
+        }
+        const bystander=battle.units?.[event.bystander_id],other=event.bystander_id&&tokenFor(event.bystander_id);
+        if(other&&bystander){
+          const recoil=other.animate(recoilFrames(Math.sign(event.toward.x-event.x)*cellWidth*.14,Math.sign(event.toward.y-event.y)*cellHeight*.14,bystander.id===battle.current_unit_id?1.15:1),{duration:COMBAT_MOTION.recoil,delay,easing:'linear',fill:'forwards'});
+          trackBattleAnimation(other,recoil,'is-hit');
+        }
+        return;
+      }
       if(event.type==='melee_attack'){
         const attacker=battle.units?.[event.attacker_id],target=battle.units?.[event.target_id];
-        const attackerToken=field.querySelector(`[data-battle-unit="${CSS.escape(event.attacker_id)}"]`),targetToken=field.querySelector(`[data-battle-unit="${CSS.escape(event.target_id)}"]`);
+        const attackerToken=tokenFor(event.attacker_id),targetToken=tokenFor(event.target_id);
         if(!attacker||!target||!attackerToken||!targetToken)return;
         const from=event.from||attacker,to=event.to||target;
         const dx=Math.sign(to.x-from.x)*cellWidth*.42,dy=Math.sign(to.y-from.y)*cellHeight*.42;
         const attackerScale=attacker.id===battle.current_unit_id?1.15:1,targetScale=target.id===battle.current_unit_id?1.15:1;
-        attackerToken.classList.add('is-attacking');
-        const lunge=attackerToken.animate([
-          {transform:`translate(0,0) scale(${attackerScale})`,offset:0},
-          {transform:`translate(${dx*.18}px,${dy*.18}px) scale(${attackerScale*.98})`,offset:.28},
-          {transform:`translate(${dx}px,${dy}px) scale(${attackerScale*1.08})`,offset:.52},
-          {transform:`translate(0,0) scale(${attackerScale})`,offset:1},
-        ],{duration:420,delay,easing:'cubic-bezier(.2,.8,.25,1)',fill:'forwards'});
+        const lunge=attackerToken.animate(meleeFrames(dx,dy,attackerScale),{duration:COMBAT_MOTION.melee,delay,easing:'linear',fill:'forwards'});
         trackBattleAnimation(attackerToken,lunge,'is-attacking');
-        if(event.hit&&!animationEvents.some(e=>e.type==='movement'&&e.forced&&e.unit_id===event.target_id&&e.attack_packet===event.attack_packet)){
-          targetToken.classList.add('is-hit');
-          const impactX=Math.sign(target.x-attacker.x)*cellWidth*.12,impactY=Math.sign(target.y-attacker.y)*cellHeight*.12;
-          const impact=targetToken.animate([
-            {transform:`translate(0,0) scale(${targetScale})`,filter:'brightness(1)',offset:0},
-            {transform:`translate(${impactX}px,${impactY}px) scale(${targetScale*.94})`,filter:'brightness(1.8) saturate(.6)',offset:.28},
-            {transform:`translate(${-impactX*.25}px,${-impactY*.25}px) scale(${targetScale})`,filter:'brightness(.8)',offset:.55},
-            {transform:`translate(0,0) scale(${targetScale})`,filter:'brightness(1)',offset:1},
-          ],{duration:300,delay:delay+185,easing:'ease-out',fill:'forwards'});
+        const displaced=animationEvents.some(e=>['movement','collision_recoil'].includes(e.type)&&e.unit_id===event.target_id&&e.attack_packet===event.attack_packet&&(e.forced||e.type==='collision_recoil'));
+        if(event.hit&&!displaced){
+          const impact=targetToken.animate(recoilFrames(Math.sign(to.x-from.x)*cellWidth*.12,Math.sign(to.y-from.y)*cellHeight*.12,targetScale),{duration:COMBAT_MOTION.recoil,delay:delay+COMBAT_MOTION.contact,easing:'linear',fill:'forwards'});
           trackBattleAnimation(targetToken,impact,'is-hit');
         }
         return;
       }
-      const unit=battle.units?.[event.unit_id],points=event.points||[];
-      const token=field.querySelector(`[data-battle-unit="${CSS.escape(event.unit_id)}"]`);
+      const unit=battle.units?.[event.unit_id],points=event.points||[],token=tokenFor(event.unit_id);
       if(!unit||!token||!points.length)return;
-      const offset=animatedUnits.has(unit.id)?null:restartWalking(token,movingPositions.get(unit.id));
-      animatedUnits.add(unit.id);
+      const offset=animatedUnits.has(unit.id)?null:offsets.get(unit.id);animatedUnits.add(unit.id);
       const baseScale=unit.id===battle.current_unit_id?1.15:1;
-      const frames=[];
-      if(points.length===1){
-        frames.push({transform:`translate(0,0) scale(${baseScale})`,opacity:1,offset:0});
-      }else for(let index=0;index<points.length-1;index++){
-        const from=points[index],to=points[index+1],start=index/(points.length-1),middle=(index+.5)/(points.length-1);
-        frames.push({transform:`translate(${(from.x-unit.x)*cellWidth}px, ${(from.y-unit.y)*cellHeight}px) scale(${baseScale}) rotate(${index%2?-2:2}deg)`,opacity:1,offset:start});
-        frames.push({transform:`translate(${((from.x+to.x)/2-unit.x)*cellWidth}px, ${((from.y+to.y)/2-unit.y)*cellHeight-5}px) scale(${baseScale*1.025}) rotate(${index%2?2:-2}deg)`,opacity:1,offset:middle});
+      let frames=[];
+      if(event.collision)frames=collisionFrames(points,unit,event.collision.toward,cellWidth,cellHeight,baseScale);
+      else{
+        for(let index=0;index<points.length-1;index++){
+          const from=points[index],to=points[index+1],start=index/(points.length-1),middle=(index+.5)/(points.length-1);
+          frames.push({transform:`translate(${(from.x-unit.x)*cellWidth}px,${(from.y-unit.y)*cellHeight}px) scale(${baseScale})`,opacity:1,offset:start});
+          frames.push({transform:`translate(${((from.x+to.x)/2-unit.x)*cellWidth}px,${((from.y+to.y)/2-unit.y)*cellHeight-3}px) scale(${baseScale*1.015})`,opacity:1,offset:middle});
+        }
+        frames.push({transform:`translate(0,0) scale(${baseScale})`,opacity:event.extracted?0:1,offset:1});
       }
-      frames.push({transform:`translate(0,0) scale(${baseScale}) rotate(0deg)`,opacity:event.extracted?0:1,offset:1});
       if(offset)frames[0].transform=`translate(${offset.x}px,${offset.y}px) scale(${baseScale})`;
       token.classList.remove('extracted');
-      token.classList.add('is-walking');
-      const duration=plannedDuration;
-      const animation=token.animate(frames,{duration,delay,easing:'ease-in-out',fill:'both'});
+      const animation=token.animate(frames,{duration:plannedDuration,delay,easing:event.forced?'linear':'ease-in-out',fill:'both'});
       trackBattleAnimation(token,animation,'is-walking',()=>{if(event.extracted)token.classList.add('extracted')});
-
     });
     return;
   }

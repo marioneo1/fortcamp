@@ -1,5 +1,15 @@
 # Fortcamp feature backlog
 
+## Next: Combat presentation polish (proposal)
+
+Current effects are not approved final art. Align visible contact with damage/
+sound; add collision bounce and bystander recoil. Validate basic melee, Driving
+Palm, Ember Ground and Shelter as a complete scene before scaling. Generate
+consistent painted skill icons with function accents, a translucent forcefield
+and proper ground-zone art in planned uniform packs. Audit every Job/gear skill
+after the representative scene is approved. Custom damage fonts remain deferred.
+See docs/design/COMBAT_PRESENTATION_PLAN.md. This pass documents the plan only.
+
 ## October 4: Combat impact and damage feedback (dev)
 
 Implemented half-hit solid/person collision damage, including friendly fire and
@@ -704,3 +714,12 @@ Next: publish all twelve starting Jobs in creation together with matching poor
 equipment; remove Medic/proficiency starter selection while preserving existing
 work training. Then implement later unlocks and differentiated builds. Champion
 authoring remains deferred. This pass does not implement the proposed 96 skills.
+
+## October 4 ? Combat presentation V2 delivered in dev
+
+- 72 painted square Job icons in hotbar/passives/loadouts; function accents and gear-family fallback.
+- Painted forcefields, shield hit/break response and four connected ground families.
+- Contact-aligned melee numbers/sounds; collision bounce and bystander recoil; delayed corpse/knockout reveal after collapse.
+- Support/form/deployment feedback and old shield/portrait CSS conflict repaired.
+- Remaining: full per-skill manual playthrough, mobile density review, unique gear/Champion signatures, custom damage typography.
+- Validation: 91 backend / 202 frontend checks, build and isolated browser review. Production untouched.

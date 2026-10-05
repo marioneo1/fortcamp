@@ -1145,6 +1145,10 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
         bystander=next((u for u in battle['units'].values() if u['id']!=target['id'] and _combat_active(u) and (u['x'],u['y'])==stop),None)
     solid=bool(obstacle or bystander) and not preview.get('pit')
     collision=max(1,int(original_damage)//2) if original_damage and solid else (preview['collision_damage'] if original_damage is None else 0)
+    if solid and _combat_active(target):
+        battle.setdefault('animation_events',[]).append({'type':'collision_recoil','unit_id':target['id'],
+            'x':target['x'],'y':target['y'],'toward':{'x':stop[0],'y':stop[1]} if stop else {'x':target['x'],'y':target['y']},
+            'bystander_id':bystander['id'] if bystander and not obstacle else None})
     if collision and _combat_active(target):
         source={'id':actor['id'],'name':actor['name'],'attack':collision,'status_tick':True,
                 'damage_kind':'collision','weapon':'a collision'}
@@ -1602,13 +1606,14 @@ def _deal_damage(
             facts[key]=facts.get(key,0)+1
     if not attacker.get('capture_only'):
         kind=attacker.get('damage_kind') or ('fall' if attacker.get('environmental_fall') or attacker.get('weapon')=='a fall' else element or ('magic' if attacker.get('attack_elevation_rule') in {'line_of_effect','ignore'} else 'physical'))
-        feedback(battle,target,kind,max(0,previous_hp-int(target['hp'])),absorbed=absorbed)
+        feedback(battle,target,kind,max(0,previous_hp-int(target['hp'])),absorbed=absorbed,
+            barrier_broken=bool(absorbed and not conditions.has(target,'barrier')))
     elif target.get('condition')=='unconscious':feedback(battle,target,'captured')
     if previous_hp>0 and target.get("condition") in {"dead","unconscious"}:
         facts=target.setdefault("combat_record",{})
         facts["times_defeated"]=facts.get("times_defeated",0)+1
-        if target["condition"]=="dead":
-            battle.setdefault("animation_events",[]).append({"type":"death_burst","unit_id":target["id"],"x":target["x"],"y":target["y"],"race":target.get("race","Human")})
+        battle.setdefault("animation_events",[]).append({"type":"death_burst" if target["condition"]=='dead' else 'knockout',
+            "unit_id":target["id"],"x":target["x"],"y":target["y"],"race":target.get("race","Human")})
     return damage
 
 
@@ -2550,19 +2555,28 @@ def _resolve_ability(battle, actor, target, skill):
         if amount:feedback(battle,target,'heal',amount)
         return {'healing':amount}
     def cleanse(effect):
+        removed=[s['id'] for s in target.get('statuses',[]) if s['id'] in effect['statuses']]
         conditions.remove(target,*effect['statuses'])
+        if removed:feedback(battle,target,'cleanse',removed_statuses=removed)
         if not any(conditions.has(target,s) for s in ('stun','sleep','paralyze')):target.pop('forced_skip',None)
         if not conditions.has(target,'paralyze'):target.pop('paralyzed_move',None)
-    def guard(effect):target['guarding']=True
+    def guard(effect):
+        target['guarding']=True
+        feedback(battle,target,'guard')
     def barrier(effect):
         if conditions.barrier(target,effect['amount'],effect['turns'],actor):feedback(battle,target,'barrier',effect['amount'])
-    def mark(effect):conditions.mark(battle,actor,target,effect['turns'],effect.get('accuracy',10))
+    def mark(effect):
+        conditions.mark(battle,actor,target,effect['turns'],effect.get('accuracy',10))
+        feedback(battle,target,'status',status_id='mark')
     def displace(effect):_apply_displacement(battle,actor,target,effect,last_damage,attack_packet)
     def zone(effect):spaces.place_zone(battle,actor,effect,_zone_cells(battle,target,effect))
     def form(effect):
         spaces.change_form(actor,effect)
+        feedback(battle,actor,'form')
         battle['log'].append(f"{actor['name']} returns to normal form." if effect['form']=='normal' else f"{actor['name']} takes {spaces.FORMS[effect['form']]['name']} form.")
-    def deploy(effect):entities.deploy(battle,actor,effect['entity'],_deployment_positions(battle,actor,effect['entity']))
+    def deploy(effect):
+        for unit in entities.deploy(battle,actor,effect['entity'],_deployment_positions(battle,actor,effect['entity'])):
+            feedback(battle,unit,'deploy')
     def status(effect):
         sid=effect['status']
         if sid=='poison' and ('poison' in target.get('racial_resistances',[]) or target.get('race') in {'Undead','Revenant','Banshee','Golem','Automaton'}):return
@@ -2585,6 +2599,8 @@ def _resolve_ability(battle, actor, target, skill):
         if any(e['type']=='guard' for e in skill['effects']):details.append('Guard granted')
         battle['log'].append(f"{actor['name']} uses {skill['name']} on {target['name']}"+(': '+', '.join(details) if details else '')+'.')
         _record_sound(battle,'magic_cast' if skill['elevation_rule']=='line_of_effect' else 'guard')
+    elif not result.get('attacked'):
+        _record_sound(battle,'guard' if any(e['type']=='guard' for e in skill['effects']) else 'magic_cast')
     actor['acted']=True
     return result
 

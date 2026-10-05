@@ -38,20 +38,21 @@ shield annotation. Capture displays Subdued rather than the internal capture
 damage number. Healing, barriers, statuses, misses, physical/magic/elemental
 hits, Burn, Poison, Bleed, thorns, collisions and falls have readable labels.
 
-Colors are accompanied by words and distinct symbols. Short rings and particles
-provide impact without obscuring the portrait. Barrier has a persistent blue
+Colors are accompanied by words and distinct symbols. Painted hit sprites and
+short particles provide impact without obscuring the portrait. Barrier has a persistent blue
 shell and visible remaining capacity; Guard has a separate dashed gold outline.
 Existing hover cards still give complete status explanations.
 
 Melee impact lands at 185 ms. Associated knockback starts at that moment and
-lasts 220 ms; collision feedback arrives at the end of that movement. Attack
+normally lasts 220 ms. Solid collisions use a 320 ms bounce, with feedback at
+220 ms contact; immediately blocked targets contact at 80 ms during a 220 ms bounce. Attack
 coordinates are captured before displacement so the lunge aims at the original
 position. A lethal collision carries the living portrait into the collapse.
 Subsequent enemy animations wait for the current action/death to finish. Floating
 labels can linger without delaying turns. Sounds use the same timeline.
 
 Effects use resolution-independent DOM/CSS/Web Animations and existing projectile/
-death effects. No new sprite atlas is needed. Reduced-motion mode keeps text but
+death effects. Presentation V2 adds painted icon/effect atlases. Reduced-motion mode keeps text but
 omits rings/particles. Timers and temporary nodes are cleared when leaving battle.
 
 Four ElevenLabs one-shots were generated as `combat-impact-v1`: Burn tick, Poison
@@ -62,7 +63,7 @@ the audition page is `/assets/sfx/preview-combat-impact-v1.html`.
 
 ## Verification and limits
 
-88 related backend tests and 197 frontend tests pass. New checks cover solid/
+91 related backend tests and 202 frontend tests pass. New checks cover solid/
 person/friendly collisions, barriers, resistance, boundaries, crossing hazards,
 overkill numbers, event order, shared sound/visual timing and visible protection.
 The frontend builds with the existing large-chunk warning. An isolated real UI
@@ -70,8 +71,8 @@ fixture verifies floating labels, shield capacity and particles without touching
 player saves. Production is unchanged.
 
 There is no general physics engine, obstacle collision damage, knockback chain,
-screen shake, or new status stacking rule in this pass. More distinct skill art
-can be added to this event system later without changing damage resolution.
+screen shake, or new status stacking rule in this pass. See ../art/COMBAT_PRESENTATION_V2.md for the delivered icon/effect art and
+remaining bespoke presentation work.
 
 Design reference: [Xbox Accessibility Guideline 103](https://learn.microsoft.com/en-us/gaming/accessibility/xbox-accessibility-guidelines/103)
 recommends conveying essential information through more than color alone.

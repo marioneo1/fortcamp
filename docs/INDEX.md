@@ -1,5 +1,11 @@
 # Fortcamp documentation map
 
+Combat presentation rollout: [Presentation plan](design/COMBAT_PRESENTATION_PLAN.md)
+records contact timing, collision bounce, painted ability icons, volumetric
+barriers, coherent ground effects and deferred damage typography. The first rollout is implemented;
+[Presentation V2](art/COMBAT_PRESENTATION_V2.md) records 72 icons, shared painted effects,
+asset imports, verification and remaining manual review.
+
 Current combat feel: [Impact and damage feedback](design/COMBAT_IMPACT.md)
 covers collision damage, Ember crossings, typed damage numbers, visible shields,
 shared hit/knockback/audio timing and the four new impact sounds.
