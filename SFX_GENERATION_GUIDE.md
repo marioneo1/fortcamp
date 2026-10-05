@@ -206,3 +206,38 @@ paid generation. The game landing URL version is `20261005-landing-dry-v3`.
 | File | Duration | Prompt |
 |---|---|---|
 | `earthbreaker_crater.wav` | 0.8 s | Single crater impact: immediate deep bass BOOM, dense low earth cracking, short soft grit falloff. Dry physical weight beneath a boot slam. No whistle, rising tone, shrill accent, bells, sparkle or repeated hits. |
+
+
+## Melee weapon families pack
+
+> Modern painted fantasy RPG combat Foley. One isolated dry close sound, immediate onset, warm low mids, softened treble, tiny natural tail. No music, voice, scream, ringing tone or long reverb. SFW stylized impact.
+
+| File | Length | Prompt |
+|---|---|---|
+| `melee_slash_swing.wav` | 0.5 s | One fast light steel sword slicing through air, smooth narrow silky swoosh, no contact sound. |
+| `melee_slash_hit.wav` | 0.6 s | One crisp sword cut impact: brief soft leather slice layered with a compact fleshy thud. Clean fast cutting contact, subtle damp detail, no gore or splash. |
+| `melee_hack_swing.wav` | 0.5 s | One weighty axe swing through air, broader lower rushed whoosh with slight haft movement. No impact. |
+| `melee_hack_hit.wav` | 0.6 s | One heavy chopping axe contact: dense damp leather chop and short wooden crunch under a solid low thud. Weighty bite, clean bounded impact, no splatter. |
+| `melee_crush_swing.wav` | 0.5 s | One heavy warhammer sweeping through air, low broad weighty whoosh, no clang or impact. |
+| `melee_crush_hit.wav` | 0.6 s | One massive blunt hammer contact: compressed low body thump with brief gritty brittle crack and a tiny dull debris tail. Heavy crushing weight, no metallic ringing. |
+| `melee_blunt_swing.wav` | 0.5 s | One quick wooden quarterstaff strike through air, dry mid-low swish with slight wood movement. No impact. |
+| `melee_blunt_hit.wav` | 0.6 s | One wooden staff striking a padded body: rounded firm hollow wood knock over warm deep leather thud. Clearly a shove-like staff hit, no crunch, no ringing. |
+| `melee_fist_swing.wav` | 0.5 s | One very short barehand boxing jab through air: tight cloth rustle and quick compact swish. No impact, no voice. |
+| `melee_fist_hit.wav` | 0.6 s | One sharp fast fist contacting a padded body: punchy close leather smack and compact low thump. Snappy restrained boxing impact, no crack or metal. |
+| `melee_stab_swing.wav` | 0.5 s | One fast spear or dagger thrust through air: narrow straight short air zip with dry grip movement. No impact, no high pitched whistle. |
+| `melee_stab_hit.wav` | 0.6 s | One tight spear or dagger contact: short pointed leather puncture tick layered with a small damp low thud. Focused precise piercing hit, no ripping or gore. |
+
+One shared contact time (185 ms). Swing and hit are separate clips so misses never play a flesh hit. Softened treble and controlled loudness keep repeated combat comfortable. Original MP3s and exact prompts remain in staging-sfx/melee-families-v1; normalized WAVs install under frontend/public/assets/sfx. Listening quality still needs human review.
+
+
+## Capture net pack
+
+> Modern painted fantasy RPG Foley, one dry close action, immediate onset, warm low mids and softened treble, short natural tail. No music, voice, scream, metal ringing or dramatic tone.
+
+| File | Length | Prompt |
+|---|---|---|
+| `capture_net_cast.wav` | 0.6 s | One folded coarse rope net thrown open through air: quick cloth and rope unfurling swish, a few very soft dull bronze weight clicks, short decisive cast. No body impact. |
+| `capture_net_cinch.wav` | 0.6 s | One coarse rope net landing and pulling tight around padded cloth: compact soft weighted thud, braided rope sliding under tension then tightening creak. Nonviolent restraint, no crunch or punch. |
+| `capture_net_slip.wav` | 0.6 s | One thrown rope net slipping off padded cloth and dropping loose: brief dry rope scrape, soft loose fabric flutter and tiny dull weight taps. Failed catch, no impact hit. |
+
+Successful contact tightens the net and displays Subdued, not HP damage. Failed contact displays Escaped and the net slides away. Originals and technical report remain in staging-sfx/capture-net-v1. Listening approval remains a human review.

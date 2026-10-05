@@ -94,3 +94,8 @@ Nine backend tests cover all catalogued launch targets, authored setups, every l
 For isolated browser QA, run `.venv\Scripts\python.exe tools\build_battle_lab_preview.py`, then `node tools/serve_board_preview.mjs`. Launch headless Chrome with a temporary profile and remote debugging on port 9229, then run `node tools/battle_lab_browser_qa.mjs`. The fixture has four encounter families and uses actual UI modules with mocked API responses; it does not read saves or run the live server. Screenshots go to `staging-ui/battle-lab`. In-game testing supports the full catalogue.
 
 Remaining: subjective visual review and a later balancing pass. Enemy/stat tuning was not changed by this tool.
+
+
+## Per-tester weapons (October 5)
+
+Open Battle Lab, choose **Temporary Job testers**, then choose **Weapon** on each tester. Starter equipment is the default; Unarmed / fists removes the weapon; all catalogue weapons use their real stats, granted abilities and capture restrictions. A Fighter can test a net; equipping it makes the basic action Subdue. Selection travels with the restart request and survives reopening the tester panel. Changing Job resets to that Job's starter weapon. Copies of the roster keep their original equipment; this override currently applies to temporary Job testers only. No saved roster/inventory writes.

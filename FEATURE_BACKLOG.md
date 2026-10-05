@@ -1,5 +1,11 @@
 # Fortcamp feature backlog
 
+## October 5: weapon-aware melee, capture nets and Battle Lab equipment (implemented in dev)
+
+Six basic-melee families now have distinct token poses, painted contact/fade art and paired swing/hit SFX. Driving Strike remains a blunt push; other authored Fighter skills keep their delivery. Contact stays at 185 ms and structure impacts remain distinct. Net capture opens/spins in flight and cinches or slips at the 320 ms result marker, with Subdued/Escaped feedback and three matching sounds. Capture remains nonlethal.
+
+Battle Lab temporary Job testers each have a weapon dropdown: actual catalogue equipment, starter default or unarmed. Weapon stats, capture rules and gear abilities apply without modifying roster saves. Restart preserves the selection. See docs/art/MELEE_WEAPON_PRESENTATION_V1.md for art/import rules, audio previews and limits. Validation: 79 related backend tests, 244 frontend tests, build and isolated browser cases. Subjective audio approval remains pending; ranged redesign is deferred. Dev only.
+
 ## October 5: melee attacks against structures (implemented in dev)
 
 Standard melee attacks against weapon racks, walls, gates and other destructible

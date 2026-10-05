@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {existsSync} from 'node:fs';
-import {COMBAT_MOTION,meleeFrames,collisionFrames,collapseFrames,collapsePlacement} from './combat-animation.js';
+import {COMBAT_MOTION,weaponAttackFrames,weaponHitFrames,meleeFrames,collisionFrames,collapseFrames,collapsePlacement} from './combat-animation.js';
 import {impactTimeline,impactArtwork} from './combat-impact.js';
 import {JOB_ICON_ART} from './ability-icon-manifest.js';
 import {skillCategory,skillIcon} from './ability-icons.js';
@@ -66,4 +66,26 @@ test("collapse ends at the final body centre, including edge-aligned corpses",()
  const placement=collapsePlacement({x:100,y:100,width:80,height:80},{x:92,y:123,width:60,height:60});
  const frame=collapseFrames(false,placement).at(-1);
  assert.equal(frame.translate,"-18px 13px");assert.equal(frame.scale,"0.75");assert.equal(frame.rotate,"-18deg");
+});
+
+
+test('six melee families share contact but have distinct attack and hit poses',()=>{
+ const styles=['slash','hack','crush','blunt','fist','stab'];
+ const attacks=styles.map(s=>weaponAttackFrames(s,30,0));
+ assert.equal(new Set(attacks.map(JSON.stringify)).size,6);
+ assert.equal(new Set(styles.map(s=>JSON.stringify(weaponHitFrames(s,10,0)))).size,6);
+ for(const frames of attacks){
+  assert.equal(frames[2].offset*COMBAT_MOTION.melee,COMBAT_MOTION.contact);
+  assert.match(frames.at(-1).transform,/translate\(0(?:px)?,0(?:px)?\)/);
+ }
+ for(const style of styles)for(const phase of ['contact','fade'])assert.ok(existsSync(new URL(`../public/assets/melee-families-v1/${style}_${phase}.png`,import.meta.url)));
+ for(const phase of ['folded','opening','spread','cinched'])assert.ok(existsSync(new URL(`../public/assets/capture-net-v1/${phase}.png`,import.meta.url)));
+});
+
+test('net results coincide with cinching and recovery precedes defeat animation',()=>{
+ const rows=impactTimeline([{type:'net_cast',attack_packet:9},{type:'combat_feedback',kind:'captured',attack_packet:9},{type:'knockout',attack_packet:9}]);
+ assert.equal(rows[1].start,COMBAT_MOTION.netContact);
+ assert.ok(rows[2].start>=COMBAT_MOTION.netContact+COMBAT_MOTION.recoil);
+ assert.deepEqual(impactArtwork({kind:'captured'}),[]);
+ assert.deepEqual(impactArtwork({kind:'capture_failed'}),[]);
 });

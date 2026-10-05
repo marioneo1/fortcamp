@@ -24,6 +24,7 @@ from . import combat_tactics as tactics
 from . import combat_spaces as spaces
 from . import combat_entities as entities
 from .combat_feedback import record as feedback
+from .combat_melee import weapon_style, attack_style, capture_style
 
 
 STATUS_DEFINITIONS = {
@@ -359,6 +360,7 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
         "attack_elevation_rule": capture_weapon["elevation_rule"] if capture_weapon else "ballistic" if ranged else "ignore" if magical else "melee",
         "nonlethal_capable": bool(capture_weapon),
         "weapon": weapon.get("name", "Unarmed"), "scaling": scaling,
+        "weapon_type": weapon_type, "melee_style": weapon_style({**weapon,'weapon_type':weapon_type}),
         "element": weapon.get("element"), "on_hit": deepcopy(weapon.get("on_hit")),
         "portrait": (character.get('portrait') if character.get('portrait_source')=='override' and not character.get('portrait_thumbnail_uncropped')
                      else character.get("portrait_thumbnail") or character.get("portrait", "")),
@@ -1045,11 +1047,15 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
     damage=_deal_damage(battle,attacker,target,bonus+preview['damage_bonus'],pierce,intent,ability=ability) if hit else 0
     if not hit:feedback(battle,target,'miss')
     resolved=events[begin:];del events[begin:]
-    _record_melee_animation(battle,attacker,target,hit,rule)
+    style = attack_style(attacker, ability) if rule == 'melee' else None
+    _record_melee_animation(battle,attacker,target,hit,rule,style)
     battle['attack_serial']=battle.get('attack_serial',0)+1
     packet=battle['attack_serial']
     events.extend(resolved)
-    for event in events[begin:]:event['attack_packet']=packet
+    for event in events[begin:]:
+        event['attack_packet']=packet
+        if style and event.get('type')=='combat_feedback' and event.get('kind') not in {'status','captured','miss'}:
+            event.update(melee_style=style,impact_direction={'x':target['x']-attacker['x'],'y':target['y']-attacker['y']})
     if target is not original:
         feedback(battle,target,'intercept',attack_packet=packet,before_contact=True)
     if reaction:
@@ -1790,9 +1796,15 @@ def _capture_attempt(battle: dict, actor: dict, target: dict) -> None:
                       'status_tick': True, 'capture_only': True, 'element': None, 'on_hit': None}
         _deal_damage(battle, restrained, target, intent='nonlethal')
     battle['log'].append(f"{actor['name']} attempts to capture {target['name']}: {'successful' if success else 'failed'} ({roll} vs {preview['chance']}% capture chance).")
-    if not success:feedback(battle,target,'miss')
+    net = capture_style(actor) == 'net'
+    if not success:feedback(battle,target,'capture_failed' if net else 'miss')
     resolved=events[begin:];del events[begin:]
-    _record_melee_animation(battle, actor, target, success, actor['attack_elevation_rule'])
+    if net:
+        actor['physical_action'] = actor['attack_elevation_rule'] in {'melee','ballistic'}
+        events.append({'type':'net_cast','attacker_id':actor['id'],'target_id':target['id'],
+                       'from':{'x':actor['x'],'y':actor['y']},'to':{'x':target['x'],'y':target['y']},'hit':success})
+    else:
+        _record_melee_animation(battle, actor, target, success, actor['attack_elevation_rule'])
     battle['attack_serial']=battle.get('attack_serial',0)+1
     events.extend(resolved)
     for event in events[begin:]:event['attack_packet']=battle['attack_serial']
@@ -2133,7 +2145,7 @@ def _record_sound(battle: dict, cue: str, offset: int = 0, duration: int = 0) ->
     })
 
 
-def _record_melee_animation(battle: dict, attacker: dict, target: dict, hit: bool, rule: str | None = None) -> None:
+def _record_melee_animation(battle: dict, attacker: dict, target: dict, hit: bool, rule: str | None = None, style: str | None = None) -> None:
     if (rule or attacker.get('attack_elevation_rule')) in {'melee', 'ballistic'}:
         attacker['physical_action'] = True
     rule = rule or attacker.get("attack_elevation_rule", "melee")
@@ -2151,6 +2163,7 @@ def _record_melee_animation(battle: dict, attacker: dict, target: dict, hit: boo
     battle.setdefault("animation_events", []).append({
         "type": "melee_attack", "attacker_id": attacker["id"], "target_id": target["id"], "hit": bool(hit),
         "target_condition": target.get("condition", "active"),
+        "melee_style": style or attack_style(attacker),
         'from':{'x':attacker['x'],'y':attacker['y']},'to':{'x':target['x'],'y':target['y']},
     })
 

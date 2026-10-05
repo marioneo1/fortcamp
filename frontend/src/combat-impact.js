@@ -21,9 +21,9 @@ export function impactTimeline(events){
       const origin=packets.get(event.impact_origin_packet);
       if(origin){const impact=origin.impact+(event.impact_offset||0);packet={start:impact,impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
     }
-    const attack=event.type==='melee_attack'||event.attack_event||event.type==='magic_projectile'||event.type==='chain_attack'||event.type==='ground_impact';
+    const attack=event.type==='melee_attack'||event.type==='net_cast'||event.attack_event||event.type==='magic_projectile'||event.type==='chain_attack'||event.type==='ground_impact';
     if(key!=null&&attack){
-      if(!packet){const impact=cursor+(event.type==='ground_impact'?0:event.type==='melee_attack'?COMBAT_MOTION.contact:220);packet={start:cursor,impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
+      if(!packet){const impact=cursor+(event.type==='ground_impact'?0:event.type==='net_cast'?COMBAT_MOTION.netContact:event.type==='melee_attack'?COMBAT_MOTION.contact:220);packet={start:cursor,impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
       start=packet.start;
     }else if(packet){start=event.before_contact?packet.start:event.after_displacement?packet.land:packet.impact}
     if(event.type==='movement'){
@@ -33,6 +33,8 @@ export function impactTimeline(events){
       cursor=Math.max(cursor,start+duration+70);
     }else if(event.type==='ground_impact'){
       duration=650;cursor=Math.max(cursor,start+duration);
+    }else if(event.type==='net_cast'){
+      duration=COMBAT_MOTION.netDuration;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='chain_attack'){
       duration=400;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='melee_attack'){
@@ -73,11 +75,12 @@ export const feedbackStyles={
   guard:{label:'Guard',icon:'◇',color:'#dfc788'},cleanse:{label:'Cleansed',icon:'+',color:'#9beeb9'},
   form:{label:'Form changed',icon:'◆',color:'#9beeb9'},deploy:{label:'Deployed',icon:'◆',color:'#a8ded8'},
   intercept:{label:'Intercept',icon:'◇',color:'#b5dfff'},counter:{label:'Counter',icon:'↶',color:'#ffe6b5'},resisted:{label:'Resisted',icon:'◆',color:'#dccfae'},
-  miss:{label:'Miss',icon:'↗',color:'#ded9cb'},captured:{label:'Subdued',icon:'◇',color:'#d5c6ff'},
+  miss:{label:'Miss',icon:'↗',color:'#ded9cb'},capture_failed:{label:'Escaped',icon:'↗',color:'#ded9cb'},captured:{label:'Subdued',icon:'◇',color:'#d5c6ff'},
   status:{label:'Status',icon:'•',color:'#dfcbff'},
 };
 export function feedbackText(event,definitions={}){
-  const style=feedbackStyles[event.kind]||feedbackStyles.physical;
+  const style={...(feedbackStyles[event.kind]||feedbackStyles.physical)};
+  if(event.kind==='physical'&&event.melee_style)style.label=({slash:'Slash',hack:'Chop',crush:'Crush',blunt:'Strike',fist:'Punch',stab:'Stab'})[event.melee_style]||style.label;
   if(event.kind==='status')return {...style,...(event.status_id==='stun'?{color:'#f2ce72'}:{}),label:definitions[event.status_id]?.name||event.status_id,icon:definitions[event.status_id]?.icon||style.icon,value:''};
   return {...style,value:event.amount?`${['heal','barrier'].includes(event.kind)?'+':'−'}${event.amount}`:event.absorbed?'Blocked':''};
 }
@@ -87,8 +90,9 @@ export function protectionMarkup(unit){
   return `${barrier?`<span class="unit-barrier-halo" aria-hidden="true"></span><span class="unit-barrier-front" aria-hidden="true"></span><span class="unit-barrier-capacity" title="Barrier: absorbs ${Number(barrier.amount)} damage">◇ ${Number(barrier.amount)}</span>`:''}${unit.guarding?'<span class="unit-guard-halo" aria-hidden="true"></span>':''}`;
 }
 export function impactArtwork(event){
-  if(['intercept','counter','resisted'].includes(event.kind))return [];
+  if(['intercept','counter','resisted','captured','capture_failed'].includes(event.kind))return [];
   if(event.absorbed)return [event.barrier_broken?'barrier_break':'barrier_hit'];
+  if(['slash','hack','crush','blunt','fist','stab'].includes(event.melee_style))return [`melee:${event.melee_style}:contact`,`melee:${event.melee_style}:fade`,...(['fire','magic','holy','ice','lightning'].includes(event.kind)?[event.kind==='fire'?'flame_lick':'magic_hit']:[])];
   if(event.kind==='barrier')return ['barrier_shell'];
   if(['heal','cleanse','form'].includes(event.kind))return ['restoration_wisp'];
   if(['guard','deploy'].includes(event.kind))return ['magic_hit'];
@@ -125,12 +129,17 @@ export function createImpactFeedback(){
       if(siblings.length===1){siblings[0].style.marginLeft=`${-spread}px`;node.style.marginLeft=`${spread}px`}
       else if(siblings.length>1)node.style.setProperty('--float-lane',`${(siblings.length-1)*48}px`);
       layer.append(node);node.animate([{opacity:1,transform:'translate(-50%,-65%) scale(1.1)'},{opacity:1,transform:'translate(-50%,-85%) scale(1)',offset:.15},{opacity:1,transform:'translate(-50%,-115%) scale(1)',offset:.68},{opacity:0,transform:'translate(-50%,-150%) scale(.96)'}],{duration:reduced?1400:950,fill:'forwards'}).onfinish=()=>node.remove();
-      if(reduced||event.kind==='miss')return;
+      if(reduced||['miss','captured','capture_failed'].includes(event.kind))return;
       for(const art of impactArtwork(event)){
         const sprite=document.createElement('i');sprite.className=`painted-hit-sprite ${event.absorbed||event.kind==='barrier'?'barrier-impact-sprite':''}`;
-        const size=field.clientWidth/battle.width*(event.absorbed||event.kind==='barrier'?1.5:1.05);
-        sprite.style.cssText=`left:${x}%;top:${y}%;width:${size}px;height:${size}px;background-image:url('/assets/combat-presentation-v2/effects/${art}.png')`;layer.append(sprite);
-        sprite.animate([{transform:'translate(-50%,-50%) scale(.85)',opacity:.9},{transform:'translate(-50%,-50%) scale(1.05)',opacity:.72,offset:.3},{transform:'translate(-50%,-50%) scale(1.25)',opacity:0}],{duration:art==='poison_cloud'?550:event.kind==='barrier'||event.absorbed?360:240,easing:'ease-out'}).onfinish=()=>sprite.remove();
+        const melee=art.startsWith('melee:'),parts=art.split(':'),fade=melee&&parts[2]==='fade';
+        const angle=melee&&!['crush','blunt','fist'].includes(parts[1])?Math.atan2(event.impact_direction?.y??0,event.impact_direction?.x??1)*180/Math.PI:0;
+        const size=field.clientWidth/battle.width*(event.absorbed||event.kind==='barrier'?1.5:melee?1.25:1.05);
+        const url=melee?`/assets/melee-families-v1/${parts[1]}_${parts[2]}.png`:`/assets/combat-presentation-v2/effects/${art}.png`;
+        sprite.style.cssText=`left:${x}%;top:${y}%;width:${size}px;height:${size}px;background-image:url('${url}')`;layer.append(sprite);
+        const transform=s=>`translate(-50%,-50%) rotate(${angle}deg) scale(${s})`;
+        const frames=fade?[{transform:transform(.95),opacity:0},{transform:transform(1.08),opacity:.65,offset:.28},{transform:transform(1.2),opacity:0}]:[{transform:transform(.85),opacity:.9},{transform:transform(1.05),opacity:.72,offset:.3},{transform:transform(melee?1.1:1.25),opacity:0}];
+        sprite.animate(frames,{duration:melee?(fade?220:160):art==='poison_cloud'?550:event.kind==='barrier'||event.absorbed?360:240,delay:fade?70:0,easing:'ease-out'}).onfinish=()=>sprite.remove();
       }
       if(event.kind==='status'||['intercept','counter','resisted'].includes(event.kind))return;
       const count=['burn','fire','poison','bleed','collision','thorns'].includes(event.kind)?7:4;

@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Current melee weapon and net presentation: [Melee families and capture net](art/MELEE_WEAPON_PRESENTATION_V1.md) covers six deliveries, contact timing, matching audio/art and per-tester Battle Lab weapons.
+
 Latest combat controls: [Painted control atlas](art/COMBAT_CONTROLS_V2_PROMPT.md)
 records the six matching attack/cursor/hook assets and reproducible import.
 [Combat controls](design/COMBAT_CONTROLS.md) and

@@ -38,7 +38,7 @@ import {mountRelationships,mountServiceRecord} from './relationship-ui.js';
 import {createCombatEffects} from './combat-effects.js';
 import './combat-effects.css';
 import {impactTimeline,createImpactFeedback,protectionMarkup} from './combat-impact.js';
-import {COMBAT_MOTION,meleeFrames,recoilFrames,collisionFrames,collisionRecipientFrames,collapseFrames,collapsePlacement} from './combat-animation.js';
+import {COMBAT_MOTION,recoilFrames,weaponAttackFrames,weaponHitFrames,collisionFrames,collisionRecipientFrames,collapseFrames,collapsePlacement} from './combat-animation.js';
 import {composeMotion,poseFrames,walkingFrames,playbackDuration,needsPlaybackLock,createPlaybackGate} from './combat-playback.js';
 const combatPlayback=createPlaybackGate();
 const combatPlaybackKey=()=>`${activeBattleMissionId}:${activeBattleView?.encounter_id}:${activeBattleView?.seed}`;
@@ -69,6 +69,7 @@ const combatEffects=createCombatEffects();
 import {patchLiveHTML,captureMovingPositions,restartWalking,trackBattleAnimation} from './live-dom.js';
 import {createLatestMovement} from './latest-movement.js';
 import {previewMovement} from './movement-preview.js';
+import {emitNetCast} from './combat-net.js';
 import {applyContractUpdate} from './contract-state.js';
 import {createBoardVFX} from './board-vfx.js';
 import {boardIcon,rankSeal,missionCard,eventHeader,filterChips,stableBoardHTML} from './mission-board-ui.js';
@@ -206,6 +207,8 @@ const unavailableSfx=new Set();
 for(const name of ['burn_tick','poison_tick','barrier_absorb','collision_hit'])sfxFiles[name]=`${name}.wav`;
 sfxFiles.collision_hit='body_collision.wav';
 for(const name of ['earthbreaker_launch','earthbreaker_land','earthbreaker_crater','body_into_body','body_into_wall'])sfxFiles[name]=`${name}.wav`;
+for(const style of ['slash','hack','crush','blunt','fist','stab'])for(const phase of ['swing','hit'])sfxFiles[`melee_${style}_${phase}`]=`melee_${style}_${phase}.wav`;
+for(const phase of ['cast','cinch','slip'])sfxFiles[`capture_net_${phase}`]=`capture_net_${phase}.wav`;
 function playSfx(name,volume=.5,delay=0,fallback=null){
   const run=()=>{
     if(!sfxFiles[name]||unavailableSfx.has(name)){fallback?.();return}
@@ -680,6 +683,17 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
     const animatedUnits=new Set();
     playBattleSounds(battle,animationEvents);
     timeline.forEach(({event,start:delay,duration:plannedDuration})=>{
+      if(event.type==='net_cast'){
+        emitNetCast(field,event,battle,delay);
+        const actor=battle.units?.[event.attacker_id],token=tokenFor(event.attacker_id);
+        if(actor&&token)queueMotion(token,poseFrames([
+          {transform:'translate(0,0) rotate(0deg)',offset:0},
+          {transform:'translate(0,-3px) rotate(-7deg)',offset:.15},
+          {transform:'translate(0,0) rotate(6deg)',offset:.3},
+          {transform:'translate(0,0) rotate(0deg)',offset:1},
+        ].map(frame=>({...frame,transform:`${frame.transform} scale(${actor.id===battle.current_unit_id?1.15:1})`})),event.from,actor,cellWidth,cellHeight),{duration:360,delay},'is-attacking');
+        return;
+      }
       if(['ground_impact','fighter_rally','chain_attack'].includes(event.type)){emitFighterEffect(field,event,battle,delay,animationEvents);return}
       if(event.type==='combat_feedback'){impactFeedback.emit(event,battle,delay);return}
       if(event.type==='death_burst'||event.type==='knockout'){
@@ -718,10 +732,10 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
         const from=event.from||attacker,to=event.to||target;
         const dx=Math.sign(to.x-from.x)*cellWidth*.42,dy=Math.sign(to.y-from.y)*cellHeight*.42;
         const attackerScale=attacker.id===battle.current_unit_id?1.15:1,targetScale=target.id===battle.current_unit_id?1.15:1;
-        queueMotion(attackerToken,poseFrames(meleeFrames(dx,dy,attackerScale),from,attacker,cellWidth,cellHeight),{duration:COMBAT_MOTION.melee,delay},'is-attacking');
+        queueMotion(attackerToken,poseFrames(weaponAttackFrames(event.melee_style,dx,dy,attackerScale),from,attacker,cellWidth,cellHeight),{duration:COMBAT_MOTION.melee,delay},'is-attacking');
         const displaced=animationEvents.some(e=>['movement','collision_recoil'].includes(e.type)&&e.unit_id===event.target_id&&e.attack_packet===event.attack_packet&&(e.forced||e.type==='collision_recoil'));
         if(event.hit&&!displaced&&targetToken&&event.target_kind!=='terrain'){
-          queueMotion(targetToken,poseFrames(recoilFrames(Math.sign(to.x-from.x)*cellWidth*.12,Math.sign(to.y-from.y)*cellHeight*.12,targetScale),to,target,cellWidth,cellHeight),{duration:COMBAT_MOTION.recoil,delay:delay+COMBAT_MOTION.contact},'is-hit');
+          queueMotion(targetToken,poseFrames(weaponHitFrames(event.melee_style,Math.sign(to.x-from.x)*cellWidth*.12,Math.sign(to.y-from.y)*cellHeight*.12,targetScale),to,target,cellWidth,cellHeight),{duration:COMBAT_MOTION.recoil,delay:delay+COMBAT_MOTION.contact},'is-hit');
         }
         return;
       }
@@ -814,7 +828,17 @@ function renderBattlePreparation(b){
   const fitButton=$('[data-battle-fit]');if(fitButton)fitButton.onclick=()=>{battleFit=true;renderBattlePreparation(b)};updateBattleCamera(b);
   requestAnimationFrame(()=>animateBattleMovement(previousBattle,b,140,movingPositions));
 }
+const warmedWeaponArt=new Map();
+function warmWeaponArt(battle){
+  const paths=new Set();
+  for(const unit of Object.values(battle.units||{})){
+    if(['slash','hack','crush','blunt','fist','stab'].includes(unit.melee_style))for(const phase of ['contact','fade'])paths.add(`/assets/melee-families-v1/${unit.melee_style}_${phase}.png`);
+    if(unit.capture_weapon&&/\b(net|mesh)\b/i.test(unit.weapon||''))for(const phase of ['folded','opening','spread','cinched'])paths.add(`/assets/capture-net-v1/${phase}.png`);
+  }
+  for(const path of paths)if(!warmedWeaponArt.has(path)){const image=new Image();warmedWeaponArt.set(path,image);image.src=path;image.decode?.().catch(()=>{});}
+}
 function renderBattle(b){
+  if(b)warmWeaponArt(b);
   if(activeBattleView?.current_unit_id!==b.current_unit_id){selectedCombatAction='move';combatSkillPage=0}
   if(b.status==='preparing'){renderBattlePreparation(b);return}
   const previousBattle=activeBattleView;

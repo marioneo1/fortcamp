@@ -10,7 +10,7 @@ from pydantic import BaseModel, Field
 
 from .auth import IdentityDep
 from .combat import create_battle, battle_view, apply_player_command, auto_step, auto_resolve, _advance_to_player
-from .content import MISSION_TEMPLATES, MISSION_EVENTS
+from .content import MISSION_TEMPLATES, MISSION_EVENTS, ITEMS
 from .db import SessionLocal
 from .game import new_game, normalize_state
 from .mission_decisions import setup_encounter
@@ -148,6 +148,7 @@ class JobTester(BaseModel):
     job_id: str
     practice: Literal[0, 2, 5, 9] = 0
     skill_ids: list[str] | None = Field(default=None, max_length=5)
+    weapon_id: str | None = None
 
 
 class StartRequest(BaseModel):
@@ -169,6 +170,14 @@ def job_test_party(testers):
         job = JOBS[tester.job_id]
         fresh = new_game({'name': f'{job["name"]} Tester {index + 1}', 'starting_role': tester.job_id})
         character = fresh['characters'][0]
+        if tester.weapon_id is not None:
+            if tester.weapon_id != 'unarmed' and ITEMS.get(tester.weapon_id,{}).get('slot') != 'weapon':
+                raise HTTPException(400,'Choose a valid test weapon')
+            character['equipment'].pop('weapon',None)
+            if tester.weapon_id != 'unarmed':
+                instance_id=f'lab_weapon_{index}'
+                fresh['inventory'].append({'instance_id':instance_id,'item_id':tester.weapon_id})
+                character['equipment']['weapon']=instance_id
         character.update(id=f'lab_job_{index}', is_player=index == 0, loyalty=100,
                          job_practice=tester.practice)
         learned = list(job['starter_skills']) + [u['skill_id'] for u in job['unlocks'] if u['contracts'] <= tester.practice]
@@ -248,7 +257,11 @@ async def list_battles(identity: IdentityDep):
         player = await session.get(PlayerState, {'guild_id': identity.guild_id, 'user_id': identity.user_id})
         characters = (player.state if player else {}).get('characters', [])
     return {'missions': catalogue(), 'job_loadouts': public_catalog(),
-            'starting_jobs': deepcopy(STARTING_ROLES), 'characters': [
+            'starting_jobs': deepcopy(STARTING_ROLES),
+            'weapons': [{'id':key,'name':item['name'],'type':item.get('weapon_type'),
+                         'rarity':item.get('rarity','common'),'description':item.get('description','')}
+                        for key,item in sorted(ITEMS.items(),key=lambda row:row[1].get('name','')) if item.get('slot')=='weapon'],
+            'characters': [
         {'id': c['id'], 'name': c['name'], 'race': c.get('race', ''), 'status': c.get('status', ''),
          'portrait': c.get('portrait_thumbnail') or c.get('portrait', ''), 'attributes': c.get('attributes', {})}
         for c in characters]}

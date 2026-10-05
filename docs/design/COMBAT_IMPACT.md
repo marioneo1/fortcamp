@@ -231,3 +231,10 @@ Validation: 116 targeted backend tests, 240 frontend tests and frontend build.
 Tests include multiple crossed cells, repeated entries, overlapping owners,
 discarded previews, duplicate commitment, fatal crossings, separate Burn ticks
 and walking/forced crossing feedback timing. No production or save changes.
+
+
+## Weapon delivery and capture-net feedback (October 5)
+
+Basic melee now uses six weapon families: slash, hack, crush, blunt, fist and stab. Attacker pose, recipient flinch, paired painted impact and swing/contact audio follow the family, with the existing 185ms contact marker. Visual recoil does not move the unit's cell. Authored Driving Strike uses blunt delivery independently of weapon. Structures keep structure-impact sounds.
+
+Net capture uses a separate 320ms contact marker: rotating/opening rope in flight, cinching or slipping at the result. Successful attempts show Subdued, failed attempts Escaped. No fabricated HP damage appears. Existing capture chance/range and unconscious semantics remain unchanged. Full asset/validation reference: ../art/MELEE_WEAPON_PRESENTATION_V1.md.

@@ -41,3 +41,19 @@ test('chain misses do not play a flesh impact',()=>{
  const cues=combatAudioSchedule({},[{type:'chain_attack',hit:false,attack_packet:1}]).cues;
  assert.deepEqual(cues.map(c=>c.name),['melee_swing','attack_miss']);
 });
+
+
+test('weapon swings and impacts use the family and shared contact; misses have no hit sound',()=>{
+ for(const style of ['slash','hack','crush','blunt','fist','stab'])for(const hit of [true,false]){
+  const cues=combatAudioSchedule({},[{type:'melee_attack',melee_style:style,hit,attack_packet:1}]).cues;
+  assert.deepEqual(cues.map(c=>c.name),[`melee_${style}_swing`,hit?`melee_${style}_hit`:'attack_miss']);
+  assert.equal(cues[1].delay,185);
+ }
+});
+test('net success and slip play at the result marker without flesh or damage sounds',()=>{
+ for(const hit of [true,false]){
+  const cues=combatAudioSchedule({},[{type:'net_cast',hit,attack_packet:1}]).cues;
+  assert.deepEqual(cues.map(c=>c.name),['capture_net_cast',hit?'capture_net_cinch':'capture_net_slip']);
+  assert.equal(cues[1].delay,320);
+ }
+});
