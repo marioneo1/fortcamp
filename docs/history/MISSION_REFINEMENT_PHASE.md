@@ -1444,3 +1444,12 @@ an immediately following enemy attack. No paid generation or production changes.
 Canonical details: `docs/design/COMBAT_CONTROLS.md`,
 `docs/design/COMBAT_IMPACT.md`, `docs/design/COMBAT_STATUS_PRESENTATION.md`.
 Further status artwork and Barrier/ground-effect presentation remain pending.
+
+
+## October 5: Direct provisional repositioning
+
+Fixed origin-tree backtracking in immediate movement previews and server movement/attack approaches. The shortest origin tree defines legal destinations and turn costs; it no longer defines the route between two provisional positions. The server exports at most four legal directed steps per reachable tile, respecting occupancy, edge walls, elevation and terrain cost. The immediate preview finds a weighted legal route from the displayed position. Server movement independently checks that route and still stops on concealed enemy discovery. Combined attack/support/ground approaches use the same direct routing.
+
+Movement remains refundable until an action commits, with the original activation origin and budget preserved. Repeated clicks do not refill movement. The action preview shows the current position's cost against the effective movement allowance. The reported Goblin Warcamp screenshot has an empty adjacent destination outside a three-movement Fighter's origin range; direct routing does not expand that range. No unseen occupant was established by the screenshot.
+
+Validation: 84 movement/approach, ground-zone, concealment, wall and Fighter presentation backend tests; 239 frontend tests; production frontend build. Regression checks cover adjacent movement between different origin-tree branches, wall-blocked direct steps and retained original budget. No production deployment or save changes.

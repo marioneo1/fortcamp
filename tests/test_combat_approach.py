@@ -37,6 +37,31 @@ class AttackApproachTests(unittest.TestCase):
         self.assertEqual((self.actor['x'],self.actor['y']),(1,3))
         self.assertEqual(self.actor['movement_origin'],{'x':1,'y':5})
 
+    def test_adjacent_reposition_walks_directly_between_origin_tree_branches(self):
+        from backend.combat import _movement_tree, _movement_path, _reposition_route, _scout_path
+        self.actor.update(move=5)
+        apply_player_command(self.battle, {'action':'move','x':2,'y':5})
+        reachable, parents = _movement_tree(self.battle, self.actor)
+        self.assertNotIn({'x':2,'y':5,'cost':1}, _movement_path(parents,reachable,(2,4)))
+        self.assertEqual(_reposition_route(self.battle,self.actor,(2,4),reachable),[(2,4)])
+        with patch('backend.combat._scout_path', wraps=_scout_path) as scout:
+            apply_player_command(self.battle, {'action':'move','x':2,'y':4})
+        self.assertEqual(scout.call_args.args[2],[(2,4)])
+        self.assertEqual(self.actor['movement_origin'],{'x':1,'y':5})
+
+    def test_direct_reposition_respects_wall_crossings_and_original_budget(self):
+        from backend.combat import _movement_tree, _reposition_route
+        self.actor.update(move=5)
+        apply_player_command(self.battle, {'action':'move','x':2,'y':4})
+        self.battle['terrain']=[{'id':'edge','x':2,'y':4,'kind':'wall','blocking':True,'edge_wall':True,'wall_edges':['east']}]
+        reachable, _ = _movement_tree(self.battle,self.actor)
+        route=_reposition_route(self.battle,self.actor,(3,4),reachable)
+        self.assertNotEqual(route,[(3,4)])
+        self.assertEqual(route[-1],(3,4))
+        self.actor['move']=2
+        with self.assertRaises(ValueError):
+            apply_player_command(self.battle,{'action':'move','x':3,'y':4})
+
     def test_unused_end_turn_guards_and_matches_explicit_guard(self):
         from backend.combat import _deal_damage
         with patch('backend.combat._advance_to_player'):

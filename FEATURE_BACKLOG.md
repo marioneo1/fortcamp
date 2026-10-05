@@ -919,3 +919,5 @@ an immediately following enemy attack. No paid generation or production changes.
 Canonical details: `docs/design/COMBAT_CONTROLS.md`,
 `docs/design/COMBAT_IMPACT.md`, `docs/design/COMBAT_STATUS_PRESENTATION.md`.
 Further status artwork and Barrier/ground-effect presentation remain pending.
+
+- Implemented October 5: direct legal provisional repositioning instead of returning through START; same routing for combined approaches, visible effective movement use, original turn budget retained. See COMBAT_CONTROLS.md. Adjacent empty destinations can still exceed the turn range; richer blocked-cell explanations remain deferred.

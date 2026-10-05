@@ -1291,6 +1291,38 @@ def _movement_path(parents: dict, costs: dict, destination: tuple[int, int]) -> 
     return path
 
 
+def _reposition_route(battle, unit, destination, reachable):
+    """Use legal steps from the current position, not origin-tree branches.
+
+    The original activation budget still determines available destinations.
+    """
+    start = (unit['x'], unit['y'])
+    costs, parents = {start: 0}, {start: None}
+    queue = [(0, *start)]
+    while queue:
+        cost, x, y = heapq.heappop(queue)
+        if cost != costs[(x, y)]:
+            continue
+        if (x, y) == destination:
+            return [(p['x'], p['y']) for p in _movement_path(parents, costs, destination)]
+        for nx, ny in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
+            if (nx, ny) not in reachable or not _can_step(battle, x, y, nx, ny, unit):
+                continue
+            next_cost = cost + _step_cost(battle, x, y, nx, ny, unit)
+            if next_cost >= costs.get((nx, ny), float('inf')):
+                continue
+            costs[(nx, ny)], parents[(nx, ny)] = next_cost, (x, y)
+            heapq.heappush(queue, (next_cost, nx, ny))
+    raise ValueError('No legal route from the current position to that tile')
+
+
+def _approach_path(battle, unit, destination, reachable, parents):
+    if not unit.get('movement_origin'):
+        return _movement_path(parents, reachable, destination)
+    return [{'x':x, 'y':y, 'cost':reachable[(x,y)]}
+            for x,y in _reposition_route(battle, unit, destination, reachable)]
+
+
 def _commit_player_movement(battle: dict, unit: dict) -> None:
     origin = unit.get("movement_origin")
     if origin and (int(origin["x"]), int(origin["y"])) != (unit["x"], unit["y"]):
@@ -1315,7 +1347,7 @@ def _attack_position(battle, unit, target, attack_range, reachable, parents, ran
         return None, None
     cost, _, y, x, actor = min(candidates, key=lambda row: row[:4])
     return actor, {'move_to': {'x': x, 'y': y}, 'movement_cost': cost,
-                   'path': _movement_path(parents, reachable, (x, y))}
+                   'path': _approach_path(battle, unit, (x, y), reachable, parents)}
 
 
 def _leap_skill(skill):
@@ -1353,7 +1385,7 @@ def _leap_position(battle,actor,target,skill,reachable,parents):
     for point,cost in sorted(reachable.items(),key=lambda row:(row[1],row[0])):
         probe={**actor,'x':point[0],'y':point[1]}
         if _leap_eligible(battle,probe,target,skill):
-            return probe,{'move_to':{'x':point[0],'y':point[1]},'movement_cost':cost,'path':_movement_path(parents,reachable,point)}
+            return probe,{'move_to':{'x':point[0],'y':point[1]},'movement_cost':cost,'path':_approach_path(battle,actor,point,reachable,parents)}
     return None,None
 
 
@@ -1369,7 +1401,7 @@ def _support_position(battle, unit, target, effect, reachable, parents):
         actor={**unit,'x':point[0],'y':point[1]}
         if _support_eligible(battle, actor, target, effect):
             return actor, {'move_to':{'x':point[0],'y':point[1]},'movement_cost':cost,
-                           'path':_movement_path(parents,reachable,point)}
+                           'path':_approach_path(battle,unit,point,reachable,parents)}
     return None, None
 
 
@@ -1385,18 +1417,9 @@ def _apply_attack_approach(battle, unit, target, attack_range, command,range_sha
     if (x, y) not in costs or not _can_attack(battle, actor, target, attack_range,range_shape):
         raise ValueError('That approach cannot reach the target within this turn')
     desired = (x, y)
-    path = _movement_path(parents, costs, (x, y))
     origin = unit.get('movement_origin') or {'x': unit['x'], 'y': unit['y']}
     points = [{'x': unit['x'], 'y': unit['y']}]
-    current_index = next((i for i, point in enumerate(path) if (point['x'], point['y']) == (unit['x'], unit['y'])), None)
-    if current_index is not None:
-        points.extend(path[current_index + 1:])
-    else:
-        points.extend(reversed(unit.get('movement_path', [])[:-1]))
-        if (points[-1]['x'], points[-1]['y']) != (origin['x'], origin['y']):
-            points.append(origin)
-        points.extend(path)
-    route = _scout_path(battle, unit, [(p['x'],p['y']) for p in points[1:]])
+    route = _scout_path(battle, unit, _reposition_route(battle, unit, desired, costs))
     if route:
         x, y = route[-1]
     else:
@@ -3392,11 +3415,15 @@ def battle_view(battle: dict) -> dict:
         # The client can preview only server-validated routes immediately.
         view["movement_tree"] = [
             {"x": x, "y": y, "cost": reachable[(x, y)],
-             "parent": list(parent) if parent is not None else None}
+             "parent": list(parent) if parent is not None else None,
+             "steps": [[nx, ny, _step_cost(battle, x, y, nx, ny, current)]
+                       for nx, ny in ((x+1,y),(x-1,y),(x,y+1),(x,y-1))
+                       if (nx,ny) in reachable and _can_step(battle,x,y,nx,ny,current)]}
             for (x, y), parent in parents.items()
         ]
         origin = current.get("movement_origin") or {"x": current["x"], "y": current["y"]}
         view["movement_origin"] = {"x": int(origin["x"]), "y": int(origin["y"])}
+        view["movement_allowance"] = _movement_limit(current)
         view["movement_path"] = list(current.get("movement_path", []))
         extraction_tiles = _player_exit_tiles(view)
         view["can_extract"] = (current["x"], current["y"]) in extraction_tiles and bool(current.get("exit_ready"))
@@ -3711,18 +3738,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         reachable, parents = _movement_tree(battle, unit)
         if (x, y) not in reachable:
             raise ValueError("That tile is outside this unit's movement range")
-        path = _movement_path(parents, reachable, (x, y))
-        # Reposition from the current preview, including an empty origin path.
-        origin = unit['movement_origin']
-        current_index = next((i for i, p in enumerate(path) if (p['x'], p['y']) == (unit['x'], unit['y'])), None)
-        if current_index is not None:
-            route_points = path[current_index + 1:]
-        else:
-            route_points = list(reversed(unit.get('movement_path', [])[:-1]))
-            if (unit['x'], unit['y']) != (origin['x'], origin['y']):
-                route_points.append(origin)
-            route_points.extend(path)
-        route = _scout_path(battle, unit, [(p['x'],p['y']) for p in route_points])
+        route = _scout_path(battle, unit, _reposition_route(battle, unit, (x, y), reachable))
         if route:
             x, y = route[-1]
         else:

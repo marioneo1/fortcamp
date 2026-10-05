@@ -120,3 +120,5 @@ Current building collision/art: [Wall boundaries](design/WALL_BOUNDARIES.md) exp
 **Loyalty**: command reliability from 0 to 100; independent-turn chance is 100 minus loyalty. **Personality**: independent behavior and broad dialogue voice, separate from combat specialty. **Taste**: an individual preference discovered through conversation or gifts. **Service record**: career counters beginning when tracking was introduced. **Memory**: bounded facts about expeditions the character joined. **Damage per turn**: credited actual damage divided by started combat activations; not real-time DPS. **Private Contracts**: contracts owned by one player. **Soft cap**: a point where further stats become less efficient. **Stat-only limit**: current critical-curve boundary; special overrides need explicit mechanics.
 
 The planned in-game handbook should reuse player-facing definitions and exclude secret quest conditions.
+
+October 5 movement correction: [Combat controls](design/COMBAT_CONTROLS.md) documents direct provisional routes, effective movement-use display and preserved turn range.

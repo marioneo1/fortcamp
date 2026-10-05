@@ -29,3 +29,20 @@ test('moving a carried body previews its position and preserves the original act
   assert.equal(p.units.body.x,1);assert.equal(b.units.body.x,0);
   assert.deepEqual(q.movement_origin,{x:0,y:0});assert.equal(q.units.p.moved,false);
 });
+
+test('adjacent redirect uses validated cross-branch step instead of returning toward START',()=>{
+  const b=battle();
+  b.movement_tree=[
+    {x:0,y:0,cost:0,parent:null,steps:[[1,0,1],[0,1,1]]},
+    {x:1,y:0,cost:1,parent:[0,0],steps:[[0,0,1],[1,1,1]]},
+    {x:0,y:1,cost:1,parent:[0,0],steps:[[0,0,1],[1,1,1]]},
+    {x:1,y:1,cost:2,parent:[0,1],steps:[[1,0,1],[0,1,1]]},
+  ];
+  b.units.p.x=1;
+  const p=previewMovement(b,{x:1,y:1});
+  assert.deepEqual(p.preview_movement_points.map(({x,y})=>[x,y]),[[1,0],[1,1]]);
+  assert.deepEqual(p.movement_origin,{x:0,y:0});
+  b.movement_tree[1].steps=[[0,0,1]];b.movement_tree[3].steps=[[0,1,1]];
+  const q=previewMovement(b,{x:1,y:1});
+  assert.deepEqual(q.preview_movement_points.map(({x,y})=>[x,y]),[[1,0],[0,0],[0,1],[1,1]]);
+});
