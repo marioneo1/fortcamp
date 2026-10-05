@@ -1,5 +1,32 @@
 # Mission Refinement Phase
 
+## October 4: Twelve starting Jobs and first unlocks (dev)
+
+Published all twelve Jobs together in character creation with matching Common
+poor-quality kits. Removed Medic and independent work-proficiency selection;
+legacy medicine characters retain Field Care. Three starting skills are equipped
+and three more unlock at 2/5/9 successful contracts: 72 executable skills total.
+Five character slots remain shared by actives/passives; gear abilities are uncapped
+and consume no character slots. Unlocks never automatically equip or grow stats.
+
+Vendor stock includes all starter equipment, using existing art pending a coherent
+icon pack. Improved regeneration targeting and commanded-unit auto attacks. Fixed
+closed-door pursuit stalls and creature objectives inheriting chieftain capture
+resistance. Captor Binding Line now allows a follow-up capture attempt and Sure
+Grip adds four capture points. Solo Captor combat is still harder; advanced kit
+AI, unique conditional passives, full draft catalogues and device art are pending.
+
+Validation: 124 related backend tests, 189 frontend tests and frontend build pass.
+Isolated browser checks cover twelve creator choices, starter previews, six-skill
+progression cards and five-slot swaps. All twelve solo Storehouse smoke encounters
+finish without stalling; not all builds win automatically. Existing large bundle
+warning remains. Canonical: docs/design/JOB_LOADOUTS.md.
+
+At the user's request reset only Grimm and Local Tester in data/fortcamp-dev.db,
+with SQLite backups and Discord registrations preserved. Cleared their 59 owned
+contracts and associated result notices. Shared board and production untouched.
+The reset tool supports --keep-registration; no credentials or media were pushed.
+
 ## October 4: Combat ability foundation
 
 Implemented versioned snapshots, independent cooldowns/charges, ordered effects and validated conditions using existing combat primitives. Precision Shot/Arc Bolt/Field Care are cooldown pilots; all other existing gear techniques keep individual one-use limits. Polling never starts activations. Legacy battle rules preserved. Removed new-battle twenty-round loss; auto step limit pauses. Twelve Jobs/loadouts/summons remain deferred. Added backend/frontend coverage and isolated browser review; all 45 authored gear definitions validated. Auto pathfinding wall stalls in two older maps recorded in backlog. Production and real saves untouched.

@@ -110,3 +110,12 @@ techniques, personality-aware AI scoring, equipment expansions and integration
 with the full twelve-Job creation/loadout catalogue. Champion kits stay deferred.
 Current template values need solo E-rank, paired D-rank, objective and resistance
 balance checks after the starter kits become playable.
+
+## Starter integration, October 4
+
+Engineer and Summoner are now creator choices with matching poor kits. Regular
+Job loadouts use the existing deployment rules. Auto can command a ready owned
+unit using legal movement and the owner's action, without extra initiative turns.
+All twelve Jobs have a solo Storehouse completion smoke check; this does not
+replace encounter balance or personality-aware kit AI. Dedicated placement,
+repair/reclaim/release controls and final art remain deferred.

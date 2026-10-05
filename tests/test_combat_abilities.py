@@ -10,7 +10,9 @@ from backend.game import new_game
 
 class AbilityFoundationTests(unittest.TestCase):
     def fixture(self,role='mage'):
-        state=new_game({'name':'Test','starting_role':role})
+        state=new_game({'name':'Test','traits':['medic']} if role=='medic' else {'name':'Test','starting_role':role})
+        # These fixtures isolate the equipment ability foundation, not Job kits.
+        state['characters'][0].update(job_id=None,learned_skills=[],equipped_skills=[])
         b=create_goblin_warcamp_battle(state,['player'],'ability-fixture')
         a=b['units']['player'];t=b['units']['gob_guard']
         b.update(terrain=[],decorations=[],ground_tiles=[],elevation=[],void_tiles=[],turn_order=['player',t['id']],turn_index=0)

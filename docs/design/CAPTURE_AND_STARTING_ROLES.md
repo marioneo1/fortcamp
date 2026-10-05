@@ -1,23 +1,41 @@
 # Capture weapons, starting roles and level direction
 
-Updated October 2, 2026. Capture weapons and the six starting roles below are implemented in dev. Experience, character levels and specialization trees are proposals, not live features. This document supersedes earlier references to ordinary unarmed/blunt Subdue, Capture Gloves enabling any weapon, and starter selection as independently chosen perks and professions.
+Updated October 4, 2026. Capture weapons and all twelve starting Jobs are
+implemented in dev. Job practice unlocks skills without automatic stat growth;
+character levels and advanced Jobs remain proposals. See JOB_LOADOUTS.md.
 
-## Starting roles — implemented
+## Starting Jobs - implemented
 
-Starting role means your initial kit, one perk and one Basic proficiency. It is not a permanent class: equipment, work professions and later perks can change your build. Race remains a separate choice. The server selects the matching kit and proficiency; the creator previews them together rather than offering misleading independent class/training choices.
+Job means combat class. Work proficiencies are separate and no longer selectable
+as starter Jobs. Each new character receives three equipped Job skills, an
+automatic Basic proficiency and matching poor-quality equipment. Race is separate.
+Choosing a Job is permanent for now; gear and equipped skills can change the build.
 
-| Role | Initial perk | Basic proficiency | Weapon kit | Purpose |
-|---|---|---|---|---|
-| Fighter | Guard | Combat | Chipped Sword + Splintered Shield | STR damage and armor |
-| Ranger | Scout | Combat | Frayed Bow | DEX damage, movement and initiative |
-| Mage | Arcane Apprentice | Magic | Cracked Wand | INT attacks; no forced element |
-| Captor | Captor | Combat | Frayed Capture Net | Balanced STR/DEX/INT capture checks |
-| Medic | Field Medic | Medicine | Cracked Wand | INT attacks and Field Care |
-| Engineer | Engineer | Building | Worn Mallet | STR attacks, building work and defense preparation |
+| Job | Basic proficiency | Weapon kit | Starting attribute focus |
+|---|---|---|---|
+| Fighter | Combat | Chipped Sword + Splintered Shield | STR |
+| Barbarian | Combat | Nicked Axe | STR |
+| Rogue | Combat | Pitted Dagger | DEX |
+| Ranger | Combat | Frayed Bow | DEX |
+| Mage | Magic | Cracked Wand | INT |
+| Cleric | Magic | Tarnished Prayer Rod | INT |
+| Monk | Combat | Frayed Handwraps | DEX |
+| Bard | Magic | Battered Song Focus | INT |
+| Druid | Magic | Weathered Grove Staff | INT; forms alter melee options |
+| Engineer | Building | Worn Mallet + Bent Tool Kit | STR personal attacks |
+| Summoner | Magic | Faded Calling Focus | INT |
+| Captor | Combat | Frayed Capture Net | Balanced STR/DEX/INT |
 
-Every role also receives Worn Jacket and Work Boots. Weapons are Common, power 0–1. The Frayed Capture Net has the lowest capture quality and range 1. Medic and Engineer are utility starts rather than promises of a complete advanced combat class. Their existing healing/preparation mechanics make them useful immediately. General arcane training replaces the creator's forced Fire Magic selection; existing Fire Magic characters keep their perk.
+Every Job also receives Worn Jacket and Work Boots. Weapons are Common, power
+0-1. The vendor offers all starter kits for 4-6 gold per item, above resale value.
+New kit icons reuse existing artwork pending a coherent art pack.
 
-Existing saved characters are not re-equipped or retrained. Older callers without `starting_role` retain the legacy kit selection for compatibility. Dedicated starter/capture art has not been generated in this pass: the UI explicitly uses existing local item art.
+Legacy Fighter/Ranger/Mage/Captor/Engineer traits remain. New Jobs rely on actual
+skills rather than invented placeholder traits. Medicine training and Field Care
+remain available on existing characters; Medic is no longer a creation choice.
+Existing characters are not re-equipped or silently assigned a Job. Internal
+legacy callers remain compatible; the public creation API requires a known Job
+and defaults to Fighter when omitted.
 
 ## Capture — implemented
 

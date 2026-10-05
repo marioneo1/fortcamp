@@ -7,6 +7,12 @@ from backend.economy import camp_action
 from backend.main import CharacterCreate
 
 class SoloOnboardingTests(unittest.TestCase):
+    def test_starter_api_defaults_to_a_job_and_rejects_retired_medic(self):
+        self.assertEqual(CharacterCreate().starting_role,'fighter')
+        for job in ('captor','summoner','cleric','rogue'):
+            self.assertEqual(CharacterCreate(starting_role=job).starting_role,job)
+        with self.assertRaises(ValueError):CharacterCreate(starting_role='medic')
+
     def test_solo_bonus_only_in_free_phase_and_stacks_with_upgrades(self):
         state=new_game({'name':'Solo'});state['claim_upgrade']=2
         self.assertEqual(claim_budget(state,1000,1000,1059)['limit'],5)

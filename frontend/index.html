@@ -10,18 +10,16 @@
   <div class="creator-grid">
     <label>Name<input id="cc-name" value="Wanderer" maxlength="32"></label>
     <label>Race<select id="cc-race"></select></label>
-    <label>Starting role<select id="cc-trait"></select></label>
-    <label>Starting proficiency · Basic<select id="cc-perk"></select></label>
+    <label>Starting Job<select id="cc-trait"></select></label>
   </div>
   <div id="creator-race-info" class="creator-choice-info" aria-live="polite"></div>
   <div id="creator-training-info" class="creator-choice-info" aria-live="polite"></div>
   <details class="creator-customization"><summary>Optional background and portrait</summary><div class="creator-grid">
     <label>Origin<input id="cc-series" value="Player" maxlength="64"></label>
-    <input type="hidden" id="cc-specialty" value="Survivor">
     <label>Portrait URL<input id="cc-portrait" placeholder="https://..."><div id="cc-portrait-preview" class="portrait-url-preview"><span>Portrait preview</span></div></label>
-  </div><p class="muted small">You can upload or replace your portrait later in the roster. Your starting role is a head start, not a permanent class restriction.</p></details>
+  </div><p class="muted small">You can upload or replace your portrait later. Your Job is permanent for now; your equipped skills and gear can change while idle.</p></details>
   <div class="stat-header"><strong>Attributes</strong><span id="attribute-points-left"></span></div>
-  <p class="muted small">STR drives melee damage, DEX ranged damage, INT magic damage, and VIT determines the displayed CON rating. Capture weapons use balanced STR, DEX and INT.</p>
+  <p class="muted small">Weapons list their damage attribute: usually STR for heavy melee, DEX for bows and agile weapons, or INT for magic. VIT improves durability. Capture weapons use balanced STR, DEX and INT.</p>
   <div id="creator-attributes" class="creator-stats"></div>
   <p class="creator-solo-bonus">Solo start: +10 Contract Points in each pool's free-for-all while you have exactly one character. Opening waves still give five points each.</p>
   <button id="create-game" class="primary big">Begin with Tent + Campfire</button>

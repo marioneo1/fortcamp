@@ -3,6 +3,7 @@ import hashlib
 import random
 import time
 from copy import deepcopy
+from .starter_equipment import STARTER_PRICES
 
 JOBS = {
     'wood': ('Logging clearing', 'building', 18),
@@ -211,8 +212,7 @@ def trade_view(state,player_key,now=None):
             'rotation':{'faction':active_faction,'ends_at':(rotation_slot+1)*48*3600,'next_name':FACTIONS[next_faction]['name']},
             'camp_items':[{'id':f'camp:{iid}', 'item':iid, 'price':price, 'stock':999}
                           for iid,price in [('field_dressing',8),('restorative_tonic',18),('cleansing_salts',14),
-                           ('rusty_knife',4),('chipped_sword',6),('splintered_shield',5),('frayed_bow',6),('cracked_wand',6),
-                           ('frayed_capture_net',6),('worn_mallet',4),('knotted_staff',4),('worn_jacket',5),('work_boots',4)]],
+                           *STARTER_PRICES.items()]],
             'supplies':[{'resource':'food','price':2},{'resource':'medicine','price':6}]}
 
 def purchase(state,player_key,offer_id,now=None):

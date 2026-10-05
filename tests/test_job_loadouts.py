@@ -8,7 +8,7 @@ from tests import test_combat_abilities as fixtures
 
 class JobLoadoutTests(unittest.TestCase):
     def state(self):
-        return new_game({'name':'Tester','starting_role':'fighter'})
+        return new_game({'name':'Tester'})
 
     def test_all_twelve_toolboxes_validate_and_snapshot_without_gear_changes(self):
         self.assertEqual(len(jobs.JOBS),12)

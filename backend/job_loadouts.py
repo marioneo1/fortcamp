@@ -76,9 +76,67 @@ register('summoner','Summoner','Choose a commanded companion or automatic wisps.
     active('wisps','Wisp Pair','Self only: summon two automatic wisps, using 2 capacity together. Share the automatic output budget.',[{'type':'deploy','entity':'wisps'}],'ally',1,'line_of_effect',3),
     passive('footwork','Keep Distance','Gain 5 evasion; your summons remain linked to you.',{'evasion':5}))
 register('captor','Captor','Isolate a target or hold enemies for capture. Capture weapons remain necessary for Subdue.',
-    active('bind','Binding Line','Bind an enemy for one activation. Range 2; no damage or guaranteed capture.',[{'type':'status','status':'bind','turns':1,'chance':75}],range=2,rule='ballistic',cooldown=3),
+    active('bind','Binding Line','Attempt Bind for two target activations, leaving time for a follow-up capture. Range 2; 75% before resistance, no damage or guaranteed capture.',[{'type':'status','status':'bind','turns':2,'chance':75}],range=2,rule='ballistic',cooldown=3),
     active('pull','Reel In','Pull an enemy one cell toward you. Stable targets resist. No damage.',[{'type':'displace','mode':'pull','distance':1}],range=2,rule='ballistic'),
-    passive('anchored','Sure Grip','Gain 25 knockback resistance. Does not improve capture chance.',{'knockback_resistance':25}))
+    passive('anchored','Sure Grip','Gain 25 knockback resistance and +4 capture chance with capture weapons. No damaging attack bonus.',{'knockback_resistance':25,'capture_chance':4}))
+
+
+def later(job, *skills):
+    unlocks=[]
+    for threshold,original in zip((2,5,9),skills):
+        skill=deepcopy(original);skill['id']=f'job:{job}:{skill["id"]}';skill['source_name']=JOBS[job]['name']
+        SKILLS[skill['id']]=skill;unlocks.append({'skill_id':skill['id'],'contracts':threshold})
+    JOBS[job]['unlocks']=unlocks
+
+
+later('fighter',
+    passive('riposte','Riposte','Counter a survived melee hit at half attack when in reach. Intercept and Riposte compete for one reaction.',reaction={'id':'riposte','name':'Riposte'}),
+    strike('pull','Break Formation','Melee hit pulls one cell toward you. Stable targets resist.',{'type':'displace','mode':'pull','distance':1}),
+    active('rally','Hold Together','Remove Fear and give a nearby ally a 12 HP Barrier for one activation.',[{'type':'cleanse','statuses':['fear']},{'type':'barrier','amount':12,'turns':1}],'ally',2,'physical_care',3))
+later('barbarian',
+    passive('hide','Thick Hide','Gain 1 armor; offers durability instead of another active skill.',{'armor':1}),
+    active('drive','Drive Back','Melee hit pushes up to two cells. Walls stop the push; pit rules and resistance apply.',[{'type':'attack','damage_bonus':0},{'type':'displace','mode':'push','distance':2,'conditions':[{'type':'hit'}]}],cooldown=3),
+    active('stand','Stand Your Ground','Remove Fear from yourself or an adjacent ally and grant Guard.',[{'type':'cleanse','statuses':['fear']},{'type':'guard'}],'ally',1,'physical_care',3))
+later('rogue',
+    strike('venom','Venom Edge','Melee hit attempts Poison for two target activations. Poison immunity applies.',{'type':'status','status':'poison','turns':2,'chance':75}),
+    strike('pin','Pinning Strike','Melee hit attempts Bind for one activation. Control recovery prevents repeated locks.',{'type':'status','status':'bind','turns':1,'chance':75}),
+    passive('riposte','Close Counter','Counter a survived melee hit at half attack when in reach. One shared reaction.',reaction={'id':'riposte','name':'Close Counter'}))
+later('ranger',
+    active('poison','Poisoned Dart','Attempt Poison at range 4 for two target activations. 75% before resistance; no direct damage.',[{'type':'status','status':'poison','turns':2,'chance':75}],range=4,rule='ballistic',cooldown=3),
+    active('dust','Dust Shot','Attempt Blind at range 4 for one activation. 75% before resistance; no direct damage.',[{'type':'status','status':'blind','turns':1,'chance':75}],range=4,rule='ballistic',cooldown=3),
+    passive('anchored','Steady Position','Gain 25 knockback resistance. Does not improve accuracy.',{'knockback_resistance':25}))
+later('mage',
+    active('binding','Binding Circle','Create enemy-binding ground around a target for two of your activations. Entering triggers control recovery rules.',[{'type':'zone','zone':'binding','radius':1,'turns':2}],range=3,rule='line_of_effect',cooldown=3),
+    active('scorch','Scorch','Attempt Burn for two target activations, 75% before resistance. No direct damage.',[{'type':'status','status':'burn','turns':2,'chance':75}],range=3,rule='line_of_effect',cooldown=3),
+    passive('armored','Wardweave','Gain 1 armor; consumes a slot instead of another spell.',{'armor':1}))
+later('cleric',
+    active('sanctuary','Sanctuary','Create healing ground around an ally for two of your activations. Restores 3 HP at ally activation start; Burn prevents healing.',[{'type':'zone','zone':'sanctuary','radius':1,'turns':2}],'ally',3,'line_of_effect',3),
+    active('barrier','Shelter','Give an ally a 14 HP Barrier for two target activations. Replaces weaker Barriers; does not stack.',[{'type':'barrier','amount':14,'turns':2}],'ally',3,'line_of_effect',3),
+    passive('intercept','Stand Beside Them','Intercept one direct attack against an adjacent ally. Shares your reaction allowance.',reaction={'id':'intercept','name':'Stand Beside Them'}))
+later('monk',
+    strike('bind','Joint Lock','Melee hit attempts Bind for one activation; 75% before resistance.',{'type':'status','status':'bind','turns':1,'chance':75}),
+    passive('returning','Returning Hand','After an enemy misses a melee attack, counter at half attack if in reach. Competes with Riposte for one reaction.',reaction={'id':'returning_hand','name':'Returning Hand'}),
+    passive('stance','Patient Stance','Gain 1 armor. Trades a slot for staying power.',{'armor':1}))
+later('bard',
+    active('refrain','Restoring Refrain','Apply Regeneration for two ally activations. Cannot revive.',[{'type':'status','status':'regeneration','turns':2}],'ally',3,'line_of_effect',3),
+    active('silence','Silencing Note','Attempt Mute for one target activation; 70% before resistance.',[{'type':'status','status':'mute','turns':1,'chance':70}],range=3,rule='line_of_effect',cooldown=3),
+    active('cover','Protective Verse','Grant Guard to an ally at range 3. Mute prevents this spell.',[{'type':'guard'}],'ally',3,'line_of_effect',3))
+later('druid',
+    active('bulwark','Bulwark Form','Self only: INT-based melee, +3 armor, -1 movement and 50 knockback resistance for two of your activations. No HP refill.',[{'type':'form','form':'bulwark','turns':2}],'ally',1,'line_of_effect',3),
+    active('sprite','Grove Sprite','Self only: deploy an automatic healing sprite using 1 capacity. It shares the owner output budget.',[{'type':'deploy','entity':'grove_sprite'}],'ally',1,'line_of_effect',3),
+    active('bark','Bark Ward','Give yourself or an adjacent ally a 12 HP Barrier for two target activations.',[{'type':'barrier','amount':12,'turns':2}],'ally',1,'line_of_effect',3))
+later('engineer',
+    active('trap','Binding Trap','Create enemy-binding ground around a target for two of your activations. Range 2; control recovery applies.',[{'type':'zone','zone':'binding','radius':1,'turns':2}],range=2,rule='ballistic',cooldown=3),
+    active('plate','Cover Plate','Give yourself or an adjacent ally Guard and an 8 HP Barrier for one target activation.',[{'type':'guard'},{'type':'barrier','amount':8,'turns':1}],'ally',1,'physical_care',3),
+    passive('brace','Braced Frame','Gain 50 knockback resistance. No extra Components or device damage.',{'knockback_resistance':50}))
+later('summoner',
+    active('bulwark','Stone Bulwark','Self only: deploy a durable commanded defender using 2 capacity. Attacks consume your action.',[{'type':'deploy','entity':'bulwark'}],'ally',1,'line_of_effect',3),
+    active('sprite','Grove Sprite','Self only: deploy an automatic healing sprite using 1 capacity. Shares the automatic output budget.',[{'type':'deploy','entity':'grove_sprite'}],'ally',1,'line_of_effect',3),
+    active('manifest','Astral Guardian','Self only: once per encounter, deploy a commanded guardian using 2 capacity. Attacks consume your action.',[{'type':'deploy','entity':'manifestation'}],'ally',1,'line_of_effect',3))
+later('captor',
+    active('field','Restraint Field','Create enemy-binding ground around a target for two of your activations. Entering attempts Bind; does not capture.',[{'type':'zone','zone':'binding','radius':1,'turns':2}],range=2,rule='ballistic',cooldown=3),
+    active('dust','Blinding Powder','Attempt Blind for one target activation at range 2. 75% before resistance; no damage.',[{'type':'status','status':'blind','turns':1,'chance':75}],range=2,rule='ballistic',cooldown=3),
+    passive('coat','Padded Coat','Gain 1 armor. Does not improve capture chance.',{'armor':1}))
 
 
 def eligible(character):
@@ -92,6 +150,8 @@ def initialize(character):
         character.setdefault('learned_skills',[])
         character.setdefault('equipped_skills',[])
         character.setdefault('skill_slots',CAPACITY)
+        character.setdefault('job_practice',0)
+        character.setdefault('job_contract_credits',[])
     return character
 
 
@@ -129,6 +189,26 @@ def snapshot(character):
             passives.append(skill)
             for stat,value in skill['modifiers'].items():modifiers[stat]=modifiers.get(stat,0)+value
     return actives,passives,modifiers
+
+
+def credit_contract(state, party_ids, outcome, contract_key, debug=False):
+    """One practice per successful expedition; never grant retroactive stats/slots."""
+    if debug or outcome not in {'success','critical_success'}:return []
+    results=[]
+    for character in state.get('characters',[]):
+        if character['id'] not in party_ids or not eligible(character) or character.get('job_id') not in JOBS:continue
+        initialize(character)
+        if contract_key in character['job_contract_credits']:continue
+        character['job_contract_credits']=(character['job_contract_credits']+[contract_key])[-32:]
+        character['job_practice']+=1
+        learned=[]
+        for unlock in JOBS[character['job_id']]['unlocks']:
+            key=unlock['skill_id']
+            if character['job_practice']>=unlock['contracts'] and key not in character['learned_skills']:
+                character['learned_skills'].append(key);learned.append(key)
+        results.append({'character_id':character['id'],'name':character.get('name','Adventurer'),
+                        'practice':character['job_practice'],'learned':learned})
+    return results
 
 
 def public_catalog():

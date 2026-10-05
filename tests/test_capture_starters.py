@@ -29,7 +29,7 @@ class CaptureStarterTests(unittest.TestCase):
             with self.subTest(role=role):
                 state=new_game({'starting_role':role, 'traits':['fire_magic','guard'], 'perks':{'magic':'master'}})
                 char=state['characters'][0]
-                self.assertEqual(char['traits'],[definition['perk']])
+                self.assertEqual(char['traits'],[definition['perk']] if definition['perk'] else [])
                 self.assertEqual([k for k,v in char['perks'].items() if v!='none'],[definition['proficiency']])
                 self.assertEqual(char['perks'][definition['proficiency']],'basic')
                 gear={i['item_id'] for i in state['inventory']}
@@ -37,11 +37,13 @@ class CaptureStarterTests(unittest.TestCase):
                 self.assertTrue(all(ITEMS[k]['rarity']=='common' and ITEMS[k].get('power',0)<=1 for k in definition['kit']))
 
     def test_medic_can_treat_and_mage_is_not_forced_into_fire_magic(self):
-        _,_,medic,_=self.battle('medic')
+        legacy=new_game({'traits':['medic']})
+        medic=create_goblin_warcamp_battle(legacy,['player'],'legacy-medic')['units']['player']
         self.assertIn('field_care',[s['id'] for s in medic['skills']])
         state,_,mage,_=self.battle('mage')
         self.assertEqual(mage['scaling'],'int')
         self.assertNotIn('fire_magic',state['characters'][0]['traits'])
+        with self.assertRaises(ValueError):new_game({'starting_role':'medic'})
 
     def test_invalid_role_rejected_and_existing_saves_keep_equipment(self):
         with self.assertRaises(ValueError):new_game({'starting_role':'master assassin'})

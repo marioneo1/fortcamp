@@ -145,7 +145,7 @@ app.mount("/api/champion-portraits", StaticFiles(directory=CHAMPION_PORTRAIT_ROO
 
 
 class CharacterCreate(BaseModel):
-    starting_role: str | None = None
+    starting_role: str = 'fighter'
     name: str = "Wanderer"
     race: str = "Human"
     series: str = "Player"
@@ -155,6 +155,13 @@ class CharacterCreate(BaseModel):
     stats: dict[str, int] = {}
     attributes: dict[str, int] = {}
     perks: dict[str, str] = {}
+
+    @field_validator('starting_role')
+    @classmethod
+    def known_starting_job(cls, value):
+        from .starter_equipment import STARTING_ROLES
+        if value not in STARTING_ROLES:raise ValueError('Choose a starting Job')
+        return value
 
     @field_validator('race')
     @classmethod

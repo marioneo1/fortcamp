@@ -323,12 +323,14 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
                            'elevation_rule': 'physical_care', 'description': 'One shared technique use per battle. Range 1: restore 8 + half INT HP and stop Bleed. Physical treatment works while muted; cannot revive.'})
     from .job_loadouts import snapshot as snapshot_loadout
     job_skills, job_passives, job_modifiers = snapshot_loadout(character)
-    skills = abilities.snapshot(job_skills + skills, _effective_attribute(state, character, 'int'))
+    skills = abilities.snapshot(skills + job_skills, _effective_attribute(state, character, 'int'))
     special = skills[0] if skills else None
     rules=collect_rules(equipped)
     race = character.get("race", "Human")
     racial = race_gameplay(race)
     perks = modifiers(state,character,ITEMS,'combat')
+    if job_modifiers.get('capture_chance'):
+        perks['capture_chance']=perks.get('capture_chance',0)+job_modifiers['capture_chance']
     base_hp = 24 + vit * 4
     max_hp = max(8, round(base_hp * float(racial["hp_multiplier"])) + int(racial["hp_bonus"])) + perks.get('hp',0)
     return {
@@ -741,7 +743,7 @@ def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission
         if spec.get('rookie'):
             unit.update(hp=10 if index==0 else 7,max_hp=10 if index==0 else 7,armor=0,attack=3,initiative=8+index,move=3)
         if spec.get('creature'):
-            unit.update(name=f"{spec['creature']} {index+1}",portrait='',weapon='Bite',corpse_item=None,corpse_item_chance=0,boss=False,creature=True)
+            unit.update(name=f"{spec['creature']} {index+1}",kind='creature',portrait='',weapon='Bite',corpse_item=None,corpse_item_chance=0,boss=False,creature=True)
             unit['corpse_gold']=(0,0)
         if index in board.get('ambush_enemy_indices', []):
             unit['bush_ambusher'] = True
@@ -2290,6 +2292,7 @@ def _support_eligible(battle, actor, target, effect):
             or (effect.get('heal', 0) > 0 and target['hp'] < target['max_hp'])
             or (effect.get('barrier',0)>max((s.get('amount',0) for s in target.get('statuses',[]) if s['id']=='barrier'),default=0))
             or (effect.get('guard_ally') and not target.get('guarding'))
+            or any(not conditions.has(target,s) for s in effect.get('support_statuses',[]))
             or any(s.get('id') in effect.get('cleanses', []) for s in target.get('statuses', [])))
 
 
@@ -2317,6 +2320,7 @@ def _support_effect(skill, actor):
         effect['heal']=sum(e['amount'] for e in skill['effects'] if e['type']=='heal')
         effect['cleanses']=[s for e in skill['effects'] if e['type']=='cleanse' for s in e['statuses']]
         effect['guard_ally']=any(e['type']=='guard' for e in skill['effects'])
+        effect['support_statuses']=[e['status'] for e in skill['effects'] if e['type']=='status' and e['status'] in {'regeneration','braced'}]
         effect['barrier']=max((e['amount'] for e in skill['effects'] if e['type']=='barrier'),default=0)
         effect['form_change']=any(e['type']=='form' for e in skill['effects'])
         effect['zone_setup']=any(e['type']=='zone' for e in skill['effects'])
@@ -2519,7 +2523,7 @@ def _auto_support(battle, unit):
                 except ValueError:continue
             _resolve_ability(battle,unit,unit,skill);_finish_turn(battle);return True
         targets = [u for u in _living(battle, unit['team']) if _support_eligible(battle, unit, u, effect)
-                   and ((effect.get('heal') and u['hp'] <= u['max_hp'] * .65) or any(s['id'] in effect.get('cleanses', []) for s in u['statuses'])
+                   and (((effect.get('heal') or effect.get('support_statuses')) and u['hp'] <= u['max_hp'] * .65) or any(s['id'] in effect.get('cleanses', []) for s in u['statuses'])
                         or ((effect.get('barrier') or effect.get('guard_ally')) and any(_distance(u,e)<=4 for e in _visible_enemies(battle))))]
         if targets:
             target = min(targets, key=lambda u: u['hp'] / u['max_hp'])
@@ -2529,6 +2533,26 @@ def _auto_support(battle, unit):
                 abilities.spend(unit,skill)
             _finish_turn(battle)
             return True
+    return False
+
+
+def _auto_commanded_entity(battle,owner,tactic):
+    """Spend the owner's one action on a useful commanded strike; no extra turn."""
+    for unit in entities.owned(battle,owner):
+        if unit['policy']!='commanded' or not entities.can_command(battle,owner,unit):continue
+        if unit.get('acted') or (unit['resource_pool']=='capacity' and conditions.has(owner,'mute')):continue
+        targets=[u for u in _entity_targets(battle,unit) if not (tactic=='objective' and u.get('capture_role')=='live_target')]
+        costs,parents=_movement_tree(battle,unit)
+        options=[]
+        for target in targets:
+            if _can_attack(battle,owner,target,owner['attack_range']) and owner['attack']>=unit['attack']:continue
+            for (x,y),cost in costs.items():
+                if _can_attack(battle,{**unit,'x':x,'y':y},target,unit['attack_range']):options.append((cost,target['hp'],target['id'],x,y))
+        if not options:continue
+        _,_,target_id,x,y=min(options)
+        if (x,y)!=(unit['x'],unit['y']):_entity_command(battle,owner,{'action':'summon_move','entity_id':unit['id'],'x':x,'y':y})
+        _entity_command(battle,owner,{'action':'summon_attack','entity_id':unit['id'],'target_id':target_id})
+        _finish_turn(battle);return True
     return False
 
 
@@ -2551,6 +2575,8 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
         _finish_turn(battle)
         return
     if _auto_support(battle, unit):
+        return
+    if _auto_commanded_entity(battle,unit,tactic):
         return
     objective_runner = max(_living(battle, "player"), key=lambda candidate: (candidate["move"], candidate["initiative"], candidate["id"]))
     world_has_active_objects = any(obj["state"] in {"locked", "active"} for obj in battle["objects"].values())
@@ -2654,6 +2680,11 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
 
 def _auto_open_gate(battle, unit, target):
     if _can_attack(battle,unit,target):return False
+    # A pursuit goal can already be the current cell, across an edge-mounted
+    # door. The route is then empty, but the door still needs opening.
+    for gate in crossed_walls(battle,(unit['x'],unit['y']),(target['x'],target['y']),sight=True):
+        if gate.get('kind')=='gate' and not gate.get('destroyed') and gate.get('state')!='opened' and can_operate_gate(unit,gate):
+            _interact(battle,unit,gate['id']);return True
     if not any(t.get('kind')=='gate' and not t.get('destroyed') and t.get('state')!='opened'
                and can_operate_gate(unit,t) for t in battle.get('terrain',[])):
         return False

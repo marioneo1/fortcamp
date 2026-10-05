@@ -6,14 +6,11 @@ regular-character skill slots, all equipped gear abilities accessible without
 consuming those slots, and Champion kits deferred. Individual abilities and
 balance values below remain proposals.
 
-Current runtime still has six starting roles and equipment-driven techniques.
-The [loadout foundation](JOB_LOADOUTS.md) now supplies twelve opt-in initial
-toolboxes through Roster → Skills; it does not yet replace starter creation or
-implement the full catalogue/progression proposed below.
-The [ability foundation](COMBAT_ABILITIES.md) is now implemented in dev. The
-twelve Jobs and proposed 96 skills are not playable yet.
-See CAPTURE_AND_STARTING_ROLES.md for live behavior. Do not present this draft
-as playable content. No advanced Jobs, Champion kits or final XP curve here.
+Current runtime publishes all twelve starting Jobs together with matching kits.
+Three skills start equipped; three more unlock at 2/5/9 successful contracts.
+The 72 implemented definitions and actual rules are documented in JOB_LOADOUTS.md.
+The 96 proposed skills below remain a larger design catalogue, not a claim that
+every ability is implemented. Champion kits, levels and advanced Jobs are deferred.
 
 ## Boundaries and progression
 

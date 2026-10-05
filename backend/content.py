@@ -1308,3 +1308,5 @@ from .perk_effects import PERK_EFFECTS
 apply_capture_content(ITEMS, MISSION_TEMPLATES, GENERAL_LOOT_TABLE, EVENT_REWARD_TABLES, STANDALONE_PERKS, PERK_EFFECTS)
 for _id,_art in {'chipped_sword':'knight_blade','splintered_shield':'ironcap_buckler','cracked_wand':'ember_staff','frayed_bow':'short_bow','worn_mallet':'warhammer','knotted_staff':'scrap_hatchet'}.items():
     ITEMS[_id]['icon']=f'/assets/catalogue/items/{_art}.png'
+from .starter_equipment import apply_starter_content
+apply_starter_content(ITEMS)

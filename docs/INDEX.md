@@ -1,23 +1,20 @@
 # Fortcamp documentation map
 
-Current loadout foundation: [Jobs and character loadouts](design/JOB_LOADOUTS.md)
-covers five shared slots, learned/equipped IDs, twelve opt-in three-skill
-toolboxes, battle snapshots, passive effects and roster UI. Full starting-Job
-creation and progression remain pending.
+Current starting Jobs: [Jobs and character loadouts](design/JOB_LOADOUTS.md)
+covers twelve creator choices, matching poor equipment, 72 implemented skills,
+five shared slots, learned/equipped IDs and unlocks at 2/5/9 successful contracts.
+[Capture and starter equipment](design/CAPTURE_AND_STARTING_ROLES.md) documents
+capture rules and starter kits. [The larger design draft](design/STARTING_JOBS_AND_SKILLS_V1.md)
+preserves the proposed 96-skill catalogue; unimplemented entries stay proposals.
 
-Current summon/device foundation: [Owner-linked deployments](design/COMBAT_DEPLOYMENTS.md) documents action/resource rules, tested profiles, UI, rewards and pending Job integration. [Artwork plan](art/SUMMON_DEVICE_ART.md) records the staged atlas and portrait-circle decision for mobile units.
+Current summon/device foundation: [Owner-linked deployments](design/COMBAT_DEPLOYMENTS.md)
+documents action/resource rules, profiles, commanded auto attacks and remaining
+placement/AI work. [Artwork plan](art/SUMMON_DEVICE_ART.md) records staged art and
+portrait-circle presentation for mobile units.
 
-Current spaces foundation: [Combat zones and forms](design/COMBAT_SPACES.md) documents engine rules, fixed effect IDs, expiry/stacking, reversible forms, presentation and remaining targeting/AI work. No Job release yet.
-
-Implemented tactical dependencies: [Combat ability foundation](design/COMBAT_ABILITIES.md) now also covers Barrier/Mark, control timing, shared reactions, knockback resistance and authored pit outcomes. Linked documents above cover the subsequent spaces, deployments and loadout foundations.
-
-Implemented first dependency: [Combat ability foundation](design/COMBAT_ABILITIES.md) covers per-technique costs, ordered effects, activation timing and legacy saves. Twelve starting Jobs remain proposed.
-
-Starting Jobs — proposal: [Twelve Jobs and initial skill catalogues](design/STARTING_JOBS_AND_SKILLS_V1.md)
-records starter kits, 96 proposed skills, five regular slots, unrestricted equipped
-gear ability access, and proposed summon/turret/form/control rules. It is not live
-content; [capture and starting roles](design/CAPTURE_AND_STARTING_ROLES.md) remains
-the implemented reference. Champion kits are deferred.
+Current tactical foundation: [Abilities](design/COMBAT_ABILITIES.md) and
+[zones/forms](design/COMBAT_SPACES.md) cover ordered effects, cooldowns, statuses,
+reactions, displacement, zones and reversible forms. Champion kits remain deferred.
 
 Construction sizing: [142-prop audit](art/CONSTRUCTION_PROP_SIZE_AUDIT.md), [overhead chairs and training pack](art/FURNITURE_TRAINING_OVERHEAD_V1.md), and [construction controls](design/BASE_CONSTRUCTION.md) cover calibrated visual sizes, placement-only boxes and preserved movement rules.
 

@@ -1,5 +1,32 @@
 # Fortcamp feature backlog
 
+## October 4: Twelve starting Jobs and first unlocks (dev)
+
+Published all twelve Jobs together in character creation with matching Common
+poor-quality kits. Removed Medic and independent work-proficiency selection;
+legacy medicine characters retain Field Care. Three starting skills are equipped
+and three more unlock at 2/5/9 successful contracts: 72 executable skills total.
+Five character slots remain shared by actives/passives; gear abilities are uncapped
+and consume no character slots. Unlocks never automatically equip or grow stats.
+
+Vendor stock includes all starter equipment, using existing art pending a coherent
+icon pack. Improved regeneration targeting and commanded-unit auto attacks. Fixed
+closed-door pursuit stalls and creature objectives inheriting chieftain capture
+resistance. Captor Binding Line now allows a follow-up capture attempt and Sure
+Grip adds four capture points. Solo Captor combat is still harder; advanced kit
+AI, unique conditional passives, full draft catalogues and device art are pending.
+
+Validation: 124 related backend tests, 189 frontend tests and frontend build pass.
+Isolated browser checks cover twelve creator choices, starter previews, six-skill
+progression cards and five-slot swaps. All twelve solo Storehouse smoke encounters
+finish without stalling; not all builds win automatically. Existing large bundle
+warning remains. Canonical: docs/design/JOB_LOADOUTS.md.
+
+At the user's request reset only Grimm and Local Tester in data/fortcamp-dev.db,
+with SQLite backups and Discord registrations preserved. Cleared their 59 owned
+contracts and associated result notices. Shared board and production untouched.
+The reset tool supports --keep-registration; no credentials or media were pushed.
+
 October 4 deployment foundation (dev): seven trial profiles, owner-linked clocks, finite Components/capacity, shared automatic output, commanded movement/attacks, manual turret operation and dismissal implemented. No extra initiative turns, immediate deployment shots, corpse loot or prisoners. Context controls/resources and tooltips installed; no starter Jobs released. Next: dedicated ground placement/command UI, repairs/reclaim/release skills and full Job loadouts/AI/catalogues. Canonical: docs/design/COMBAT_DEPLOYMENTS.md.
 
 October 4 spaces foundation (dev): four bounded zone rules, real committed-route entry, overlap/expiry/owner checks, and two reversible form profiles implemented. No HP refill, race rewrite or new starter kits. Zone/form overlays and tooltips installed. Canonical: docs/design/COMBAT_SPACES.md. Next: owner-linked summons/devices, ground-target/command UI and Job loadouts; all twelve Jobs still launch together.

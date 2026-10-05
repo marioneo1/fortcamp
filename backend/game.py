@@ -56,7 +56,7 @@ def new_game(character: dict[str, Any]) -> dict[str, Any]:
     if role_id is not None and role_id not in STARTING_ROLES:
         raise ValueError('Choose a valid starting role')
     role = STARTING_ROLES.get(role_id)
-    traits = [role['perk']] if role else list(dict.fromkeys(character.get("traits", [])))[:4]
+    traits = ([role['perk']] if role['perk'] else []) if role else list(dict.fromkeys(character.get("traits", [])))[:4]
     perks = {track: "none" for track in PERK_TRACKS}
     for track, level in character.get("perks", {}).items():
         if track in perks and level in PERK_LEVELS:
@@ -79,6 +79,8 @@ def new_game(character: dict[str, Any]) -> dict[str, Any]:
         item={'instance_id':uid('item'),'item_id':item_id};inventory.append(item)
         equipment[ITEMS[item_id]['slot']]=item['instance_id']
 
+    from .job_loadouts import JOBS
+    starter_skills = list(JOBS[role_id]['starter_skills']) if role else []
     return {
         "version": 9,
         "created_at": int(time.time()),
@@ -100,6 +102,8 @@ def new_game(character: dict[str, Any]) -> dict[str, Any]:
             "traits": traits,
             "specialty": role["name"] if role else character.get("specialty", "Survivor")[:32],
             "starting_role": role_id,
+            "job_id": role_id, "job_practice": 0,
+            "learned_skills": starter_skills, "equipped_skills": list(starter_skills), "skill_slots": 5,
             "stats": stats,
             "perks": perks,
             "attributes": attributes,
@@ -1299,6 +1303,10 @@ def resolve_mission(state: dict, mission: dict, party_ids: list[str], analysis: 
         outcome = _classify_roll(die, total, difficulty, crit_threshold, critical_success_available, mission.get("rank", "E"), critical_roll)
 
     party = [find_char(state, cid) for cid in party_ids]
+    from .job_loadouts import credit_contract
+    combat_guards=list(analysis.get('bodyguard_ids',[])) if analysis.get('battle') else []
+    job_progress=credit_contract(state,list(dict.fromkeys(party_ids+combat_guards)),outcome,seed,
+                                 debug=bool(analysis.get('debug_battle')))
     record_mission(state, mission, list(dict.fromkeys(party_ids + list(analysis.get("bodyguard_ids", [])))), outcome, analysis.get("service_record_started",False))
     special_events = []
     for evt in mission.get("special_events", []):
@@ -1395,6 +1403,7 @@ def resolve_mission(state: dict, mission: dict, party_ids: list[str], analysis: 
         "special_events": special_events, "story": story, "rewards": awarded, "timestamp": resolved_at,
         "board_followups": board_followups,
         "debug_forced": bool(forced_outcome),
+        "job_progress": job_progress,
     }
     state.setdefault("mission_history", []).insert(0, result)
     state["mission_history"] = state["mission_history"][:30]

@@ -292,8 +292,7 @@ async function init(){
 }
 
 $('#create-game').onclick=async()=>{
-  const starter=$('#cc-perk').value;
-  try{const data=await rawApi('/api/new-game',{method:'POST',body:JSON.stringify({character:{name:$('#cc-name').value.trim()||'Wanderer',race:$('#cc-race').value.trim()||'Human',series:$('#cc-series').value.trim()||'Player',specialty:$('#cc-specialty').value,starting_role:$('#cc-trait').value,portrait:$('#cc-portrait').value.trim(),perks:{[starter]:'basic'},attributes:creatorAttributes}})});state=data.state;$('#creator').classList.add('hidden');showGame()}catch(e){toast(e.message)}
+  try{const data=await rawApi('/api/new-game',{method:'POST',body:JSON.stringify({character:{name:$('#cc-name').value.trim()||'Wanderer',race:$('#cc-race').value.trim()||'Human',series:$('#cc-series').value.trim()||'Player',starting_role:$('#cc-trait').value,portrait:$('#cc-portrait').value.trim(),attributes:creatorAttributes}})});state=data.state;$('#creator').classList.add('hidden');showGame()}catch(e){toast(e.message)}
 };
 
 function updateLiveCountdowns(){
@@ -941,6 +940,7 @@ function showResult(r){
   renderVisiblePanels();
   const rw=r.rewards||{},bits=[];
   if(rw.gold)bits.push(`+${rw.gold} Gold`);
+  (r.job_progress||[]).forEach(p=>{if(p.learned?.length)bits.push(`${p.name} learned: ${p.learned.map(id=>content.job_loadouts?.skills[id]?.name||id).join(', ')} · equip in Roster → Skills`)});
   Object.entries(rw.materials||{}).forEach(([k,v])=>bits.push(`+${v} ${title(k)}`));
   (rw.items||[]).forEach(x=>{const item=content.items[x];bits.push(item?{icon:iconPath(x),text:`${item.name} · ${title(item.rarity||'common')}${item.granted_perks?.length?` · grants ${item.granted_perks.map(p=>content.standalone_perks?.[p]?.name||title(p)).join(', ')}`:''}`} :x)});
   (rw.blueprints||[]).forEach(x=>bits.push(`${content.buildings[x]?.name||x} blueprint`));
