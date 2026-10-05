@@ -100,3 +100,12 @@ Validation: frontend build, 205 frontend tests and isolated browser inspection
 at 1440x1100 and 1440x900. All six command buttons retain icons/keycaps; skill
 art fills the enlarged squares; Fighter previews/contact/C cancellation still
 work. Production and saves are unchanged.
+
+## October 5: animation ordering and input lock
+
+Each token has one composed motion timeline: original position, contact/push,
+then later enemy movement. Later motions no longer prefill their positions.
+Commands and hotkeys wait for resolved attacks and all enemy motion to finish;
+a Resolving turn notice indicates the pause. Pure player movement previews
+remain interruptible, and lingering damage text does not block input. See
+[Fighter review](FIGHTER_COMBAT_REVIEW.md) for the bug and browser validation.

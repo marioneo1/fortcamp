@@ -33,6 +33,27 @@ import {createCombatEffects} from './combat-effects.js';
 import './combat-effects.css';
 import {impactTimeline,createImpactFeedback,protectionMarkup} from './combat-impact.js';
 import {COMBAT_MOTION,meleeFrames,recoilFrames,collisionFrames,collapseFrames,collapsePlacement} from './combat-animation.js';
+import {composeMotion,poseFrames,playbackDuration,needsPlaybackLock,createPlaybackGate} from './combat-playback.js';
+const combatPlayback=createPlaybackGate();
+const combatPlaybackKey=()=>`${activeBattleMissionId}:${activeBattleView?.encounter_id}:${activeBattleView?.seed}`;
+const combatPlaybackBlocked=()=>combatPlayback.blocked(combatPlaybackKey());
+let playbackUnlockTimer=null;
+function updatePlaybackControls(){
+  const root=$('#mission-detail');if(!root)return;
+  const blocked=combatPlaybackBlocked();root.classList.toggle('battle-playing',blocked);
+  root.querySelectorAll('[data-combat-mode],[data-combat-action],[data-context-toggle],[data-hotbar-skill],[data-tile-action],[data-context-action],[data-supply],#auto-step,#auto-resolve').forEach(button=>{
+    if(blocked&&!button.disabled){button.dataset.playbackDisabled='1';button.disabled=true}
+    else if(!blocked&&button.dataset.playbackDisabled){delete button.dataset.playbackDisabled;button.disabled=false}
+  });
+  let notice=root.querySelector('.battle-playback-notice');
+  if(blocked&&!notice){notice=document.createElement('div');notice.className='battle-playback-notice';notice.setAttribute('role','status');notice.textContent='Resolving turn…';root.querySelector('.battle-primary-panel')?.prepend(notice)}
+  if(!blocked)notice?.remove();
+  clearTimeout(playbackUnlockTimer);
+  if(blocked)playbackUnlockTimer=setTimeout(updatePlaybackControls,combatPlayback.remaining(combatPlaybackKey())+20);
+}
+document.addEventListener('click',event=>{
+  if(combatPlaybackBlocked()&&event.target.closest?.('#mission-detail [data-battle-cell],#mission-detail [data-battle-unit],#mission-detail [data-battle-object],#mission-detail [data-battle-terrain],#mission-detail [data-combat-mode],#mission-detail [data-combat-action],#mission-detail [data-hotbar-skill],#mission-detail [data-context-toggle],#mission-detail [data-hotbar-page],#mission-detail [data-tile-action],#mission-detail [data-context-action],#mission-detail [data-supply],#auto-step,#auto-resolve')){event.preventDefault();event.stopImmediatePropagation()}
+},true);
 import './combat-impact.css';
 import './combat-painted-effects.css';
 const impactFeedback=createImpactFeedback();
@@ -641,6 +662,9 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       if(remaining>0)animationEvents.unshift({type:'sound',cues:[],duration:Math.min(remaining,350)});
     }
     const timeline=impactTimeline(animationEvents),ghosts=new Map(),offsets=new Map();
+    if(needsPlaybackLock(animationEvents,battle)){
+      combatPlayback.hold(combatPlaybackKey(),playbackDuration(timeline));latestMovement.clear();updatePlaybackControls();
+    }
     // Cancel only movement left from the preceding preview, before scheduling this action.
     for(const event of animationEvents.filter(e=>e.type==='movement')){
       if(offsets.has(event.unit_id))continue;
@@ -658,6 +682,11 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       ghosts.set(event.unit_id,{ghost,finalToken,bodyTransition,placement:{...collapsePlacement(ghost.getBoundingClientRect(),finalToken.getBoundingClientRect()),scale:parseFloat(getComputedStyle(finalToken).width)/parseFloat(getComputedStyle(ghost).width)}});
     }
     const tokenFor=id=>ghosts.get(id)?.ghost||field.querySelector(`[data-battle-unit="${CSS.escape(id)}"]`);
+    const motions=new Map();
+    const queueMotion=(token,frames,options,className,onFinish=()=>{})=>{
+      if(!motions.has(token))motions.set(token,[]);
+      motions.get(token).push({frames,...options,className,onFinish});
+    };
     const animatedUnits=new Set();
     playBattleSounds(battle,animationEvents);
     timeline.forEach(({event,start:delay,duration:plannedDuration})=>{
@@ -679,13 +708,16 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
         const moved=animationEvents.some(e=>e.type==='movement'&&e.forced&&e.unit_id===event.unit_id&&e.attack_packet===event.attack_packet);
         if(target&&token&&!moved){
           const scale=target.id===battle.current_unit_id?1.15:1;
-          const bounce=token.animate(collisionFrames([{x:event.x,y:event.y}],target,event.toward,cellWidth,cellHeight,scale),{duration:COMBAT_MOTION.stationaryBounce,delay:Math.max(0,delay-COMBAT_MOTION.stationaryContact),easing:'linear',fill:'both'});
-          trackBattleAnimation(token,bounce,'is-hit');
+          queueMotion(token,collisionFrames([{x:event.x,y:event.y}],target,event.toward,cellWidth,cellHeight,scale),{duration:COMBAT_MOTION.stationaryBounce,delay:Math.max(0,delay-COMBAT_MOTION.stationaryContact)},'is-hit');
         }
         const bystander=battle.units?.[event.bystander_id],other=event.bystander_id&&tokenFor(event.bystander_id);
         if(other&&bystander){
-          const recoil=other.animate(recoilFrames(Math.sign(event.toward.x-event.x)*cellWidth*.24,Math.sign(event.toward.y-event.y)*cellHeight*.24,bystander.id===battle.current_unit_id?1.15:1),{duration:COMBAT_MOTION.recoil,delay,easing:'linear',fill:'forwards'});
-          trackBattleAnimation(other,recoil,'is-hit');
+          const alreadyMoving=timeline.some(r=>r.event.type==='movement'&&r.event.unit_id===bystander.id&&r.start<delay+COMBAT_MOTION.recoil&&r.start+r.duration>delay);
+          if(alreadyMoving){
+            // Preserve an overlapping shockwave push; collision still flashes at contact.
+            const flash=other.animate([{filter:'brightness(1)'},{filter:'brightness(1.65)'},{filter:'brightness(1)'}],{duration:COMBAT_MOTION.recoil,delay,fill:'none'});
+            trackBattleAnimation(other,flash,'is-hit');
+          }else queueMotion(other,poseFrames(recoilFrames(Math.sign(event.toward.x-event.x)*cellWidth*.24,Math.sign(event.toward.y-event.y)*cellHeight*.24,bystander.id===battle.current_unit_id?1.15:1),event.toward,bystander,cellWidth,cellHeight),{duration:COMBAT_MOTION.recoil,delay},'is-hit');
         }
         return;
       }
@@ -696,12 +728,10 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
         const from=event.from||attacker,to=event.to||target;
         const dx=Math.sign(to.x-from.x)*cellWidth*.42,dy=Math.sign(to.y-from.y)*cellHeight*.42;
         const attackerScale=attacker.id===battle.current_unit_id?1.15:1,targetScale=target.id===battle.current_unit_id?1.15:1;
-        const lunge=attackerToken.animate(meleeFrames(dx,dy,attackerScale),{duration:COMBAT_MOTION.melee,delay,easing:'linear',fill:'forwards'});
-        trackBattleAnimation(attackerToken,lunge,'is-attacking');
+        queueMotion(attackerToken,poseFrames(meleeFrames(dx,dy,attackerScale),from,attacker,cellWidth,cellHeight),{duration:COMBAT_MOTION.melee,delay},'is-attacking');
         const displaced=animationEvents.some(e=>['movement','collision_recoil'].includes(e.type)&&e.unit_id===event.target_id&&e.attack_packet===event.attack_packet&&(e.forced||e.type==='collision_recoil'));
         if(event.hit&&!displaced){
-          const impact=targetToken.animate(recoilFrames(Math.sign(to.x-from.x)*cellWidth*.12,Math.sign(to.y-from.y)*cellHeight*.12,targetScale),{duration:COMBAT_MOTION.recoil,delay:delay+COMBAT_MOTION.contact,easing:'linear',fill:'forwards'});
-          trackBattleAnimation(targetToken,impact,'is-hit');
+          queueMotion(targetToken,poseFrames(recoilFrames(Math.sign(to.x-from.x)*cellWidth*.12,Math.sign(to.y-from.y)*cellHeight*.12,targetScale),to,target,cellWidth,cellHeight),{duration:COMBAT_MOTION.recoil,delay:delay+COMBAT_MOTION.contact},'is-hit');
         }
         return;
       }
@@ -722,9 +752,14 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       }
       if(offset)frames[0].transform=`translate(${offset.x}px,${offset.y}px) scale(${baseScale})`;
       token.classList.remove('extracted');
-      const animation=token.animate(frames,{duration:plannedDuration,delay,easing:event.forced?'linear':'ease-in-out',fill:'both'});
-      trackBattleAnimation(token,animation,'is-walking',()=>{if(event.extracted)token.classList.add('extracted')});
+      queueMotion(token,frames,{duration:plannedDuration,delay},'is-walking',()=>{if(event.extracted)token.classList.add('extracted')});
     });
+    for(const [token,segments] of motions){
+      const {frames,duration}=composeMotion(segments);
+      const animation=token.animate(frames,{duration,easing:'linear',fill:'both'});
+      const className=segments.some(s=>s.className==='is-walking')?'is-walking':segments[0].className;
+      trackBattleAnimation(token,animation,className,()=>segments.forEach(s=>s.onFinish()));
+    }
     return;
   }
   Object.values(battle.units||{}).forEach(unit=>{
@@ -899,6 +934,10 @@ function renderBattle(b){
   if(tileActionMenu){const entry=tileActions.find(a=>a.command.action===selectedCombatAction);if(entry)showApproach(entry.command.target_id,entry.command.action)}
   bindUnitInspect($('.battlefield'),b,esc);
   bindSpellTargets($('.battlefield'),b,selectedCombatAction,command=>sendCombat(command));
+  updatePlaybackControls();
+  if(needsPlaybackLock(b.animation_events||[],b)){
+    combatPlayback.hold(combatPlaybackKey(),playbackDuration(impactTimeline(b.animation_events))+40);updatePlaybackControls();
+  }
   if(b.preview_movement_points)animateBattleMovement(previousBattle,b,260,movingPositions);
   else requestAnimationFrame(()=>{if(activeBattleView===b)animateBattleMovement(previousBattle,b,260,movingPositions)});
 }
@@ -906,6 +945,7 @@ document.addEventListener('keydown',event=>{
   const tag=event.target?.tagName?.toLowerCase();
   if(event.repeat||event.ctrlKey||event.metaKey||event.altKey||['input','textarea','select'].includes(tag)||event.target?.isContentEditable)return;
   if(!activeBattleView||!$('.battlefield')||$('#mission-modal')?.classList.contains('hidden'))return;
+  if(combatPlaybackBlocked())return;
   const key=event.code==='Space'?'space':event.key.toLowerCase();
   if(/^[0-9]$/.test(key)){const skill=$(`[data-hotbar-key="${key}"]`);if(skill&&!skill.disabled){event.preventDefault();skill.click()}return}
   if(key==='s'){const skill=$('[data-hotbar-skill]:not(:disabled)');if(skill){event.preventDefault();skill.click()}return}
@@ -923,6 +963,7 @@ document.addEventListener('keydown',event=>{
   event.preventDefault();button.click();
 });
 async function sendCombat(command,nextMode=null){
+  if(combatPlaybackBlocked())return;
   if(command.action==='skill'&&activeBattleView?.units?.[activeBattleView.current_unit_id]?.special)command={...command,skill_id:activeBattleView.units[activeBattleView.current_unit_id].special.id};
   const movementContext=`${activeBattleMissionId}:${activeBattleView?.current_unit_id}:${activeBattleView?.round}`;
   const requestMissionId=activeBattleMissionId;
@@ -975,7 +1016,7 @@ async function resumeMercenaryContract(result){
   else if(result.resume_status==='decision')await openDecision(id);
   else {$('#mission-modal').classList.add('hidden');await refreshDynamic(true)}
 }
-async function sendCombatAuto(resolveAll){if(combatRequestPending)return;const requestMissionId=activeBattleMissionId;combatRequestPending=true;try{const tactic=$('#battle-tactic')?.value||'balanced',data=await rawApi(battleEndpoint('/auto'),{method:'POST',body:JSON.stringify({tactic,resolve_all:resolveAll})});if(activeBattleMissionId!==requestMissionId||!activeBattleView||$('#mission-modal').classList.contains('hidden'))return;tileActionMenu=null;selectedCombatAction='move';if(data.result?.scene_continuation){activeBattleView=null;await refreshDynamic(true);await openDecision(data.result.mission_id);return}if(data.result?.mercenary_interlude){await resumeMercenaryContract(data.result);return}if(data.result){syncMissionMutation({...activeMissions.find(m=>m.id===activeBattleMissionId),id:activeBattleMissionId,status:'completed',result:data.result});const soundDuration=resolveAll?0:playBattleSounds(data.battle);activeBattleView=null;retreatAllArmed=false;playOutcomeSound(data.result.outcome,soundDuration);showResult(data.result);await refreshDynamic(true)}else renderBattle(data.battle)}catch(e){toast(e.message)}finally{combatRequestPending=false}}
+async function sendCombatAuto(resolveAll){if(combatRequestPending||combatPlaybackBlocked())return;const requestMissionId=activeBattleMissionId;combatRequestPending=true;try{const tactic=$('#battle-tactic')?.value||'balanced',data=await rawApi(battleEndpoint('/auto'),{method:'POST',body:JSON.stringify({tactic,resolve_all:resolveAll})});if(activeBattleMissionId!==requestMissionId||!activeBattleView||$('#mission-modal').classList.contains('hidden'))return;tileActionMenu=null;selectedCombatAction='move';if(data.result?.scene_continuation){activeBattleView=null;await refreshDynamic(true);await openDecision(data.result.mission_id);return}if(data.result?.mercenary_interlude){await resumeMercenaryContract(data.result);return}if(data.result){syncMissionMutation({...activeMissions.find(m=>m.id===activeBattleMissionId),id:activeBattleMissionId,status:'completed',result:data.result});const soundDuration=resolveAll?0:playBattleSounds(data.battle);activeBattleView=null;retreatAllArmed=false;playOutcomeSound(data.result.outcome,soundDuration);showResult(data.result);await refreshDynamic(true)}else renderBattle(data.battle)}catch(e){toast(e.message)}finally{combatRequestPending=false}}
 $('#mission-close').onclick=()=>{latestMovement.clear();retreatAllArmed=false;tileActionMenu=null;activeBattleView=null;activeDecisionMission=null;$('#mission-modal').classList.add('hidden');syncMusic();renderVisiblePanels()};
 $('#sound-settings-open').onclick=()=>{closeAudioSettings?.();closeAudioSettings=mountAudioSettings($('#sound-settings-content'),audioMixer,name=>playSfx(name,name.startsWith('mission_')?.5:name.startsWith('ui_')?.16:.5));$('#sound-settings-modal').showModal()};
 $('#sound-settings-close').onclick=()=>$('#sound-settings-modal').close();

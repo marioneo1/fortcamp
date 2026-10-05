@@ -229,3 +229,32 @@ Browser validation: isolated real-UI fixtures at 1440x1100 and 1440x900 show
 Earthbreaker hit/collision numbers over tokens after the landing burst, correctly
 centered expanding shockwave, Chain Snare hit/Hobbled/Armor Fracture feedback,
 area rally targeting and retained auto controls. No live save was used.
+
+## October 5: rendered movement ordering repair (implemented in dev)
+
+The previous wave-marker fix did not solve a second rendering bug: separate
+Web Animations with backwards fill let a later enemy movement apply its starting
+pose before an earlier push began. Damage/impact markers were correct while the
+visible token was already displaced. Each token now receives one composed
+transform timeline that holds its original position, plays the hit/push, holds
+between segments, then plays its own enemy move. Melee lunges/recoils anchor to
+the event's contact cell instead of the response's final cell. Overlapping
+bystander collision recoil during its own push flashes without replacing that
+push trajectory.
+
+Player commands and combat hotkeys are blocked during resolved attacks and the
+complete enemy animation sequence. Buttons show a Resolving turn notice and
+restore their original availability when playback ends. Command entry points
+also enforce the lock before optimistic movement or queued requests. Pure player
+movement previews remain interruptible for fast repositioning. Lingering damage
+labels do not extend the lock. Camera movement and unit hover remain available.
+
+Validation: 210 frontend tests and build pass. Five new tests cover composed
+poses/holds, delayed wave contact followed by pursuit, contact-cell lunges,
+playback deadlines and free player repositioning. Browser checks use actual UI
+and backend fixtures containing a push followed by that same enemy's own turn:
+Driving Strike at 80ms and Earthbreaker at 250ms show zero premature victim
+movement on either axis. Map click, Space and direct move commands produce zero
+requests while locked; controls unlock after the sequence. Existing two-victim
+collision, chain/rally and 1440x900 layout browser checks also pass. No backend
+rules, production or player saves changed. Existing build-size warning remains.

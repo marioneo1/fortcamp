@@ -1,5 +1,12 @@
 # Fortcamp feature backlog
 
+## October 5: push-before-contact regression repair (implemented in dev)
+
+Composed per-token motion prevents later enemy movement from overriding the
+pre-hit pose. Player map commands, hotkeys and auto wait until attack/enemy
+playback finishes; ordinary movement previews stay responsive. Validated 210
+frontend tests, build and real-UI push-then-enemy-turn browser cases.
+
 ## October 5: Fighter power and wave contact (implemented in dev)
 
 Driving Strike: 150% attack power, solid collision stun on both surviving people.

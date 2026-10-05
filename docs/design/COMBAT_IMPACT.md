@@ -102,3 +102,12 @@ contact markers following the expanding wave after landing. Existing cooldowns
 and defensive rules remain. See [Fighter review](FIGHTER_COMBAT_REVIEW.md) for
 exact rules, balance proposals and validation. Fresh battles use these changes;
 existing snapshots and production are unchanged.
+
+## October 5: animation ordering and input lock
+
+Each token has one composed motion timeline: original position, contact/push,
+then later enemy movement. Later motions no longer prefill their positions.
+Commands and hotkeys wait for resolved attacks and all enemy motion to finish;
+a Resolving turn notice indicates the pause. Pure player movement previews
+remain interruptible, and lingering damage text does not block input. See
+[Fighter review](FIGHTER_COMBAT_REVIEW.md) for the bug and browser validation.

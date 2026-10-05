@@ -1277,3 +1277,11 @@ and collision contact separate. Current cooldowns, immunities, resistance and
 saved battle snapshots retained. Canonical details and balancing proposals are
 in FIGHTER_COMBAT_REVIEW.md. 107 backend / 205 frontend tests and build passed;
 no live saves or production changes.
+
+## October 5: actual motion ordering and enemy input gate
+
+Fixed backwards-fill overwrites by composing each token motion sequence.
+Driving Strike/Earthbreaker hold victims until contact, before their enemy turn.
+Commands and hotkeys lock through attacks/enemy animation, with a visible notice;
+pure player repositioning remains interruptible. 210 frontend tests, build and
+real-UI multi-motion browser checks pass. No gameplay/save/production changes.
