@@ -921,3 +921,6 @@ Canonical details: `docs/design/COMBAT_CONTROLS.md`,
 Further status artwork and Barrier/ground-effect presentation remain pending.
 
 - Implemented October 5: direct legal provisional repositioning instead of returning through START; same routing for combined approaches, visible effective movement use, original turn budget retained. See COMBAT_CONTROLS.md. Adjacent empty destinations can still exceed the turn range; richer blocked-cell explanations remain deferred.
+
+
+Implemented October 5: persistent damaging ground counts each committed crossed tile/re-entry, discarded previews free; same-kind overlaps deduplicate per entry. Burn/Thorns numbers show each crossing; recorded movement schedules them at the matching step. See COMBAT_SPACES.md and COMBAT_IMPACT.md.

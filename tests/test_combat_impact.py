@@ -66,16 +66,44 @@ class CombatImpactTests(unittest.TestCase):
         self.assertLess(events.index(hit),events.index(damage))
         self.assertEqual(hit['to'],{'x':3,'y':2})
 
-    def test_ember_entry_damage_once_then_burn_on_next_activation(self):
+    def test_ember_entries_repeat_but_start_has_only_the_separate_burn_tick(self):
         b,a,t=self.fixture()
         spaces.place_zone(b,a,{'zone':'ember','turns':2},[{'x':t['x'],'y':t['y']}])
         _trigger_zones(b,t,'entry');self.assertEqual(t['hp'],97)
-        _trigger_zones(b,t,'entry');_trigger_zones(b,t,'start');self.assertEqual(t['hp'],97)
+        _trigger_zones(b,t,'entry');_trigger_zones(b,t,'start');self.assertEqual(t['hp'],94)
         self.assertTrue(conditions.has(t,'burn'))
         t['status_activation']=['next',1];_trigger_zones(b,t,'start');_tick_gear_statuses(b,t)
-        self.assertEqual(t['hp'],93)
-        self.assertEqual([e['kind'] for e in b['animation_events'] if e['type']=='combat_feedback'],['burn','burn'])
+        self.assertEqual(t['hp'],90)
+        self.assertEqual([e['kind'] for e in b['animation_events'] if e['type']=='combat_feedback'],['burn','burn','burn'])
         a['hp']=80;_trigger_zones(b,a,'entry');self.assertEqual(a['hp'],80)
+
+    def test_ember_route_counts_every_burned_cell_and_reentry_not_overlap(self):
+        from backend.combat import _apply_zone_route, _record_movement
+        b,a,t=self.fixture()
+        cells=[{'x':4,'y':2},{'x':5,'y':2}]
+        spaces.place_zone(b,a,{'zone':'ember','turns':2},cells)
+        other=deepcopy(a);other.update(id='other',name='Other',x=7,y=7)
+        b['units'][other['id']]=other
+        spaces.place_zone(b,other,{'zone':'ember','turns':2},cells)
+        path=[(4,2),(5,2),(4,2),(5,2),(6,2)]
+        _record_movement(b,t,(t['x'],t['y']),path)
+        t.update(x=6,y=2)
+        _apply_zone_route(b,t,path)
+        self.assertEqual(t['hp'],88)
+        self.assertEqual((t['x'],t['y']),(6,2))
+        hits=[e for e in b['animation_events'] if e.get('kind')=='burn']
+        self.assertEqual([e['amount'] for e in hits],[3,3,3,3])
+        self.assertEqual([(e['x'],e['y']) for e in hits],[(4,2),(5,2),(4,2),(5,2)])
+        self.assertEqual([e['ground_step'] for e in hits],[1,2,3,4])
+        movement=next(e for e in b['animation_events'] if e['type']=='movement')
+        self.assertTrue(all(e['ground_route_id']==movement['ground_route_id'] for e in hits))
+
+    def test_ember_checks_intermediate_tiles_and_stops_at_lethal_entry(self):
+        from backend.combat import _apply_zone_route
+        b,a,t=self.fixture();t.update(x=6,y=2,hp=5)
+        spaces.place_zone(b,a,{'zone':'ember','turns':2},[{'x':4,'y':2},{'x':5,'y':2}])
+        _apply_zone_route(b,t,[(4,2),(5,2),(6,2)])
+        self.assertEqual((t['x'],t['y'],t['hp']),(5,2,0))
 
     def test_damage_number_is_actual_loss_not_overkill_and_view_is_read_only(self):
         b,a,t=self.fixture();t['hp']=3

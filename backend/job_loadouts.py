@@ -48,7 +48,7 @@ register('ranger','Ranger','Set up accurate shots and control approaches.',
     active('snare','Snaring Ground','Create binding ground at a chosen cell and adjacent legal cells for two of your activations.',[{'type':'zone','zone':'binding','radius':1,'turns':2}],range=4,rule='ballistic',cooldown=3),
     passive('footwork','Field Footwork','Gain 5 evasion; no extra damage.',{'evasion':5}))
 register('mage','Mage','Create dangerous ground or protect a threatened ally.',
-    active('embers','Ember Ground','Create burning ground for two of your activations. Entry deals 3 damage once per activation and applies Burn. Allies are safe.',[{'type':'zone','zone':'ember','radius':1,'turns':2}],range=3,rule='line_of_effect',cooldown=3),
+    active('embers','Ember Ground','Create burning ground for two of your activations. Each burned tile entered on a committed path deals 3 damage and applies Burn. Re-entry counts again; overlapping patches do not stack. Allies are safe.',[{'type':'zone','zone':'ember','radius':1,'turns':2}],range=3,rule='line_of_effect',cooldown=3),
     active('ward','Ward','Give an ally a 10 HP Barrier for two of their activations.',[{'type':'barrier','amount':10,'turns':2}],'ally',3,'line_of_effect',3),
     passive('footwork','Light Step','Gain 5 evasion. Mute still prevents spells.',{'evasion':5}))
 register('cleric','Cleric','Treat wounds and maintain a safe fighting position.',
@@ -65,7 +65,7 @@ register('bard','Bard','Keep allies fighting and weaken an enemy approach.',
     passive('footwork','Stage Footwork','Gain 5 evasion.',{'evasion':5}))
 register('druid','Druid','Change your fighting form or hold ground with thorns.',
     active('prowler','Prowler Form','Self only: INT-based melee and +1 movement for two of your activations. No healing on transformation.',[{'type':'form','form':'prowler','turns':2}],'ally',1,'line_of_effect',3),
-    active('thorns','Thorn Ground','Create thorns around a chosen cell for two of your activations.',[{'type':'zone','zone':'thorns','radius':1,'turns':2}],range=3,rule='line_of_effect',cooldown=3),
+    active('thorns','Thorn Ground','Create thorns around a chosen cell for two of your activations. Each thorn tile entered on a committed path deals 3 damage. Re-entry counts again; overlapping patches do not stack. Allies are safe.',[{'type':'zone','zone':'thorns','radius':1,'turns':2}],range=3,rule='line_of_effect',cooldown=3),
     passive('rooted','Rooted','Gain 25 knockback resistance.',{'knockback_resistance':25}))
 register('engineer','Engineer','Spend finite Components on owner-linked machinery.',
     active('turret','Scrap Turret','Self only: spend 2 Components on a stationary automatic turret. No shot on the deployment turn.',[{'type':'deploy','entity':'scrap_turret'}],'ally',1,'physical_care',3),

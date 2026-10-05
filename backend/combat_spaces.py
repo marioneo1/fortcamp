@@ -5,11 +5,13 @@ from .combat_feedback import record as feedback
 
 ZONES = {
     'ember': {'name': 'Ember Patch', 'relation': 'enemy', 'events': ['entry', 'start'],
-              'status': 'burn', 'entry_damage':3, 'description': 'Crossing deals 3 damage and applies Burn, once per activation. Burn also ticks at activation start. Allies are safe.'},
+              'status': 'burn', 'entry_damage':3, 'entry_per_cell':True,
+              'description': 'Each burned tile entered along the committed path deals 3 damage and applies Burn. Re-entry counts again; overlapping patches do not stack. Burn also ticks at activation start. Allies are safe.'},
     'binding': {'name': 'Binding Circle', 'relation': 'enemy', 'events': ['entry'],
                 'status': 'bind', 'description': 'Committed entry attempts Bind. Control recovery and resistance apply.'},
     'thorns': {'name': 'Thornbed', 'relation': 'enemy', 'events': ['entry'], 'damage': 3,
-               'description': 'Committed entry deals 3 damage once per activation. Standing still avoids it.'},
+               'entry_per_cell':True,
+               'description': 'Each thorn tile entered along the committed path deals 3 damage. Re-entry counts again; overlapping patches do not stack. Standing still avoids it.'},
     'sanctuary': {'name': 'Consecrated Ground', 'relation': 'ally', 'events': ['start'], 'heal': 3,
                   'description': 'Restores 3 HP at activation start. Burn prevents this healing.'},
 }
@@ -72,6 +74,7 @@ def cleanup_zones(battle, active):
 def trigger_zones(battle, unit, event, active, hostile, apply_status, damage):
     if not active(unit):
         return
+    triggered = set()
     for zone in sorted(battle.get('zones', []), key=lambda z: z['id']):
         owner = battle['units'].get(zone['owner_id'])
         rule = ZONES[zone['kind']]
@@ -84,9 +87,14 @@ def trigger_zones(battle, unit, event, active, hostile, apply_status, damage):
             continue
         stamp = deepcopy(unit.get('status_activation'))
         hits = unit.setdefault('zone_hits', {})
-        # Shared per kind, across all owners and start/entry events, not per zone ID.
-        if zone['kind'] in hits and hits[zone['kind']] == stamp:
+        # Overlapping owners share one hit per entry. Control/healing and other
+        # zones retain their activation cap; burning ground counts every entry.
+        if zone['kind'] in triggered:
             continue
+        per_entry = event == 'entry' and rule.get('entry_per_cell')
+        if not per_entry and zone['kind'] in hits and hits[zone['kind']] == stamp:
+            continue
+        triggered.add(zone['kind'])
         hits[zone['kind']] = stamp
         if rule.get('status'):
             apply_status(owner, unit, rule['status'])

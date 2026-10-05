@@ -12,6 +12,14 @@ test('melee peak is the exact shared sound and number contact marker',()=>{
   const events=[{type:'melee_attack',attack_packet:1},{type:'combat_feedback',attack_packet:1}];
   assert.equal(impactTimeline(events)[1].start,COMBAT_MOTION.contact);
 });
+test('ground damage labels arrive at each crossed tile, including forced movement',()=>{
+  for(const forced of [false,true]){
+    const movement={type:'movement',unit_id:'t',ground_route_id:4,forced,points:[{x:0,y:0},{x:1,y:0},{x:2,y:0},{x:3,y:0}]};
+    const rows=impactTimeline([movement,...[1,2,3].map(step=>({type:'combat_feedback',kind:'burn',amount:3,ground_route_id:4,ground_step:step}))]);
+    assert.deepEqual(rows.slice(1).map(r=>r.start),[1,2,3].map(step=>rows[0].duration*step/3));
+    assert.ok(rows[1].start<rows[0].start+rows[0].duration);
+  }
+});
 test('collision contact precedes bounce recovery and lethal collapse',()=>{
   const events=[{type:'melee_attack',attack_packet:1},
     {type:'movement',unit_id:'target',forced:true,attack_packet:1,points:[{x:1,y:0},{x:2,y:0}]},

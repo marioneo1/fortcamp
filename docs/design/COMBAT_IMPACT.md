@@ -21,13 +21,14 @@ grant player damage/kill credit.
 
 **Scorch** applies Burn to a unit; it does not burn the floor or deal an immediate
 hit. **Ember Ground** creates an Ember Patch. A hostile committed crossing deals
-3 damage and applies Burn once per activation, even when the route ends outside
+3 damage per burned tile entered and applies Burn, even when the route ends outside
 the patch. Forced movement also checks crossed cells. Standing in it at activation
 start applies Burn; the normal Burn tick deals 2–5 damage based on maximum HP.
 That start does not also apply the 3-point entry hit. Allies are safe.
 
-Overlapping patches and repeated crossings do not multiply entry damage during
-the same activation. Provisional movement/target previews do not trigger damage.
+Re-entry counts again, including repeated crossings in a committed or forced
+route. Overlapping patches of the same kind share one hit per crossing. Only the
+final committed route from START is charged; discarded movement previews are free.
 Barriers absorb zone damage. Water can remove Burn through existing entry rules.
 
 ## Presentation
@@ -208,3 +209,25 @@ that enemy its turn. Browser sampling verifies contact, both rebounds, neutral
 settling, then the enemy lunge. Command input remains locked during playback.
 Frontend regression tests check the same sequencing and lethal/stationary cases.
 Fixture/review script: `staging-ui/combat-fighter-review/pull-followup-qa.mjs`.
+
+
+## October 5: Per-cell ground damage and crossing feedback
+
+Ember Ground and Thorn Ground now deal their 3-point hit for every eligible tile
+entered along the final committed route. Adjacent affected cells each count;
+leaving and re-entering a cell counts again. Overlapping same-kind patches do not
+stack on one crossing. Healing and control ground retain their existing limits.
+Burn status ticks at activation start remain separate from ground entry hits.
+
+Each crossing emits actual HP loss/Barrier absorption at its crossed coordinates,
+with the existing Burn/Thorns label, color and painted impact art. Recorded movement
+links each feedback fact to its route and step. The client schedules the number
+when movement reaches that step, including forced movement, without extending
+movement just to wait for lingering text. Fatal damage stops the route at that cell.
+For already-previewed player movement, committed route labels appear at their
+crossed cells; the walking preview is not replayed. No new paid artwork/audio.
+
+Validation: 116 targeted backend tests, 240 frontend tests and frontend build.
+Tests include multiple crossed cells, repeated entries, overlapping owners,
+discarded previews, duplicate commitment, fatal crossings, separate Burn ticks
+and walking/forced crossing feedback timing. No production or save changes.

@@ -24,21 +24,24 @@ Supported fixed rules:
 
 | Zone | Affected side | Trigger | Result |
 |---|---|---|---|
-| Ember Patch | Hostile to owner | Committed entry or activation start | One-turn Burn; committed entry also deals 3 damage once per activation |
+| Ember Patch | Hostile to owner | Committed entry or activation start | One-turn Burn; each burned tile entered on the committed route deals 3 damage |
 | Binding Circle | Hostile to owner | Committed entry | One-turn Bind attempt; resistance/recovery apply |
-| Thornbed | Hostile to owner | Committed entry | 3 damage through the existing damage/Barrier/defeat path |
+| Thornbed | Hostile to owner | Committed entry | 3 damage per thorn tile entered, through the existing damage/Barrier/defeat path |
 | Consecrated Ground | Friendly to owner | Activation start | Up to 3 HP restored; Burn prevents healing |
 
-Entry means a real committed route or displacement destination. Provisional
+Entry means each crossed cell of a real committed route or displacement. Provisional
 movement, route planning and polling never trigger a zone. Committed walking
 routes check crossed cells, not only the final tile; a fatal hit stops the route.
 Restraint applied during a committed walk restricts subsequent movement; this
 pass does not add interrupt-and-replan movement midway through a nonlethal route.
 
-The same zone kind triggers at most once per affected unit activation across all
-owners and entry/start events. Failed resistance attempts also use that allowance.
-Overlapping identical zones cannot multiply damage/healing or repeated control
-checks. One owner can maintain one zone of each supported kind; recasting replaces
+Damaging ground uses `entry_per_cell`: every eligible crossed cell triggers, and
+leaving then re-entering a cell counts again. Overlapping zones of the same kind
+share one hit per entry across owners. Burning ground and thorns follow this rule.
+Other zones retain their per-activation control/healing limits; failed resistance
+attempts use that allowance. Activation-start effects remain separate from ground
+entry damage. Discarded provisional routes are free: only the final route from
+START is checked when the action commits. One owner can maintain one zone of each supported kind; recasting replaces
 its area. Clocks and hit stamps persist in battle JSON and survive reloads.
 
 Duration is 1-3 owner activations. A zone expires at the declared owner activation

@@ -1469,11 +1469,24 @@ def _apply_zone_route(battle,unit,path):
     """Consequences run only after a real route commits, never during preview."""
     if not battle.get('zones'):return
     destination=(unit['x'],unit['y'])
-    for x,y in path:
+    events=battle.setdefault('animation_events',[])
+    route_event=next((e for e in reversed(events) if e.get('type')=='movement'
+                     and e.get('unit_id')==unit['id']
+                     and [(p['x'],p['y']) for p in e.get('points',[])[1:]]==path),None)
+    if route_event is not None:
+        route_event.setdefault('ground_route_id',events.index(route_event))
+    for step,(x,y) in enumerate(path,1):
         if unit.get('zone_location')==[x,y]:continue
         unit.update(x=x,y=y,zone_location=[x,y])
+        before=len(events)
         _trigger_zones(battle,unit,'entry')
-        if not _combat_active(unit):return
+        if route_event is not None:
+            for event in events[before:]:
+                if event.get('type')=='combat_feedback':
+                    event.update(ground_route_id=route_event['ground_route_id'],ground_step=step)
+        if not _combat_active(unit):
+            if route_event is not None:route_event['points']=route_event['points'][:step+1]
+            return
     unit['x'],unit['y']=destination
 
 

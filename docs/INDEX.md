@@ -122,3 +122,6 @@ Current building collision/art: [Wall boundaries](design/WALL_BOUNDARIES.md) exp
 The planned in-game handbook should reuse player-facing definitions and exclude secret quest conditions.
 
 October 5 movement correction: [Combat controls](design/COMBAT_CONTROLS.md) documents direct provisional routes, effective movement-use display and preserved turn range.
+
+
+October 5 ground effects: [Combat zones](design/COMBAT_SPACES.md) defines committed per-cell damage; [Combat impact](design/COMBAT_IMPACT.md) covers crossing damage labels and animation timing.

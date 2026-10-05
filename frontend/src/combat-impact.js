@@ -11,7 +11,7 @@ export function impactTimeline(events){
       (e.type==='movement'&&e.forced||e.type==='collision_recoil'));
     if(end>at){events.splice(at,1);events.splice(end,0,defeat)}
   }
-  let cursor=0;const packets=new Map();
+  let cursor=0;const packets=new Map(),groundRoutes=new Map();
   const collisions=new Map(events.filter(e=>e.type==='collision_recoil').map(e=>[`${e.attack_packet}:${e.unit_id}`,e]));
   return events.map(event=>{
     if(event.type==='movement'&&event.forced)event={...event,collision:collisions.get(`${event.attack_packet}:${event.unit_id}`)};
@@ -29,6 +29,7 @@ export function impactTimeline(events){
     if(event.type==='movement'){
       duration=movementDuration(event);
       if(event.forced&&packet){start=packet.impact;packet.land=start+(event.collision?COMBAT_MOTION.collisionContact:duration);packet.recovery=start+duration}
+      if(event.ground_route_id!=null)groundRoutes.set(event.ground_route_id,{start,duration:event.collision?COMBAT_MOTION.collisionContact:duration,steps:Math.max(1,(event.points||[]).length-1)});
       cursor=Math.max(cursor,start+duration+70);
     }else if(event.type==='ground_impact'){
       duration=650;cursor=Math.max(cursor,start+duration);
@@ -52,7 +53,9 @@ export function impactTimeline(events){
       duration=COMBAT_MOTION.collapse;cursor=Math.max(cursor,start+duration+60);
     }else if(event.type==='combat_feedback'){
       // Text can linger while the next unit acts; it does not hold up the turn.
-      duration=900;if(!packet)cursor+=100;
+      const ground=groundRoutes.get(event.ground_route_id);
+      if(ground)start=ground.start+ground.duration*Math.min(ground.steps,event.ground_step)/ground.steps;
+      duration=900;if(!packet&&!ground)cursor+=100;
     }
     return {event,start,duration};
   });

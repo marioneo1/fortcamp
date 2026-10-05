@@ -43,11 +43,11 @@ class CombatSpacesTests(unittest.TestCase):
         b,a,t=self.fixture();self.zone(b,a,t)
         combat._apply_tile_entry(b,t);self.assertEqual(t['hp'],100)
         t.update(x=4,y=2);combat._apply_tile_entry(b,t);self.assertEqual(t['hp'],97)
-        t.update(x=3,y=2);combat._apply_tile_entry(b,t);self.assertEqual(t['hp'],97)
+        t.update(x=3,y=2);combat._apply_tile_entry(b,t);self.assertEqual(t['hp'],94)
         restored=json.loads(json.dumps(b));t=restored['units'][t['id']]
-        t.update(x=4,y=2);combat._apply_tile_entry(restored,t);self.assertEqual(t['hp'],97)
+        t.update(x=4,y=2);combat._apply_tile_entry(restored,t);self.assertEqual(t['hp'],91)
         t['status_activation']=[2,1];t.update(x=3,y=2)
-        combat._apply_tile_entry(restored,t);self.assertEqual(t['hp'],94)
+        combat._apply_tile_entry(restored,t);self.assertEqual(t['hp'],88)
 
     def test_zone_manual_command_previews_and_no_immediate_damage(self):
         b,a,t=self.fixture();s=self.skill({'type':'zone','zone':'ember','radius':1,'turns':2})
@@ -138,6 +138,28 @@ class CombatSpacesTests(unittest.TestCase):
         combat._commit_player_movement(b,a)
         self.assertEqual(a['hp'],97);self.assertEqual((a['x'],a['y']),(4,2))
         combat._commit_player_movement(b,a);self.assertEqual(a['hp'],97)
+
+    def test_discarded_ember_preview_is_free_and_final_path_charges_each_tile(self):
+        b,a,t=self.fixture();t.update(x=6,y=6)
+        for unit in b['units'].values():
+            if unit['id'] not in {a['id'],t['id']}:unit.update(x=7,y=7)
+        spaces.place_zone(b,t,{'zone':'ember','turns':2},[{'x':2,'y':1},{'x':3,'y':1}])
+        a['move']=4
+        combat.apply_player_command(b,{'action':'move','x':2,'y':1})
+        combat.apply_player_command(b,{'action':'move','x':1,'y':2})
+        self.assertEqual(a['hp'],100)
+        combat._commit_player_movement(b,a)
+        self.assertEqual(a['hp'],100)
+        # A new provisional selection crosses both cells only when committed.
+        combat.apply_player_command(b,{'action':'move','x':2,'y':2})
+        combat.apply_player_command(b,{'action':'move','x':3,'y':1})
+        self.assertEqual(a['hp'],100)
+        expected=sum((p['x'],p['y']) in {(2,1),(3,1)} for p in a['movement_path'])
+        self.assertEqual(expected,2)
+        combat._commit_player_movement(b,a)
+        self.assertEqual(a['hp'],94)
+        combat._commit_player_movement(b,a)
+        self.assertEqual(a['hp'],94)
 
     def test_lethal_zone_entry_stops_route_and_dead_unit_cannot_attack(self):
         b,a,t=self.fixture();a['hp']=2
