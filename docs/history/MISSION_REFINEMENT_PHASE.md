@@ -1,5 +1,19 @@
 # Mission Refinement Phase
 
+## October 4: Combat controls, targeting and animation timing (dev)
+
+Fixed provisional movement returning to its origin. Unused End Turn now grants
+Guard; Guard reduces the next direct hit by 25%. Added map skill hotbar with
+1-9/0 keys and unrestricted overflow pages, right-drag panning and viewport
+status cards. Pure zone skills can target empty ground with exact clipped areas.
+Allied and ground casts now support combined movement with path/destination
+previews; offensive movement-and-cast remains. Self casts highlight the caster.
+Projectile/death animations reserve time before following enemy animations.
+78 backend and 192 frontend tests, build and isolated browser checks pass.
+Canonical: docs/design/COMBAT_CONTROLS.md. No save resets or production changes.
+Further area shapes, deliberate summon placement and authored skill artwork remain
+pending; this does not add arbitrary ground damage or new attack effects.
+
 ## October 4: Job testing in Battle Lab (dev)
 
 Added temporary parties of up to four starting Jobs, matching starter equipment,

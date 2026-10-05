@@ -19,6 +19,21 @@ export function bindMapWheel(viewport,{width,height,onZoom}){
     viewport.scrollTop+=after.top+fy*after.height-event.clientY;
   };
 }
+export function bindMapPan(viewport){
+  let drag=null;
+  viewport.oncontextmenu=e=>e.preventDefault();
+  viewport.onpointerdown=e=>{
+    if(e.button!==2)return;
+    e.preventDefault();drag={id:e.pointerId,x:e.clientX,y:e.clientY,left:viewport.scrollLeft,top:viewport.scrollTop};
+    viewport.setPointerCapture(e.pointerId);viewport.classList.add('is-panning');
+  };
+  viewport.onpointermove=e=>{
+    if(!drag||drag.id!==e.pointerId)return;
+    viewport.scrollLeft=drag.left+drag.x-e.clientX;viewport.scrollTop=drag.top+drag.y-e.clientY;
+  };
+  const stop=e=>{if(!drag||drag.id!==e.pointerId)return;drag=null;viewport.classList.remove('is-panning');if(viewport.hasPointerCapture(e.pointerId))viewport.releasePointerCapture(e.pointerId)};
+  viewport.onpointerup=stop;viewport.onpointercancel=stop;viewport.onlostpointercapture=()=>{drag=null;viewport.classList.remove('is-panning')};
+}
 export function sizeBattleMap(viewport,{width,height,fit,zoom}){
   const field=viewport?.querySelector('.battlefield');if(!field)return;
   const availableHeight=Math.max(120,window.innerHeight-viewport.getBoundingClientRect().top-28);

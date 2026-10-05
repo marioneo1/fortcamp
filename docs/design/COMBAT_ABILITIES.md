@@ -2,8 +2,8 @@
 
 Implemented in dev, October 4, 2026. Subsequent foundations now cover spaces,
 deployments and regular loadouts; see COMBAT_SPACES.md, COMBAT_DEPLOYMENTS.md and
-JOB_LOADOUTS.md. Full starting-Job creation/progression remains proposed in
-STARTING_JOBS_AND_SKILLS_V1.md.
+JOB_LOADOUTS.md. Twelve starting Jobs and six-skill progression are playable in dev; the larger
+catalogue remains a draft. See COMBAT_CONTROLS.md for current targeting and UI.
 
 ## Player rules
 

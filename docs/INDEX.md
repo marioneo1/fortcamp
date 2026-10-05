@@ -1,5 +1,9 @@
 # Fortcamp documentation map
 
+Current combat controls: [Hotbar, targeting and map controls](design/COMBAT_CONTROLS.md)
+covers 1-9/0 skills, ground area previews, combined movement/casting, automatic
+25% Guard, status cards, right-drag panning and sequential enemy animations.
+
 Current Job testing: [Battle Lab](design/BATTLE_LAB.md) supports temporary parties
 of twelve starting Jobs, matching starter kits, practice presets and five-slot
 loadouts without changing roster saves.

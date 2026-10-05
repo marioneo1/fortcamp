@@ -25,6 +25,58 @@ class AttackApproachTests(unittest.TestCase):
         self.assertEqual([p['cost'] for p in preview['path']],[1,2])
         self.assertEqual((self.actor['x'],self.actor['y']),(1,5))
 
+    def test_provisional_move_can_return_to_origin_and_choose_another_path(self):
+        apply_player_command(self.battle, {'action':'move','x':2,'y':5})
+        self.assertEqual((self.actor['x'],self.actor['y']),(2,5))
+        apply_player_command(self.battle, {'action':'move','x':1,'y':5})
+        self.assertEqual((self.actor['x'],self.actor['y']),(1,5))
+        self.assertFalse(self.actor['moved'])
+        self.assertFalse(self.actor['acted'])
+        self.assertEqual(self.actor['movement_path'],[])
+        apply_player_command(self.battle, {'action':'move','x':1,'y':3})
+        self.assertEqual((self.actor['x'],self.actor['y']),(1,3))
+        self.assertEqual(self.actor['movement_origin'],{'x':1,'y':5})
+
+    def test_unused_end_turn_guards_and_matches_explicit_guard(self):
+        from backend.combat import _deal_damage
+        with patch('backend.combat._advance_to_player'):
+            apply_player_command(self.battle, {'action':'end_turn'})
+        self.assertTrue(self.actor['guarding'])
+        self.actor.update(hp=100, armor=0, racial_resistances=[], racial_weaknesses=[])
+        attacker={**self.target,'attack':20,'element':None,'on_hit':None}
+        plain=deepcopy(self.actor);plain['guarding']=False
+        baseline=_deal_damage(deepcopy(self.battle),attacker,plain)
+        guarded=_deal_damage(self.battle,attacker,self.actor)
+        self.assertEqual(guarded,(baseline*3+2)//4)
+        self.assertFalse(self.actor['guarding'])
+
+    def test_ground_spell_preview_and_move_cast_use_same_cells(self):
+        from backend.job_loadouts import SKILLS
+        spell=deepcopy(SKILLS['job:mage:binding']) if 'job:mage:binding' in SKILLS else next(deepcopy(s) for s in SKILLS.values() if s['type']=='active' and all(e['type']=='zone' for e in s['effects']))
+        self.actor['skills']=[spell];self.actor['special']=spell
+        view=battle_view(self.battle)
+        entries=view['ground_skill_previews'][spell['id']]
+        chosen=next((key,p) for key,p in entries.items() if p.get('move_to'))
+        key,preview=chosen;x,y=map(int,key.split(','))
+        expected={(p['x'],p['y']) for p in preview['zones'][0]['cells']}
+        with patch('backend.combat._advance_to_player'):
+            result=apply_player_command(self.battle,{'action':'skill','skill_id':spell['id'],'x':x,'y':y,'move_to':preview['move_to']})
+        self.assertTrue(self.actor['acted'])
+        self.assertEqual((self.actor['x'],self.actor['y']),(preview['move_to']['x'],preview['move_to']['y']))
+        self.assertEqual({(p['x'],p['y']) for p in result['zones'][0]['cells']},expected)
+
+    def test_ally_spell_previews_and_accepts_move_and_cast(self):
+        from backend.job_loadouts import SKILLS
+        spell=deepcopy(SKILLS['job:fighter:cover'])
+        ally=deepcopy(self.actor);ally.update(id='ally',name='Ally',x=4,y=4)
+        self.battle['units']['ally']=ally
+        self.actor['skills']=[spell];self.actor['special']=spell
+        preview=battle_view(self.battle)['skill_previews'][spell['id']]['ally']
+        self.assertIsNotNone(preview['move_to'])
+        with patch('backend.combat._advance_to_player'):
+            apply_player_command(self.battle,{'action':'skill','skill_id':spell['id'],'target_id':'ally','move_to':preview['move_to']})
+        self.assertTrue(any(s['id']=='barrier' for s in ally['statuses']))
+
     def test_movement_tree_exports_only_validated_routes_without_mutating_battle(self):
         original=deepcopy(self.battle)
         self.battle['elevation']=[{'x':2,'y':5,'height':4}]

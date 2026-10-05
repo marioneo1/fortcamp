@@ -45,7 +45,7 @@ register('rogue','Rogue','Exploit weak targets and interfere with their attacks.
     passive('footwork','Footwork','Gain 5 evasion. Control effects still work.',{'evasion':5}))
 register('ranger','Ranger','Set up accurate shots and control approaches.',
     active('mark','Track Quarry','Mark an enemy for two activations. Your first successful hit each activation gains 10 accuracy.',[{'type':'mark','turns':2,'accuracy':10}],range=5,rule='ballistic'),
-    active('snare','Snaring Ground','Create binding ground under an enemy and adjacent legal cells for two of your activations.',[{'type':'zone','zone':'binding','radius':1,'turns':2}],range=4,rule='ballistic',cooldown=3),
+    active('snare','Snaring Ground','Create binding ground at a chosen cell and adjacent legal cells for two of your activations.',[{'type':'zone','zone':'binding','radius':1,'turns':2}],range=4,rule='ballistic',cooldown=3),
     passive('footwork','Field Footwork','Gain 5 evasion; no extra damage.',{'evasion':5}))
 register('mage','Mage','Create dangerous ground or protect a threatened ally.',
     active('embers','Ember Ground','Create enemy-burning ground for two of your activations. No friendly fire.',[{'type':'zone','zone':'ember','radius':1,'turns':2}],range=3,rule='line_of_effect',cooldown=3),
@@ -65,7 +65,7 @@ register('bard','Bard','Keep allies fighting and weaken an enemy approach.',
     passive('footwork','Stage Footwork','Gain 5 evasion.',{'evasion':5}))
 register('druid','Druid','Change your fighting form or hold ground with thorns.',
     active('prowler','Prowler Form','Self only: INT-based melee and +1 movement for two of your activations. No healing on transformation.',[{'type':'form','form':'prowler','turns':2}],'ally',1,'line_of_effect',3),
-    active('thorns','Thorn Ground','Create thorns around an enemy for two of your activations.',[{'type':'zone','zone':'thorns','radius':1,'turns':2}],range=3,rule='line_of_effect',cooldown=3),
+    active('thorns','Thorn Ground','Create thorns around a chosen cell for two of your activations.',[{'type':'zone','zone':'thorns','radius':1,'turns':2}],range=3,rule='line_of_effect',cooldown=3),
     passive('rooted','Rooted','Gain 25 knockback resistance.',{'knockback_resistance':25}))
 register('engineer','Engineer','Spend finite Components on owner-linked machinery.',
     active('turret','Scrap Turret','Self only: spend 2 Components on a stationary automatic turret. No shot on the deployment turn.',[{'type':'deploy','entity':'scrap_turret'}],'ally',1,'physical_care',3),
@@ -110,7 +110,7 @@ later('mage',
     active('scorch','Scorch','Attempt Burn for two target activations, 75% before resistance. No direct damage.',[{'type':'status','status':'burn','turns':2,'chance':75}],range=3,rule='line_of_effect',cooldown=3),
     passive('armored','Wardweave','Gain 1 armor; consumes a slot instead of another spell.',{'armor':1}))
 later('cleric',
-    active('sanctuary','Sanctuary','Create healing ground around an ally for two of your activations. Restores 3 HP at ally activation start; Burn prevents healing.',[{'type':'zone','zone':'sanctuary','radius':1,'turns':2}],'ally',3,'line_of_effect',3),
+    active('sanctuary','Sanctuary','Create healing ground around a chosen cell for two of your activations. Restores 3 HP at ally activation start; Burn prevents healing.',[{'type':'zone','zone':'sanctuary','radius':1,'turns':2}],'ally',3,'line_of_effect',3),
     active('barrier','Shelter','Give an ally a 14 HP Barrier for two target activations. Replaces weaker Barriers; does not stack.',[{'type':'barrier','amount':14,'turns':2}],'ally',3,'line_of_effect',3),
     passive('intercept','Stand Beside Them','Intercept one direct attack against an adjacent ally. Shares your reaction allowance.',reaction={'id':'intercept','name':'Stand Beside Them'}))
 later('monk',

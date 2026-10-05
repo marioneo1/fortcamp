@@ -1215,6 +1215,26 @@ def _attack_position(battle, unit, target, attack_range, reachable, parents):
                    'path': _movement_path(parents, reachable, (x, y))}
 
 
+def _ground_skill(skill):
+    return bool(skill.get('effects')) and all(e['type'] == 'zone' for e in skill['effects'])
+
+
+def _ground_target(x, y):
+    return {'id':f'ground:{x}:{y}', 'name':f'ground at {x+1},{y+1}', 'x':x, 'y':y,
+            'hp':1, 'max_hp':1, 'conscious':True, 'alive':True}
+
+
+def _support_position(battle, unit, target, effect, reachable, parents):
+    if _support_eligible(battle, unit, target, effect):return unit, None
+    if effect.get('deployment') or effect.get('form_change'):return None, None
+    for point, cost in sorted(reachable.items(), key=lambda row:(row[1],row[0][1],row[0][0])):
+        actor={**unit,'x':point[0],'y':point[1]}
+        if _support_eligible(battle, actor, target, effect):
+            return actor, {'move_to':{'x':point[0],'y':point[1]},'movement_cost':cost,
+                           'path':_movement_path(parents,reachable,point)}
+    return None, None
+
+
 def _apply_attack_approach(battle, unit, target, attack_range, command):
     destination = command.get('move_to')
     if destination is None:
@@ -1465,7 +1485,7 @@ def _deal_damage(
             factor += .25
         damage = max(1, round(damage * factor))
     if target.get("guarding") and not attacker.get("status_tick") and not attacker.get('environmental_fall'):
-        damage = max(1, damage // 2)
+        damage = max(1, (damage * 3 + 2) // 4)
         target["guarding"] = False
         _record_sound(battle, "shield_block", offset=185)
     if not attacker.get('capture_only') and not attacker.get('environmental_fall'):
@@ -3104,14 +3124,27 @@ def battle_view(battle: dict) -> dict:
                 previews[action] = {**(_capture_preview(view, actor, target) if current.get('capture_weapon') and action in {'attack','subdue'} else _strike_preview(view, actor, target, rule,reach,skill if action=='skill' else None)), **(approach or {})} if actor else None
             view['attack_previews'][target['id']] = previews
         view['skill_previews']={}
+        view['ground_skill_previews']={}
         for choice in current.get('skills',[]):
             entries={}
+            if _ground_skill(choice) and abilities.availability(current,choice)['available'] and not (conditions.has(current,'mute') and choice['elevation_rule']=='line_of_effect'):
+                ground_entries={}
+                for y in range(view['height']):
+                    for x in range(view['width']):
+                        target=_ground_target(x,y)
+                        if not _zone_cells(view,target,choice['effects'][0]):continue
+                        actor,approach=_attack_position(view,current,target,choice['range'],reachable,parents)
+                        if actor:
+                            ground_entries[f'{x},{y}']={'zones':[{'cells':_zone_cells(view,target,e),'kind':e['zone']} for e in choice['effects']],**(approach or {})}
+                view['ground_skill_previews'][choice['id']]=ground_entries
             if choice.get('target') == 'ally':
                 for target in _living(view, 'player'):
                     view['attack_previews'].setdefault(target['id'], {})
                     allowed = abilities.availability(current,choice)['available'] and not (conditions.has(current, 'mute') and choice['elevation_rule'] == 'line_of_effect')
                     effect = _support_effect(choice, current)
-                    entries[target['id']] = {'chance': 100, 'support': True, 'heal': effect.get('heal', 0)} if allowed and _support_eligible(view, current, target, effect) else None
+                    actor,approach=_support_position(view,current,target,effect,reachable,parents) if allowed else (None,None)
+                    entries[target['id']] = {'chance': 100, 'support': True, 'heal': effect.get('heal', 0), **(approach or {}),
+                        'zones':[{'cells':_zone_cells(view,target,e),'kind':e['zone']} for e in choice.get('effects',[]) if e['type']=='zone']} if actor else None
                     if choice['id'] == (skill or {}).get('id'):
                         view['attack_previews'][target['id']]['skill'] = entries[target['id']]
                 view['skill_previews'][choice['id']] = entries
@@ -3316,7 +3349,17 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         if conditions.has(unit,'mute') and rule in {'ignore','line_of_effect'}:
             raise ValueError('Mute prevents this spell')
         target=battle['units'].get(command.get('target_id'))
-        if selected_skill['target']=='ally':
+        if _ground_skill(selected_skill) and command.get('x') is not None and command.get('y') is not None:
+            x,y=int(command['x']),int(command['y'])
+            if not (0<=x<battle['width'] and 0<=y<battle['height']):raise ValueError('Choose ground inside the map')
+            target=_ground_target(x,y)
+            if not _zone_cells(battle,target,selected_skill['effects'][0]):raise ValueError('No legal ground for this zone')
+            if _apply_attack_approach(battle,unit,target,selected_skill['range'],command):return battle_view(battle)
+            if not _can_attack(battle,unit,target,selected_skill['range']):raise ValueError('Ground is outside spell range or sight')
+        elif selected_skill['target']=='ally':
+            if command.get('move_to') is not None:
+                if not target:raise ValueError('Choose an ally')
+                if _apply_attack_approach(battle,unit,target,selected_skill['range'],command):return battle_view(battle)
             if not _support_eligible(battle,unit,target,_support_effect(selected_skill,unit)):
                 raise ValueError('Choose a conscious ally in range who needs this technique')
         else:
@@ -3339,7 +3382,17 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         if (x, y) not in reachable:
             raise ValueError("That tile is outside this unit's movement range")
         path = _movement_path(parents, reachable, (x, y))
-        route = _scout_path(battle, unit, [(p['x'],p['y']) for p in path])
+        # Reposition from the current preview, including an empty origin path.
+        origin = unit['movement_origin']
+        current_index = next((i for i, p in enumerate(path) if (p['x'], p['y']) == (unit['x'], unit['y'])), None)
+        if current_index is not None:
+            route_points = path[current_index + 1:]
+        else:
+            route_points = list(reversed(unit.get('movement_path', [])[:-1]))
+            if (unit['x'], unit['y']) != (origin['x'], origin['y']):
+                route_points.append(origin)
+            route_points.extend(path)
+        route = _scout_path(battle, unit, [(p['x'],p['y']) for p in route_points])
         if route:
             x, y = route[-1]
         else:
@@ -3521,6 +3574,11 @@ def apply_player_command(battle: dict, command: dict) -> dict:
 
     if action == "end_turn":
         _commit_player_movement(battle, unit)
+        if not unit.get('acted') and _combat_active(unit):
+            _guard(battle, unit)
+            unit['acted'] = True
+            _record_sound(battle, 'guard')
+            battle['log'].append(f"{unit['name']} ends the turn guarding against the next hit (25% less damage).")
     if action == "end_turn" or action in {"attack", "skill", "subdue", "drop", "drop_object", "throw", "guard", "use_item", "climb_out",'summon_attack','operate_turret','dismiss_summon'}:
         _finish_turn(battle)
     concealment.refresh(battle)
