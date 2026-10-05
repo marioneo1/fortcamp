@@ -11,12 +11,17 @@ NAMES=[f'{style}_{phase}' for style in ('slash','hack','crush','blunt','fist','s
 
 def main():
     parser=argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--net',action='store_true',help='Import the 2x2 net phases instead')
+    mode=parser.add_mutually_exclusive_group()
+    mode.add_argument('--net',action='store_true',help='Import the 2x2 net phases instead')
+    mode.add_argument('--flesh',action='store_true',help='Import the 4x2 flesh contacts instead')
     args=parser.parse_args()
     staging=ROOT/'staging-ui/capture-net-v1' if args.net else STAGING
     public=ROOT/'frontend/public/assets/capture-net-v1' if args.net else PUBLIC
     names=['folded','opening','spread','cinched'] if args.net else NAMES
-    columns,rows=(2,2) if args.net else (4,3)
+    if args.flesh:
+        staging=ROOT/'staging-ui/flesh-contact-v1';public=ROOT/'frontend/public/assets/flesh-contact-v1'
+        names=[f'{style}_{phase}' for style in ('slash','hack','crush','stab') for phase in ('contact','fade')]
+    columns,rows=(4,2) if args.flesh else (2,2) if args.net else (4,3)
     source=Image.open(staging/'atlas.png').convert('RGBA')
     public.mkdir(parents=True,exist_ok=True)
     records=[]

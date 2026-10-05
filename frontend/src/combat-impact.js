@@ -64,6 +64,7 @@ export function impactTimeline(events){
 }
 
 export const feedbackStyles={
+  restraint:{label:'Squeeze',icon:'\u25c7',color:'#d5c6ff'},
   physical:{label:'Hit',icon:'✦',color:'#fff0cd'},
   magic:{label:'Magic',icon:'✧',color:'#c5b3ff'},
   fire:{label:'Fire',icon:'♨',color:'#ffb466'},burn:{label:'Burn',icon:'♨',color:'#ffad58'},
@@ -90,9 +91,9 @@ export function protectionMarkup(unit){
   return `${barrier?`<span class="unit-barrier-halo" aria-hidden="true"></span><span class="unit-barrier-front" aria-hidden="true"></span><span class="unit-barrier-capacity" title="Barrier: absorbs ${Number(barrier.amount)} damage">◇ ${Number(barrier.amount)}</span>`:''}${unit.guarding?'<span class="unit-guard-halo" aria-hidden="true"></span>':''}`;
 }
 export function impactArtwork(event){
-  if(['intercept','counter','resisted','captured','capture_failed'].includes(event.kind))return [];
+  if(['intercept','counter','resisted','captured','capture_failed','restraint'].includes(event.kind))return [];
   if(event.absorbed)return [event.barrier_broken?'barrier_break':'barrier_hit'];
-  if(['slash','hack','crush','blunt','fist','stab'].includes(event.melee_style))return [`melee:${event.melee_style}:contact`,`melee:${event.melee_style}:fade`,...(['fire','magic','holy','ice','lightning'].includes(event.kind)?[event.kind==='fire'?'flame_lick':'magic_hit']:[])];
+  if(['slash','hack','crush','blunt','fist','stab'].includes(event.melee_style)){const pack=event.impact_surface==='flesh'&&['slash','hack','crush','stab'].includes(event.melee_style)?'flesh':'melee';return [`${pack}:${event.melee_style}:contact`,`${pack}:${event.melee_style}:fade`,...(['fire','magic','holy','ice','lightning'].includes(event.kind)?[event.kind==='fire'?'flame_lick':'magic_hit']:[])];}
   if(event.kind==='barrier')return ['barrier_shell'];
   if(['heal','cleanse','form'].includes(event.kind))return ['restoration_wisp'];
   if(['guard','deploy'].includes(event.kind))return ['magic_hit'];
@@ -129,13 +130,13 @@ export function createImpactFeedback(){
       if(siblings.length===1){siblings[0].style.marginLeft=`${-spread}px`;node.style.marginLeft=`${spread}px`}
       else if(siblings.length>1)node.style.setProperty('--float-lane',`${(siblings.length-1)*48}px`);
       layer.append(node);node.animate([{opacity:1,transform:'translate(-50%,-65%) scale(1.1)'},{opacity:1,transform:'translate(-50%,-85%) scale(1)',offset:.15},{opacity:1,transform:'translate(-50%,-115%) scale(1)',offset:.68},{opacity:0,transform:'translate(-50%,-150%) scale(.96)'}],{duration:reduced?1400:950,fill:'forwards'}).onfinish=()=>node.remove();
-      if(reduced||['miss','captured','capture_failed'].includes(event.kind))return;
+      if(reduced||['miss','captured','capture_failed','restraint'].includes(event.kind))return;
       for(const art of impactArtwork(event)){
         const sprite=document.createElement('i');sprite.className=`painted-hit-sprite ${event.absorbed||event.kind==='barrier'?'barrier-impact-sprite':''}`;
-        const melee=art.startsWith('melee:'),parts=art.split(':'),fade=melee&&parts[2]==='fade';
+        const flesh=art.startsWith('flesh:'),melee=flesh||art.startsWith('melee:'),parts=art.split(':'),fade=melee&&parts[2]==='fade';
         const angle=melee&&!['crush','blunt','fist'].includes(parts[1])?Math.atan2(event.impact_direction?.y??0,event.impact_direction?.x??1)*180/Math.PI:0;
         const size=field.clientWidth/battle.width*(event.absorbed||event.kind==='barrier'?1.5:melee?1.25:1.05);
-        const url=melee?`/assets/melee-families-v1/${parts[1]}_${parts[2]}.png`:`/assets/combat-presentation-v2/effects/${art}.png`;
+        const url=melee?`/assets/${flesh?'flesh-contact-v1':'melee-families-v1'}/${parts[1]}_${parts[2]}.png`:`/assets/combat-presentation-v2/effects/${art}.png`;
         sprite.style.cssText=`left:${x}%;top:${y}%;width:${size}px;height:${size}px;background-image:url('${url}')`;layer.append(sprite);
         const transform=s=>`translate(-50%,-50%) rotate(${angle}deg) scale(${s})`;
         const frames=fade?[{transform:transform(.95),opacity:0},{transform:transform(1.08),opacity:.65,offset:.28},{transform:transform(1.2),opacity:0}]:[{transform:transform(.85),opacity:.9},{transform:transform(1.05),opacity:.72,offset:.3},{transform:transform(melee?1.1:1.25),opacity:0}];

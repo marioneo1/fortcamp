@@ -240,4 +240,20 @@ One shared contact time (185 ms). Swing and hit are separate clips so misses nev
 | `capture_net_cinch.wav` | 0.6 s | One coarse rope net landing and pulling tight around padded cloth: compact soft weighted thud, braided rope sliding under tension then tightening creak. Nonviolent restraint, no crunch or punch. |
 | `capture_net_slip.wav` | 0.6 s | One thrown rope net slipping off padded cloth and dropping loose: brief dry rope scrape, soft loose fabric flutter and tiny dull weight taps. Failed catch, no impact hit. |
 
-Successful contact tightens the net and displays Subdued, not HP damage. Failed contact displays Escaped and the net slides away. Originals and technical report remain in staging-sfx/capture-net-v1. Listening approval remains a human review.
+Landed contact tightens the net with real Squeeze damage at 320 ms. A successful capture displays Subdued; a failed capture displays Escaped and loosens with a quiet slip at 450 ms. Missed throws only slip, with no damage. Originals and technical report remain in staging-sfx/capture-net-v1. Listening approval remains a human review.
+
+
+## Flesh contact pack
+
+> Modern fantasy RPG close combat Foley. One isolated immediate contact, warm low mids, softened treble, short dry tail. No music, voices, screams, metal clang, ringing or long reverb.
+
+| File | Length | Prompt |
+|---|---|---|
+| `melee_slash_flesh.wav` | 0.6 s | One fast sword slicing a lightly clothed flesh target: crisp moist slicing snap over a soft dense body thud, brief damp contact detail, tight immediate onset. No repeated cuts. |
+| `melee_hack_flesh.wav` | 0.6 s | One heavy axe chopping a flesh target: deep wet meaty chop, short brittle bone crunch beneath a dense low body impact. Weighty single contact with very short damp splash, no prolonged squelching. |
+| `melee_crush_flesh.wav` | 0.6 s | One heavy hammer striking an unarmored body: massive compressed fleshy thump with a short low brittle bone crack and brief wet impact detail. Deep crushing weight, no metal or wood collision. |
+| `melee_stab_flesh.wav` | 0.6 s | One spear or dagger puncturing a lightly clothed flesh target: tight moist puncture snap and compact deep body thud, brief damp penetration detail. Single quick focused contact, no tearing tail. |
+| `melee_blunt_flesh.wav` | 0.6 s | One wooden staff hitting a cloth covered body: firm rounded fleshy thud with short fabric compression. Dry bloodless impact, no crack, wet splash or metallic sound. |
+| `melee_fist_flesh.wav` | 0.6 s | One fast bare fist striking a lightly clothed body: tight sharp skin smack with compact chesty bass and tiny cloth rustle. Dry bloodless boxing impact, no crack or wet splash. |
+
+Selected from target material, not armor points. Cutting, piercing and crushing organic hits use stylized crimson art; fist/blunt remain bloodless. Original family impacts remain the metal/rigid-target variant. Sources and listening previews stay separate. Capture-net damage uses rope tightening and never flesh/blood effects.

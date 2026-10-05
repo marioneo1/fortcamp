@@ -1,5 +1,13 @@
 # Fortcamp feature backlog
 
+## October 5: nonlethal restraint damage and armor-aware contacts (implemented in dev)
+
+Subdue now has modest balanced restraint power. One outcome roll selects capture, landed-but-escaped, or miss. Landed attempts deal real damage through armor/Guard/Barrier; damage stops at 1 HP so a boss still needs its capture check. Successful captures add no fabricated damage credit. The preview shows contact/capture chance and HP damage; numbers, rope cinching and sounds share the 320ms contact marker. Escaped catches cinch then slip; misses cause no damage. Capture weapons still only use Subdue as their basic attack.
+
+Six new flesh-contact sounds and one compact eight-sprite atlas distinguish organic light/unarmored targets from chain/plate and Automatons. Slash, axe, hammer and stabbing organic contacts use blood accents; clubs and fists remain bloodless. Numerical armor is not treated as metal. Existing hard impacts remain available. The haze trial was alpha-corrected before import; originals are retained.
+
+Validation: 117 related backend tests, 247 frontend tests, build and browser playback of flesh, metal, Automaton, capture/escape/miss. Details: docs/art/FLESH_CONTACT_V1.md and docs/design/CAPTURE_AND_STARTING_ROLES.md. Listening approval remains pending; no production/live-save changes.
+
 ## October 5: weapon-aware melee, capture nets and Battle Lab equipment (implemented in dev)
 
 Six basic-melee families now have distinct token poses, painted contact/fade art and paired swing/hit SFX. Driving Strike remains a blunt push; other authored Fighter skills keep their delivery. Contact stays at 185 ms and structure impacts remain distinct. Net capture opens/spins in flight and cinches or slips at the 320 ms result marker, with Subdued/Escaped feedback and three matching sounds. Capture remains nonlethal.

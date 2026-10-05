@@ -19,5 +19,5 @@ export function emitNetCast(field,event,battle,delay=0){
   sprite('folded',[{transform:pose(from,.2,-35),opacity:0},{transform:pose(from,.2,-35),opacity:1,offset:.1},{transform:pose(mid,.5,-10),opacity:0}],170,20);
   sprite('opening',[{transform:pose(from,.25,-30),opacity:0},{transform:pose(mid,.75,0),opacity:.9,offset:.6},{transform:pose(near,1,12),opacity:0}],240,60);
   sprite('spread',[{transform:pose(mid,.65,-8),opacity:0},{transform:pose(to,1.12,18),opacity:.85,offset:event.hit ? .68 : 170/350},{transform:pose(to,event.hit ? .85 : 1.05,25),opacity:0}],event.hit?250:350,150);
-  if(event.hit)sprite('cinched',[{transform:pose(to,1.05,18),opacity:0},{transform:pose(to,.8,9),opacity:.9,offset:.35},{transform:pose(to,.8,9),opacity:0}],240,COMBAT_MOTION.netContact);
+  if(event.hit)sprite('cinched',[{transform:pose(to,1.05,18),opacity:0},{transform:pose(to,.8,9),opacity:.9,offset:.35},{transform:pose(to,event.captured===false?1.05:.8,event.captured===false?25:9),opacity:0}],240,COMBAT_MOTION.netContact);
 }

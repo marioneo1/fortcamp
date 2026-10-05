@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Current armor-aware melee: [Flesh contact art/audio](art/FLESH_CONTACT_V1.md) distinguishes organic light armor from chain/plate and Automatons. [Capture rules](design/CAPTURE_AND_STARTING_ROLES.md) now include modest nonlethal damage and separate contact/capture outcomes.
+
 Current melee weapon and net presentation: [Melee families and capture net](art/MELEE_WEAPON_PRESENTATION_V1.md) covers six deliveries, contact timing, matching audio/art and per-tester Battle Lab weapons.
 
 Latest combat controls: [Painted control atlas](art/COMBAT_CONTROLS_V2_PROMPT.md)

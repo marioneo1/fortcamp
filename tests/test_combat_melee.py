@@ -2,7 +2,7 @@ import unittest
 from copy import deepcopy
 from unittest.mock import patch
 from fastapi import HTTPException
-from backend.combat_melee import weapon_style, attack_style
+from backend.combat_melee import weapon_style, attack_style, impact_surface, armor_material
 from backend.combat import _perform_attack, _capture_attempt
 from backend.battle_lab import JobTester, job_test_party
 from backend.content import ITEMS
@@ -36,8 +36,9 @@ class MeleePresentationTests(unittest.TestCase):
             with patch('backend.combat._capture_preview',return_value={'chance':100 if success else 0}):
                 _capture_attempt(b,a,t)
             self.assertEqual(b['animation_events'][0]['type'],'net_cast')
-            self.assertEqual(b['animation_events'][0]['hit'],success)
-            self.assertEqual(t['hp'],0 if success else 100)
+            self.assertTrue(b['animation_events'][0]['hit'])
+            self.assertEqual(b['animation_events'][0]['captured'],success)
+            self.assertEqual(t['hp'],0) if success else self.assertLess(t['hp'],100)
             self.assertNotEqual(t['condition'],'dead')
             self.assertFalse(any(e.get('kind')=='physical' for e in b['animation_events']))
             self.assertTrue(any(e.get('kind')==('captured' if success else 'capture_failed') for e in b['animation_events']))
@@ -51,3 +52,23 @@ class MeleePresentationTests(unittest.TestCase):
         self.assertEqual(chosen['item_id'],weapons[0])
         self.assertNotIn('weapon',c['equipment'])
         with self.assertRaises(HTTPException):job_test_party([JobTester(job_id='fighter',weapon_id='invalid')])
+
+
+    def test_contact_material_uses_actual_armor_and_anatomy_not_defense_stat(self):
+        self.assertEqual(impact_surface({'race':'Human','armor':99,'armor_material':'leather'}),'flesh')
+        self.assertEqual(impact_surface({'race':'Human','armor':0,'armor_material':'chain'}),'metal')
+        self.assertEqual(impact_surface({'race':'Automaton','armor_material':'cloth'}),'metal')
+        self.assertEqual(impact_surface({'race':'Golem'}),'rigid')
+        self.assertEqual(armor_material({'name':'Steel Plate'}),'metal')
+        self.assertEqual(armor_material({'name':'Chainmail Coat'}),'metal')
+        self.assertEqual(armor_material({'name':'Worn Jacket'}),'cloth')
+        self.assertEqual(armor_material({'name':'Thunderhide Coat','armor_material':'leather'}),'leather')
+
+    def test_blunt_and_fist_kills_keep_collapse_without_blood_burst(self):
+        for style in ['slash','hack','crush','blunt','fist','stab']:
+            b,a,t=foundation.AbilityFoundationTests().fixture('fighter')
+            a.update(melee_style=style,attack=1000);t.update(hp=1,race='Human',armor_material='cloth')
+            with patch('backend.combat._attack_hits',return_value=(True,{'damage_bonus':0,'chance':100},1)):_perform_attack(b,a,t,'melee')
+            death=next(e for e in b['animation_events'] if e['type']=='death_burst')
+            self.assertEqual(bool(death.get('bloodless')),style in {'fist','blunt'})
+            self.assertEqual(t['condition'],'dead')

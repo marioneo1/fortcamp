@@ -52,13 +52,15 @@ class CaptureStarterTests(unittest.TestCase):
         normalize_state(state)
         self.assertEqual(state['characters'][0]['equipment'],equipment)
 
-    def test_failed_capture_never_damages_or_procs_and_is_retryable(self):
+    def test_failed_restraint_damages_without_procs_and_is_retryable(self):
         _,b,a,t=self.battle()
+        t['evasion']=0
+        expected=battle_view(b)['attack_previews'][t['id']]['subdue']['damage_on_hit']
         a.update(attack=1000,element='fire',on_hit={'id':'burn','chance':100,'turns':3})
         with patch('backend.combat.random.Random') as rng, patch('backend.combat._advance_to_player'):
             rng.return_value.randint.return_value=100
             apply_player_command(b,{'action':'subdue','target_id':t['id']})
-        self.assertEqual(t['hp'],10)
+        self.assertEqual(t['hp'],10-expected)
         self.assertEqual(t['condition'],'active')
         self.assertEqual(t['statuses'],[])
         self.assertTrue(a['acted'])
@@ -69,7 +71,7 @@ class CaptureStarterTests(unittest.TestCase):
             apply_player_command(b,{'action':'subdue','target_id':t['id']})
         self.assertEqual(t['condition'],'unconscious')
         self.assertTrue(t['alive'])
-        self.assertEqual(a['combat_record']['total_damage'],0)
+        self.assertGreater(a['combat_record']['total_damage'],0)
         self.assertEqual(a['combat_record']['subdues'],1)
         self.assertFalse(any(e['type']=='death_burst' for e in b['animation_events']))
 
@@ -106,7 +108,7 @@ class CaptureStarterTests(unittest.TestCase):
         with patch('backend.combat.random.Random') as rng:
             rng.return_value.randint.return_value=preview['chance']+1
             _capture_attempt(b,a,t)
-        self.assertEqual(t['hp'],10)
+        self.assertEqual(t['hp'],10-preview['damage_on_hit'])
         self.assertEqual(b['roll_counter'],1)
         self.assertIn(f"vs {preview['chance']}% capture chance",b['log'][-1])
 
@@ -192,6 +194,40 @@ class CaptureStarterTests(unittest.TestCase):
         root=Path(__file__).resolve().parents[1]
         for item in ITEMS.values():
             if item.get('capture_weapon'):self.assertTrue((root/('frontend/public'+item['icon'])).exists())
+
+
+
+
+
+    def test_restraint_stops_at_one_hp_and_does_not_bypass_boss_capture(self):
+        _,b,a,t=self.battle()
+        t.update(hp=2,boss=True,evasion=0)
+        with patch('backend.combat._capture_preview',return_value={'chance':0,'hit_chance':100}):
+            for _ in range(6):_capture_attempt(b,a,t)
+        self.assertEqual(t['hp'],1)
+        self.assertEqual(t['condition'],'active')
+        self.assertTrue(t['alive'])
+        self.assertEqual(a['combat_record']['total_damage'],1)
+        self.assertFalse(any(e['type'] in {'death_burst','knockout'} for e in b['animation_events']))
+
+    def test_missed_net_does_not_damage_and_barrier_absorbs_landed_squeeze(self):
+        from backend import combat_conditions as conditions
+        _,b,a,t=self.battle()
+        with patch('backend.combat._capture_preview',return_value={'chance':0,'hit_chance':0}):_capture_attempt(b,a,t)
+        self.assertEqual(t['hp'],10)
+        self.assertFalse(next(e for e in b['animation_events'] if e['type']=='net_cast')['hit'])
+        conditions.barrier(t,20,2,a)
+        preview=battle_view(b)['attack_previews'][t['id']]['subdue']
+        self.assertEqual(preview['damage_on_hit'],0)
+        with patch('backend.combat._capture_preview',return_value={'chance':0,'hit_chance':100}):_capture_attempt(b,a,t)
+        self.assertEqual(t['hp'],10)
+        self.assertLess(next(s['amount'] for s in t['statuses'] if s['id']=='barrier'),20)
+
+    def test_capture_damage_scales_slowly_and_remains_below_standard_weapons(self):
+        from backend.capture_weapons import capture_power
+        for stats in [4,12,50,200]:
+            actor={'capture_weapon':{'base':8},'capture_attributes':dict.fromkeys(('str','dex','int'),stats)}
+            self.assertLess(capture_power(actor),5+stats//2)
 
 
 if __name__=='__main__':unittest.main()

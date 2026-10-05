@@ -1,5 +1,12 @@
-"""Capture is an action-limited probability check, not STR damage with a safe finisher."""
+"""Dedicated restraint tools: modest balanced damage plus a separate capture outcome."""
 import math
+
+def capture_power(actor):
+    attrs=actor.get('capture_attributes', {'str':actor.get('strength',4),'dex':4,'int':actor.get('intelligence',4)})
+    values=[max(1,int(attrs.get(k,4))) for k in ('str','dex','int')]
+    balanced=min(values)+(sum(values)/3-min(values))*.35
+    return 2+int(actor.get('capture_weapon',{}).get('base',8))//12+int(2*math.log1p(balanced/8))
+
 
 def capture_preview(actor, target):
     profile = actor.get('capture_weapon')
@@ -21,7 +28,7 @@ def capture_preview(actor, target):
     if target.get('guarding'): chance -= 8
     if boss: chance -= 20
     return {'chance':max(2,min(60 if boss else 95,round(chance))), 'capture':True, 'damage_bonus':0,
-            'description':'One capture check. Failure deals no damage; success leaves the target unconscious. Lower HP and control effects help.',
+            'description':'A landed attempt deals modest nonlethal damage, then restrains on a successful capture check. Damage stops at 1 HP; wounds help subsequent attempts.',
             'balanced_rating':round(balanced,1)}
 
 def apply_capture_content(items, missions, general, events, perks, effects):
@@ -41,14 +48,14 @@ def apply_capture_content(items, missions, general, events, perks, effects):
             'power':0,'attack_range':reach,'bonuses':{},'attribute_bonuses':{},'granted_perks':[],
             'tags':['capture']+(['mission_exclusive'] if rank is None else []),
             'capture_weapon':{'base':base,'range':reach,'elevation_rule':rule}, 'icon':f'/assets/catalogue/items/{art}.png',
-            'description':f'Capture weapon. Range {reach}; repeated STR/DEX/INT checks instead of damaging attacks. Never kills. Wounded or controlled targets are easier; bosses resist. '+('Frayed starter gear with a low capture chance.' if iid=='frayed_capture_net' else '')}
+            'description':f'Capture weapon. Range {reach}; modest balanced STR/DEX/INT restraint damage and a capture check. Damage stops at 1 HP; capture leaves the target unconscious. Never kills. Wounded or controlled targets are easier; bosses resist. '+('Frayed starter gear with a low capture chance.' if iid=='frayed_capture_net' else '')}
         if rank: general.append((iid,rank,7))
     # Existing genuine restraint tools become capture weapons; no damage-mode loophole.
     for iid,base,reach in [('goblin_net_bow',20,3),('hunters_bola',18,2),('mooncord_sling',25,4)]:
         item=items[iid];item.update(weapon_type='capture',weapon_scaling='balanced',power=0,
             capture_weapon={'base':base,'range':reach,'elevation_rule':'ballistic'},attack_range=reach)
         item.pop('combat_skill',None);item.pop('on_hit',None)
-        item['description']='A dedicated capture weapon. Repeated balanced STR/DEX/INT capture checks; never deals lethal damage. Lower HP and control effects help.'
+        item['description']='A dedicated capture weapon. Modest balanced STR/DEX/INT restraint damage and capture checks; damage stops at 1 HP. Never kills. Lower HP and control effects help.'
     for item in items.values():
         item['tags']=[t for t in item.get('tags',[]) if t!='nonlethal']
         skill=item.get('combat_skill')

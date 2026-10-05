@@ -47,3 +47,23 @@ def capture_style(weapon):
     if weapon.get('capture_weapon') and re.search(r'\b(net|mesh)\b',weapon.get('weapon',weapon.get('name','')).lower()):
         return 'net'
     return None
+
+
+def armor_material(item):
+    explicit=item.get('armor_material')
+    if explicit:return explicit
+    name=item.get('name','').lower()
+    if re.search(r'\b(plate|chain|chainmail|ringmail|mail|metal|iron|steel)\b',name):return 'metal'
+    if re.search(r'\b(leather|hide|vest)\b',name):return 'leather'
+    return 'cloth' if item else 'none'
+
+
+def impact_surface(target):
+    # Anatomy wins over clothing: a robot wearing a cloak is still mechanical.
+    race=str(target.get('race','Human')).lower().replace(' ','')
+    if race=='automaton' or target.get('body_material')=='metal':return 'metal'
+    if race in {'golem','undead','revenant','banshee','slimefolk'}:return 'rigid'
+    if target.get('body_material') in {'stone','bone','ethereal','slime'}:return 'rigid'
+    if target.get('impact_surface') in {'metal','flesh','rigid'}:return target['impact_surface']
+    if target.get('armor_material') in {'metal','plate','chain','chainmail','mail'}:return 'metal'
+    return 'flesh'

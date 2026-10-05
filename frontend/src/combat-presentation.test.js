@@ -89,3 +89,14 @@ test('net results coincide with cinching and recovery precedes defeat animation'
  assert.deepEqual(impactArtwork({kind:'captured'}),[]);
  assert.deepEqual(impactArtwork({kind:'capture_failed'}),[]);
 });
+
+
+test('blood contact art is confined to damaging organic cutting, piercing and crushing hits',()=>{
+ for(const style of ['slash','hack','crush','stab']){
+  assert.ok(impactArtwork({kind:'physical',amount:4,melee_style:style,impact_surface:'flesh'})[0].startsWith('flesh:'));
+  assert.ok(impactArtwork({kind:'physical',amount:4,melee_style:style,impact_surface:'metal'})[0].startsWith('melee:'));
+ }
+ for(const style of ['blunt','fist'])assert.ok(impactArtwork({kind:'physical',amount:4,melee_style:style,impact_surface:'flesh'})[0].startsWith('melee:'));
+ assert.deepEqual(impactArtwork({kind:'restraint',amount:3}),[]);
+ assert.deepEqual(impactArtwork({kind:'physical',amount:0,absorbed:9,melee_style:'slash',impact_surface:'flesh'}),['barrier_hit']);
+});

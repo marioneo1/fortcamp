@@ -43,7 +43,7 @@ export function createCombatEffects({load=loadEffekseerRuntime}={}){
     const animation=dot.animate([{transform:'translate(-50%,-50%) scale(.4)',opacity:.9},{transform:'translate(-50%,-50%) scale(2.2)',opacity:0}],{duration:350});animation.onfinish=()=>dot.remove();
   }
   function emit(event,battle,delay=0){
-    if(!field||reduced()||document.hidden)return;
+    if(!field||reduced()||document.hidden||event.bloodless)return;
     const spell=event.type==='magic_projectile';
     const to=spell?event.to:{x:event.x,y:event.y};if(!to)return;
     jobs.push({kind:spell?'spell':bloodKind(event.race),from:event.from||to,to,width:battle.width,height:battle.height,start:performance.now()+delay,duration:spell?220:520,handle:null});

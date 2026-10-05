@@ -16,6 +16,7 @@ from .races import race_gameplay, generated_genders
 from .perk_effects import modifiers
 from .equipment_rules import collect_rules,equipped_skills
 from .combat_pacing import enemy_budget
+from .capture_weapons import capture_power
 from .combat_supplies import sync_supplies, remaining_uses
 from . import combat_conditions as conditions
 from . import concealment
@@ -24,7 +25,7 @@ from . import combat_tactics as tactics
 from . import combat_spaces as spaces
 from . import combat_entities as entities
 from .combat_feedback import record as feedback
-from .combat_melee import weapon_style, attack_style, capture_style
+from .combat_melee import weapon_style, attack_style, capture_style, armor_material, impact_surface
 
 
 STATUS_DEFINITIONS = {
@@ -150,7 +151,7 @@ def _ensure_battle_schema(battle: dict) -> None:
             profile = deepcopy(weapon.get('capture_weapon'))
             unit.update(capture_weapon=profile, nonlethal_capable=bool(profile), knockout_finisher=weapon.get('knockout_finisher',0))
             if profile:
-                unit.update(attack=0, attack_range=profile['range'], attack_elevation_rule=profile['elevation_rule'])
+                unit.update(attack=capture_power(unit), attack_range=profile['range'], attack_elevation_rule=profile['elevation_rule'])
                 unit['skills'] = [skill for skill in unit.get('skills',[]) if not skill.get('nonlethal') and skill.get('id') not in {'precision_shot','arc_bolt'}]
                 unit['special'] = unit['skills'][0] if unit['skills'] else None
             else:
@@ -342,6 +343,7 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
     return {
         "id": character["id"], "name": character.get("name", "Adventurer"), "team": "player",
         "x": x, "y": y, "hp": max_hp, "max_hp": max_hp,
+        "armor_material": armor_material(next((i for i in equipped if i.get("slot")=="body"),{})),
         "armor": max(0, vit // 3 + int(racial["armor_bonus"])) + perks.get('armor',0) + job_modifiers.get('armor',0),
         "move": max(2, min(8, 3 + (1 if agi >= 8 else 0) + int(racial["move_bonus"]) + perks.get('move',0))),
         "initiative": 10 + agi + int(racial["initiative_bonus"]) + perks.get('initiative',0), "attack_range": attack_range,
@@ -353,7 +355,7 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
         "gear_rules":rules,
         "race": race, "race_summary": racial["summary"],
         "strength": strength, "intelligence": _effective_attribute(state, character, 'int'), "weight": _race_weight(character.get("race", "human")),
-        "attack": 0 if capture_weapon else 5 + scaling_value // 2 + int(weapon.get("power", 0)) + combat_training,
+        "attack": capture_power({"capture_weapon":capture_weapon,"capture_attributes":{key:_effective_attribute(state, character, key) for key in ("str","dex","int")}}) if capture_weapon else 5 + scaling_value // 2 + int(weapon.get("power", 0)) + combat_training,
         "capture_weapon": capture_weapon,
         "capture_attributes": {key:_effective_attribute(state, character, key) for key in ("str", "dex", "int")},
         "knockout_finisher": int(weapon.get("knockout_finisher", 0)),
@@ -724,6 +726,7 @@ def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission
         unit = _enemy(uid,name,kind,tile["x"],tile["y"],identity)
         unit.update({"race":race,"boss":index == 0,"hp":hp,"max_hp":hp,
             "armor":budget['armor'],"attack":budget['attack'],
+            "armor_material":spec.get("armor_material","cloth") if kind!="archer" else "leather",
             "move":3+int(racial["move_bonus"])+(1 if spec.get("mounted") else 0),
             "initiative":14+int(racial["initiative_bonus"])+index,
             "evasion":int(racial["evasion"]),"movement_type":racial["movement_type"],
@@ -1048,14 +1051,17 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
     if not hit:feedback(battle,target,'miss')
     resolved=events[begin:];del events[begin:]
     style = attack_style(attacker, ability) if rule == 'melee' else None
+    surface=impact_surface(target)
     _record_melee_animation(battle,attacker,target,hit,rule,style)
+    for event in events[begin:]:event['impact_surface']=surface
     battle['attack_serial']=battle.get('attack_serial',0)+1
     packet=battle['attack_serial']
     events.extend(resolved)
     for event in events[begin:]:
         event['attack_packet']=packet
+        if event.get('type')=='death_burst' and style in {'blunt','fist'} and surface=='flesh':event['bloodless']=True
         if style and event.get('type')=='combat_feedback' and event.get('kind') not in {'status','captured','miss'}:
-            event.update(melee_style=style,impact_direction={'x':target['x']-attacker['x'],'y':target['y']-attacker['y']})
+            event.update(melee_style=style,impact_surface=surface,impact_direction={'x':target['x']-attacker['x'],'y':target['y']-attacker['y']})
     if target is not original:
         feedback(battle,target,'intercept',attack_packet=packet,before_contact=True)
     if reaction:
@@ -1703,6 +1709,8 @@ def _deal_damage(
         if roll <= attacker['knockout_finisher']:
             intent = 'nonlethal'
             battle['log'].append(f"{attacker['weapon']} leaves {target['name']} unconscious instead of killing them.")
+    if attacker.get('nonlethal_floor'):
+        damage=min(damage,max(0,previous_hp-1))
     target["hp"] = max(0, previous_hp - damage)
     if target['hp']==0 and intent!='nonlethal' and not attacker.get('environmental_fall') and target.get('gear_rules',{}).get('lifeline') and not target.get('lifeline_used'):
         target['hp']=1;target['lifeline_used']=True
@@ -1790,24 +1798,33 @@ def _capture_attempt(battle: dict, actor: dict, target: dict) -> None:
     # The first attempt wakes the camp even when it fails; preview includes the initial sleep advantage.
     _wake_ambush(battle, target)
     success = roll <= preview['chance']
+    landed = roll <= preview.get('hit_chance',100)
     events=battle.setdefault('animation_events',[]);begin=len(events)
+    if landed:
+        _deal_damage(battle, _capture_damage_source(actor), target, intent='nonlethal')
     if success:
         restrained = {**actor, 'attack': target['max_hp']*100 + target.get('armor',0),
                       'status_tick': True, 'capture_only': True, 'element': None, 'on_hit': None}
         _deal_damage(battle, restrained, target, intent='nonlethal')
     battle['log'].append(f"{actor['name']} attempts to capture {target['name']}: {'successful' if success else 'failed'} ({roll} vs {preview['chance']}% capture chance).")
     net = capture_style(actor) == 'net'
-    if not success:feedback(battle,target,'capture_failed' if net else 'miss')
+    if not success:feedback(battle,target,'capture_failed' if landed else 'miss')
     resolved=events[begin:];del events[begin:]
     if net:
         actor['physical_action'] = actor['attack_elevation_rule'] in {'melee','ballistic'}
         events.append({'type':'net_cast','attacker_id':actor['id'],'target_id':target['id'],
-                       'from':{'x':actor['x'],'y':actor['y']},'to':{'x':target['x'],'y':target['y']},'hit':success})
+                       'from':{'x':actor['x'],'y':actor['y']},'to':{'x':target['x'],'y':target['y']},'hit':landed,'captured':success})
     else:
-        _record_melee_animation(battle, actor, target, success, actor['attack_elevation_rule'])
+        _record_melee_animation(battle, actor, target, landed, actor['attack_elevation_rule'])
     battle['attack_serial']=battle.get('attack_serial',0)+1
     events.extend(resolved)
     for event in events[begin:]:event['attack_packet']=battle['attack_serial']
+
+
+def _capture_damage_source(actor):
+    return {**actor,'attack':capture_power(actor),'nonlethal_floor':True,
+            'capture_only':False,'element':None,'on_hit':None,'damage_kind':'restraint',
+            'perk_modifiers':{},'gear_rules':{},'knockout_finisher':0}
 
 
 def _capture_preview(battle: dict, actor: dict, target: dict) -> dict:
@@ -1817,6 +1834,14 @@ def _capture_preview(battle: dict, actor: dict, target: dict) -> dict:
     if conditions.has(actor, 'blind'): accuracy -= 35 if actor['attack_elevation_rule'] != 'melee' else 15
     if conditions.has(actor, 'fear'): accuracy -= 15
     result['chance'] = max(2, min(60 if target.get('boss') or target.get('kind') == 'chieftain' else 95, result['chance']+accuracy))
+    hit_chance=_attack_preview(battle,actor,target,actor['attack_elevation_rule'])['chance']
+    result['chance']=min(result['chance'],hit_chance)
+    recipient=deepcopy(target)
+    damage=_damage_before_barrier({'animation_events':[]},_capture_damage_source(actor),recipient,intent='nonlethal')
+    barrier=max((s.get('amount',0) for s in target.get('statuses',[]) if s['id']=='barrier'),default=0)
+    result.update(hit_chance=hit_chance,damage_on_hit=min(max(0,target['hp']-1),max(0,damage-barrier)),
+                  absorbed_damage=min(damage,barrier),
+                  damage_note='Nonlethal: damage stops at 1 HP. Capture chance uses current wounds; this hit helps the next attempt.')
     return result
 
 
