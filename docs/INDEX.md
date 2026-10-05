@@ -1,7 +1,8 @@
 # Fortcamp documentation map
 
 Current Fighter review: [Fighter combat and UI audit](design/FIGHTER_COMBAT_REVIEW.md)
-records the implemented Layout A, Fighter Chain Snare/Earthbreaker/area rally,
+records the implemented Layout A with larger skills and right-hand commands,
+Fighter Chain Snare/Earthbreaker/area rally,
 contact/collision rules, controls and verification. Prior audits remain historical.
 [New Fighter art prompt](art/FIGHTER_V3_PROMPT.md) records the compact six-cell pack.
 Mage ground/barrier art is still awaiting redesign.

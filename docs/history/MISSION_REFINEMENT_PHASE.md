@@ -1259,3 +1259,11 @@ cells in any direction. Preserved stable IDs, snapshots and existing collision/
 pit rules. Imported a six-cell equal-square painted pack and synchronized chain,
 leap, landing and rally presentation. Checks: 105 backend / 205 frontend tests,
 build, browser layout/targeting/contact QA. No production/save/remote changes.
+
+### October 5: Layout A readability follow-up
+
+Primary commands moved right with 40px icons; skills enlarged to 88px and acting
+portrait to 76px. Larger turn order now sits between title and objectives. Fixed
+Action Preview below commands and larger sidebar typography improve reading.
+Sidebar height uses its actual position. Frontend build, 205 tests and isolated
+browser checks passed; combat rules/production/saves unchanged.

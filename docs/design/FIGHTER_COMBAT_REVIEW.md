@@ -163,3 +163,22 @@ are in SFX_GENERATION_GUIDE.md / tools/generate_sfx_pack.py.
 Passing tests validates these functional repairs, not production art quality.
 AOE/barrier art is explicitly awaiting replacement, and neither full UI proposal
 is installed. Keep further class rollout behind representative manual review.
+
+## October 5: larger controls and readable Layout A
+
+The six primary commands now live in a two-column right-hand panel, with 40px
+artwork, boxed hotkeys and 64px button height. The bottom dock contains the
+acting character (76px portrait) and 88px square skills (80px at narrower desktop
+widths). The title, horizontally scrollable enlarged turn order and objectives
+share one header row on wide screens. Smaller screens wrap rather than squeeze
+these sections. Action Preview stays directly under the command panel at 15px
+with generous line spacing; button hover and keyboard focus preview descriptions,
+and leaving restores the selected action. Other right-hand labels and status
+text are larger. The sidebar height follows its actual screen position and
+scrolls independently; map fit still reserves the dock. Existing combat bindings,
+auto controls, targeting, hotkeys and rules are unchanged.
+
+Validation: frontend build, 205 frontend tests and isolated browser inspection
+at 1440x1100 and 1440x900. All six command buttons retain icons/keycaps; skill
+art fills the enlarged squares; Fighter previews/contact/C cancellation still
+work. Production and saves are unchanged.

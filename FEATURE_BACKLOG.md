@@ -1,5 +1,12 @@
 # Fortcamp feature backlog
 
+## October 5: battle readability follow-up (implemented in dev)
+
+Moved primary actions to the right, enlarged skills/acting portrait/turn order,
+and added a readable fixed Action Preview below commands. Enlarged sidebar text;
+sidebar scrolling respects actual available height. Existing auto/targeting
+controls retained. Frontend build/tests and browser checks passed.
+
 ## October 5: Layout A and Fighter disruption (implemented in dev)
 
 Installed real Layout A with painted action icons/keycaps, End Turn art, field

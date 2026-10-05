@@ -36,6 +36,8 @@ export function bindMapPan(viewport){
 }
 export function sizeBattleMap(viewport,{width,height,fit,zoom}){
   const field=viewport?.querySelector('.battlefield');if(!field)return;
+  const sidebar=viewport.closest('.layout-a')?.querySelector('.battle-sidebar');
+  if(sidebar)sidebar.style.maxHeight=window.innerWidth>800?`${Math.max(180,window.innerHeight-sidebar.getBoundingClientRect().top-20)}px`:'';
   const availableHeight=Math.max(120,window.innerHeight-viewport.getBoundingClientRect().top-28-(viewport.closest('.layout-a')?.querySelector('.battle-command-dock')?.getBoundingClientRect().height||0));
   viewport.style.maxHeight=`${availableHeight}px`;
   const pixels=fit?fitMapWidth(width,height,viewport.clientWidth-4,availableHeight-4):width*72*zoom;
