@@ -100,3 +100,12 @@ Sure Grip provides 25 knockback resistance and four capture percentage points
 when equipped. Creature objectives no longer inherit chieftain capture resistance.
 Basic auto support can heal or apply regeneration; it does not yet plan complex
 Captor setup sequences. Closed operable gates are opened during auto pursuit.
+
+## October 5 Fighter refinement
+
+Fighter Cover is now Chain Snare (damage, square reach 3, pull up to 2, halve
+movement for 2 activations). Break Formation is Earthbreaker (leap 3, square
+impact radius 2, inner push 2 / outer push 1, cooldown 5). Hold Together
+clears Fear from all allies within 2 cells of the caster; no Barrier. Stable
+loadout IDs and unlock thresholds are retained; active snapshots are not migrated.
+See FIGHTER_COMBAT_REVIEW.md for exact legality, collision and auto-play rules.

@@ -1248,3 +1248,14 @@ Prepared two map/dock/inspector layout prototypes and protection/ground effect
 directions. These remain proposals. Validation: 96 backend and 203 frontend tests,
 frontend build, isolated real-outcome browser checks including subpixel corpse
 alignment. No production, save or remote repository changes.
+
+## October 5, 2026: approved Layout A and Fighter disruption
+
+Implemented the map/dock/inspector workspace while preserving painted primary
+action icons, boxed shortcuts, Auto One Turn and Auto Resolve. Added an End Turn
+icon. Replaced Fighter Cover/Break Formation with Chain Snare/Earthbreaker and
+made Hold Together an area Fear cleanse. User clarified hook reach as three
+cells in any direction. Preserved stable IDs, snapshots and existing collision/
+pit rules. Imported a six-cell equal-square painted pack and synchronized chain,
+leap, landing and rally presentation. Checks: 105 backend / 205 frontend tests,
+build, browser layout/targeting/contact QA. No production/save/remote changes.

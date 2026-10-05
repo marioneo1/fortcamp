@@ -70,3 +70,14 @@ future work; fixed tactical icons are used for this pass.
 
 Subsequent impact pass: COMBAT_IMPACT.md documents typed damage feedback, shield
 capacity/halos, half-hit collisions and knockback beginning at the melee impact.
+
+## October 5: Layout A and Fighter targeting
+
+Implemented map-first layout with a bottom actor/skills/actions dock and field
+inspector. Primary actions retain painted icons and boxed shortcuts; End Turn
+adds hourglass artwork. Auto One Turn and Auto Resolve Battle remain visible.
+Map options/supplies are expandable; right-drag, wheel zoom and skill paging
+are retained. Fit subtracts dock height. Earthbreaker previews a landing,
+walking approach where required, nine inner cells and sixteen outer cells
+(clipped by map/sight), with amber rings. Hold Together highlights its self
+marker and two-cell rally area. Chain Snare uses three-cell square reach.

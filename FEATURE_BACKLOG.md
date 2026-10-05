@@ -1,5 +1,17 @@
 # Fortcamp feature backlog
 
+## October 5: Layout A and Fighter disruption (implemented in dev)
+
+Installed real Layout A with painted action icons/keycaps, End Turn art, field
+inspector, bottom command dock and both auto options. Refined Fighter into
+Chain Snare, Earthbreaker and nearby-allies Fear rally; retained stable loadouts.
+Added bounded area/leap resolution, Hobbled, ring previews, automatic-play
+choices, synchronized leap/landing/chain effects and a compact six-cell art pack.
+Validated 105 related backend / 205 frontend tests, build and isolated browser
+checks. Player visual/balance review and the broader Mage ground/Barrier pass
+remain pending. See docs/design/FIGHTER_COMBAT_REVIEW.md.
+
+
 ## Next: Combat presentation polish (proposal)
 
 Current effects are not approved final art. Align visible contact with damage/

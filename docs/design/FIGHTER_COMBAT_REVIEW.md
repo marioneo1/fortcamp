@@ -1,7 +1,62 @@
 # Fighter combat and battle UI review
 
-October 4, 2026. Functional repairs implemented in dev; full layout and effect
-redesigns below are proposals. Production and player saves are unchanged.
+Updated October 5, 2026. Layout A and the Fighter disruption redesign below are
+implemented in dev. Production and player saves are unchanged.
+
+## Current playable Fighter and Layout A
+
+Layout A is the real battle workspace: compact mission/objective/turn header,
+proportionate map, bottom actor/skill/action dock, and a separate field inspector.
+Hovering a character updates the inspector; it starts with the acting character.
+Move, Attack, Throw, Guard, Actions and End Turn keep painted icons and boxed
+shortcuts. End Turn now has a painted hourglass/shield icon. C/Escape cancels
+skill targeting. All gear skills remain available with ten per hotbar page.
+Auto One Turn and Auto Resolve Battle remain visible in the sidebar alongside
+Leave Map and confirmed Retreat All. Map options and supplies are in a named
+drawer; history/passives remain expandable. Wheel zoom, right-drag panning,
+movement previews and preparation mode continue to work. Fit reserves space for
+the command dock instead of clipping the bottom of the map.
+
+| Skill | Current behavior | Cost / counterplay |
+|---|---|---|
+| Driving Strike | Existing single-target melee hit and one-cell push | 2 owner activations; accuracy, walls and resistance apply |
+| Chain Snare (formerly Cover) | Weapon-power hit; clear three-cell reach in any direction (square range). Pull up to two cells along the dominant cardinal direction, stopping beside the caster. On hit, Hobbled halves movement, rounded down with minimum 1, for two target activations | 3 owner activations. Miss prevents both pull and Hobbled. Displacement resistance can stop the pull; ordinary accuracy/elevation, walls and existing status resistance apply |
+| Earthbreaker (formerly Break Formation) | Ground-targeted leap up to three Manhattan cells after any legal walking approach. Weapon-power physical landing hit against enemies in a two-cell square radius. Inner ring pushes two cells; outer ring one. Damage resolves first for all targets; pushes then resolve inner-first so bodies can collide | 5 owner activations. Each enemy has its own accuracy roll. Resistance stops movement, not the landing hit. Open landing only, clear sight and no crossed wall; at most two levels of height change. Can leap over a gap, but cannot land in water/pits, carry payloads, or leap while movement is disabled. Area impact is not an interceptable direct strike and does not trigger a melee counter |
+| Hold Together | Self-targeted rally removes Fear from self and every living ally within a two-cell square radius and line of sight. No Barrier or healing | 3 owner activations. No valid cast when nobody in the area has Fear. Walls block the rally |
+| Intercept | Existing adjacent ally protection | One shared reaction |
+| Riposte | Existing survived-melee counter at half attack | Competes with Intercept for the shared reaction |
+
+Earthbreaker uses existing half-hit collision rules: solid/person collisions
+add half the resolved landing damage, including friendly fire against a bystander.
+Existing authored pit/fall rules and knockback resistance remain in force. The
+rings are snapshotted before movement. Dead bodies do not become solid obstacles.
+Capture weapons cannot use the two damaging techniques; Hold Together remains
+available. Automatic play chooses a useful legal leap for groups, avoids nearby
+allies and protected capture targets, and uses rally when Fear can be removed.
+
+Stable learned/equipped IDs are retained (`cover`, `pull`, `rally`); new battles
+receive the new definitions. Existing active battle snapshots finish with their
+original skills. Restart Battle Lab / start a new encounter to test this pass.
+Unlock thresholds and five regular slots are unchanged.
+
+The new equal-square painted pack is recorded in
+[the art prompt](../art/FIGHTER_V3_PROMPT.md). Chain contact, leap flight,
+landing wave and rally ripple are timed effects; floating damage remains above
+all of them. The expansion uses independent translation so its centre stays at
+the landing cell. This does not approve the previously rejected Mage ground/
+barrier artwork; that broader pass remains pending.
+
+Verification: 105 related backend tests, 205 frontend tests and frontend build.
+Isolated browser checks covered icons/keycaps, both auto controls, a 900px-high
+workspace, exact 9-cell inner/16-cell outer previews, self-rally area, chain
+contact/status feedback, landing impact, collision and C cancellation. No live
+saves were used. Final visual quality/balance still needs player review.
+
+## Historical October 4 audit
+
+The sections below describe the previous skills and rejected visual proposals.
+The current implementation above supersedes Cover, Break Formation, Hold
+Together and the Layout A proposal.
 
 ## Problems found and repaired
 

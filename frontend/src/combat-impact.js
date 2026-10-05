@@ -1,6 +1,6 @@
 import {COMBAT_MOTION} from './combat-animation.js';
 // Shared contact markers for sound, visible contact, recoil and feedback.
-export function movementDuration(event){return event.forced?(event.collision?COMBAT_MOTION.collisionMove:220):Math.max(220,Math.min(850,Math.max(1,(event.points||[]).length-1)*155))}
+export function movementDuration(event){return event.leap?420:event.forced?(event.collision?COMBAT_MOTION.collisionMove:220):Math.max(220,Math.min(850,Math.max(1,(event.points||[]).length-1)*155))}
 export function impactTimeline(events){
   let cursor=0;const packets=new Map();
   const collisions=new Map(events.filter(e=>e.type==='collision_recoil').map(e=>[`${e.attack_packet}:${e.unit_id}`,e]));
@@ -8,15 +8,19 @@ export function impactTimeline(events){
     if(event.type==='movement'&&event.forced)event={...event,collision:collisions.get(`${event.attack_packet}:${event.unit_id}`)};
     const key=event.attack_packet;
     let packet=packets.get(key),start=cursor,duration=0;
-    const attack=event.type==='melee_attack'||event.attack_event||event.type==='magic_projectile';
+    const attack=event.type==='melee_attack'||event.attack_event||event.type==='magic_projectile'||event.type==='chain_attack'||event.type==='ground_impact';
     if(key!=null&&attack){
-      if(!packet){const impact=cursor+(event.type==='melee_attack'?COMBAT_MOTION.contact:220);packet={start:cursor,impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
+      if(!packet){const impact=cursor+(event.type==='ground_impact'?0:event.type==='melee_attack'?COMBAT_MOTION.contact:220);packet={start:cursor,impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
       start=packet.start;
     }else if(packet){start=event.before_contact?packet.start:event.after_displacement?packet.land:packet.impact}
     if(event.type==='movement'){
       duration=movementDuration(event);
       if(event.forced&&packet){start=packet.impact;packet.land=start+(event.collision?COMBAT_MOTION.collisionContact:duration);packet.recovery=start+duration}
       cursor=Math.max(cursor,start+duration+70);
+    }else if(event.type==='ground_impact'){
+      duration=170;cursor=Math.max(cursor,start+duration);
+    }else if(event.type==='chain_attack'){
+      duration=400;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='melee_attack'){
       duration=490;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='sound'){
@@ -70,7 +74,7 @@ export function impactArtwork(event){
   if(event.kind==='barrier')return ['barrier_shell'];
   if(['heal','cleanse','form'].includes(event.kind))return ['restoration_wisp'];
   if(['guard','deploy'].includes(event.kind))return ['magic_hit'];
-  if(event.kind==='status')return ['bind','mute','slow','stun','freeze'].includes(event.status_id)?['binding_tether']:event.status_id==='burn'?['flame_lick']:event.status_id==='poison'?['poison_cloud']:['magic_hit'];
+  if(event.kind==='status')return ['bind','mute','slow','hobbled','stun','freeze'].includes(event.status_id)?['binding_tether']:event.status_id==='burn'?['flame_lick']:event.status_id==='poison'?['poison_cloud']:['magic_hit'];
   if(['burn','fire'].includes(event.kind))return ['flame_lick'];
   if(event.kind==='poison')return ['poison_cloud'];
   if(['magic','holy','ice','lightning'].includes(event.kind))return ['magic_hit'];

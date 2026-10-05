@@ -36,7 +36,7 @@ export function bindMapPan(viewport){
 }
 export function sizeBattleMap(viewport,{width,height,fit,zoom}){
   const field=viewport?.querySelector('.battlefield');if(!field)return;
-  const availableHeight=Math.max(120,window.innerHeight-viewport.getBoundingClientRect().top-28);
+  const availableHeight=Math.max(120,window.innerHeight-viewport.getBoundingClientRect().top-28-(viewport.closest('.layout-a')?.querySelector('.battle-command-dock')?.getBoundingClientRect().height||0));
   viewport.style.maxHeight=`${availableHeight}px`;
   const pixels=fit?fitMapWidth(width,height,viewport.clientWidth-4,availableHeight-4):width*72*zoom;
   field.style.width=`${pixels}px`;field.style.minWidth='0';

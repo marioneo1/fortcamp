@@ -15,7 +15,9 @@ export function skillCategory(skill){
   if(skill.target==='ally')return 'ally';
   return 'damage';
 }
+export const FIGHTER_ICON_ART={'job:fighter:cover':'chain-snare','job:fighter:pull':'earthbreaker','job:fighter:rally':'hold-together'};
 export function skillIcon(skill){
+  if(FIGHTER_ICON_ART[skill.id])return '/assets/combat-fighter-v3/'+FIGHTER_ICON_ART[skill.id]+'.png';
   if(JOB_ICON_ART[skill.id])return JOB_ICON_ART[skill.id];
   const category=skillCategory(skill),effects=skill.effects||[];
   const dot=effects.find(e=>['burn','poison','bleed'].includes(e.status))?.status||skill.on_hit?.id;

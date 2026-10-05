@@ -7,10 +7,10 @@ JOBS = {}
 SKILLS = {}
 
 
-def active(key, name, description, effects, target='enemy', range=1, rule='melee', cooldown=2):
+def active(key, name, description, effects, target='enemy', range=1, rule='melee', cooldown=2, range_shape='diamond'):
     return validate(dict(id=key, name=name, description=description, type='active',
         source_kind='character', ability_version=1, target=target, range=range,
-        elevation_rule=rule, cost={'cooldown':cooldown, 'charges':None}, effects=effects))
+        elevation_rule=rule, range_shape=range_shape, cost={'cooldown':cooldown, 'charges':None}, effects=effects))
 
 
 def passive(key, name, description, modifiers=None, reaction=None):
@@ -33,7 +33,7 @@ def strike(key, name, description, extra):
 
 register('fighter','Fighter','Protect allies or break enemy positions.',
     strike('bash','Driving Strike','Melee hit pushes one cell. Stable enemies resist. Hitting a solid obstacle adds half the hit as collision damage; hitting a person hurts both, including allies.',{'type':'displace','mode':'push','distance':1}),
-    active('cover','Cover','Give an ally a 10 HP Barrier for one of their activations.',[{'type':'barrier','amount':10,'turns':1}], 'ally',2,'physical_care',3),
+    active('cover','Chain Snare','Hit an enemy within three cells, pull it up to two cells toward you, stopping beside you, and halve its movement for two activations. Requires a clear chain path; displacement resistance applies.',[{'type':'attack','damage_bonus':0},{'type':'displace','mode':'pull','distance':2,'stop_adjacent':True,'conditions':[{'type':'hit'}]},{'type':'status','status':'hobbled','turns':2,'conditions':[{'type':'hit'}]}],range=3,rule='ballistic',cooldown=3,range_shape='square'),
     passive('intercept','Intercept','Redirect one attack against an adjacent ally. Shares your reaction allowance.',reaction={'id':'intercept','name':'Intercept'}))
 register('barbarian','Barbarian','Disrupt nearby enemies, at the cost of staying exposed.',
     strike('shove','Brutal Shove','Melee hit pushes one cell; walls stop displacement. Hitting a solid obstacle adds half the hit as collision damage; hitting a person hurts both, including allies.',{'type':'displace','mode':'push','distance':1}),
@@ -91,8 +91,8 @@ def later(job, *skills):
 
 later('fighter',
     passive('riposte','Riposte','Counter a survived melee hit at half attack when in reach. Intercept and Riposte compete for one reaction.',reaction={'id':'riposte','name':'Riposte'}),
-    strike('pull','Break Formation','Melee hit pulls one cell toward you. Stable targets resist. Hitting a solid obstacle adds half the hit as collision damage; hitting a person hurts both, including allies.',{'type':'displace','mode':'pull','distance':1}),
-    active('rally','Hold Together','Remove Fear and give a nearby ally a 12 HP Barrier for one activation.',[{'type':'cleanse','statuses':['fear']},{'type':'barrier','amount':12,'turns':1}],'ally',2,'physical_care',3))
+    active('pull','Earthbreaker','Leap up to three cells onto open ground. Strike enemies within two cells of landing: the inner ring pushes two cells, the outer ring one. Collisions add half the impact damage to both people. Walls, elevation and knockback resistance still matter. Ready again in five of your turns.',[{'type':'leap_attack','radius':2,'inner_push':2,'outer_push':1}],range=3,rule='melee',cooldown=5),
+    active('rally','Hold Together','Rally yourself and all allies within two cells, removing Fear. Walls block the rally. Does not grant a Barrier.',[{'type':'cleanse','statuses':['fear'],'radius':2}],'ally',2,'physical_care',3))
 later('barbarian',
     passive('hide','Thick Hide','Gain 1 armor; offers durability instead of another active skill.',{'armor':1}),
     active('drive','Drive Back','Melee hit pushes up to two cells. Walls stop the push; pit rules and resistance apply. Hitting a solid obstacle adds half the hit as collision damage; hitting a person hurts both, including allies.',[{'type':'attack','damage_bonus':0},{'type':'displace','mode':'push','distance':2,'conditions':[{'type':'hit'}]}],cooldown=3),

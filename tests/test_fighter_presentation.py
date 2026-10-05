@@ -31,28 +31,105 @@ class FighterPresentationTests(unittest.TestCase):
         self.assertEqual((t['x'],t['y']),(3,2))
         self.assertTrue(any(e['type']=='collision_recoil' for e in events))
 
-    def test_break_formation_is_a_real_melee_attack_and_currently_hits_caster(self):
-        b,a,t=self.fixture();before=a['hp']
-        self.use(b,a,t,'pull')
-        events=b['animation_events']
-        self.assertTrue(any(e['type']=='melee_attack' and e['target_id']==t['id'] for e in events))
-        self.assertEqual(a['hp'],before-6)
+    def test_chain_hits_pulls_and_halves_movement_without_hitting_caster(self):
+        b,a,t=self.fixture();t.update(x=5,y=2,move=7);before=a['hp']
+        self.use(b,a,t,'cover')
         self.assertEqual((t['x'],t['y']),(3,2))
-        recoil=next(e for e in events if e['type']=='collision_recoil')
-        self.assertEqual(recoil['bystander_id'],a['id'])
-        self.assertEqual(len([e for e in events if e.get('kind')=='collision']),2)
+        self.assertEqual(a['hp'],before)
+        self.assertEqual(combat._movement_limit(t),3)
+        self.assertTrue(conditions.has(t,'hobbled'))
+        self.assertTrue(any(e['type']=='chain_attack' for e in b['animation_events']))
+        self.assertFalse(any(e.get('kind')=='collision' for e in b['animation_events']))
 
-    def test_cover_and_hold_together_report_only_real_protection(self):
-        for key,capacity in [('cover',10),('rally',12)]:
-            with self.subTest(key=key):
-                b,a,t=self.fixture();t['team']=a['team'];conditions.apply(t,'fear',2,a)
-                self.use(b,a,t,key)
-                shield=next(s for s in t['statuses'] if s['id']=='barrier')
-                self.assertEqual(shield['amount'],capacity)
-                kinds=[e['kind'] for e in b['animation_events'] if e['type']=='combat_feedback']
-                self.assertIn('barrier',kinds)
-                self.assertEqual('cleanse' in kinds,key=='rally')
-                self.assertEqual(t['hp'],100)
+    def test_chain_square_range_accepts_diagonal_three_cells_and_rejects_four(self):
+        b,a,t=self.fixture();a['skills']=[self.skill('cover')];a['special']=a['skills'][0]
+        t.update(x=a['x']+3,y=a['y']+3)
+        view=combat.battle_view(b)
+        preview=view['skill_previews'][a['special']['id']][t['id']]
+        self.assertIsNotNone(preview);self.assertNotIn('move_to',preview)
+        self.assertFalse(combat._can_attack(b,a,{'x':a['x']+4,'y':a['y']},3,'square'))
+
+    def test_hook_stops_short_when_caster_would_be_the_next_cell(self):
+        for x in (3,4):
+            b,a,t=self.fixture();t.update(x=x,y=2)
+            self.use(b,a,t,'cover')
+            self.assertEqual(t['x'],3);self.assertEqual(a['hp'],100)
+            self.assertFalse(any(e.get('kind')=='collision' for e in b['animation_events']))
+
+    def test_rally_cleanses_all_nearby_fear_but_does_not_grant_barriers(self):
+        b,a,t=self.fixture();t.update(team=a['team'],x=4,y=4)
+        far=deepcopy(t);far.update(id='far',x=5,y=5);b['units']['far']=far
+        for u in (a,t,far):conditions.apply(u,'fear',2,a)
+        self.use(b,a,a,'rally')
+        for u in (a,t):
+            self.assertFalse(conditions.has(u,'fear'));self.assertFalse(conditions.has(u,'barrier'))
+        self.assertTrue(conditions.has(far,'fear'))
+        self.assertEqual(len([e for e in b['animation_events'] if e.get('kind')=='cleanse']),2)
+
+    def test_leap_inner_hits_outer_enemy_then_outer_receives_its_own_impact(self):
+        b,a,t=self.fixture();a.update(x=1,y=2);t.update(x=4,y=2,armor=0)
+        outer=deepcopy(t);outer.update(id='outer',x=5);b['units']['outer']=outer
+        self.use(b,a,combat._ground_target(3,2),'pull')
+        self.assertEqual((a['x'],a['y']),(3,2))
+        self.assertEqual(t['hp'],82) # 12 impact + 6 collision
+        self.assertEqual(outer['hp'],82) # 6 from other body + 12 impact
+        self.assertEqual((t['x'],outer['x']),(4,6))
+        self.assertEqual(a['ability_state']['job:fighter:pull']['ready_at'],a.get('ability_activation',0)+5)
+        self.assertTrue(any(e.get('leap') for e in b['animation_events']))
+
+    def test_leap_resistance_does_not_cancel_impact_and_illegal_landing_spends_nothing(self):
+        b,a,t=self.fixture();a.update(x=1,y=2);t.update(x=4,y=2,armor=0,displacement_resistance=100)
+        self.use(b,a,combat._ground_target(3,2),'pull')
+        self.assertEqual((t['x'],t['hp']),(4,88))
+        b,a,t=self.fixture();state=deepcopy(a)
+        with self.assertRaises(ValueError):self.use(b,a,combat._ground_target(t['x'],t['y']),'pull')
+        self.assertEqual(a,state)
+
+    def test_leap_cannot_jump_a_wall_or_land_in_a_pit_or_climb_a_cliff(self):
+        b,a,t=self.fixture();a.update(x=1,y=2)
+        skill=self.skill('pull');landing=combat._ground_target(3,3)
+        b['terrain']=[{'id':'pit','kind':'pit','x':3,'y':3,'blocking':True}]
+        self.assertFalse(combat._leap_eligible(b,a,landing,skill))
+        b['terrain']=[];b['elevation']=[{'x':3,'y':3,'height':4}]
+        self.assertFalse(combat._leap_eligible(b,a,landing,skill))
+        b['elevation']=[]
+        with patch('backend.combat.crossed_walls',return_value=[{'id':'wall'}]):
+            self.assertFalse(combat._leap_eligible(b,a,landing,skill))
+
+    def test_missed_hook_does_not_pull_or_hobble(self):
+        b,a,t=self.fixture();t.update(x=5,y=2)
+        with patch('backend.combat._attack_hits',return_value=(False,{'damage_bonus':0,'chance':0},100)):
+            combat._resolve_ability(b,a,t,self.skill('cover'))
+        self.assertEqual(t['x'],5);self.assertFalse(conditions.has(t,'hobbled'));self.assertEqual(t['hp'],100)
+
+    def test_ground_preview_and_move_then_leap_command_agree(self):
+        b,a,t=self.fixture();a.update(x=1,y=2);t.update(x=6,y=3)
+        leap=self.skill('pull');a['skills']=[leap];a['special']=leap
+        before=deepcopy(b);view=combat.battle_view(b)
+        preview=view['ground_skill_previews'][leap['id']]['5,3']
+        self.assertEqual(b,before) # Preview must not spend movement, roll, or reveal enemies.
+        self.assertIn('move_to',preview)
+        self.assertEqual(preview['landing'],{'x':5,'y':3})
+        with patch('backend.combat._advance_to_player'),patch('backend.combat._attack_hits',return_value=(True,{'damage_bonus':0,'chance':100},1)):
+            combat.apply_player_command(b,{'action':'skill','skill_id':leap['id'],'x':5,'y':3,'move_to':preview['move_to']})
+        self.assertEqual((a['x'],a['y']),(5,3));self.assertTrue(a['acted'])
+        self.assertEqual(len([e for e in b['animation_events'] if e.get('leap')]),1)
+
+    def test_capture_weapon_blocks_leap_and_hook_but_not_rally(self):
+        from backend.combat_abilities import availability
+        b,a,t=self.fixture();a['capture_weapon']=True
+        self.assertFalse(availability(a,self.skill('pull'))['available'])
+        self.assertFalse(availability(a,self.skill('cover'))['available'])
+        self.assertTrue(availability(a,self.skill('rally'))['available'])
+
+    def test_auto_can_choose_a_real_leap_instead_of_attacking_a_ground_proxy(self):
+        b,a,t=self.fixture();a.update(x=1,y=2);t.update(x=4,y=2)
+        outer=deepcopy(t);outer.update(id='outer',x=5);b['units']['outer']=outer
+        a['skills']=[self.skill('pull')];a['special']=a['skills'][0]
+        with patch('backend.combat._finish_turn'),patch('backend.combat._attack_hits',return_value=(True,{'damage_bonus':0,'chance':100},1)):
+            combat._player_auto_turn(b,a,'balanced')
+        self.assertTrue(any(e.get('leap') for e in b['animation_events']))
+        self.assertTrue(t['hp']<100);self.assertTrue(outer['hp']<100)
 
     def test_intercept_has_named_feedback_and_redirects_actual_damage(self):
         b,a,t=self.fixture();ally=deepcopy(a);ally.update(id='protected',x=2,y=3,reactions=[]);t.update(x=3,y=3)

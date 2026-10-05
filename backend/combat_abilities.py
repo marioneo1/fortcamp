@@ -6,7 +6,7 @@ from . import combat_entities as entities
 
 VERSION = 1
 STATUSES = {'stun','sleep','poison','bleed','charm','confuse','berserk','freeze',
-            'burn','blind','bind','slow','paralyze','mute','fear','vulnerable','regeneration','braced'}
+            'burn','blind','bind','slow','paralyze','mute','fear','vulnerable','regeneration','braced','hobbled'}
 RULES = {'melee','ballistic','ignore','line_of_effect','physical_care'}
 
 
@@ -28,6 +28,7 @@ def validate(skill):
     if skill.get('source_kind','equipment') not in {'equipment','character'}:
         raise ValueError('Unsupported ability source')
     _integer(skill.get('range'), 1, 20)
+    if skill.get('range_shape','diamond') not in {'diamond','square'}:raise ValueError('Unsupported range shape')
     cost = skill.get('cost', {})
     if not isinstance(cost, dict) or set(cost) != {'cooldown','charges'}:
         raise ValueError('Unsupported ability cost')
@@ -46,9 +47,10 @@ def validate(skill):
             raise ValueError('Ability effect must be an object')
         kind = effect.get('type')
         allowed = {'attack': {'damage_bonus','armor_pierce'}, 'heal': {'amount'},
-                   'cleanse': {'statuses'}, 'guard': set(), 'status': {'status','turns','chance'},
+                   'cleanse': {'statuses','radius'}, 'guard': set(), 'status': {'status','turns','chance'},
                    'barrier': {'amount','turns'}, 'mark': {'turns','accuracy'},
-                   'displace': {'mode','distance','collision_damage'},
+                   'displace': {'mode','distance','collision_damage','stop_adjacent'},
+                   'leap_attack': {'radius','inner_push','outer_push'},
                    'zone': {'zone','radius','turns'}, 'form': {'form','turns'}, 'deploy': {'entity'}}
         if kind not in allowed or set(effect) - (allowed[kind] | {'type','conditions'}):
             raise ValueError('Unsupported ability effect')
@@ -81,9 +83,16 @@ def validate(skill):
             if effect.get('mode') not in {'push','pull'}:raise ValueError('Unsupported displacement mode')
             _integer(effect.get('distance'),1,2)
             _integer(effect.get('collision_damage',0),0,10)
+        if kind == 'leap_attack':
+            if skill['target'] != 'enemy' or len(effects) != 1 or skill['range'] > 3:
+                raise ValueError('Leap attacks require a short ground-targeted enemy ability')
+            for field in ('radius','inner_push','outer_push'):_integer(effect.get(field),1,2)
+        if kind == 'displace' and 'stop_adjacent' in effect and not isinstance(effect['stop_adjacent'],bool):
+            raise ValueError('Invalid pull stopping policy')
         if kind == 'heal':
             _integer(effect['amount'], 1, 200)
         if kind == 'cleanse':
+            if 'radius' in effect:_integer(effect['radius'],1,2)
             if not isinstance(effect.get('statuses'), list) or not effect['statuses'] or any(s not in STATUSES for s in effect['statuses']):
                 raise ValueError('Unsupported cleansing status')
         if kind == 'status':
@@ -164,8 +173,8 @@ def availability(unit, skill):
     if charges is not None and state.get('uses',0)>=charges:
         return {'available':False,'reason':'No uses remaining','uses_remaining':0,'cooldown_remaining':0}
     remaining=max(0,state.get('ready_at',0)-unit.get('ability_activation',0))
-    restriction = ('Weapon techniques are unavailable in this form' if unit.get('form') and skill.get('source_kind','equipment')=='equipment' and any(e['type']=='attack' for e in skill['effects']) else
-                   'Capture weapons cannot perform damaging techniques' if unit.get('capture_weapon') and any(e['type']=='attack' for e in skill['effects']) else
+    restriction = ('Weapon techniques are unavailable in this form' if unit.get('form') and skill.get('source_kind','equipment')=='equipment' and any(e['type'] in {'attack','leap_attack'} for e in skill['effects']) else
+                   'Capture weapons cannot perform damaging techniques' if unit.get('capture_weapon') and any(e['type'] in {'attack','leap_attack'} for e in skill['effects']) else
                    'Mute prevents this spell' if skill['elevation_rule'] in {'ignore','line_of_effect'} and any(s.get('id')=='mute' for s in unit.get('statuses',[])) else None)
     return {'available':remaining==0 and not unit.get('acted') and not restriction,'reason':'Main action already used' if unit.get('acted') else restriction or (f'Ready in {remaining} of your turns' if remaining else None),
             'cooldown_remaining':remaining,'uses_remaining':None if charges is None else charges-state.get('uses',0)}

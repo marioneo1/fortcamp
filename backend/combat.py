@@ -27,6 +27,7 @@ from .combat_feedback import record as feedback
 
 
 STATUS_DEFINITIONS = {
+    "hobbled": {"name":"Hobbled", "icon":"⛓", "description":"Movement is halved, rounded down, with a minimum of 1. Lasts for the listed activations."},
     "lifeline_ready":{"name":"Survival safeguard","icon":"✧","description":"Equipped gear can prevent one lethal defeat this battle, leaving this unit at 1 HP. Does not prevent a nonlethal capture."},
     "lifeline_spent":{"name":"Safeguard spent","icon":"◇","description":"This unit's once-per-battle survival safeguard has been used. The next lethal hit can defeat them."},
     "stun": {"name": "Stun", "icon": "✦", "description": "Cannot act during the next activation."},
@@ -873,7 +874,8 @@ def _movement_limit(unit: dict) -> int:
     if conditions.has(unit, 'freeze') or conditions.has(unit, 'bind') or conditions.has(unit,'pit_trapped') or unit.get('paralyzed_move'):
         return 0
     penalty = int(unit.get("carried_payload_penalty", 2 if unit.get("carrying") else 0))
-    return max(1, int(unit["move"]) - penalty - (2 if conditions.has(unit, 'slow') else 0))
+    movement=max(1, int(unit["move"]) - penalty - (2 if conditions.has(unit, 'slow') else 0))
+    return max(1,movement//2) if conditions.has(unit,'hobbled') else movement
 
 
 def _carry_penalty(unit: dict, weight: int) -> int:
@@ -996,11 +998,12 @@ def _attack_hits(battle: dict, attacker: dict, target: dict, rule: str) -> tuple
     return roll <= preview["chance"], preview, roll
 
 
-def _can_attack(battle: dict, attacker: dict, target: dict, attack_range: int | None = None) -> bool:
+def _can_attack(battle: dict, attacker: dict, target: dict, attack_range: int | None = None, range_shape='diamond') -> bool:
     if attacker.get('team') == 'player' and concealment.unseen(target):
         return False
     reach = int(attack_range if attack_range is not None else attacker["attack_range"])
-    return (_distance(attacker, target) <= reach
+    distance=max(abs(attacker['x']-target['x']),abs(attacker['y']-target['y'])) if range_shape=='square' else _distance(attacker,target)
+    return (distance <= reach
             and not any(wall.get('id') != target.get('id') for wall in crossed_walls(battle, (attacker['x'], attacker['y']), (target['x'], target['y']), sight=True))
             and (reach == 1 or _line_of_sight(battle, attacker, target)))
 
@@ -1071,6 +1074,7 @@ def _displacement_preview(battle,actor,target,effect):
     path=[];blocked=None;pit=None
     x,y=target['x'],target['y']
     for nx,ny in tactics.displacement_path(actor,target,effect['distance'],effect['mode']):
+        if effect.get('stop_adjacent') and max(abs(nx-actor['x']),abs(ny-actor['y']))<1:break
         hazard=tactics.pit_at(battle,nx,ny)
         flying=target.get('movement_type')=='flying'
         if crossed_walls(battle,(x,y),(nx,ny)) or _blocked(battle,nx,ny,target['id'],'flying' if hazard else target.get('movement_type')):
@@ -1144,6 +1148,7 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
     nx,ny=(target['x'],target['y'])
     remaining=tactics.displacement_path(actor,{'x':start[0],'y':start[1]},effect['distance'],effect['mode'])
     stop=remaining[len(path)] if len(path)<len(remaining) else None
+    if effect.get('stop_adjacent') and stop == (actor['x'],actor['y']):stop=None
     obstacle=bool(stop and 0<=stop[0]<battle['width'] and 0<=stop[1]<battle['height'] and
         (crossed_walls(battle,(nx,ny),stop) or any(t.get('blocking') and not t.get('destroyed') and not t.get('requires_flying') and stop in occupied_tiles(t) for t in battle.get('terrain',[])) or
          any(o.get('blocking',True) and not o.get('carried_by') and o.get('state') not in {'removed','destroyed','broken'} and stop in occupied_tiles(o) for o in battle.get('objects',{}).values())))
@@ -1246,14 +1251,14 @@ def _commit_player_movement(battle: dict, unit: dict) -> None:
     _apply_tile_entry(battle, unit)
 
 
-def _attack_position(battle, unit, target, attack_range, reachable, parents):
+def _attack_position(battle, unit, target, attack_range, reachable, parents, range_shape='diamond'):
     """Choose the cheapest legal firing position under this turn's movement budget."""
-    if _can_attack(battle, unit, target, attack_range):
+    if _can_attack(battle, unit, target, attack_range,range_shape):
         return unit, None
     candidates = []
     for (x, y), cost in reachable.items():
         actor = {**unit, 'x': x, 'y': y}
-        if _can_attack(battle, actor, target, attack_range):
+        if _can_attack(battle, actor, target, attack_range,range_shape):
             candidates.append((cost, _distance(unit, actor), y, x, actor))
     if not candidates:
         return None, None
@@ -1262,8 +1267,43 @@ def _attack_position(battle, unit, target, attack_range, reachable, parents):
                    'path': _movement_path(parents, reachable, (x, y))}
 
 
+def _leap_skill(skill):
+    return any(e['type']=='leap_attack' for e in skill.get('effects',[]))
+
+
+def _rally_skill(skill):
+    return any(e['type']=='cleanse' and e.get('radius') for e in skill.get('effects',[]))
+
+
 def _ground_skill(skill):
-    return bool(skill.get('effects')) and all(e['type'] == 'zone' for e in skill['effects'])
+    return _leap_skill(skill) or bool(skill.get('effects')) and all(e['type'] == 'zone' for e in skill['effects'])
+
+
+def _area_cells(battle,center,radius):
+    return [{'x':x,'y':y} for y in range(max(0,center['y']-radius),min(battle['height'],center['y']+radius+1))
+        for x in range(max(0,center['x']-radius),min(battle['width'],center['x']+radius+1))
+        if _line_of_sight(battle,center,{'x':x,'y':y})]
+
+
+def _leap_eligible(battle,actor,target,skill):
+    if _movement_limit(actor)==0 or actor.get('carrying') or actor.get('carrying_object'):return False
+    x,y=target['x'],target['y']
+    if not 0<=x<battle['width'] or not 0<=y<battle['height']:return False
+    if _distance(actor,target)>skill['range'] or _distance(actor,target)==0:return False
+    if _blocked(battle,x,y,actor['id'],actor.get('movement_type','ground')) or tactics.pit_at(battle,x,y):return False
+    if _ground_at(battle,x,y)[0]=='water':return False
+    return (abs(_tile_height(battle,x,y)-_tile_height(battle,actor['x'],actor['y']))<=2
+        and _line_of_sight(battle,actor,target)
+        and not crossed_walls(battle,(actor['x'],actor['y']),(x,y)))
+
+
+def _leap_position(battle,actor,target,skill,reachable,parents):
+    if _leap_eligible(battle,actor,target,skill):return actor,None
+    for point,cost in sorted(reachable.items(),key=lambda row:(row[1],row[0])):
+        probe={**actor,'x':point[0],'y':point[1]}
+        if _leap_eligible(battle,probe,target,skill):
+            return probe,{'move_to':{'x':point[0],'y':point[1]},'movement_cost':cost,'path':_movement_path(parents,reachable,point)}
+    return None,None
 
 
 def _ground_target(x, y):
@@ -1273,7 +1313,7 @@ def _ground_target(x, y):
 
 def _support_position(battle, unit, target, effect, reachable, parents):
     if _support_eligible(battle, unit, target, effect):return unit, None
-    if effect.get('deployment') or effect.get('form_change'):return None, None
+    if effect.get('deployment') or effect.get('form_change') or effect.get('area_cleanse'):return None, None
     for point, cost in sorted(reachable.items(), key=lambda row:(row[1],row[0][1],row[0][0])):
         actor={**unit,'x':point[0],'y':point[1]}
         if _support_eligible(battle, actor, target, effect):
@@ -1282,7 +1322,7 @@ def _support_position(battle, unit, target, effect, reachable, parents):
     return None, None
 
 
-def _apply_attack_approach(battle, unit, target, attack_range, command):
+def _apply_attack_approach(battle, unit, target, attack_range, command,range_shape='diamond'):
     destination = command.get('move_to')
     if destination is None:
         return
@@ -1291,7 +1331,7 @@ def _apply_attack_approach(battle, unit, target, attack_range, command):
     x, y = int(destination.get('x', -1)), int(destination.get('y', -1))
     costs, parents = _movement_tree(battle, unit)
     actor = {**unit, 'x': x, 'y': y}
-    if (x, y) not in costs or not _can_attack(battle, actor, target, attack_range):
+    if (x, y) not in costs or not _can_attack(battle, actor, target, attack_range,range_shape):
         raise ValueError('That approach cannot reach the target within this turn')
     desired = (x, y)
     path = _movement_path(parents, costs, (x, y))
@@ -2368,6 +2408,8 @@ def _guard(battle: dict,unit: dict) -> None:
 def _support_eligible(battle, actor, target, effect):
     if not target or target.get('team') != actor.get('team') or not _combat_active(target):
         return False
+    if effect.get('area_cleanse'):
+        return target['id']==actor['id'] and any(u['team']==actor['team'] and _combat_active(u) and any(conditions.has(u,s) for s in effect['cleanses']) and {'x':u['x'],'y':u['y']} in _area_cells(battle,actor,effect['area_cleanse_radius']) for u in battle['units'].values())
     if _distance(actor, target) > int(effect.get('range', 1)) or not _line_of_sight(battle, actor, target):
         return False
     return ((effect.get('deployment') and target['id']==actor['id'] and entities.available(battle,actor,effect['deployment']))
@@ -2409,6 +2451,8 @@ def _support_effect(skill, actor):
         effect['barrier']=max((e['amount'] for e in skill['effects'] if e['type']=='barrier'),default=0)
         effect['form_change']=any(e['type']=='form' for e in skill['effects'])
         effect['zone_setup']=any(e['type']=='zone' for e in skill['effects'])
+        effect['area_cleanse']=_rally_skill(skill)
+        effect['area_cleanse_radius']=max((e.get('radius',0) for e in skill['effects'] if e['type']=='cleanse'),default=0)
         effect['deployment']=next((e['entity'] for e in skill['effects'] if e['type']=='deploy'),None)
         return effect
     if effect.get('heal'):
@@ -2534,7 +2578,7 @@ def _resolve_ability(battle, actor, target, skill):
     if not abilities.availability(actor,skill)['available']:
         raise ValueError(abilities.availability(actor,skill)['reason'])
     abilities.validate(skill)
-    if actor.get('capture_weapon') and any(e['type']=='attack' for e in skill['effects']):
+    if actor.get('capture_weapon') and any(e['type'] in {'attack','leap_attack'} for e in skill['effects']):
         raise ValueError('Capture weapons cannot perform damaging techniques')
     for effect in skill['effects']:
         if effect['type']=='deploy':
@@ -2542,6 +2586,7 @@ def _resolve_ability(battle, actor, target, skill):
             _deployment_positions(battle,actor,effect['entity'])
         if effect['type']=='form' and (target['id']!=actor['id'] or actor.get('capture_weapon') or actor.get('carrying') or actor.get('carrying_object')):
             raise ValueError('Forms require self targeting without a payload or capture weapon')
+        if effect['type']=='leap_attack' and not _leap_eligible(battle,actor,target,skill):raise ValueError('Choose open ground within three cells, clear of walls, with at most two levels of elevation change')
         if effect['type']=='zone' and not _zone_cells(battle,target,effect):
             raise ValueError('No legal ground for this zone')
     _commit_player_movement(battle, actor)
@@ -2552,15 +2597,55 @@ def _resolve_ability(battle, actor, target, skill):
         target,hit,damage,preview,roll=_perform_attack(battle,actor,target,skill['elevation_rule'],
             effect.get('damage_bonus',0),effect.get('armor_pierce',0),ability=skill,defer_reaction=True)
         last_damage=damage;attack_packet=battle.get('attack_serial')
+        if any(e.get('stop_adjacent') for e in skill['effects']):
+            for event in battle.get('animation_events',[]):
+                if event.get('attack_packet')==attack_packet and event.get('attack_event'):
+                    event.update(type='chain_attack',from_point={'x':actor['x'],'y':actor['y']},to_point={'x':target['x'],'y':target['y']})
         battle['log'].append(f"{actor['name']} uses {skill['name']} on {target['name']} for {damage} damage." if hit else
                              f"{actor['name']} misses {target['name']} ({roll} vs {preview['chance']}% accuracy).")
         return {'hit':hit,'damage':damage,'target':target,'attacked':True}
+    def leap_attack(effect):
+        start={'x':actor['x'],'y':actor['y']}
+        actor.update(x=target['x'],y=target['y'],exit_ready=False,moved=True)
+        battle.setdefault('animation_events',[]).append({'type':'movement','unit_id':actor['id'],'points':[start,{'x':actor['x'],'y':actor['y']}],'leap':True})
+        _apply_tile_entry(battle,actor)
+        if not _combat_active(actor):return {'interrupted':True}
+        cells=_area_cells(battle,actor,effect['radius'])
+        victims=sorted([(max(abs(u['x']-actor['x']),abs(u['y']-actor['y'])),u['id']) for u in battle['units'].values()
+            if u['team']!=actor['team'] and _combat_active(u) and {'x':u['x'],'y':u['y']} in cells])
+        # Snapshot the rings first; process inner enemies before the outer enemies they can collide with.
+        battle['attack_serial']=battle.get('attack_serial',0)+1
+        packet=battle['attack_serial'];begin=len(battle['animation_events'])
+        battle['animation_events'].append({'type':'ground_impact','unit_id':actor['id'],'x':actor['x'],'y':actor['y'],'radius':effect['radius'],'attack_packet':packet})
+        impacts=[]
+        for ring,uid in victims:
+            enemy=battle['units'][uid]
+            if not _combat_active(enemy):continue
+            concealment.reveal(battle,enemy,'contact')
+            hit,preview,roll=_attack_hits(battle,actor,enemy,'melee')
+            damage=_deal_damage(battle,actor,enemy,preview['damage_bonus'],ability=skill) if hit else 0
+            if not hit:feedback(battle,enemy,'miss')
+            battle['log'].append(f"{actor['name']} lands {skill['name']} on {enemy['name']} for {damage} damage." if hit else f"{enemy['name']} avoids {skill['name']}.")
+            if hit:impacts.append((ring,enemy,damage))
+        for ring,enemy,damage in impacts:
+            if _combat_active(enemy):_apply_displacement(battle,actor,enemy,{'mode':'push','distance':effect['inner_push'] if ring<=1 else effect['outer_push']},damage,packet)
+        for event in battle['animation_events'][begin:]:event.setdefault('attack_packet',packet)
+        _record_sound(battle,'collision_hit');battle['animation_events'][-1]['attack_packet']=packet
+        return {'area_attack':True}
     def heal(effect):
         amount=min(target['max_hp']-target['hp'],effect['amount'])
         target['hp']+=amount
         if amount:feedback(battle,target,'heal',amount)
         return {'healing':amount}
     def cleanse(effect):
+        if effect.get('radius'):
+            for ally in list(battle['units'].values()):
+                if ally['team']==actor['team'] and _combat_active(ally) and {'x':ally['x'],'y':ally['y']} in _area_cells(battle,actor,effect['radius']):
+                    removed=[s['id'] for s in ally.get('statuses',[]) if s['id'] in effect['statuses']]
+                    conditions.remove(ally,*effect['statuses'])
+                    if removed:feedback(battle,ally,'cleanse',removed_statuses=removed)
+            battle.setdefault('animation_events',[]).append({'type':'fighter_rally','unit_id':actor['id'],'x':actor['x'],'y':actor['y'],'radius':effect['radius']})
+            return
         removed=[s['id'] for s in target.get('statuses',[]) if s['id'] in effect['statuses']]
         conditions.remove(target,*effect['statuses'])
         if removed:feedback(battle,target,'cleanse',removed_statuses=removed)
@@ -2595,7 +2680,7 @@ def _resolve_ability(battle, actor, target, skill):
             battle['log'].append(f"{target['name']} suffers {sid}.")
             feedback(battle,target,'status',status_id=sid,**({'attack_packet':attack_packet} if attack_packet is not None else {}))
     result=abilities.resolve(skill,target,{'attack':attack,'heal':heal,'cleanse':cleanse,'guard':guard,'status':status,
-        'barrier':barrier,'mark':mark,'displace':displace,'zone':zone,'form':form,'deploy':deploy})
+        'barrier':barrier,'mark':mark,'displace':displace,'zone':zone,'form':form,'deploy':deploy,'leap_attack':leap_attack})
     abilities.spend(actor,skill)
     if result.get('attacked'):_react_after_attack(battle,actor,target,result['hit'],skill['elevation_rule'])
     if skill['target']=='ally':
@@ -2616,6 +2701,10 @@ def _auto_support(battle, unit):
         if not abilities.availability(unit,skill)['available'] or skill.get('target') != 'ally' or (conditions.has(unit, 'mute') and skill['elevation_rule'] == 'line_of_effect'):
             continue
         effect = _support_effect(skill, unit)
+        if effect.get('area_cleanse'):
+            if _support_eligible(battle,unit,unit,effect):
+                _resolve_ability(battle,unit,unit,skill);_finish_turn(battle);return True
+            continue
         if effect.get('deployment') or effect.get('form_change'):
             if not _visible_enemies(battle):continue
             if effect.get('form_change') and unit.get('form'):continue
@@ -2712,8 +2801,24 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
             battle["log"].append(f"{unit['name']} holds back from {chief_name} while the other objectives remain unfinished.")
             _finish_turn(battle)
             return
+    if not pursuing_objective and not unit.get('capture_weapon'):
+        for leap in unit.get('skills',[]):
+            if not _leap_skill(leap) or not abilities.availability(unit,leap)['available']:continue
+            landings=[]
+            for y in range(max(0,unit['y']-3),min(battle['height'],unit['y']+4)):
+                for x in range(max(0,unit['x']-3),min(battle['width'],unit['x']+4)):
+                    ground=_ground_target(x,y)
+                    if not _leap_eligible(battle,unit,ground,leap):continue
+                    cells=_area_cells(battle,ground,2)
+                    caught=[enemy for enemy in targets if {'x':enemy['x'],'y':enemy['y']} in cells]
+                    if tactic=='objective' and any(e.get('capture_role')=='live_target' for e in caught):continue
+                    # Avoid throwing enemies through the Fighter's own nearby allies.
+                    if any(u['id']!=unit['id'] and u['team']==unit['team'] and _combat_active(u) and {'x':u['x'],'y':u['y']} in cells for u in battle['units'].values()):continue
+                    if len(caught)>=2:landings.append((len(caught),-sum(e['hp'] for e in caught),-y,-x,ground))
+            if landings:
+                _resolve_ability(battle,unit,max(landings,key=lambda r:r[:4])[-1],leap);_finish_turn(battle);return
     available_skills=[s for s in (unit.get('skills') or ([unit['special']] if unit.get('special') else []))
-                      if abilities.availability(unit,s)['available'] and s.get('target') != 'ally' and not (conditions.has(unit, 'mute') and s['elevation_rule'] in {'ignore', 'line_of_effect'})]
+                      if abilities.availability(unit,s)['available'] and s.get('target') != 'ally' and not _leap_skill(s) and not (conditions.has(unit, 'mute') and s['elevation_rule'] in {'ignore', 'line_of_effect'})]
     if conditions.has(unit, 'mute') and unit['attack_elevation_rule'] in {'ignore','line_of_effect'} and not available_skills:
         _guard(battle, unit)
         unit['acted'] = True
@@ -2748,10 +2853,10 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
             _capture_attempt(battle, unit, target)
         else:
             nonlethal = tactic == "objective" and target.get("capture_role") == "live_target" and unit.get("nonlethal_capable") and _can_attack(battle,unit,target,1)
-            choices=[s for s in available_skills if _can_attack(battle,unit,target,s['range']) and (not capturing or s.get('nonlethal'))]
+            choices=[s for s in available_skills if _can_attack(battle,unit,target,s['range'],s.get('range_shape','diamond')) and (not capturing or s.get('nonlethal'))]
             special=max(choices,key=lambda s:(s.get('armor_pierce',0)+s.get('damage_bonus',0),s.get('attack',unit['attack']))) if choices and not nonlethal else None
             if special:unit['special']=special
-            use_skill = bool(special and abilities.availability(unit,special)['available'] and _can_attack(battle, unit, target, special["range"]))
+            use_skill = bool(special and abilities.availability(unit,special)['available'] and _can_attack(battle, unit, target, special["range"],special.get('range_shape','diamond')))
             if not use_skill and not _can_attack(battle, unit, target, 1 if nonlethal else unit["attack_range"]):
                 unit["acted"] = True
                 _finish_turn(battle)
@@ -3214,10 +3319,14 @@ def battle_view(battle: dict) -> dict:
                 for y in range(view['height']):
                     for x in range(view['width']):
                         target=_ground_target(x,y)
-                        if not _zone_cells(view,target,choice['effects'][0]):continue
-                        actor,approach=_attack_position(view,current,target,choice['range'],reachable,parents)
+                        if _leap_skill(choice):
+                            actor,approach=_leap_position(view,current,target,choice,reachable,parents)
+                        else:
+                            if not _zone_cells(view,target,choice['effects'][0]):continue
+                            actor,approach=_attack_position(view,current,target,choice['range'],reachable,parents,choice.get('range_shape','diamond'))
                         if actor:
-                            ground_entries[f'{x},{y}']={'zones':[{'cells':_zone_cells(view,target,e),'kind':e['zone']} for e in choice['effects']],**(approach or {})}
+                            zones=([{'cells':_area_cells(view,target,choice['effects'][0]['radius']),'kind':'impact'}] if _leap_skill(choice) else [{'cells':_zone_cells(view,target,e),'kind':e['zone']} for e in choice['effects']])
+                            ground_entries[f'{x},{y}']={'zones':zones,**({'leap_from':{'x':actor['x'],'y':actor['y']},'landing':{'x':x,'y':y}} if _leap_skill(choice) else {}),**(approach or {})}
                 view['ground_skill_previews'][choice['id']]=ground_entries
             if choice.get('target') == 'ally':
                 for target in _living(view, 'player'):
@@ -3226,14 +3335,14 @@ def battle_view(battle: dict) -> dict:
                     effect = _support_effect(choice, current)
                     actor,approach=_support_position(view,current,target,effect,reachable,parents) if allowed else (None,None)
                     entries[target['id']] = {'chance': 100, 'support': True, 'heal': effect.get('heal', 0), **(approach or {}),
-                        'zones':[{'cells':_zone_cells(view,target,e),'kind':e['zone']} for e in choice.get('effects',[]) if e['type']=='zone']} if actor else None
+                        'zones':([{'cells':_area_cells(view,current,effect['area_cleanse_radius']),'kind':'rally'}] if _rally_skill(choice) else [{'cells':_zone_cells(view,target,e),'kind':e['zone']} for e in choice.get('effects',[]) if e['type']=='zone'])} if actor else None
                     if choice['id'] == (skill or {}).get('id'):
                         view['attack_previews'][target['id']]['skill'] = entries[target['id']]
                 view['skill_previews'][choice['id']] = entries
                 continue
             for target in _living(view,'enemy'):
                 allowed = abilities.availability(current,choice)['available'] and not (conditions.has(current, 'mute') and choice['elevation_rule'] in {'ignore', 'line_of_effect'})
-                actor,approach=_attack_position(view,current,target,choice['range'],reachable,parents) if allowed else (None,None)
+                actor,approach=_attack_position(view,current,target,choice['range'],reachable,parents,choice.get('range_shape','diamond')) if allowed else (None,None)
                 entries[target['id']]={**_strike_preview(view,actor,target,choice['elevation_rule'],choice['range'],choice),**(approach or {})} if actor else None
             view['skill_previews'][choice['id']]=entries
         view['terrain_attack_previews'] = {}
@@ -3435,23 +3544,32 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             x,y=int(command['x']),int(command['y'])
             if not (0<=x<battle['width'] and 0<=y<battle['height']):raise ValueError('Choose ground inside the map')
             target=_ground_target(x,y)
-            if not _zone_cells(battle,target,selected_skill['effects'][0]):raise ValueError('No legal ground for this zone')
-            if _apply_attack_approach(battle,unit,target,selected_skill['range'],command):return battle_view(battle)
-            if not _can_attack(battle,unit,target,selected_skill['range']):raise ValueError('Ground is outside spell range or sight')
+            if _leap_skill(selected_skill):
+                if command.get('move_to') is not None:
+                    costs,parents=_movement_tree(battle,unit);p=command['move_to'];point=(int(p.get('x',-1)),int(p.get('y',-1)))
+                    if point not in costs or not _leap_eligible(battle,{**unit,'x':point[0],'y':point[1]},target,selected_skill):raise ValueError('That approach cannot reach the landing')
+                    # Walking approach must end at its own legal tile, then the leap performs the final traversal.
+                    if _apply_attack_approach(battle,unit,_ground_target(*point),1,command):return battle_view(battle)
+                if not _leap_eligible(battle,unit,target,selected_skill):raise ValueError('Invalid leap landing')
+            else:
+                if not _zone_cells(battle,target,selected_skill['effects'][0]):raise ValueError('No legal ground for this zone')
+                if _apply_attack_approach(battle,unit,target,selected_skill['range'],command,selected_skill.get('range_shape','diamond')):return battle_view(battle)
+                if not _can_attack(battle,unit,target,selected_skill['range'],selected_skill.get('range_shape','diamond')):raise ValueError('Ground is outside spell range or sight')
         elif selected_skill['target']=='ally':
+            if _rally_skill(selected_skill):target=unit
             if command.get('move_to') is not None:
                 if not target:raise ValueError('Choose an ally')
-                if _apply_attack_approach(battle,unit,target,selected_skill['range'],command):return battle_view(battle)
+                if _apply_attack_approach(battle,unit,target,selected_skill['range'],command,selected_skill.get('range_shape','diamond')):return battle_view(battle)
             if not _support_eligible(battle,unit,target,_support_effect(selected_skill,unit)):
                 raise ValueError('Choose a conscious ally in range who needs this technique')
         else:
             if not target or not _combat_active(target) or target['team']!='enemy' or concealment.unseen(target):
                 raise ValueError('Choose a visible living enemy')
-            if unit.get('capture_weapon') and any(e['type']=='attack' for e in selected_skill['effects']):
+            if unit.get('capture_weapon') and any(e['type'] in {'attack','leap_attack'} for e in selected_skill['effects']):
                 raise ValueError('Capture weapons cannot perform damaging techniques')
-            if _apply_attack_approach(battle,unit,target,selected_skill['range'],command):return battle_view(battle)
-            if not _can_attack(battle,unit,target,selected_skill['range']):raise ValueError('Target is outside technique range')
-            target=conditions.confused_target(battle,unit,target,lambda u:_can_attack(battle,unit,u,selected_skill['range']))
+            if _apply_attack_approach(battle,unit,target,selected_skill['range'],command,selected_skill.get('range_shape','diamond')):return battle_view(battle)
+            if not _can_attack(battle,unit,target,selected_skill['range'],selected_skill.get('range_shape','diamond')):raise ValueError('Target is outside technique range')
+            target=conditions.confused_target(battle,unit,target,lambda u:_can_attack(battle,unit,u,selected_skill['range'],selected_skill.get('range_shape','diamond')))
         unit['special']=selected_skill
         _resolve_ability(battle,unit,target,selected_skill)
     elif action == "move":

@@ -80,3 +80,15 @@ recommends conveying essential information through more than color alone.
 Fighter-first follow-up: see FIGHTER_COMBAT_REVIEW.md for overlay ordering,
 separated overlapping numbers, exact corpse handoff, stronger rebound and new
 body collision sound. Shared AOE/barrier art is not an approved final direction.
+
+## October 5: Fighter disruption
+
+Earthbreaker first resolves physical impact against every enemy in its landing
+area, then attempts knockback in snapshotted inner-before-outer order. This
+preserves enemy-body collision opportunities and existing half-hit/pit rules.
+Its 420ms leap precedes the shared landing packet; individual collision contact
+markers follow displacement. Chain Snare stops before the caster's occupied
+cell, explicitly preventing accidental caster collisions. Other pull skills
+retain their existing rules. Generated chain/earth-impact components, animated
+chain links and a short rally wave are in combat-fighter-v3. Damage overlays stay
+in front. The broader rejected persistent-ground/Barrier redesign is deferred.

@@ -1,8 +1,10 @@
 # Fortcamp documentation map
 
 Current Fighter review: [Fighter combat and UI audit](design/FIGHTER_COMBAT_REVIEW.md)
-records layer/collapse/hotbar repairs, all six skills, Break Formation
-self-collision and two proposed layouts. Ground/barrier art is awaiting redesign.
+records the implemented Layout A, Fighter Chain Snare/Earthbreaker/area rally,
+contact/collision rules, controls and verification. Prior audits remain historical.
+[New Fighter art prompt](art/FIGHTER_V3_PROMPT.md) records the compact six-cell pack.
+Mage ground/barrier art is still awaiting redesign.
 
 Combat presentation rollout: [Presentation plan](design/COMBAT_PRESENTATION_PLAN.md)
 records contact timing, collision bounce, painted ability icons, volumetric

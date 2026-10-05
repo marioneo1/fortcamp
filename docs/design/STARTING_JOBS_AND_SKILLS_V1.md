@@ -440,3 +440,10 @@ October 4 progress: dependency steps 1 and 2 are implemented for the pilot equip
 October 4 next dependency: step 3 zones and reversible form profiles are implemented as engine vocabulary (COMBAT_SPACES.md), without granting the proposed Job abilities. Owner-linked summons/device budgets remain the next part of step 3. Full Job AI/loadouts/creation/catalogues remain pending.
 
 October 4 step 3 progress: owner-linked deployment economy and seven trial profiles are implemented (COMBAT_DEPLOYMENTS.md). This completes the initial shared mechanics foundation, not all proposed skills. Repair/reclaim/release techniques, dedicated placement/command UI, Job AI/loadouts and creation still need implementation and playtesting. Mobile units use portrait circles; stationary sprite/projectile states will be authored in coherent image packs.
+
+## Implemented Fighter update, October 5
+
+The older proposed table above is superseded for Fighter by
+FIGHTER_COMBAT_REVIEW.md: Chain Snare replaces Cover, Earthbreaker replaces
+Break Formation, and Hold Together becomes a nearby-allies Fear cleanse.
+Other unimplemented catalogue proposals remain proposals.
