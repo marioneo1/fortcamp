@@ -17,11 +17,11 @@ class JobLoadoutTests(unittest.TestCase):
                 state=self.state();before=deepcopy(state['characters'][0]);inventory=deepcopy(state['inventory'])
                 jobs.update(state,'player',definition['starter_skills'],job)
                 char=state['characters'][0];actives,passives,mods=jobs.snapshot(char)
-                self.assertEqual((len(actives),len(passives)),(3,0) if job in {'monk','rogue','ranger'} else (2,1))
+                self.assertEqual((len(actives),len(passives)),(3,0) if job in {'monk','rogue','ranger','mage'} else (2,1))
                 self.assertEqual(char['equipment'],before['equipment']);self.assertEqual(state['inventory'],inventory)
                 self.assertEqual(char['perks'],before['perks']);self.assertEqual(char['traits'],before['traits'])
                 unit=combat._player_unit(state,char,2,2)
-                self.assertEqual(len([s for s in unit['skills'] if s.get('source_kind')=='character']),3 if job in {'monk','rogue','ranger'} else 2)
+                self.assertEqual(len([s for s in unit['skills'] if s.get('source_kind')=='character']),3 if job in {'monk','rogue','ranger','mage'} else 2)
                 self.assertEqual(unit['passives'],passives)
 
     def test_legacy_and_champions_do_not_silently_gain_a_job(self):
@@ -47,7 +47,7 @@ class JobLoadoutTests(unittest.TestCase):
             char[field]=value;before=deepcopy(state)
             with self.assertRaises(ValueError):jobs.update(state,'player',[],'mage')
             self.assertEqual(state,before);char.update(status='idle',assignment=None)
-        jobs.update(state,'player',jobs.JOBS['mage']['starter_skills'],'mage')
+        jobs.update(state,'player',jobs.JOBS['summoner']['starter_skills'],'summoner')
         with self.assertRaises(ValueError):jobs.update(state,'player',[],'engineer')
 
     def test_saved_battle_kit_does_not_follow_later_loadout_edits(self):
@@ -60,7 +60,7 @@ class JobLoadoutTests(unittest.TestCase):
 
     def test_passive_removal_changes_real_combat_stats(self):
         state=self.state();char=state['characters'][0];base=combat._player_unit(state,char,2,2)
-        jobs.update(state,'player',jobs.JOBS['mage']['starter_skills'],'mage')
+        jobs.update(state,'player',jobs.JOBS['summoner']['starter_skills'],'summoner')
         self.assertEqual(combat._player_unit(state,char,2,2)['evasion'],base['evasion']+5)
         jobs.update(state,'player',[])
         self.assertEqual(combat._player_unit(state,char,2,2)['evasion'],base['evasion'])

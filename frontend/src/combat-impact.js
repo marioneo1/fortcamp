@@ -19,11 +19,11 @@ export function impactTimeline(events){
     let packet=packets.get(key),start=cursor,duration=0;
     if(!packet&&event.impact_origin_packet!=null){
       const origin=packets.get(event.impact_origin_packet);
-      if(origin){const impact=origin.impact+(event.impact_offset||0);packet={start:impact-(event.type==='melee_attack'?(event.contact_ms??COMBAT_MOTION.contact):0),impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
+      if(origin){const impact=origin.impact+(event.impact_offset||0);packet={start:impact-(event.type==='mage_cast'?(event.contact_ms??240):event.type==='melee_attack'?(event.contact_ms??COMBAT_MOTION.contact):0),impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
     }
-    const attack=event.type==='rogue_knife'||event.type==='monk_technique'||event.type==='melee_attack'||event.type==='net_cast'||event.attack_event||event.type==='magic_projectile'||event.type==='chain_attack'||event.type==='ground_impact';
+    const attack=event.type==='mage_cast'||event.type==='rogue_knife'||event.type==='monk_technique'||event.type==='melee_attack'||event.type==='net_cast'||event.attack_event||event.type==='magic_projectile'||event.type==='chain_attack'||event.type==='ground_impact';
     if(key!=null&&attack){
-      if(!packet){const impact=cursor+(['ground_impact','monk_technique'].includes(event.type)?0:event.type==='rogue_knife'?280:event.type==='net_cast'?COMBAT_MOTION.netContact:event.type==='melee_attack'?(event.contact_ms??COMBAT_MOTION.contact):220);packet={start:cursor,impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
+      if(!packet){const impact=cursor+(['ground_impact','monk_technique'].includes(event.type)?0:event.type==='rogue_knife'?280:event.type==='net_cast'?COMBAT_MOTION.netContact:event.type==='mage_cast'?(event.contact_ms??240):event.type==='melee_attack'?(event.contact_ms??COMBAT_MOTION.contact):220);packet={start:cursor,impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
       start=packet.start;
     }else if(packet){start=event.before_contact?packet.start:event.after_displacement?packet.land:packet.impact}
     const routed=groundRoutes.get(event.ground_route_id);
@@ -33,6 +33,8 @@ export function impactTimeline(events){
       if(event.forced&&packet){start=packet.impact;packet.land=start+(event.collision?COMBAT_MOTION.collisionContact:duration);packet.recovery=start+duration}
       if(event.ground_route_id!=null)groundRoutes.set(event.ground_route_id,{start,duration:event.collision?COMBAT_MOTION.collisionContact:duration,steps:Math.max(1,(event.points||[]).length-1)});
       cursor=Math.max(cursor,start+duration+70);
+    }else if(event.type==='mage_cast'){
+      duration=(event.contact_ms??240)+550;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='ground_impact'){
       duration=650;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='rogue_knife'){duration=500;cursor=Math.max(cursor,start+duration);

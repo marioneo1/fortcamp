@@ -1,5 +1,9 @@
 # Combat ability foundation
 
+## October 6: Mage elemental adapter
+
+See [Mage rework](MAGE_REWORK_REVIEW.md). Seven bounded `mage_kind` techniques reuse the existing action/cooldown, damage, displacement, zone and status systems. The versioned validator accepts a fixed `mage_spell` effect; there is no user-defined scripting. Ground/ally/self forecasts share request-local terrain, area and approach indexes. Both command APIs preserve an optional selected `element`, validated before any enchant costs. Burn now has independent target-start layers; Wet/Blister/enchantments use existing target-end duration stamps. Elemental Freeze is explicitly distinguished from legacy gear Freeze. The bounded delayed-cast queue persists within battle JSON; views never release or advance it. Enchant procs use the live owner metadata so multi-hit copies cannot reset Lightning's target list. Damage/status/push cues reuse shared attack packets.
+
 ## October 6: Ranger ranged techniques and stackable Poison
 
 See [Ranger rework](RANGER_REWORK_REVIEW.md). Seven bounded Ranger technique identifiers reuse attack/mark definitions, activation clocks and damage packets. Only Mark Quarry and Poison Attack deliberately allow cooldown-free main actions. Longshot has an explicit crit; no global random-crit system is implied. Poison layers tick/expire at target start; legacy single Poison remains valid. Pestilence is a distinct all-source damage modifier, unlike Monk's direct-only vulnerability. Multiple Quick Actions still precede one main action. AI reuses one movement tree and discards walking plans after Rapid Fire.

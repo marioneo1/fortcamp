@@ -1,5 +1,7 @@
 # Jobs and character loadouts
 
+Implemented Mage rework: [Mage review](MAGE_REWORK_REVIEW.md) records three starter actives, eight choices, practice unlocks at 2/5/9/12/16, elemental interactions, delayed casts, chosen weapon enchantments and compatibility migration. The current catalogue is 85 executable definitions across twelve Jobs.
+
 Implemented Ranger rework: [Ranger rework review](RANGER_REWORK_REVIEW.md) records eight skills, three starting actives, practice unlocks at 2/5/9/12/16, owner-specific Mark, ranged/Poison builds and loadout migration.
 
 Implemented Monk rework: [Monk rework review](MONK_REWORK_REVIEW.md) records eight choices, a complete starter combo, owner-turn readiness, technique damage/proc budgets, Sweeping Dash and save migration. Initial tuning still needs gameplay comparison.
@@ -15,7 +17,7 @@ survive ordinary roster refreshes and stay scoped to the player/server/save.
 
 Regular characters can deliberately choose one of twelve initial toolboxes:
 Fighter, Barbarian, Rogue, Ranger, Mage, Cleric, Monk, Bard, Druid, Engineer,
-Summoner and Captor. Most start with two supported actives and one passive; Monk starts with three actives forming its complete combo; Rogue starts with Cheap Shot, Crippling Cut and Exploit Weakness; Ranger starts with Mark Quarry, Longshot and Poison Attack. Most Jobs unlock three further skills after 2, 5 and 9 successful contracts. Expanded Fighter, Barbarian, Monk, Rogue and Ranger pools bring the current catalogue to 83 executable definitions across twelve Jobs. The 96-skill draft is not fully implemented. Several
+Summoner and Captor. Most start with two supported actives and one passive; Monk starts with three actives forming its complete combo; Rogue starts with Cheap Shot, Crippling Cut and Exploit Weakness; Ranger starts with Mark Quarry, Longshot and Poison Attack; Mage starts with Chain Lightning, Fireball and Typhoon. Most Jobs unlock three further skills after 2, 5 and 9 successful contracts. Expanded Fighter, Barbarian, Monk, Rogue, Ranger and Mage pools bring the current catalogue to 85 executable definitions across twelve Jobs. The 96-skill draft is not fully implemented. Several
 passives overlap; deeper conditional kits and differentiation remain pending.
 
 New characters choose their Job in the creator, with matching starter gear and

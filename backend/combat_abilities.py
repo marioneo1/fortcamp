@@ -34,6 +34,7 @@ def validate(skill):
     if 'quick_action' in skill and not isinstance(skill['quick_action'],bool):raise ValueError('Invalid quick action')
     if skill.get('rogue_kind') not in {None,'cheap_shot','crippling_cut','exploit_weakness','shadowstep','caltrops','backflip','throwing_knife'}:raise ValueError('Invalid Rogue technique')
     if skill.get('ranger_kind') not in {None,'mark_quarry','longshot','multi_shot','rapid_fire','poison_attack','pestilence_shot','rupturing_blow'}:raise ValueError('Invalid Ranger technique')
+    if skill.get('mage_kind') not in {None,'chain_lightning','flash_freeze','singularity','meteor','fireball','enchant_weapon','typhoon'}:raise ValueError('Invalid Mage spell')
     _integer(skill.get('range'), 1, 20)
     if skill.get('range_shape','diamond') not in {'diamond','square'}:raise ValueError('Unsupported range shape')
     cost = skill.get('cost', {})
@@ -62,9 +63,10 @@ def validate(skill):
                    'displace': {'mode','distance','collision_damage','stop_adjacent','collision_stun'},
                    'leap_attack': {'radius','inner_push','outer_push','power_percent','collision_stun'},
                    'area_attack': {'radius','push','power_percent'},
-                   'zone': {'zone','radius','turns'}, 'form': {'form','turns'}, 'deploy': {'entity'}, 'dash_attack': {'power_percent'}, 'rogue_utility': {'kind'}}
+                   'zone': {'zone','radius','turns'}, 'form': {'form','turns'}, 'deploy': {'entity'}, 'dash_attack': {'power_percent'}, 'rogue_utility': {'kind'}, 'mage_spell': {'kind'}}
         if kind not in allowed or set(effect) - (allowed[kind] | {'type','conditions'}):
             raise ValueError('Unsupported ability effect')
+        if kind=='mage_spell' and (effect.get('kind')!=skill.get('mage_kind') or effect.get('kind') not in {'chain_lightning','flash_freeze','singularity','meteor','fireball','enchant_weapon','typhoon'} or len(effects)!=1):raise ValueError('Invalid Mage spell effect')
         if kind == 'attack':
             if skill['target'] != 'enemy' or attacks:
                 raise ValueError('Only one enemy attack is supported')
@@ -202,7 +204,7 @@ def availability(unit, skill):
     remaining=max(0,state.get('ready_at',0)-unit.get('ability_activation',0))
     restriction = (monk.restriction(unit,skill) or (f"Requires {skill['fury_cost']} Fury" if unit.get('fury',0)<skill.get('fury_cost',0) else
                    'Weapon techniques are unavailable in this form' if unit.get('form') and skill.get('source_kind','equipment')=='equipment' and any(e['type'] in {'attack','leap_attack','area_attack','dash_attack'} for e in skill['effects']) else
-                   'Capture weapons cannot perform damaging techniques' if unit.get('capture_weapon') and any(e['type'] in {'attack','leap_attack','area_attack','dash_attack'} for e in skill['effects']) else
+                   'Capture weapons cannot perform damaging techniques' if unit.get('capture_weapon') and (any(e['type'] in {'attack','leap_attack','area_attack','dash_attack'} for e in skill['effects']) or skill.get('mage_kind') not in {None,'enchant_weapon','flash_freeze'}) else
                    'Mute prevents this spell' if skill['elevation_rule'] in {'ignore','line_of_effect'} and any(s.get('id')=='mute' for s in unit.get('statuses',[])) else None))
     return {'available':remaining==0 and not unit.get('acted') and not restriction,'reason':'Main action already used' if unit.get('acted') else restriction or (f'Ready in {remaining} of your turns' if remaining else None),
             'cooldown_remaining':remaining,'uses_remaining':None if charges is None else charges-state.get('uses',0)}

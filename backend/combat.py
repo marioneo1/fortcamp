@@ -29,10 +29,15 @@ from .combat_feedback import record as feedback
 from .combat_melee import weapon_style, attack_style, capture_style, armor_material, impact_surface
 from . import combat_monk as monk
 from . import combat_ranger as ranger
+from . import combat_mage as mage
 from . import combat_rogue as rogue
 
 
 STATUS_DEFINITIONS = {
+    'wet':{'name':'Wet','icon':'~','description':'Lightning deals enhanced damage without consuming Wet. Fireball consumes Wet to create Blister.'},
+    'blister':{'name':'Blister','icon':'-10','description':'Outgoing damage reduced by 10%; accuracy reduced by 10 percentage points.'},
+    'weapon_enchant':{'name':'Weapon Enchantment','icon':'E','description':'Fire adds Burn per weapon hit; Frost rolls 20% Freeze; Lightning rolls 25% Paralysis against Wet, once successfully per target. Inspect the chosen element below.'},
+    'channeling':{'name':'Channeling Meteor','icon':'M','description':'Meteor lands next activation and consumes it. Control, silence, displacement or defeat interrupts. Ordinary damage does not.'},
     'pestilence':{'name':'Pestilence','icon':'-25%','description':'Attack reduced by 25%; all incoming damage increased by 25%, including party attacks, damage over time and collisions. Adds to other direct-damage vulnerabilities.'},
     'poison_imbue':{'name':'Poison Imbue','icon':'P','description':'Your next successfully damaging attack applies one Poison stack per damaging hit. Misses and fully absorbed hits do not spend it.'},
     'sharpshooter':{'name':'Sharpshooter','icon':'+2','description':'+10% damage and +2 basic/technique range while remaining on this tile. Committed and forced movement end it.'},
@@ -60,7 +65,7 @@ STATUS_DEFINITIONS = {
     "charm": {"name": "Charm", "icon": "♥", "description": "Treats the charmer's faction as friendly and former allies as hostile."},
     "confuse": {"name": "Confuse", "icon": "?", "description": "Offensive actions may redirect to another valid nearby target."},
     "berserk": {"name": "Berserk", "icon": "‼", "description": "Must attack if possible and treats every nearby unit as hostile."},
-    "freeze": {"name": "Freeze", "icon": "❄", "description": "Cannot move. Direct hits deal 25% more damage; fire removes it."},
+    "freeze": {"name": "Freeze", "icon": "❄", "description": "Mage ice prevents actions. Direct HP damage breaks elemental ice after the full hit, grants Wet and starts control recovery. Older weapon Freeze only prevents movement and increases direct damage by 25%."},
     "burn": {"name": "Burn", "icon": "♨", "description": "Takes damage at activation start. Suppresses status Regeneration."},
     "blind": {"name": "Blind", "icon": "◉", "description": "Attack accuracy loses 35 percentage points for ranged/magic attacks and 15 for melee."},
     "bind": {"name": "Bind", "icon": "⌁", "description": "Cannot move until the bind is broken, removed, or expires."},
@@ -1024,6 +1029,7 @@ def _attack_preview(battle: dict, attacker: dict, target: dict, rule: str, skill
     if conditions.has(attacker, 'berserk'):
         accuracy -= 10
     rhythm,guaranteed=monk.accuracy(attacker,skill)
+    if conditions.has(attacker,'blister'):base-=10
     guaranteed=guaranteed or ranger.marked(attacker,target)
     raw_chance=100 if guaranteed else max(5,min(100,base+accuracy+rhythm-evasion_penalty+attacker.get('perk_modifiers',{}).get('accuracy',0)))
     parry=0 if guaranteed else monk.parry_rate(target,attacker,rule,skill)
@@ -1127,6 +1133,7 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
 
 
 def _strike_preview(battle,actor,target,rule,reach,skill=None):
+    if skill and skill.get('mage_kind'):return mage.preview(battle,actor,target,skill)
     if skill and skill.get('ranger_kind'):return ranger.preview(battle,actor,target,skill)
     direct = not skill or any(e['type']=='attack' for e in skill.get('effects',[]))
     recipient=_interceptor(battle,actor,target,reach) if direct else target
@@ -1234,6 +1241,7 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
         if target.get('carrying') in battle['units']:battle['units'][target['carrying']].update(point)
     if path:
         target['exit_ready']=False
+        mage.check_channel(battle,target)
         _record_movement(battle,target,start,path)
         battle['animation_events'][-1]['forced']=True
         movement_event=battle['animation_events'][-1]
@@ -1576,6 +1584,8 @@ def _zone_cells(battle, target, effect):
 
 def _trigger_zones(battle, unit, event, only_zone=None):
     def apply_status(owner,target,sid,stacking=False):
+        if owner.get('scorched_source'):
+            mage.ground_burn(battle,owner,target);return
         if sid=='poison' and sid in target.get('racial_resistances',[]):return
         chance=conditions.status_chance(target,sid)
         event_key=''
@@ -1588,7 +1598,7 @@ def _trigger_zones(battle, unit, event, only_zone=None):
             if stacking:feedback(battle,target,'status',status_id=sid)
     def damage(owner,target,amount,name):
         source={'id':owner['id'],'name':owner['name'],'attack':amount,'weapon':name,'status_tick':True,
-                'damage_kind':'burn' if name==spaces.ZONES['ember']['name'] else 'thorns'}
+                'damage_kind':'burn' if name in {spaces.ZONES['ember']['name'],spaces.ZONES['scorched']['name']} else 'thorns'}
         dealt=_deal_damage(battle,source,target,armor_pierce=target.get('armor',0))
         battle['log'].append(f"{target['name']} takes {dealt} damage from {name}.")
     spaces.trigger_zones(battle,unit,event,_combat_active,
@@ -1711,6 +1721,7 @@ def _current_unit(battle: dict, activate: bool = True) -> dict | None:
                 if any(s.get("id") in {"burn", "poison"} and "turns" in s for s in unit.get("statuses", [])):
                     _tick_gear_statuses(battle, unit)
                     _check_end(battle)
+                if _combat_active(unit):mage.settle(battle,unit,'start')
                 if _combat_active(unit):_start_entities(battle,unit)
                 if battle["status"] != "active" or battle.get("decision_pending"):
                     return None
@@ -1767,7 +1778,7 @@ def _damage_before_barrier(battle,attacker,target,bonus=0,armor_pierce=0,intent=
     damage = max(1, (int(attacker["attack"]) if attacker.get("status_tick") else martial.attack_power(attacker)) + bonus - armor)
     if conditions.has(attacker, 'berserk') and not attacker.get('status_tick'):
         damage += 3
-    if conditions.has(target, 'freeze') and not attacker.get('status_tick'):
+    if conditions.has(target, 'freeze') and not any(s.get('elemental_freeze') for s in target.get('statuses',[]) if s['id']=='freeze') and not attacker.get('status_tick'):
         damage = max(1, round(damage * 1.25))
         if attacker.get('element') == 'fire':
             conditions.remove(target, 'freeze')
@@ -1801,6 +1812,9 @@ def _damage_before_barrier(battle,attacker,target,bonus=0,armor_pierce=0,intent=
         target["guarding"] = False
         conditions.remove(target,"rally_protection")
         _record_sound(battle, "shield_block", offset=185)
+    if attacker.get('mage_spell') and mage.specialized(attacker):damage=max(1,round(damage*.5))
+    owner=battle.get('units',{}).get(attacker.get('id'),attacker)
+    if conditions.has(owner,'blister'):damage=max(1,round(damage*.9))
     return monk.incoming(target,attacker,martial.incoming_damage(target,damage))
 
 
@@ -1827,6 +1841,7 @@ def _deal_damage(
         if absorbed:
             battle['log'].append(f"{target['name']}'s Barrier absorbs {absorbed} damage.")
             _record_sound(battle,'barrier_absorb',offset=0 if attacker.get('status_tick') else 185)
+    elemental_ice=any(s.get('elemental_freeze') for s in target.get('statuses',[]) if s['id']=='freeze')
     previous_hp = int(target["hp"])
     if intent == 'lethal' and not attacker.get('status_tick') and damage >= previous_hp and attacker.get('knockout_finisher'):
         counter = int(battle.get('finisher_counter', 0))
@@ -1885,6 +1900,9 @@ def _deal_damage(
             carried_object.update({"x": target["x"], "y": target["y"], "state": "ground", "carried_by": None})
             target["carrying_object"] = None
             target.pop("carried_payload_penalty", None)
+    if elemental_ice and not attacker.get('status_tick') and damage>0:conditions.remove(target,'freeze')
+    mage.check_channel(battle,target)
+    if not attacker.get('status_tick') and (damage>0 or absorbed>0):mage.enchant_hit(battle,attacker,target,ability)
     martial.after_damage(battle,attacker,target,previous_hp,ability)
     martial.try_unstoppable(target)
     martial.flush(battle,target)
@@ -1980,15 +1998,15 @@ def _tick_gear_statuses(battle: dict, unit: dict) -> None:
     for status in list(unit.get("statuses", [])):
         if status.get("id") not in {"burn", "poison"} or "turns" not in status:
             continue
-        if status['id']=='poison' and 'layers' in status:
+        if status['id'] in {'poison','burn'} and 'layers' in status:
             groups={}
             for layer in status['layers']:
                 key=(layer.get('source_id'),layer.get('source_name','Poison'))
                 groups[key]=groups.get(key,0)+layer.get('tick_damage',max(2,min(5,round(unit['max_hp']*.04))))
             for (owner,name),amount in groups.items():
                 if not _combat_active(unit):break
-                dealt=_deal_damage(battle,{'id':owner,'name':name,'weapon':'poison','attack':amount,'status_tick':True,'damage_kind':'poison'},unit,armor_pierce=_effective_armor(unit))
-                battle['log'].append(f"{unit['name']} takes {dealt} damage from Poison.")
+                dealt=_deal_damage(battle,{'id':owner,'name':name,'weapon':status['id'],'attack':amount,'status_tick':True,'damage_kind':status['id']},unit,armor_pierce=_effective_armor(unit))
+                battle['log'].append(f"{unit['name']} takes {dealt} damage from {status['id'].title()}.")
             for layer in status['layers']:layer['turns']-=1
             status['layers']=[l for l in status['layers'] if l['turns']>0]
             if status['layers']:status.update(stacks=len(status['layers']),turns=max(l['turns'] for l in status['layers']))
@@ -2249,6 +2267,7 @@ def _finish_turn(battle: dict) -> None:
         conditions.finish_activation(unit)
         monk.cleanup(battle,unit)
         ranger.finish(unit)
+        mage.settle(battle,unit,'end')
         unit.pop('physical_action', None)
         unit.pop("movement_origin", None)
         unit.pop("movement_path", None)
@@ -2621,6 +2640,8 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
         targets = _living(battle,'player') + [u for u in _living(battle,'enemy') if u.get('mercenary_hostile_all') and u['id']!=unit['id']]
     targets = conditions.hostile_units(battle, unit, _living(battle))
     if targets and not (unit.get('bush_ambusher') and concealment.unseen(unit) and not battle.get('ambush_sprung')) and _auto_rogue_turn(battle,unit,targets):return
+    if targets and mage.auto(battle,unit,targets):
+        _finish_turn(battle);return
     if targets and ranger.auto(battle,unit,targets):
         _finish_turn(battle);return
     if targets and _auto_monk_turn(battle,unit,targets):return
@@ -2781,7 +2802,7 @@ def _apply_support(battle, actor, target, effect):
     conditions.remove(target, *effect.get('cleanses', []))
     if effect.get('guard_ally'):
         target['guarding'] = True
-    if not (conditions.has(target, 'stun') or conditions.has(target, 'sleep') or conditions.has(target, 'paralyze')):
+    if not any(conditions.has(target,s) for s in ('stun','sleep','paralyze','freeze')):
         target.pop('forced_skip', None)
     if not conditions.has(target, 'paralyze'):
         target.pop('paralyzed_move', None)
@@ -2979,6 +3000,7 @@ def _resolve_ability(battle, actor, target, skill):
     if not abilities.availability(actor,skill)['available']:
         raise ValueError(abilities.availability(actor,skill)['reason'])
     abilities.validate(skill)
+    if skill.get('mage_kind'):return mage.execute(battle,actor,target,skill,skill.get('element_choice'))
     if skill.get('ranger_kind'):return ranger.execute(battle,actor,target,skill)
     if actor.get('capture_weapon') and any(e['type'] in {'attack','leap_attack','area_attack','dash_attack'} for e in skill['effects']):
         raise ValueError('Capture weapons cannot perform damaging techniques')
@@ -3134,7 +3156,7 @@ def _resolve_ability(battle, actor, target, skill):
         removed=[s['id'] for s in target.get('statuses',[]) if s['id'] in effect['statuses']]
         conditions.remove(target,*effect['statuses'])
         if removed:feedback(battle,target,'cleanse',removed_statuses=removed)
-        if not any(conditions.has(target,s) for s in ('stun','sleep','paralyze')):target.pop('forced_skip',None)
+        if not any(conditions.has(target,s) for s in ('stun','sleep','paralyze','freeze')):target.pop('forced_skip',None)
         if not conditions.has(target,'paralyze'):target.pop('paralyzed_move',None)
     def guard(effect):
         target['guarding']=True
@@ -3409,6 +3431,8 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
             if landings:
                 _resolve_ability(battle,unit,max(landings,key=lambda r:r[:4])[-1],leap);_finish_turn(battle);return
     if not pursuing_objective and _auto_rogue_turn(battle,unit,targets,tactic):return
+    if not pursuing_objective and mage.auto(battle,unit,targets):
+        _finish_turn(battle);return
     if not pursuing_objective and ranger.auto(battle,unit,targets):
         _finish_turn(battle);return
     if not pursuing_objective and _auto_monk_turn(battle,unit,targets,tactic):return
@@ -3847,7 +3871,7 @@ def battle_view(battle: dict) -> dict:
     concealment.refresh(battle)
     view = deepcopy(battle)
     _ensure_battle_schema(view)
-    view['zones']=spaces.presentation(view)
+    view['zones']=spaces.presentation(view)+mage.presentation(view)
     for unit in view['units'].values():
         ranger.sync(unit)
         unit['skills']=[ranger.skill_for(unit,skill) for skill in unit.get('skills',[])]
@@ -3990,8 +4014,19 @@ def battle_view(battle: dict) -> dict:
             view['attack_previews'][target['id']] = previews
         view['skill_previews']={}
         view['ground_skill_previews']={}
+        # Read-only, request-local indexes; never persist cached geometry after a move or door change.
+        mage_view=_routing_snapshot(view) if any(s.get('mage_kind') for s in current.get('skills',[])) else view
+        if mage_view is not view:mage_view.update(_mage_preview_cells={},_mage_preview_paths={})
         for choice in current.get('skills',[]):
             entries={}
+            if choice.get('mage_kind'):
+                ground,entries=mage.view_previews(mage_view,current,choice,reachable,parents)
+                if choice['mage_kind'] in mage.GROUND:view['ground_skill_previews'][choice['id']]=ground
+                view['skill_previews'][choice['id']]=entries
+                for target_id in entries:view['attack_previews'].setdefault(target_id,{})
+                if choice['id']==(skill or {}).get('id'):
+                    for target_id,row in entries.items():view['attack_previews'].setdefault(target_id,{})['skill']=row
+                continue
             if _dash_skill(choice):
                 ground_entries={}
                 if abilities.availability(current,choice)['available']:
@@ -4305,6 +4340,10 @@ def apply_player_command(battle: dict, command: dict) -> dict:
     if action=='navigate':return _player_navigation(battle,unit,command)
     selected_skill=next((s for s in unit.get('skills',[]) if s['id']==command.get('skill_id',(unit.get('special') or {}).get('id'))),None) if action=='skill' else None
     selected_skill=ranger.skill_for(unit,selected_skill)
+    if selected_skill and selected_skill.get('mage_kind'):
+        if mage.command(battle,unit,selected_skill,command):_finish_turn(battle)
+        concealment.refresh(battle);_check_end(battle);_advance_to_player(battle);battle['action_count']+=1
+        return battle_view(battle)
     if selected_skill and selected_skill.get('rogue_kind') in rogue.UTILITY:
         rogue.utility_command(battle,unit,selected_skill,command)
         concealment.refresh(battle);_check_end(battle);battle['action_count']+=1

@@ -112,7 +112,7 @@ class AttackApproachTests(unittest.TestCase):
 
     def test_ally_spell_previews_and_accepts_move_and_cast(self):
         from backend.job_loadouts import SKILLS
-        spell=deepcopy(SKILLS['job:mage:ward'])
+        spell=deepcopy(SKILLS['job:cleric:barrier'])
         ally=deepcopy(self.actor);ally.update(id='ally',name='Ally',x=4,y=4)
         self.battle['units']['ally']=ally
         self.actor['skills']=[spell];self.actor['special']=spell

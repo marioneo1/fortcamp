@@ -53,7 +53,7 @@ export function areaForecastMarkup(preview,battle,escape){
    const zones=(preview.zones||[]).filter(z=>(z.cells||[]).some(p=>p.x===unit.x&&p.y===unit.y));
    const labels=zones.map(z=>({ember:'Burn on entry',binding:'Bind on entry',thorns:'3 damage on entry',sanctuary:'3 HP next turn',rally:'Remove Fear / next hit -25% / next attack +25%'}[z.kind])).filter(Boolean);
    if(!forecast&&!labels.length||zones.every(z=>['ember','binding','thorns'].includes(z.kind))&&unit.team===actor?.team||zones.every(z=>['sanctuary','rally'].includes(z.kind))&&unit.team!==actor?.team)return '';
-   return `<div class="aoe-preview-chip" style="left:${(unit.x+.5)/battle.width*100}%;top:${(unit.y+.5)/battle.height*100}%" data-aoe-preview="${escape(unit.id)}"><b>${forecast?`${forecast.damage_on_hit} damage` :escape(labels.join(' / '))}</b>${forecast?`<small>${forecast.chance}% hit${forecast.push!=null?` · Push ${forecast.push}`:''}${forecast.resistance?` · ${forecast.resistance}% resist`:''}</small>`:''}</div>`;
+   return `<div class="aoe-preview-chip" style="left:${(unit.x+.5)/battle.width*100}%;top:${(unit.y+.5)/battle.height*100}%" data-aoe-preview="${escape(unit.id)}"><b>${forecast?forecast.delayed&&forecast.damage_on_hit===0?'Freeze after next caster action':`${forecast.damage_on_hit} damage${forecast.delayed?' · delayed':''}` :escape(labels.join(' / '))}</b>${forecast?`<small>${forecast.chance}% hit${forecast.push!=null?` · Push ${forecast.push}`:''}${forecast.resistance?` · ${forecast.resistance}% resist`:''}</small>`:''}</div>`;
   }).join('');
 }
 export function layoutAreaForecasts(layer){
@@ -95,7 +95,7 @@ export function bindSpellTargets(field,battle,mode,onCast){
  field.querySelectorAll('.spell-area,.spell-center,.spell-self-target,.spell-castable,.spell-inner,.spell-outer,.spell-landing,.spell-pull-path,.spell-pull-stop,.spell-collision-cell').forEach(el=>el.classList.remove('spell-area','spell-center','spell-self-target','spell-castable','spell-inner','spell-outer','spell-landing','spell-pull-path','spell-pull-stop','spell-collision-cell'));
  const actor=battle.units?.[battle.current_unit_id],skill=actor?.special;
  if(mode!=='skill'||!skill)return;
- const entries=battle.ground_skill_previews?.[skill.id],self=(skill.effects||[]).some(e=>['form','deploy'].includes(e.type)||e.type==='cleanse'&&e.radius);
+ const entries=battle.ground_skill_previews?.[skill.id],self=skill.mage_kind==='typhoon'||(skill.effects||[]).some(e=>['form','deploy'].includes(e.type)||e.type==='cleanse'&&e.radius);
  if(self)field.querySelector(`[data-battle-unit="${CSS.escape(actor.id)}"]`)?.classList.add('spell-self-target');
  const clear=()=>field.querySelectorAll('.spell-area,.spell-center,.attack-approach-path,.attack-approach-stop,.spell-inner,.spell-outer,.spell-landing,.spell-pull-path,.spell-pull-stop,.spell-collision-cell').forEach(el=>{el.classList.remove('spell-area','spell-center','attack-approach-path','attack-approach-stop','spell-inner','spell-outer','spell-landing','spell-pull-path','spell-pull-stop','spell-collision-cell');el.querySelector('.approach-step')?.remove()});
  const forecastLayer=document.createElement('div');forecastLayer.className='aoe-preview-layer';forecastLayer.setAttribute('data-live-overlay','');field.append(forecastLayer);

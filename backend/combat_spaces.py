@@ -4,6 +4,7 @@ from . import combat_conditions as conditions
 from .combat_feedback import record as feedback
 
 ZONES = {
+    'scorched': {'name':'Scorched ground','relation':'enemy','events':{'entry','start'},'status':'burn','entry_damage':3,'entry_per_cell':True,'description':'Each committed tile entry deals 3 damage and refreshes Burn. Re-entry counts; overlapping fire patches do not add damage. Allies are safe.'},
     'caltrops':{'name':'Caltrops','relation':'everyone','events':['entry','placement'],'entry_per_cell':True,'trap':True,'statuses':['bleed','hobbled'],'description':'Placement on an occupied tile and each tile entry attempt one Bleed and one Hobble stack for two target turns. Allies and push/pull count; Trap Expert avoids it. Overlapping strips do not multiply an entry.'},
     'ember': {'name': 'Ember Patch', 'relation': 'enemy', 'events': ['entry', 'start'],
               'status': 'burn', 'entry_damage':3, 'entry_per_cell':True,
@@ -94,16 +95,17 @@ def trigger_zones(battle, unit, event, active, hostile, apply_status, damage, on
         hits = unit.setdefault('zone_hits', {})
         # Overlapping owners share one hit per entry. Control/healing and other
         # zones retain their activation cap; burning ground counts every entry.
-        if zone['kind'] in triggered:
+        trigger_key='fire_ground' if zone['kind'] in {'ember','scorched'} else zone['kind']
+        if trigger_key in triggered:
             continue
         per_entry = event in {'entry','placement'} and rule.get('entry_per_cell')
         if not per_entry and zone['kind'] in hits and hits[zone['kind']] == stamp:
             continue
-        triggered.add(zone['kind'])
+        triggered.add(trigger_key)
         hits[zone['kind']] = stamp
         for sid in rule.get('statuses',[]):apply_status(owner,unit,sid,True)
         if rule.get('status'):
-            apply_status(owner, unit, rule['status'])
+            apply_status({**owner,'scorched_source':zone} if zone['kind']=='scorched' else owner, unit, rule['status'])
         if rule.get('damage'):
             damage(owner, unit, rule['damage'], rule['name'])
         if event=='entry' and rule.get('entry_damage'):

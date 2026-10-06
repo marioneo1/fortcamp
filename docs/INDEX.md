@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Implemented Mage: [Mage rework](design/MAGE_REWORK_REVIEW.md) covers eight elemental skills, Wet/Blister, breakable ice, delayed Freeze, interruptible Meteor, chosen ally enchantments, layered Burn, Scorched paths, migration and AI limitations. [Mage art/audio](art/MAGE_V1.md) records the single packed atlas, animated effects and five locally synthesized clips. Current catalogue: 85 executable definitions across twelve Jobs. Numeric playtesting remains open.
+
 Implemented Ranger: [Ranger rework](design/RANGER_REWORK_REVIEW.md) covers eight skills, owner Quarry, Longshot crits, Rapid Fire, independent Poison layers, party-wide Pestilence, allied DoT cashout, stationary Sharpshooter, migration and AI. [Ranger art](art/RANGER_V1.md) documents the packed icons/projectiles and reviewed crop bounds. Numeric playtesting remains open.
 
 Current painted combat props: [Tactical props pack](art/TACTICAL_PROPS_V1.md) covers grounded Caltrops, animated Scrap Turret/projectile/wreckage and reserved Engineer props. Both combat API schemas preserve Knife delivery/strip rotation; placing traps immediately affects occupants.
@@ -26,8 +28,7 @@ and the corrected physical landing audio.
 
 Current buff/debuff UI: [Status presentation](design/COMBAT_STATUS_PRESENTATION.md)
 covers readable grouped icons, counts, cursor descriptions, the persistent Stun
-star orbit, reduced motion and dry Earthbreaker landing audio. Burn/Freeze/Barrier
-visual redesign remains pending.
+star orbit, reduced motion and dry Earthbreaker landing audio. Mage now adds painted ice and Scorched ground; further Barrier redesign remains pending.
 
 Current Fighter review: [Fighter combat and UI audit](design/FIGHTER_COMBAT_REVIEW.md)
 records the current full-width map, bottom skills/three-by-two commands,
@@ -42,7 +43,7 @@ one-cell/four-turn support tuning, large icon cooldown counters, larger action
 descriptions, landing fade, distinct Fighter collision/landing audio and verification. The intermittent corner/door pathing
 report is deferred to the rebuild. Prior audits remain historical.
 [New Fighter art prompt](art/FIGHTER_V3_PROMPT.md) records the compact six-cell pack.
-Mage ground/barrier art is still awaiting redesign.
+Mage ground art is implemented; further Barrier art review remains open.
 
 Combat presentation rollout: [Presentation plan](design/COMBAT_PRESENTATION_PLAN.md)
 records contact timing, collision bounce, painted ability icons, volumetric

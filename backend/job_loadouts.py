@@ -59,10 +59,14 @@ register('ranger','Ranger','Mark your quarry for reliable shots. Exploit distanc
     ranger_active('mark_quarry','Mark Quarry','Main action. Mark one target for three of its turns. All your attacks against your own marked target have 100% accuracy; other Rangers need their own mark. Marking a new quarry replaces your previous mark. No cooldown.',cd=0),
     ranger_active('longshot','Longshot','Requires your own Mark Quarry. Attack power by distance: 1-2 cells 100%; 3 cells 150%; 4 cells 175%; 5+ cells 200%. Has a 20% critical chance for double final damage before Barrier. Cooldown 2.'),
     ranger_active('poison_attack','Poison Attack','Main action. 150% attack and two Poison stacks, or four against your own quarry. Each stack deals 8% of your attack (minimum 1 HP) on the next two target turns; resistance applies. Imbue your next successfully damaging attack with one Poison stack per landed hit. No cooldown.',power=150,cd=0))
-register('mage','Mage','Create dangerous ground or protect a threatened ally.',
-    active('embers','Ember Ground','Create burning ground for two of your activations. Each burned tile entered on a committed path deals 3 damage and applies Burn. Re-entry counts again; overlapping patches do not stack. Allies are safe.',[{'type':'zone','zone':'ember','radius':1,'turns':2}],range=3,rule='line_of_effect',cooldown=3),
-    active('ward','Ward','Give an ally a 10 HP Barrier for two of their activations.',[{'type':'barrier','amount':10,'turns':2}],'ally',3,'line_of_effect',3),
-    passive('footwork','Light Step','Gain 5 evasion. Mute still prevents spells.',{'evasion':5}))
+def mage_active(key,name,description,cd=3,reach=5,target='enemy'):
+    skill=dict(id=key,name=name,description=description,type='active',source_kind='character',ability_version=1,target=target,range=reach,elevation_rule='line_of_effect',cost={'cooldown':cd,'charges':None},effects=[{'type':'mage_spell','kind':key}])
+    skill.update(mage_kind=key,self_only=key=='typhoon')
+    return validate(skill)
+register('mage','Mage','Fragile elemental caster: create Wet, Freeze and burning ground, then exploit those states with spells and allies.',
+    mage_active('chain_lightning','Chain Lightning','150% primary / 125% chained attack power. Bounce to one nearest unhit enemy within two cells, continuing until none remain. Wet targets take 250% / 175% power and roll 25% Paralysis for one turn before resistance. Wet is retained. Clear sight required for each bounce. Cooldown 4.',4),
+    mage_active('fireball','Fireball','Ground or enemy centre; two-cell diamond radius, walls block the blast. Centre 150%, outer 125% attack; applies one Burn stack for two target turns. Consumes Wet to apply Blister: -10% outgoing damage and -10 accuracy for two target turns. Leaves ally-safe Scorched ground for two caster turns: each committed tile entry deals 3 damage and refreshes Burn. Cooldown 2.',2),
+    mage_active('typhoon','Typhoon','Target yourself. All OTHER units within a three-cell diamond, including allies, take 25% attack power and are pushed two cells away; applies Wet for two target turns. Resistance, walls, pits and collision damage apply. Cooldown 3.',3,1,'ally'))
 register('cleric','Cleric','Treat wounds and maintain a safe fighting position.',
     active('mend','Mend','Restore 12 HP to a living ally. Cannot revive.',[{'type':'heal','amount':12}],'ally',3,'line_of_effect',3),
     active('cleanse','Cleanse','Remove Poison, Bleed, Burn and Slow from an ally.',[{'type':'cleanse','statuses':['poison','bleed','burn','slow']}],'ally',3,'line_of_effect',3),
@@ -116,10 +120,6 @@ later('barbarian',
     active('groundbreaker','Groundbreaker','Spend 4 Fury. Strike enemies in all eight adjacent cells at 200% attack power and push them one cell. Walls block the wave; knockback resistance and collision damage apply. Allies are safe. Target yourself. Cooldown: 5 of your turns.',[{'type':'area_attack','radius':1,'push':1,'power_percent':200}],'ally',1,'physical_care',5),
     passive('too_angry_to_fall','Too Angry to Fall','Once per battle, lethal damage leaves you at 1 HP. Further lethal damage cannot finish you until your next turn begins. You do not automatically die afterward; another lethal hit is needed. Does not prevent capture or disappearing into a lethal pit.'))
 SKILLS['job:barbarian:groundbreaker'].update(fury_cost=4,self_only=True)
-later('mage',
-    active('binding','Binding Circle','Create enemy-binding ground around a target for two of your activations. Entering triggers control recovery rules.',[{'type':'zone','zone':'binding','radius':1,'turns':2}],range=3,rule='line_of_effect',cooldown=3),
-    active('scorch','Scorch','Attempt Burn for two target activations, 75% before resistance. No direct damage.',[{'type':'status','status':'burn','turns':2,'chance':75}],range=3,rule='line_of_effect',cooldown=3),
-    passive('armored','Wardweave','Gain 1 armor; consumes a slot instead of another spell.',{'armor':1}))
 later('cleric',
     active('sanctuary','Sanctuary','Create healing ground around a chosen cell for two of your activations. Restores 3 HP at ally activation start; Burn prevents healing.',[{'type':'zone','zone':'sanctuary','radius':1,'turns':2}],'ally',3,'line_of_effect',3),
     active('barrier','Shelter','Give an ally a 14 HP Barrier for two target activations. Replaces weaker Barriers; does not stack.',[{'type':'barrier','amount':14,'turns':2}],'ally',3,'line_of_effect',3),
@@ -153,6 +153,14 @@ def add_unlocks(job, entries):
         SKILLS[skill['id']]=skill
         JOBS[job].setdefault('unlocks',[]).append({'skill_id':skill['id'],'contracts':threshold})
 
+
+add_unlocks('mage',[
+    (2,mage_active('flash_freeze','Flash Freeze','Arm a two-cell diamond Freeze Zone. After your next activation, enemies still inside roll Freeze for two target turns. No channel: you may act normally. Direct HP damage breaks ice after its full hit; ending Freeze applies Wet for two turns. Resisted Freeze applies Wet immediately. Boss duration and control recovery apply. Cooldown 4.',4)),
+    (5,mage_active('enchant_weapon','Enchant Weapon','Choose Fire, Frost or Lightning for one ally, lasting two ally turns. Fire: one Burn per successful weapon hit. Frost: each hit rolls 20% Freeze before resistance. Lightning: each hit against Wet rolls 25% Paralysis for one turn; one successful paralysis per target per enchant. Multi-hit techniques roll per hit; control recovery applies. Replaces an existing enchant. Cooldown 5.',5,4,'ally')),
+    (9,mage_active('singularity','Singularity','Two-cell diamond radius. Centre 200%, outer 25% attack power, then pull affected enemies one cell toward the centre. Terrain, occupied cells, resistance and hazards apply; collisions deal half the hit. Cooldown 5.',5)),
+    (12,passive('debuffer','Debuffer','Direct Mage spell damage is halved. Mage Burn applications add twice as many stacks; Wet, Blister and weapon enchantments last twice as long. Hard-control durations and terrain lifetimes are unchanged. Does not halve basic attacks, Burn ticks or ground damage.')),
+    (16,mage_active('meteor','Meteor','Channel until your next activation. Impact consumes that activation: inner two-cell diamond 400% attack, outer ring to three cells 300%. Applies Burn and leaves ally-safe Scorched ground for two caster turns. Defeat, hard control, Mute or forced movement interrupts; ordinary damage does not. Enemies can leave the visible impact zone. Cooldown 6.',6)),
+])
 
 add_unlocks('ranger',[
     (2,ranger_active('multi_shot','Multi-Shot','Fire 2-4 arrows, each at 75% attack and 50% base accuracy. Your quarry guarantees every arrow hits. Poison imbue applies one stack per damaging arrow. Generic weapon procs have one volley budget. Cooldown 2.',power=75)),
@@ -207,6 +215,13 @@ def initialize(character):
         if character.get('job_id')=='barbarian':
             for field in ('learned_skills','equipped_skills'):
                 character[field]=list(dict.fromkeys('job:barbarian:'+BARBARIAN_OLD_IDS.get(key.split(':')[-1],key.split(':')[-1]) if key.startswith('job:barbarian:') else key for key in character[field]))
+        if character.get('job_id')=='mage' and character.get('mage_kit_version',0)<1:
+            replacements={'embers':'fireball','ward':'enchant_weapon','footwork':'debuffer','binding':'flash_freeze','bind':'flash_freeze','scorch':'chain_lightning','armored':'debuffer'}
+            for field in ('learned_skills','equipped_skills','combat_skill_order'):
+                if field in character:character[field]=list(dict.fromkeys('job:mage:'+replacements.get(k.split(':')[-1],k.split(':')[-1]) if k.startswith('job:mage:') else k for k in character[field]))
+            for key in JOBS['mage']['starter_skills']:
+                if key not in character['learned_skills']:character['learned_skills'].append(key)
+            character['mage_kit_version']=1
         if character.get('job_id')=='ranger' and character.get('ranger_kit_version',0)<1:
             replacements={'mark':'mark_quarry','snare':'multi_shot','footwork':'sharpshooter','anchored':'sharpshooter','poison':'poison_attack','dust':'pestilence_shot'}
             legacy=any(k.startswith('job:ranger:') and k.split(':')[-1] in replacements for k in character['learned_skills'])

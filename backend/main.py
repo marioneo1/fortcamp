@@ -286,6 +286,7 @@ class CombatCommandRequest(BaseModel):
     placement_id: str | None = None
     skill_id: str | None = None
     knife_skill_id: str | None = None
+    element: str | None = None
     rotation: int = Field(default=0, ge=0, le=1)
     item_id: str | None = None
 

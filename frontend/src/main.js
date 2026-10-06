@@ -1,3 +1,5 @@
+import {emitMageEffect,mageStatusMarkup,chooseEnchant} from './mage-effects.js';
+import './mage-effects.css';
 import {emitRangerEffect} from './ranger-effects.js';
 import {isTurret,turretMarkup,emitTurretAttack} from './turret-art.js';
 import './turret-art.css';
@@ -246,6 +248,7 @@ window.addEventListener('pointerdown',()=>ensureAudio(),{once:true});
 
 const sfxFiles={ui_click:'ui_click.wav',ui_confirm:'ui_confirm.wav',ui_cancel:'ui_cancel.wav',melee_swing:'melee_swing.wav',melee_hit_light:'melee_hit_light.wav',melee_hit_heavy:'melee_hit_heavy.wav',subdue_hit:'subdue_hit.wav',unit_death:'unit_death.wav',unit_unconscious:'unit_unconscious.wav',guard:'guard.wav',mission_success:'mission_success_v3.wav',mission_failure:'mission_failure_v3.wav',mission_critical_success:'mission_critical_success_v3.wav',mission_critical_failure:'mission_critical_failure_v3.wav'};
 for(const name of ['step_earth','step_stone','step_water','bow_release','arrow_hit','magic_cast','magic_hit','attack_miss','shield_block','throw_release','throw_hit','structure_hit','structure_break','cage_open','pickup','payload_drop','extraction','objective_interact'])sfxFiles[name]=`${name}.wav`;
+for(const name of ['mage_lightning','mage_freeze','mage_gravity','mage_fireball','mage_typhoon'])sfxFiles[name]=`${name}.wav`;
 const unavailableSfx=new Set();
 for(const name of ['burn_tick','poison_tick','barrier_absorb','collision_hit'])sfxFiles[name]=`${name}.wav`;
 sfxFiles.collision_hit='body_collision.wav';
@@ -645,7 +648,7 @@ function battleToken(unit,current,battle,stunDelay=0){
   const support=selectedCombatAction==='skill'&&battle.units?.[battle.current_unit_id]?.special?.target==='ally';
   const targeting=unit.alive&&unit.conscious!==false&&!unit.extracted&&!unit.carried_by&&['attack','subdue','skill','throw'].includes(selectedCombatAction)&&(support?unit.team==='player':unit.team==='enemy'),validTarget=selectedCombatAction==='throw'?throwTarget:!!preview;
   const occupiedAbove=condition!=='active'&&Object.values(battle.units||{}).some(other=>other.id!==unit.id&&other.x===unit.x&&other.y===unit.y&&other.alive&&other.conscious!==false&&!other.extracted&&!other.carried_by);
-  return `<button class="battle-token ${isTurret(unit)?'turret-prop':''} ${unit.team} ${current?'current':''} ${boss?'boss':''} ${throwTarget?'throw-target':''} ${targeting?(validTarget?'valid-target':'invalid-target'):''} ${unit.extracted?'extracted':''} ${unit.carried_by?'carried':''} ${occupiedAbove?'body-under-unit':''} ${condition}" data-battle-unit="${unit.id}" style="grid-column:${unit.x+1};grid-row:${unit.y+1}" title="${esc(unit.name)} · ${unit.hp}/${unit.max_hp} HP · ${title(condition)} · elevation ${height}${boss?' · BOSS':''}${targeting?validTarget?' · valid target':' · out of range or line of sight':''}${throwTarget?` · ${battle.throw_profile.damage} throw damage`:''}${accuracy}${tacticalPreviewText(preview)?` | ${esc(tacticalPreviewText(preview))}`:''}">${boss?'<strong class="boss-label">BOSS</strong>':''}${height?`<strong class="height-badge">▲${height}</strong>`:''}${face}${protectionMarkup(unit)}${martialAuraMarkup(unit)}${monkAuraMarkup(unit)}${stunMarkup(unit,stunDelay)}${condition==='active'?`<i><b>${unit.hp}</b><small>HP</small></i>`:''}${furyMarkup(unit,{compact:true})}${bodyLabel?`<em class="body-label">${condition==='dead'?'† CORPSE':'ZZZ · UNCONSCIOUS'}</em>`:''}${statuses}</button>`;
+  return `<button class="battle-token ${isTurret(unit)?'turret-prop':''} ${unit.team} ${current?'current':''} ${boss?'boss':''} ${throwTarget?'throw-target':''} ${targeting?(validTarget?'valid-target':'invalid-target'):''} ${unit.extracted?'extracted':''} ${unit.carried_by?'carried':''} ${occupiedAbove?'body-under-unit':''} ${condition}" data-battle-unit="${unit.id}" style="grid-column:${unit.x+1};grid-row:${unit.y+1}" title="${esc(unit.name)} · ${unit.hp}/${unit.max_hp} HP · ${title(condition)} · elevation ${height}${boss?' · BOSS':''}${targeting?validTarget?' · valid target':' · out of range or line of sight':''}${throwTarget?` · ${battle.throw_profile.damage} throw damage`:''}${accuracy}${tacticalPreviewText(preview)?` | ${esc(tacticalPreviewText(preview))}`:''}">${boss?'<strong class="boss-label">BOSS</strong>':''}${height?`<strong class="height-badge">▲${height}</strong>`:''}${face}${protectionMarkup(unit)}${martialAuraMarkup(unit)}${monkAuraMarkup(unit)}${stunMarkup(unit,stunDelay)}${mageStatusMarkup(unit)}${condition==='active'?`<i><b>${unit.hp}</b><small>HP</small></i>`:''}${furyMarkup(unit,{compact:true})}${bodyLabel?`<em class="body-label">${condition==='dead'?'† CORPSE':'ZZZ · UNCONSCIOUS'}</em>`:''}${statuses}</button>`;
 }
 
 function tileActionsForBattle(b,x,y){
@@ -755,6 +758,7 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
         const finish=()=>{ghost.remove();finalToken.style.visibility='';finalToken.style.transition=bodyTransition};dying.onfinish=finish;dying.oncancel=finish;
         return;
       }
+      if(event.type==='mage_cast'){emitMageEffect(field,event,battle,delay);return}
       if(event.type==='magic_projectile'){combatEffects.emit(event,battle,delay);return}
       if(event.type==='sound')return;
       if(event.type==='collision_recoil'){
@@ -1048,6 +1052,9 @@ async function sendCombat(command,nextMode=null,queuedMovement=false){
   if(combatPlaybackBlocked())return;
   $$('.battle-utility-dialog[open]').forEach(d=>d.close());
   command=selectedSkillCommand(command,activeBattleView?.units?.[activeBattleView.current_unit_id]);
+  const mageActor=activeBattleView?.units?.[activeBattleView.current_unit_id];
+  const mageSkill=command.action==='skill'?mageActor?.skills?.find(s=>s.id===command.skill_id):null;
+  if(mageSkill?.mage_kind==='enchant_weapon'&&!command.element){chooseEnchant({view:activeBattleView,command,send:sendCombat,escape:esc,blocked:()=>combatRequestPending||combatPlaybackBlocked(),cancel:()=>{selectedCombatAction='move';renderBattle(activeBattleView)}});return}
   const movementContext=`${activeBattleMissionId}:${activeBattleView?.current_unit_id}:${activeBattleView?.round}`;
   const requestMissionId=activeBattleMissionId;
   let acknowledgedPosition=null;

@@ -22,6 +22,10 @@ export function zoneOverlay(zones,escape){
       const px=(c.x-x)*100,py=(c.y-y)*100;
       artwork+=image(pieces[i%pieces.length],px+12,py+15,76,76,`zone-accent accent-${zone.kind}`,i*.37);
     }
+    if(['scorched','meteor_armed','flash_freeze_armed'].includes(zone.kind)){
+      artwork=zone.cells.map(c=>{const px=(c.x-x)*100,py=(c.y-y)*100;return zone.kind==='scorched'?`<image href="/assets/mage-v1/scorched_tile.png" x="${px}" y="${py}" width="100" height="100" class="mage-zone-tile"/><image href="/assets/mage-v1/fire_contact.png" x="${px+20}" y="${py+20}" width="60" height="60" class="mage-zone-flame"/>`:`<rect x="${px+3}" y="${py+3}" width="94" height="94" rx="6" class="mage-telegraph-cell"/>`}).join('');
+      if(zone.kind!=='scorched')artwork+=`<text x="${w*50}" y="${h*50}" class="mage-telegraph-label">${zone.kind==='meteor_armed'?'METEOR INCOMING':'FREEZE ARMED'}</text>`;
+    }
     if(zone.kind==='caltrops')artwork=caltropsArtwork(zone.cells,x,y,clip);
     const description=`${zone.name} | ${zone.owner_name} | ${zone.remaining} owner activations | ${zone.description}`;
     return `<div class="battle-zone painted-zone zone-${escape(zone.kind)}" style="grid-column:${x+1};grid-row:${y+1};grid-column-end:span ${w};grid-row-end:span ${h}" title="${escape(description)}" aria-label="${escape(description)}"><svg viewBox="0 0 ${w*100} ${h*100}" preserveAspectRatio="none" aria-hidden="true"><defs><clipPath id="${clip}">${rects}</clipPath></defs><g clip-path="url(#${clip})">${artwork}<path d="${boundary}" class="zone-boundary"/></g></svg></div>`;

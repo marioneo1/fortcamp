@@ -1,5 +1,7 @@
 # Battle Lab — implemented development tool
 
+October 6 Mage: choose a Mage Job tester and practice **16 or 20** to unlock the full eight-skill pool, then select any five actives/passives. For elemental testing try Typhoon / Chain Lightning / Flash Freeze / Singularity / Fireball. For Meteor try Fireball / Flash Freeze / Singularity / Meteor / Debuffer. Replace a slot with Enchant Weapon to test chosen Fire/Frost/Lightning on a martial helper. Mage starter practice 0 equips Chain Lightning, Fireball and Typhoon. These are temporary owner-scoped tests; existing roster saves are untouched. See [Mage rules](MAGE_REWORK_REVIEW.md) for friendly Typhoon, channel costs and freeze timing.
+
 ## October 5: Monk combo testing
 
 Temporary Job testers ? Monk starts with Rapid Palm, Iron Reversal and Heaven-Piercing Strike. Select 16 successes to unlock the full eight-skill pool, then choose any five active/passive slots. Try reliable skirmisher (Rapid Palm, Iron Reversal, Heaven-Piercing Strike, Perfect Rhythm, Sweeping Dash) or offensive sequence (replace Iron Reversal with Breaking Combination). Battle-only combo/forms persist across commands but reset on a fresh test. Lab cannot edit real progression or saves. Skill damage remains initial tuning; compare against Fighter/Barbarian using the same enemies/weapon tier before declaring final balance.
