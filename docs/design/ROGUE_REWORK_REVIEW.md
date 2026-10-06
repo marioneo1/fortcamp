@@ -1,8 +1,25 @@
 # Rogue rework review
 
-October 5, 2026. **Design review only; not implemented.** User clarifications: multiple Quick Actions are allowed. Backflip and Caltrops are Quick Actions. Latest user correction: the main attack MUST end the activation; Quick Actions are usable before it only. Preserve Fighter, Barbarian, Monk, five character slots, gear abilities outside those slots and existing saves.
+October 5, 2026. **Implemented in dev; final numerical/aesthetic playtesting remains pending.** User clarifications: multiple Quick Actions are allowed. Backflip and Caltrops are Quick Actions. Latest user correction: the main attack MUST end the activation; Quick Actions are usable before it only. Preserve Fighter, Barbarian, Monk, five character slots, gear abilities outside those slots and existing saves.
 
-## Inspected current implementation
+
+## Implemented behavior and validation
+
+All eight skills are executable; normal five-slot rules apply. Three starter actives give solo Rogues setup and payoff. Existing retired skill IDs and saved skill order migrate idempotently without resetting practice, identity or equipment. Already-running battles keep their snapshots; start a fresh battle to use the new kit.
+
+The battle dock shows Quick/main wording. Shadowstep selects an enemy then a legal cardinal landing; Backflip selects a highlighted landing. Caltrops previews all three tiles, R rotates, red marks invalid placement, and explicit Confirm commits. C or Cancel spends nothing. Releasing a Caltrops drag outside the map discards its placement. Throwing Knife offers Basic Attack or compatible equipped main skills, then target and Confirm; forecasts use a virtual side without moving the unit.
+
+Quick actions settle the prior selected route and lock ordinary walking. They do not tick cooldowns, advance the turn, or trigger exertion Bleed individually. Main attacks/Guard/End Turn finish the activation. Real Bind/Freeze and map boundaries still block mobility. Utility previews stay local; confirmed actions are server validated.
+
+Caltrops are static steel ground sprites, lasting two owner activations. Actual committed walking and push/pull routes apply one Bleed and one Hobble layer per entry; same-event endpoint processing is deduplicated. Overlapping strips do not multiply a single entry. Re-entering a tile legitimately applies another stack. Sources/expiry are stored per layer; normal refresh applications preserve existing trap layers. Hobble halves movement once; its extra stacks contribute to Exploit. Bleed retains exertion timing and damage attribution. Trap Expert blocks tagged traps, not unrelated hazards.
+
+AI currently uses opportunistic Shadowstep, Crippling Cut setup, positional/stack forecasts, ordinary approaches and compatible knife main attacks. Auto does not yet plan cooperative trap corridors or Backflip escapes; manual players can use every skill. Hidden bush ambushers retain their existing wait logic. Encounter/personalities, Fighter/Barbarian/Monk and production data are not redesigned.
+
+Knife contact, damage, impact sound, collapse and the next actor share the serialized timeline (knife contact 280 ms). Shadowstep fades between endpoints; Backflip uses the established leap motion. Placement controls occupy the existing action-preview area, not an additional below-map panel. Effects respect reduced motion and page visibility. Four short physical/airy sounds are normalized without clipped output samples; aesthetic approval remains open.
+
+Validation: 211 focused backend tests and all 289 frontend tests pass; build passes with the existing bundle-size warning. Rogue geometry, stacks/cap, Quick-before-main, mobility locks, invalid targeting, knife costs/misses, migrations, real push/pull routes, preview/commit deduplication, exertion and bounded auto behavior have automated coverage. Actual battle-UI browser fixture checked placement, rotation, free cancellation, chosen Shadowstep landing and knife delivery choices without JavaScript exceptions. Full five-slot Goblin Warcamp view measured a median 8.9 ms and maximum 10.7 ms across 15 local runs; this is not an internet latency measurement. Numerical balance and coordinated AI trap tactics remain follow-up work.
+
+## Prior implementation inspected before the rework
 
 `backend/job_loadouts.py` supplies Open Wound, Pocket Sand, Footwork, Venom Edge, Pinning Strike and Close Counter. These overlap control/counter kits rather than implementing the proposed positional saboteur. `backend/combat_abilities.py` already provides IDs, bounded effects, owner-activation cooldowns, charges, availability and snapshots. Every current active spends the main action. `backend/combat.py` marks the action and automatically finishes the activation for `skill` and `attack`; the engine has no Quick Action budget or post-main-action casting flow.
 
@@ -40,7 +57,7 @@ Quick Actions do not increment cooldown/status clocks, expire ground zones, trig
 | Trap Expert | The Rogue does not trigger tagged traps, including Caltrops, while this passive is equipped. Does not negate fire, poison zones, pits or arbitrary terrain hazards. | Slotted passive |
 | Throwing Knife Technique | Arm a thrown delivery for basic Attack, equipped Cheap Shot or equipped Exploit Weakness. Hit a visible target beyond normal melee reach, within three cells, with a clear projectile path. No extra damage multiplier or separate attack. | Modifier; uses the chosen main attack / 3 |
 
-Cooldown 1 means ready next personal activation; 3 means the third subsequent activation. The table is initial tuning, not playtested balance. All eight choices remain visible in progression; normal five-slot opportunity costs apply. Suggested starter: Cheap Shot, Crippling Cut, Exploit Weakness, which gives a solo Rogue an immediate setup/payoff. Suggested unlocks: Shadowstep at 2 successes, Caltrops at 5, Backflip at 9, Trap Expert at 12, Throwing Knife at 16. Battle Lab should expose full pool at 16 and mixed parties for surround/trap tests.
+Cooldown 1 means ready next personal activation; 3 means the third subsequent activation. The table is initial tuning, not playtested balance. All eight choices remain visible in progression; normal five-slot opportunity costs apply. Suggested starter: Cheap Shot, Crippling Cut, Exploit Weakness, which gives a solo Rogue an immediate setup/payoff. Suggested unlocks: Shadowstep at 2 successes, Caltrops at 5, Backflip at 9, Trap Expert at 12, Throwing Knife at 16. Battle Lab exposes the full pool at 16 and mixed parties for surround/trap tests.
 
 ## Position and thrown delivery
 
@@ -74,7 +91,7 @@ Shadowstep: enemy selection shows legal cardinal adjacent landings; choosing one
 
 AI should choose opportunities rather than a fixed rotation: compare current positional/Exploit forecasts, consider Shadowstep landings, use Cut when it improves the following burst, lay strips on likely approaches, and use Backflip before attacking or guarding if a safer legal landing exists. Existing hidden personality weights aggression/risk. Use a bounded plan of the equipped cooldown-ready Quick Actions plus one main action, mark each spent once, then end. Do not implement recursive action selection that retries an impossible teleport forever or scans a large action tree each render.
 
-Use one coherent packed Rogue icon/effect atlas when implementing: eight square ability icons plus thrown knife, cut contact, strip tile, shadow departure/arrival and Backflip trail. Keep light melee flesh/hard-contact sound families, landing/teleport/trap contact timing and enemy serialization. No images or audio are generated in this review.
+Use one coherent packed Rogue icon/effect atlas when implementing: eight square ability icons plus thrown knife, cut contact, strip tile, shadow departure/arrival and Backflip trail. Keep light melee flesh/hard-contact sound families, landing/teleport/trap contact timing and enemy serialization. One packed 4x4 atlas and four ElevenLabs effects have now been generated/imported; see [Rogue art/audio](../art/ROGUE_V1.md).
 
 1. Add quick/main state and normal-walk lock, including AI and animation locks; test move ? multiple quick actions ? main (automatic finish).
 2. Implement position/debuff counting and cheap/cut/Exploit forecasts with migrated five-slot loadouts.

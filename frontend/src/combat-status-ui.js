@@ -9,6 +9,7 @@ export function statusDetails(status,definitions={}){
   if(status.id==='monk_siphon')return {...base,details:[`${Math.max(0,(status.turns||1)-1)} future Monk turns remaining`,'3 HP per landed hit ? does not overheal']};
   if(status.id==='dash_parry')return {...base,details:['Expires at next Monk turn start','Excludes magic and area attacks']};
   if(['open_guard','flowing_footwork','iron_reversal'].includes(status.id))return {...base,details:[status.id==='iron_reversal'?'One incoming direct attack · expires at next personal turn start':`${status.turns} turn window remaining · expires at ${status.source_name||'owner'}’s turn end`,...(status.source_name?[`From ${status.source_name}`]:[])]};
+  if(status.layers)details.push(`${status.layers.length} stacks ? each expires independently${status.id==='hobbled'?' ? movement is halved once':''}`);
   if(status.id==='barrier')details.push(`${status.amount} damage absorption remaining`);
   if(status.id==='mark')details.push(`Owner: ${status.source_name||'unknown'} · +${status.accuracy||10} accuracy on their first hit`);
   if(status.id==='reaction')return {name:status.ready?'Reaction ready':'Reaction spent',icon:status.ready?'↶':'↷',description:`${(status.reactions||[]).join(' / ')}. One shared reaction, refreshed at activation start. Cannot chain.`,details:[]};
@@ -25,6 +26,8 @@ export function statusDetails(status,definitions={}){
 export function tacticalPreviewText(preview){
   if(!preview)return '';
   const parts=[];
+  if(preview.position_power)parts.push(`Cheap Shot: ${(preview.position_power/100).toFixed(1)}? positional damage`);
+  if(preview.debuff_stacks)parts.push(`Exploit: ${Object.values(preview.debuff_stacks).reduce((a,b)=>a+b,0)} debuff stacks ? ${(preview.exploit_power/100).toFixed(1)}? damage`);
   if(preview.intercepted_by)parts.push(`Intercepted by ${preview.intercepted_by}`);
   if(preview.barrier)parts.push(`${preview.barrier}-point Barrier`);
   for(const zone of preview.zones||[]){

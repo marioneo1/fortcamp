@@ -104,3 +104,7 @@ view polling does not advance it. Resolved `martial_effect` events share attack
 packets with contact sounds and visual playback; they do not predict damage.
 
 See [Martial Jobs](MARTIAL_JOBS_REWORK.md) for gameplay and migration details.
+
+## Rogue extension (October 5, implemented in dev)
+
+Validated attack power supports 25?400 percent. Rogue skills add bounded `rogue_kind` and `quick_action` metadata; `rogue_utility` uses explicit Shadowstep/Backflip/Caltrops/Knife dispatch, not free-form scripts. Positional and negative-stack attack power is recomputed at resolution against the actual recipient. Main attacks terminate activations; Quick Actions retain the main action but lock normal walking. No shared Quick Action budget. Bleed/Hobble layers persist in existing battle JSON with individual source/expiry; other status systems retain their current behavior. See ROGUE_REWORK_REVIEW.md for counters, costs and AI limitations.

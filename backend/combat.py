@@ -28,6 +28,7 @@ from . import combat_martial as martial
 from .combat_feedback import record as feedback
 from .combat_melee import weapon_style, attack_style, capture_style, armor_material, impact_surface
 from . import combat_monk as monk
+from . import combat_rogue as rogue
 
 
 STATUS_DEFINITIONS = {
@@ -1091,7 +1092,12 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
     resolved=events[begin:];del events[begin:]
     style = (ability or {}).get('melee_style') or (attack_style(attacker, ability) if rule == 'melee' else None)
     surface=impact_surface(target)
-    _record_melee_animation(battle,attacker,target,hit,rule,style)
+    if (ability or {}).get('rogue_thrown'):
+        events.append({'type':'rogue_knife','attacker_id':attacker['id'],'target_id':target['id'],
+                       'from':{'x':attacker['x'],'y':attacker['y']},'to':{'x':target['x'],'y':target['y']},
+                       'hit':hit,'target_condition':target.get('condition'),'contact_ms':280})
+        style='stab'
+    else:_record_melee_animation(battle,attacker,target,hit,rule,style)
     for event in events[begin:]:event['impact_surface']=surface
     battle['attack_serial']=battle.get('attack_serial',0)+1
     packet=battle['attack_serial']
@@ -1113,7 +1119,12 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
 def _strike_preview(battle,actor,target,rule,reach,skill=None):
     direct = not skill or any(e['type']=='attack' for e in skill.get('effects',[]))
     recipient=_interceptor(battle,actor,target,reach) if direct else target
+    if skill and skill.get('rogue_kind') in {'cheap_shot','exploit_weakness'}:
+        skill=rogue.attack_skill(battle,actor,recipient,skill,skill.get('rogue_thrown',False))
     preview=_attack_preview(battle,actor,recipient,rule,skill)
+    if skill and skill.get('rogue_kind')=='cheap_shot':
+        preview.update(position_power=skill['effects'][0]['power_percent'],occupied_sides=rogue.position_power(battle,actor,recipient,skill.get('rogue_thrown',False))[1])
+    if skill and skill.get('rogue_kind')=='exploit_weakness':preview.update(debuff_stacks=rogue.counts(recipient),exploit_power=skill['effects'][0]['power_percent'])
     preview['barrier']=max((s.get('amount',0) for s in recipient.get('statuses',[]) if s['id']=='barrier'),default=0)
     if recipient is not target:preview['intercepted_by']=recipient['name']
     preview['tactics']=[{'type':e['mode'],**_displacement_preview(battle,actor,recipient,e)}
@@ -1198,6 +1209,9 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
         battle['log'].append(f"{target['name']} resists the forced movement.")
         feedback(battle,target,'resisted',**({'attack_packet':attack_packet} if attack_packet is not None else {}))
         return
+    # Settle any provisional route before changing position. Committing at the
+    # forced endpoint would charge that tile before replaying the traversed route.
+    _commit_player_movement(battle,target)
     start=(target['x'],target['y']);path=[];bystander=None;was_active=_combat_active(target)
     for point in preview['path']:
         hidden=next((u for u in battle['units'].values() if u['id']!=target['id'] and _combat_active(u) and (u['x'],u['y'])==(point['x'],point['y'])),None)
@@ -1208,7 +1222,6 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
         target.update(point);path.append((point['x'],point['y']))
         if target.get('carrying') in battle['units']:battle['units'][target['carrying']].update(point)
     if path:
-        _commit_player_movement(battle,target)
         target['exit_ready']=False
         _record_movement(battle,target,start,path)
         battle['animation_events'][-1]['forced']=True
@@ -1318,6 +1331,7 @@ def _reachable(battle: dict, unit: dict, limit: int) -> dict[tuple[int, int], in
 
 
 def _movement_tree(battle: dict, unit: dict) -> tuple[dict[tuple[int, int], int], dict[tuple[int, int], tuple[int, int] | None]]:
+    if unit.get('rogue_walk_locked'):return {(unit['x'],unit['y']):0},{(unit['x'],unit['y']):None}
     battle = _routing_snapshot(battle)
     origin = unit.get("movement_origin") or {"x": unit["x"], "y": unit["y"]}
     start = (int(origin["x"]), int(origin["y"]))
@@ -1548,12 +1562,17 @@ def _zone_cells(battle, target, effect):
 
 
 def _trigger_zones(battle, unit, event):
-    def apply_status(owner,target,sid):
+    def apply_status(owner,target,sid,stacking=False):
         if sid=='poison' and sid in target.get('racial_resistances',[]):return
         chance=conditions.status_chance(target,sid)
-        roll=random.Random(f"{battle.get('seed')}:zone:{sid}:{target['id']}:{target.get('status_activation')}").randint(1,100)
-        if roll<=chance and conditions.apply(target,sid,1,owner):
+        event_key=''
+        if stacking:
+            event_key=f":{target['x']},{target['y']}:{battle.get('proc_counter',0)}"
+            battle['proc_counter']=battle.get('proc_counter',0)+1
+        roll=random.Random(f"{battle.get('seed')}:zone:{sid}:{target['id']}:{target.get('status_activation')}{event_key}").randint(1,100)
+        if roll<=chance and (conditions.add_stack(target,sid,2,owner) if stacking else conditions.apply(target,sid,1,owner)):
             battle['log'].append(f"{target['name']} suffers {sid} from {owner['name']}'s zone.")
+            if stacking:feedback(battle,target,'status',status_id=sid)
     def damage(owner,target,amount,name):
         source={'id':owner['id'],'name':owner['name'],'attack':amount,'weapon':name,'status_tick':True,
                 'damage_kind':'burn' if name==spaces.ZONES['ember']['name'] else 'thorns'}
@@ -1604,7 +1623,7 @@ def _apply_tile_entry(battle: dict, unit: dict) -> None:
         if len(remaining) != len(statuses):
             unit["statuses"] = remaining
             battle["log"].append(f"{unit['name']} stamps out the flames in the shallow water.")
-    if unit.get("team") != "enemy":
+    if unit.get("team") != "enemy" or rogue.trap_expert(unit):
         return
     for tile in tiles:
         if tile.get("destroyed") or not tile.get("prepared_trap"):
@@ -1661,6 +1680,7 @@ def _current_unit(battle: dict, activate: bool = True) -> dict | None:
                 if unit.get('ability_version'):
                     abilities.start_activation(unit, stamp)
                     unit['entity_budget_spent']=0
+                unit.pop('rogue_walk_locked',None);unit['quick_actions_used']=0
                 martial.start_activation(battle, unit)
                 monk.start_activation(battle, unit)
                 spaces.expire_form(unit)
@@ -1960,10 +1980,14 @@ def _tick_bleed(battle: dict, unit: dict) -> None:
     status = next((s for s in unit.get('statuses', []) if s.get('id') == 'bleed'), None)
     if not status or not _combat_active(unit) or not (unit.get('moved') or unit.get('physical_action')):
         return
-    source = {'id': status.get('source_id'), 'name': status.get('source_name', 'Bleeding'),
-              'weapon': 'bleeding', 'attack': max(2, min(4, round(unit['max_hp'] * .04))), 'status_tick': True,'damage_kind':'bleed'}
-    dealt = _deal_damage(battle, source, unit, armor_pierce=int(unit.get('armor', 0)))
-    battle['log'].append(f"{unit['name']} takes {dealt} bleeding damage after exertion.")
+    groups={}
+    for layer in status.get('layers',[status]):
+        key=(layer.get('source_id'),layer.get('source_name','Bleeding'));groups[key]=groups.get(key,0)+1
+    for (owner,name),count in groups.items():
+        if not _combat_active(unit):break
+        source={'id':owner,'name':name,'weapon':'bleeding','attack':count*max(2,min(4,round(unit['max_hp']*.04))),'status_tick':True,'damage_kind':'bleed'}
+        dealt=_deal_damage(battle,source,unit,armor_pierce=int(unit.get('armor',0)))
+        battle['log'].append(f"{unit['name']} takes {dealt} bleeding damage from {count} stack(s) after exertion.")
 
 
 def _victory_outcome(battle: dict) -> str:
@@ -2564,6 +2588,7 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
     else:
         targets = _living(battle,'player') + [u for u in _living(battle,'enemy') if u.get('mercenary_hostile_all') and u['id']!=unit['id']]
     targets = conditions.hostile_units(battle, unit, _living(battle))
+    if targets and not (unit.get('bush_ambusher') and concealment.unseen(unit) and not battle.get('ambush_sprung')) and _auto_rogue_turn(battle,unit,targets):return
     if targets and _auto_monk_turn(battle,unit,targets):return
     if not targets:
         _finish_turn(battle); return
@@ -2934,6 +2959,7 @@ def _resolve_ability(battle, actor, target, skill):
         if effect['type']=='zone' and not _zone_cells(battle,target,effect):
             raise ValueError('No legal ground for this zone')
     _commit_player_movement(battle, actor)
+    if skill.get('rogue_kind') in {'cheap_shot','exploit_weakness'}:skill=rogue.attack_skill(battle,actor,_interceptor(battle,actor,target,skill['range']),skill,skill.get('rogue_thrown',False))
     if not _combat_active(actor):return {'interrupted':True}
     last_damage=None;attack_packet=None
     if skill['id']=='job:barbarian:reckless_blow':
@@ -3128,8 +3154,58 @@ def _resolve_ability(battle, actor, target, skill):
             _record_sound(battle,'magic_cast' if skill['elevation_rule']=='line_of_effect' else 'guard')
     elif not result.get('attacked') and not result.get('area_attack'):
         _record_sound(battle,'magic_cast' if skill['elevation_rule'] in {'ignore','line_of_effect'} else 'guard')
-    actor['acted']=True
+    if skill.get('rogue_kind')=='crippling_cut' and result.get('hit') and _combat_active(target):
+        chance=conditions.status_chance(target,'hobbled');count=battle.get('proc_counter',0);battle['proc_counter']=count+1
+        if random.Random(f"{battle.get('seed')}:cripple:{count}:{target['id']}").randint(1,100)<=chance and conditions.add_stack(target,'hobbled',2,actor):feedback(battle,target,'status',status_id='hobbled',attack_packet=attack_packet)
+    actor['acted']=not skill.get('quick_action',False)
+    if skill.get('quick_action'):
+        rogue.freeze_walking(actor);actor['quick_actions_used']=actor.get('quick_actions_used',0)+1
     return result
+
+
+def _auto_rogue_turn(battle,unit,targets,tactic='balanced'):
+    skills=[s for s in unit.get('skills',[]) if s.get('rogue_kind') and abilities.availability(unit,s)['available']]
+    if not skills or unit.get('capture_weapon'):return False
+    targets=[t for t in targets if _combat_active(t) and not concealment.unseen(t) and not (tactic=='objective' and t.get('capture_role')=='live_target')]
+    if not targets:return False
+    # Each utility can be used at most once. No action after the finishing attack.
+    shadow=next((s for s in skills if s.get('rogue_kind')=='shadowstep'),None)
+    if shadow and not any(_can_attack(battle,unit,t,1) for t in targets):
+        options=[(rogue.position_power(battle,{**unit,**p},t)[0],-t['hp'],t,p) for t in targets for p in rogue.landings(battle,unit,t)]
+        if options:
+            _,_,t,p=max(options,key=lambda row:row[:2]);rogue.utility_command(battle,unit,shadow,{'target_id':t['id'],**p})
+    if not _combat_active(unit):_finish_turn(battle);return True
+    cut=next((s for s in skills if s.get('rogue_kind')=='crippling_cut'),None)
+    close=[t for t in targets if _combat_active(t) and _can_attack(battle,unit,t,1)]
+    if cut and close and any(s.get('rogue_kind')=='exploit_weakness' for s in skills):
+        _resolve_ability(battle,unit,min(close,key=lambda t:t['hp']),cut)
+    if not _combat_active(unit):_finish_turn(battle);return True
+    options=[]
+    knife=next((s for s in skills if s.get('rogue_kind')=='throwing_knife'),None)
+    for skill in skills:
+        if skill.get('rogue_kind') not in {'cheap_shot','exploit_weakness'} or not abilities.availability(unit,skill)['available']:continue
+        for target in targets:
+            if not _combat_active(target):continue
+            if _can_attack(battle,unit,target,skill['range']):
+                preview=_strike_preview(battle,unit,target,skill['elevation_rule'],skill['range'],skill)
+                options.append((preview.get('damage_on_hit',0)*preview.get('chance',100),skill,target,None,None))
+            elif knife and _distance(unit,target)<=3:
+                try:
+                    adapted,_=rogue.knife_skill(battle,unit,target,skill,knife['id'])
+                    preview=_strike_preview(battle,unit,target,'ballistic',3,adapted)
+                    options.append((preview.get('damage_on_hit',0)*preview.get('chance',100),adapted,target,None,knife))
+                except ValueError:pass
+            elif not unit.get('rogue_walk_locked'):
+                reachable,parents=_movement_tree(battle,unit)
+                probe,approach=_attack_position(battle,unit,target,skill['range'],reachable,parents)
+                if probe:
+                    forecast=_strike_preview(battle,probe,target,skill['elevation_rule'],skill['range'],skill)
+                    options.append((forecast.get('damage_on_hit',0)*forecast.get('chance',100),skill,target,approach,None))
+    if not options:return False
+    _,skill,target,approach,knife=max(options,key=lambda row:row[0])
+    if approach and _apply_attack_approach(battle,unit,target,skill['range'],approach):return False
+    if knife:abilities.spend(unit,knife)
+    _resolve_ability(battle,unit,target,skill);_finish_turn(battle);return True
 
 
 def _auto_monk_turn(battle,unit,targets,tactic='balanced'):
@@ -3297,9 +3373,10 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
                     if len(caught)>=2:landings.append((len(caught),-sum(e['hp'] for e in caught),-y,-x,ground))
             if landings:
                 _resolve_ability(battle,unit,max(landings,key=lambda r:r[:4])[-1],leap);_finish_turn(battle);return
+    if not pursuing_objective and _auto_rogue_turn(battle,unit,targets,tactic):return
     if not pursuing_objective and _auto_monk_turn(battle,unit,targets,tactic):return
     available_skills=[s for s in (unit.get('skills') or ([unit['special']] if unit.get('special') else []))
-                      if abilities.availability(unit,s)['available'] and s.get('target') != 'ally' and not _leap_skill(s) and not _dash_skill(s) and not (conditions.has(unit, 'mute') and s['elevation_rule'] in {'ignore', 'line_of_effect'})]
+                      if not s.get('quick_action') and s.get('rogue_kind') not in rogue.UTILITY and abilities.availability(unit,s)['available'] and s.get('target') != 'ally' and not _leap_skill(s) and not _dash_skill(s) and not (conditions.has(unit, 'mute') and s['elevation_rule'] in {'ignore', 'line_of_effect'})]
     if conditions.has(unit, 'mute') and unit['attack_elevation_rule'] in {'ignore','line_of_effect'} and not available_skills:
         _guard(battle, unit)
         unit['acted'] = True
@@ -3807,6 +3884,7 @@ def battle_view(battle: dict) -> dict:
             if status.get("id") == "ambush_sleep":
                 status["rounds"] = max(0, int(view.get("ambush_sleep_until_round", view["round"])) - view["round"])
     view["current_unit_id"] = current["id"] if current else None
+    view['rogue_previews']=rogue.previews(view,view['units'][view['current_unit_id']]) if view.get('current_unit_id') in view['units'] and view.get('status')=='active' else {}
     view["door_controls"] = _door_controls(view, current)
     view['supply_uses_remaining'] = remaining_uses(view)
     view['supply_targets'] = [u['id'] for u in _living(view, 'player') if current
@@ -3951,6 +4029,9 @@ def battle_view(battle: dict) -> dict:
                     if choice['id'] == (skill or {}).get('id'):
                         view['attack_previews'][target['id']]['skill'] = entries[target['id']]
                 view['skill_previews'][choice['id']] = entries
+                continue
+            if choice.get('rogue_kind') in rogue.UTILITY:
+                view['skill_previews'][choice['id']]={}
                 continue
             for target in _living(view,'enemy'):
                 allowed = abilities.availability(current,choice)['available'] and not (conditions.has(current, 'mute') and choice['elevation_rule'] in {'ignore', 'line_of_effect'})
@@ -4105,6 +4186,7 @@ def _apply_preparation_command(battle: dict, command: dict) -> dict:
 
 
 def _position_player(battle, unit, destination):
+    if unit.get('rogue_walk_locked'):raise ValueError('Normal walking is locked; use a mobility Quick Action or your main action')
     if unit.get("acted"):
         raise ValueError("This unit already committed its action")
     x, y = int(destination.get("x", -1)), int(destination.get("y", -1))
@@ -4179,6 +4261,22 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             return battle_view(battle)
     if action=='navigate':return _player_navigation(battle,unit,command)
     selected_skill=next((s for s in unit.get('skills',[]) if s['id']==command.get('skill_id',(unit.get('special') or {}).get('id'))),None) if action=='skill' else None
+    if selected_skill and selected_skill.get('rogue_kind') in rogue.UTILITY:
+        rogue.utility_command(battle,unit,selected_skill,command)
+        concealment.refresh(battle);_check_end(battle);battle['action_count']+=1
+        return battle_view(battle)
+    if command.get('knife_skill_id'):
+        target=battle['units'].get(command.get('target_id'))
+        if not target:raise ValueError('Choose an enemy')
+        if action=='attack':
+            selected_skill={'id':'rogue_basic_thrown','name':'Thrown attack','type':'active','target':'enemy','source_kind':'character','ability_version':1,'range':1,'elevation_rule':'melee','cost':{'cooldown':1,'charges':None},'effects':[{'type':'attack','power_percent':100}]}
+        elif action!='skill' or not selected_skill or selected_skill.get('rogue_kind') not in {'cheap_shot','exploit_weakness'}:raise ValueError('Choose a compatible equipped Rogue main attack')
+        adapted,knife=rogue.knife_skill(battle,unit,target,selected_skill,command['knife_skill_id'])
+        if not abilities.availability(unit,adapted)['available']:raise ValueError(abilities.availability(unit,adapted)['reason'])
+        abilities.spend(unit,knife)
+        _resolve_ability(battle,unit,target,adapted)
+        _finish_turn(battle);concealment.refresh(battle);_check_end(battle);_advance_to_player(battle);battle['action_count']+=1
+        return battle_view(battle)
     if action in {'summon_move','summon_attack','operate_turret','dismiss_summon'}:
         _entity_command(battle,unit,command)
     elif selected_skill and selected_skill.get('ability_version'):
@@ -4402,7 +4500,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             unit['acted'] = True
             _record_sound(battle, 'guard')
             battle['log'].append(f"{unit['name']} ends the turn guarding against the next hit (25% less damage).")
-    if action == "end_turn" or action in {"attack", "skill", "subdue", "drop", "drop_object", "throw", "guard", "use_item", "climb_out",'summon_attack','operate_turret','dismiss_summon'}:
+    if (action == "end_turn" or action in {"attack", "skill", "subdue", "drop", "drop_object", "throw", "guard", "use_item", "climb_out",'summon_attack','operate_turret','dismiss_summon'}) and not (action=='skill' and selected_skill and selected_skill.get('quick_action')):
         _finish_turn(battle)
     concealment.refresh(battle)
     _check_end(battle)

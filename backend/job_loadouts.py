@@ -41,10 +41,15 @@ register('barbarian','Barbarian','Innate Fury: enemy damage that reaches HP gran
     passive('bloodfury','Bloodfury','At 50% HP or below after a direct enemy hit, gain 2 Fury instead of 1. Enemy damage over time still grants 1. Fully absorbed hits grant none.'))
 SKILLS['job:barbarian:reckless_blow']['fury_gain']=1
 SKILLS['job:barbarian:skullbreaker']['fury_cost']=2
-register('rogue','Rogue','Exploit weak targets and interfere with their attacks.',
-    strike('bleed','Open Wound','Melee hit applies Bleed for two target activations.',{'type':'status','status':'bleed','turns':2}),
-    strike('blind','Pocket Sand','Melee hit blinds for one target activation.',{'type':'status','status':'blind','turns':1}),
-    passive('footwork','Footwork','Gain 5 evasion. Control effects still work.',{'evasion':5}))
+def rogue_active(key,name,description,effects,quick=False,reach=1,cd=2):
+    skill=active(key,name,description,effects,range=reach,cooldown=cd)
+    skill.update(rogue_kind=key,quick_action=quick)
+    return validate(skill)
+
+register('rogue','Rogue','Exploit surrounding and debuffs with burst attacks; chain Quick Actions before the main action ends your turn.',
+    rogue_active('cheap_shot','Cheap Shot','Main action. Cardinal surround determines attack power: alone 100%; two non-opposite sides 150%; opposite sides 200%; three sides 220%; four sides 250%. Highest only. Cooldown 1.',[{'type':'attack','power_percent':100}],cd=1),
+    rogue_active('crippling_cut','Crippling Cut','Quick Action. 25% attack; a landed hit adds one Hobble stack for two target turns. Commits and locks normal walking; your main action and other Quick Actions remain. Cooldown 3.',[{'type':'attack','power_percent':25}],quick=True,cd=3),
+    rogue_active('exploit_weakness','Exploit Weakness','Main action. 100% attack plus 50 percentage points per negative status stack, capped at 400%. Buffs and cooldown markers do not count. Cooldown 2.',[{'type':'attack','power_percent':100}],cd=2))
 register('ranger','Ranger','Set up accurate shots and control approaches.',
     active('mark','Track Quarry','Mark an enemy for two activations. Your first successful hit each activation gains 10 accuracy.',[{'type':'mark','turns':2,'accuracy':10}],range=5,rule='ballistic'),
     active('snare','Snaring Ground','Create binding ground at a chosen cell and adjacent legal cells for two of your activations.',[{'type':'zone','zone':'binding','radius':1,'turns':2}],range=4,rule='ballistic',cooldown=3),
@@ -106,10 +111,6 @@ later('barbarian',
     active('groundbreaker','Groundbreaker','Spend 4 Fury. Strike enemies in all eight adjacent cells at 200% attack power and push them one cell. Walls block the wave; knockback resistance and collision damage apply. Allies are safe. Target yourself. Cooldown: 5 of your turns.',[{'type':'area_attack','radius':1,'push':1,'power_percent':200}],'ally',1,'physical_care',5),
     passive('too_angry_to_fall','Too Angry to Fall','Once per battle, lethal damage leaves you at 1 HP. Further lethal damage cannot finish you until your next turn begins. You do not automatically die afterward; another lethal hit is needed. Does not prevent capture or disappearing into a lethal pit.'))
 SKILLS['job:barbarian:groundbreaker'].update(fury_cost=4,self_only=True)
-later('rogue',
-    strike('venom','Venom Edge','Melee hit attempts Poison for two target activations. Poison immunity applies.',{'type':'status','status':'poison','turns':2,'chance':75}),
-    strike('pin','Pinning Strike','Melee hit attempts Bind for one activation. Control recovery prevents repeated locks.',{'type':'status','status':'bind','turns':1,'chance':75}),
-    passive('riposte','Close Counter','Counter a survived melee hit at half attack when in reach. One shared reaction.',reaction={'id':'riposte','name':'Close Counter'}))
 later('ranger',
     active('poison','Poisoned Dart','Attempt Poison at range 4 for two target activations. 75% before resistance; no direct damage.',[{'type':'status','status':'poison','turns':2,'chance':75}],range=4,rule='ballistic',cooldown=3),
     active('dust','Dust Shot','Attempt Blind at range 4 for one activation. 75% before resistance; no direct damage.',[{'type':'status','status':'blind','turns':1,'chance':75}],range=4,rule='ballistic',cooldown=3),
@@ -171,6 +172,13 @@ add_unlocks('monk',[(2,passive('perfect_rhythm','Perfect Rhythm','Follow-ups gai
     (12,monk_technique('breaking_combination','Breaking Combination','Requires Follow-up Ready. Two adjacent punches totaling 120% attack. Any hit prepares the finisher and opens the target guard: +25% direct attack damage from all allies until the end of your next turn. Does not amplify damage over time or collisions. Grants Combat Rhythm: each landed attack heals 3 HP for your next three turns, including individual punches and enemies crossed by Dash. Cooldown: 2 turns.',120,2,2,stage='follow_up',kind='follow_up')),
     (16,passive('flowing_footwork','Flowing Footwork','Advancing your combo grants +1 movement on your next turn and +10 evasion until that turn ends. Refreshes without stacking. Ten evasion points reduce normal melee hit chance by about 6 percentage points and ranged hit chance by 10.'))])
 
+add_unlocks('rogue',[(2,rogue_active('shadowstep','Shadowstep','Quick Action. Choose a visible enemy within three cells, then a legal cardinal adjacent landing. Confirm to teleport. Locks normal walking; no damage. Cooldown 3.',[{'type':'rogue_utility','kind':'shadowstep'}],True,3,3)),
+    (5,rogue_active('caltrops','Caltrops','Quick Action. Place a horizontal or vertical 1x3 strip within three cells. Each actual entry attempts one Bleed and one Hobble stack for two target turns, including allies and forced movement. Strip lasts two of your activations. Locks normal walking. Cooldown 4.',[{'type':'rogue_utility','kind':'caltrops'}],True,3,4)),
+    (9,rogue_active('backflip','Backflip','Quick Action. Leap one to three cells in a cardinal direction to legal ground. Walls and immobilization block it. Locks normal walking but keeps your main action. Cooldown 2.',[{'type':'rogue_utility','kind':'backflip'}],True,3,2)),
+    (12,passive('trap_expert','Trap Expert','You do not trigger tagged traps, including allied or enemy Caltrops. Fire, poison zones, pits and other terrain hazards still affect you.')),
+    (16,rogue_active('throwing_knife','Throwing Knife Technique','Deliver an equipped Cheap Shot, Exploit Weakness or basic Attack at an enemy beyond melee reach and within three cells. Uses the selected main action and both cooldowns, without extra damage. Cheap Shot uses a virtual cardinal strike side. Cancel spends nothing. Cooldown 3.',[{'type':'rogue_utility','kind':'throwing_knife'}],False,3,3))])
+ROGUE_OLD_IDS=dict(zip(('bleed','blind','footwork','venom','pin','riposte'),('cheap_shot','crippling_cut','trap_expert','exploit_weakness','shadowstep','backflip')))
+
 MONK_OLD_IDS=dict(zip(('palm','brace','riposte','bind','returning','stance'),
                      ('rapid_palm','iron_reversal','perfect_rhythm','crushing_fist','sweeping_dash','flowing_footwork')))
 
@@ -190,6 +198,15 @@ def initialize(character):
         if character.get('job_id')=='barbarian':
             for field in ('learned_skills','equipped_skills'):
                 character[field]=list(dict.fromkeys('job:barbarian:'+BARBARIAN_OLD_IDS.get(key.split(':')[-1],key.split(':')[-1]) if key.startswith('job:barbarian:') else key for key in character[field]))
+        if character.get('job_id')=='rogue' and character.get('rogue_kit_version',0)<1:
+            legacy=any(k.startswith('job:rogue:') and k.split(':')[-1] in ROGUE_OLD_IDS for k in character['learned_skills'])
+            for field in ('learned_skills','equipped_skills','combat_skill_order'):
+                if field in character:character[field]=list(dict.fromkeys('job:rogue:'+ROGUE_OLD_IDS.get(k.split(':')[-1],k.split(':')[-1]) if k.startswith('job:rogue:') else k for k in character[field]))
+            for key in JOBS['rogue']['starter_skills']:
+                if key not in character['learned_skills']:character['learned_skills'].append(key)
+            if legacy and len(character['equipped_skills'])<CAPACITY and 'job:rogue:exploit_weakness' not in character['equipped_skills']:character['equipped_skills'].append('job:rogue:exploit_weakness')
+            character['rogue_kit_version']=1
+            if legacy:character['job_migration_note']='Rogue now uses positional burst, stacking traps and Quick Actions. Prior skills were mapped to replacements; earned practice and order are preserved.'
         if character.get('job_id')=='monk' and character.get('monk_kit_version',0)<1:
             legacy=any(key.startswith('job:monk:') and key.split(':')[-1] in MONK_OLD_IDS for key in character['learned_skills'])
             for field in ('learned_skills','equipped_skills','combat_skill_order'):

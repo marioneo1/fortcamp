@@ -4,6 +4,7 @@ from . import combat_conditions as conditions
 from .combat_feedback import record as feedback
 
 ZONES = {
+    'caltrops':{'name':'Caltrops','relation':'everyone','events':['entry'],'entry_per_cell':True,'trap':True,'statuses':['bleed','hobbled'],'description':'Each tile entry attempts one Bleed and one Hobble stack for two target turns. Allies and push/pull count; Trap Expert avoids it. Overlapping strips do not multiply an entry.'},
     'ember': {'name': 'Ember Patch', 'relation': 'enemy', 'events': ['entry', 'start'],
               'status': 'burn', 'entry_damage':3, 'entry_per_cell':True,
               'description': 'Each burned tile entered along the committed path deals 3 damage and applies Burn. Re-entry counts again; overlapping patches do not stack. Burn also ticks at activation start. Allies are safe.'},
@@ -82,8 +83,11 @@ def trigger_zones(battle, unit, event, active, hostile, apply_status, damage):
             continue
         if not any((p['x'], p['y']) == (unit['x'], unit['y']) for p in zone['cells']):
             continue
+        if rule.get('trap'):
+            from .combat_rogue import trap_expert
+            if trap_expert(unit):continue
         enemy = hostile(unit, owner)
-        if enemy != (rule['relation'] == 'enemy'):
+        if rule['relation']!='everyone' and enemy != (rule['relation'] == 'enemy'):
             continue
         stamp = deepcopy(unit.get('status_activation'))
         hits = unit.setdefault('zone_hits', {})
@@ -96,6 +100,7 @@ def trigger_zones(battle, unit, event, active, hostile, apply_status, damage):
             continue
         triggered.add(zone['kind'])
         hits[zone['kind']] = stamp
+        for sid in rule.get('statuses',[]):apply_status(owner,unit,sid,True)
         if rule.get('status'):
             apply_status(owner, unit, rule['status'])
         if rule.get('damage'):

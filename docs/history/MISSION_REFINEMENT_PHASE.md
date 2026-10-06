@@ -1685,3 +1685,7 @@ of 36px, with smaller count labels; other status icons remain unchanged. Verifie
 order, buffs below every panel and 27px computed badge size. At 1440?1100 the
 fixture map viewport grew from 357px to 470px tall. Existing build warning remains;
 no gameplay, saves or production changes.
+
+## October 5, 2026 ? Rogue implementation in dev
+
+Added eight skills, three starter actives, five-slot progression/migration, multiple Quick Actions before a finishing main action, separate walk lock, positional Cheap Shot, capped stack Exploit and compatible knife delivery. Chosen Shadowstep/Backflip landings and rotated confirmed Caltrops use local previews; invalid targets/cancellation spend no costs. Layered statuses preserve source/expiry and actual walking/push/pull entry counts; fixed forced endpoint being processed before the route. Shared timeline aligns knife contact/sound/feedback/death/next actor. Imported one 4x4 atlas and generated four physical Rogue clips through existing tools. Battle Lab exposes whole pool at 16 successes. 211 focused backend and all 289 frontend tests pass; build passes with the existing bundle-size warning. Actual-UI fixture covers rules/controls; full Warcamp view measured median 8.9 ms locally. Existing battle snapshots, credentials, dev saves and production remain preserved. Final tuning and cooperative AI trap/escape planning remain pending.

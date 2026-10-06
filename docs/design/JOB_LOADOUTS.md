@@ -13,7 +13,7 @@ survive ordinary roster refreshes and stay scoped to the player/server/save.
 
 Regular characters can deliberately choose one of twelve initial toolboxes:
 Fighter, Barbarian, Rogue, Ranger, Mage, Cleric, Monk, Bard, Druid, Engineer,
-Summoner and Captor. Most start with two supported actives and one passive; Monk starts with three actives forming its complete combo. Most Jobs unlock three further skills after 2, 5 and 9 successful contracts. Expanded Fighter, Barbarian and Monk pools bring the current catalogue to 79 executable definitions across twelve Jobs. The 96-skill draft is not fully implemented. Several
+Summoner and Captor. Most start with two supported actives and one passive; Monk starts with three actives forming its complete combo; Rogue starts with Cheap Shot, Crippling Cut and Exploit Weakness. Most Jobs unlock three further skills after 2, 5 and 9 successful contracts. Expanded Fighter, Barbarian, Monk and Rogue pools bring the current catalogue to 81 executable definitions across twelve Jobs. The 96-skill draft is not fully implemented. Several
 passives overlap; deeper conditional kits and differentiation remain pending.
 
 New characters choose their Job in the creator, with matching starter gear and
@@ -145,3 +145,7 @@ a mission; it never replaces a battle snapshot or permits equipping a new skill
 mid-combat. Unknown or retired display IDs are ignored when composing the bar,
 while newly available skills append. Slotted passives appear in the bar, not the
 innate/equipment Traits panel. See COMBAT_CONTROLS.md for drag/Arrange behavior.
+
+## Rogue rework (implemented in dev)
+
+Eight choices, three starter actives, unlocks at 2/5/9/12/16 successful contracts. Slotted Trap Expert costs one of five slots. Multiple independently cooled Quick Actions precede one main attack; normal walking locks after the first Quick Action, while legal mobility techniques remain usable. Old Rogue choices/order migrate without losing practice; current saved battles retain snapshots. See ROGUE_REWORK_REVIEW.md for exact geometry, stack/cooldown rules and limitations. Battle Lab's 16-success tier exposes the whole pool.

@@ -7,6 +7,8 @@ export function basicAttackArt(unit){
 }
 export function targetingArt(unit,skill){
  if(!skill)return basicAttackArt(unit);
+ if(['shadowstep','backflip','caltrops'].includes(skill.rogue_kind))return 'pointer';
+ if(skill.rogue_kind==='throwing_knife')return 'attack';
  if(skill.target==='ally'||(skill.effects||[]).some(e=>['deploy','form'].includes(e.type)))return 'pointer';
  if((skill.effects||[]).some(e=>e.type==='displace'&&e.mode==='pull'))return 'chain_hook';
  if(skill.elevation_rule==='ballistic')return 'ranged';

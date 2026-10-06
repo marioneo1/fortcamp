@@ -48,7 +48,7 @@ class JobStarterTests(unittest.TestCase):
                 for iid in definition['kit']:
                     self.assertLessEqual(ITEMS[iid].get('power',0),1)
                     icon=ITEMS[iid].get('icon');self.assertTrue((Path('frontend/public')/icon.lstrip('/')).is_file(),icon)
-        self.assertEqual(len(jobs.SKILLS),79)
+        self.assertEqual(len(jobs.SKILLS),81)
 
     def test_matching_gear_available_without_resale_profit(self):
         state=new_game({'starting_role':'engineer'});offers={o['item']:o for o in trade_view(state,'qa',100)['camp_items']}

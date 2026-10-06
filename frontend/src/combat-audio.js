@@ -6,7 +6,10 @@ export function combatAudioSchedule(battle,events=battle?.animation_events||[]){
   let end=0;const impactSounds=new Set();
   for(const {event,start:delay,duration} of impactTimeline(events)){
     end=Math.max(end,delay+duration);
-    if(event.type==='movement'&&event.leap)playSfx('earthbreaker_launch',.4,delay);
+    if(event.type==='movement'&&event.rogue_motion)playSfx(event.teleport?'rogue_shadowstep':'rogue_backflip',.32,delay);
+    else if(event.type==='rogue_effect'&&event.effect==='caltrops')playSfx('rogue_caltrops',.3,delay);
+    else if(event.type==='rogue_knife'){playSfx('rogue_knife_throw',.12,delay);playSfx(event.hit?`melee_stab_${event.impact_surface==='flesh'?'flesh':'hit'}`:'attack_miss',event.hit?.55:.25,delay+280)}
+    else if(event.type==='movement'&&event.leap)playSfx('earthbreaker_launch',.4,delay);
     else if(event.type==='ground_impact'&&!event.effect_art){playSfx('earthbreaker_land',.65,delay);playSfx('earthbreaker_crater',.38,delay)}
     else if(event.type==='martial_effect'){
       const cue={brace:'martial_brace',second_wind:'martial_second_wind',victory_strike:'martial_victory',reckless_blow:'barbarian_reckless',skullbreaker:'barbarian_skullbreaker',death_defiance:'barbarian_defiance',unstoppable:'barbarian_unstoppable'}[event.skill];

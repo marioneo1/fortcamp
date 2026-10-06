@@ -272,3 +272,14 @@ Selected from target material, not armor points. Cutting, piercing and crushing 
 | `barbarian_groundbreaker.wav` | 0.8 s | Huge physical ground strike: immediate bass-heavy thump, stone cracking outward and gravel scattering, short dry dust decay. No magic, no high-pitched tail. |
 | `barbarian_defiance.wav` | 0.7 s | Defiant survival pulse: two deep heartbeat-like impacts beneath rough armor creak and a restrained rising warm rumble. No speech or musical tone. |
 | `barbarian_unstoppable.wav` | 0.5 s | Iron restraints snapping apart: tight chain strain, decisive low crack, short falling metal pieces. Crisp liberation accent, no ringing or sharp whistle. |
+
+## Rogue action pack
+
+> Modern painterly fantasy RPG tactile effects; soft restrained transients, no music, no voices, no metallic ringing or shrill magical chimes. Short dry close perspective, controlled volume.
+
+| File | Duration | Prompt |
+| --- | --- | --- |
+| `rogue_shadowstep.wav` | 0.7 s | A leather-clad figure vanishes into soft smoky cloth vapour and reappears. Two muted airy swishes. |
+| `rogue_backflip.wav` | 0.7 s | Quick leather-cloth backflip whoosh followed by soft boots landing on packed dirt. Light agile movement. |
+| `rogue_caltrops.wav` | 0.7 s | A handful of small steel caltrops scatter onto dirt with three quiet dry taps and tiny gritty scrapes. |
+| `rogue_knife_throw.wav` | 0.5 s | A small throwing knife flicked quickly through air. Brief restrained cloth and air swish, no impact. |

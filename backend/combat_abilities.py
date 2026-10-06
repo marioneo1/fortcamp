@@ -31,6 +31,8 @@ def validate(skill):
     if 'combo_kind' in skill and skill['combo_kind'] not in {'opener','follow_up','finisher'}:raise ValueError('Invalid combo technique')
     if 'combo_stage' in skill and skill['combo_stage'] not in {'follow_up','finisher'}:raise ValueError('Invalid combo stage')
     if skill.get('combo_kind') in {'follow_up','finisher'} and skill.get('combo_stage')!=skill['combo_kind']:raise ValueError('Combo stage must match technique')
+    if 'quick_action' in skill and not isinstance(skill['quick_action'],bool):raise ValueError('Invalid quick action')
+    if skill.get('rogue_kind') not in {None,'cheap_shot','crippling_cut','exploit_weakness','shadowstep','caltrops','backflip','throwing_knife'}:raise ValueError('Invalid Rogue technique')
     _integer(skill.get('range'), 1, 20)
     if skill.get('range_shape','diamond') not in {'diamond','square'}:raise ValueError('Unsupported range shape')
     cost = skill.get('cost', {})
@@ -59,7 +61,7 @@ def validate(skill):
                    'displace': {'mode','distance','collision_damage','stop_adjacent','collision_stun'},
                    'leap_attack': {'radius','inner_push','outer_push','power_percent','collision_stun'},
                    'area_attack': {'radius','push','power_percent'},
-                   'zone': {'zone','radius','turns'}, 'form': {'form','turns'}, 'deploy': {'entity'}, 'dash_attack': {'power_percent'}}
+                   'zone': {'zone','radius','turns'}, 'form': {'form','turns'}, 'deploy': {'entity'}, 'dash_attack': {'power_percent'}, 'rogue_utility': {'kind'}}
         if kind not in allowed or set(effect) - (allowed[kind] | {'type','conditions'}):
             raise ValueError('Unsupported ability effect')
         if kind == 'attack':
@@ -68,7 +70,8 @@ def validate(skill):
             _integer(effect.get('damage_bonus',0), -30, 30)
             _integer(effect.get('armor_pierce',0), 0, 30)
             _integer(effect.get('hits',1),1,3)
-        if kind in {'attack','leap_attack','area_attack','dash_attack'}:_integer(effect.get('power_percent',100),50 if kind=='dash_attack' else 100,300 if kind=='attack' else 250)
+        if kind in {'attack','leap_attack','area_attack','dash_attack'}:_integer(effect.get('power_percent',100),25 if kind=='attack' else 50 if kind=='dash_attack' else 100,400 if kind=='attack' else 250)
+        if kind=='rogue_utility' and (effect.get('kind') not in {'shadowstep','backflip','caltrops','throwing_knife'} or len(effects)!=1 or skill['range']>3):raise ValueError('Invalid Rogue utility')
         if kind=='dash_attack' and (skill['target']!='enemy' or len(effects)!=1 or skill['range']>3):raise ValueError('Dash attacks require short ground targeting')
         if kind in {'displace','leap_attack'} and 'collision_stun' in effect and not isinstance(effect['collision_stun'],bool):
             raise ValueError('Invalid collision stun policy')

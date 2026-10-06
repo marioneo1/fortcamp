@@ -6,7 +6,7 @@ from .combat_feedback import record as feedback
 CONTROL = {'stun', 'sleep', 'freeze', 'paralyze'}
 RECOVERY = CONTROL | {'bind'}
 
-STATUS_IDS = {'stun','sleep','freeze','paralyze','bind','poison','burn','bleed','blind','fear','slow','mute'}
+STATUS_IDS = {'stun','sleep','freeze','paralyze','bind','poison','burn','bleed','blind','fear','slow','mute','hobbled'}
 
 def innate_resistances(unit):
     # Selective authored identities, never a blanket boss debuff resistance.
@@ -41,6 +41,8 @@ def remove(unit, *ids):
     unit['statuses'] = [s for s in unit.get('statuses', []) if s.get('id') not in ids]
 
 def apply(unit, sid, turns, source=None):
+    if sid in {'bleed','hobbled'} and any(s.get('id')==sid and 'layers' in s for s in unit.get('statuses',[])):
+        return add_stack(unit,sid,turns,source or {'id':unit['id'],'name':unit.get('name','')})
     if sid in (RECOVERY if unit.get('status_version') else CONTROL) and unit.get('control_immunity', 0) > 0:
         return False
     if unit.get('status_version') and sid in RECOVERY and any(has(unit,s) for s in RECOVERY):
@@ -63,6 +65,23 @@ def apply(unit, sid, turns, source=None):
     from .combat_martial import try_unstoppable
     try_unstoppable(unit)
     return has(unit,sid)
+
+def add_stack(unit,sid,turns,source):
+    if sid not in {'bleed','hobbled'}:raise ValueError('Unsupported stacked status')
+    status=next((s for s in unit.get('statuses',[]) if s['id']==sid),None)
+    if status is None:
+        if not apply(unit,sid,turns,source):return False
+        status=next(s for s in unit['statuses'] if s['id']==sid)
+        status['layers']=[]
+    elif 'layers' not in status:
+        status['layers']=[{k:status.get(k) for k in ('turns','applied_activation','source_id','source_name')}]
+        status['layers'][0]['turns']=max(1,int(status.get('turns') or turns))
+    status['layers'].append({'turns':turns,'applied_activation':deepcopy(unit.get('status_activation')),'source_id':source['id'],'source_name':source.get('name','')})
+    status['stacks']=len(status['layers']);status['turns']=max(l['turns'] for l in status['layers'])
+    from .combat_martial import try_unstoppable
+    try_unstoppable(unit)
+    return has(unit,sid)
+
 
 def start_activation(battle, unit):
     """Called once by the engine's persistent activation stamp."""
@@ -92,6 +111,13 @@ def finish_activation(unit):
         if unit.get('status_finished_stamp')==stamp:return
         unit['status_finished_stamp']=deepcopy(stamp)
     for status in list(unit.get('statuses', [])):
+        if 'layers' in status:
+            for layer in status['layers']:
+                if layer.get('applied_activation')!=stamp:layer['turns']-=1
+            status['layers']=[l for l in status['layers'] if l['turns']>0]
+            if not status['layers']:unit['statuses'].remove(status)
+            else:status.update(stacks=len(status['layers']),turns=max(l['turns'] for l in status['layers']))
+            continue
         if status.get('id') in {'burn', 'poison', 'ambush_sleep'} or 'turns' not in status:
             continue
         if status.get('applied_activation') == unit.get('status_activation'):

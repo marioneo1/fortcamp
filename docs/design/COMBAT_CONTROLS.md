@@ -450,3 +450,7 @@ help. This recovers vertical room for the map. At narrower widths commands wrap
 below, and phone-sized views wrap skills as well. Only passive readiness badges
 on map tokens shrink from 36px to 27px (75%); tray/tooltip icons and ordinary
 buff/debuff sizes are unchanged. Unit hover/active scaling still applies normally.
+
+## Rogue targeting (October 5, implemented in dev)
+
+Quick Actions are labelled in the hotbar/tooltips. Shadowstep: choose enemy, choose highlighted adjacent landing, Confirm. Backflip: choose legal cardinal landing, Confirm. Caltrops: preview a 1x3 strip, R rotates, Confirm places; release an outside-map drag to clear placement. C cancels without cost. Invalid cells are red. Knife: choose Basic Attack/Cheap Shot/Exploit (only equipped compatible skills), choose enemy beyond melee range, Confirm. Placement controls replace text in the existing action-preview area. Forecasts explain positional power and negative-stack totals; map Bleed/Hobble badges show stack count and hover text explains independent expiry. Main attacks end the activation; chain Quick Actions first. Animation playback still blocks all confirmed combat inputs until contact/movement/collapse resolves.

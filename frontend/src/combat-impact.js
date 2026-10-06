@@ -1,6 +1,6 @@
 import {COMBAT_MOTION} from './combat-animation.js';
 // Shared contact markers for sound, visible contact, recoil and feedback.
-export function movementDuration(event){return event.preview_settle?Math.max(80,Math.min(350,event.duration||220)):event.dash?Math.max(180,(event.points?.length-1||1)*110):event.leap?420:event.forced?(event.collision?COMBAT_MOTION.collisionMove:220):Math.max(220,Math.min(850,Math.max(1,(event.points||[]).length-1)*155))}
+export function movementDuration(event){return event.teleport?420:event.preview_settle?Math.max(80,Math.min(350,event.duration||220)):event.dash?Math.max(180,(event.points?.length-1||1)*110):event.leap?420:event.forced?(event.collision?COMBAT_MOTION.collisionMove:220):Math.max(220,Math.min(850,Math.max(1,(event.points||[]).length-1)*155))}
 export function impactTimeline(events){
   // Defeat facts can precede their lethal hit's displacement in server order.
   // Resolve the body's push/rebound first, then collapse at its final cell.
@@ -21,9 +21,9 @@ export function impactTimeline(events){
       const origin=packets.get(event.impact_origin_packet);
       if(origin){const impact=origin.impact+(event.impact_offset||0);packet={start:impact-(event.type==='melee_attack'?(event.contact_ms??COMBAT_MOTION.contact):0),impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
     }
-    const attack=event.type==='monk_technique'||event.type==='melee_attack'||event.type==='net_cast'||event.attack_event||event.type==='magic_projectile'||event.type==='chain_attack'||event.type==='ground_impact';
+    const attack=event.type==='rogue_knife'||event.type==='monk_technique'||event.type==='melee_attack'||event.type==='net_cast'||event.attack_event||event.type==='magic_projectile'||event.type==='chain_attack'||event.type==='ground_impact';
     if(key!=null&&attack){
-      if(!packet){const impact=cursor+(['ground_impact','monk_technique'].includes(event.type)?0:event.type==='net_cast'?COMBAT_MOTION.netContact:event.type==='melee_attack'?(event.contact_ms??COMBAT_MOTION.contact):220);packet={start:cursor,impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
+      if(!packet){const impact=cursor+(['ground_impact','monk_technique'].includes(event.type)?0:event.type==='rogue_knife'?280:event.type==='net_cast'?COMBAT_MOTION.netContact:event.type==='melee_attack'?(event.contact_ms??COMBAT_MOTION.contact):220);packet={start:cursor,impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
       start=packet.start;
     }else if(packet){start=event.before_contact?packet.start:event.after_displacement?packet.land:packet.impact}
     const routed=groundRoutes.get(event.ground_route_id);
@@ -35,6 +35,8 @@ export function impactTimeline(events){
       cursor=Math.max(cursor,start+duration+70);
     }else if(event.type==='ground_impact'){
       duration=650;cursor=Math.max(cursor,start+duration);
+    }else if(event.type==='rogue_knife'){duration=500;cursor=Math.max(cursor,start+duration);
+    }else if(event.type==='rogue_effect'){duration=event.from?0:320;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='martial_effect'){
       duration=560;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='net_cast'){

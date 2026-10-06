@@ -68,3 +68,7 @@ Fixtures do not use live player saves. Production was not changed.
 Dedicated distinct status artwork and richer Barrier/Burn/Freeze presentation
 remain deferred. Large numbers of effects can occupy several map rows; the full
 inspection and dock strip remain available. Unknown statuses use a neutral badge.
+
+## Rogue stacks (October 5)
+
+Bleed and Hobble show their layer count rather than a misleading single duration number. Their hover details explain independent expiry, and Hobble halves normal movement only once. Rogue skill artwork supplies the badges. Each real Caltrop tile-entry application produces status feedback on the movement route; discarded path previews produce none. Main/Quick action labels and stack-powered damage forecasts live in the existing dock/inspection UI.

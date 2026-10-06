@@ -1,3 +1,6 @@
+import {roguePreviewView,mountRoguePlacement} from './rogue-ui.js';
+import {emitRogueEffect} from './rogue-effects.js';
+import './rogue-effects.css';
 import {bindSkillSwaps,swapSkillSlots} from './combat-skill-order.js';
 import {traitsMarkup} from './combat-traits.js';
 import {emitMartialEffect,martialAuraMarkup} from './martial-effects.js';
@@ -81,7 +84,7 @@ function updatePlaybackControls(){
   const root=$('#mission-detail');if(!root)return;
   const blocked=combatPlaybackBlocked();root.classList.toggle('battle-playing',blocked);
   battleCursor.mount(root.querySelector('.battlefield'));
-  root.querySelectorAll('[data-combat-mode],[data-combat-action],[data-context-toggle],[data-hotbar-skill],[data-tile-action],[data-context-action],[data-supply],[data-navigation-open],#auto-step,#auto-resolve').forEach(button=>{
+  root.querySelectorAll('[data-combat-mode],[data-combat-action],[data-context-toggle],[data-hotbar-skill],[data-tile-action],[data-context-action],[data-supply],[data-navigation-open],[data-rogue-confirm],[data-rogue-attack],[data-rogue-rotate],#auto-step,#auto-resolve').forEach(button=>{
     if(blocked&&!button.disabled){button.dataset.playbackDisabled='1';button.disabled=true}
     else if(!blocked&&button.dataset.playbackDisabled){delete button.dataset.playbackDisabled;button.disabled=false}
   });
@@ -243,6 +246,7 @@ for(const name of ['step_earth','step_stone','step_water','bow_release','arrow_h
 const unavailableSfx=new Set();
 for(const name of ['burn_tick','poison_tick','barrier_absorb','collision_hit'])sfxFiles[name]=`${name}.wav`;
 sfxFiles.collision_hit='body_collision.wav';
+for(const name of ['rogue_shadowstep','rogue_backflip','rogue_caltrops','rogue_knife_throw'])sfxFiles[name]=`${name}.wav`;
 for(const name of ['earthbreaker_launch','earthbreaker_land','earthbreaker_crater','body_into_body','body_into_wall'])sfxFiles[name]=`${name}.wav`;
 for(const style of ['slash','hack','crush','blunt','fist','stab'])for(const phase of ['swing','hit'])sfxFiles[`melee_${style}_${phase}`]=`melee_${style}_${phase}.wav`;
 for(const style of ['slash','hack','crush','blunt','fist','stab'])sfxFiles[`melee_${style}_flesh`]=`melee_${style}_flesh.wav`;
@@ -735,6 +739,7 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       if(['ground_impact','fighter_rally','chain_attack'].includes(event.type)){emitFighterEffect(field,event,battle,delay,animationEvents);return}
       if(event.type==='martial_effect'){emitMartialEffect(field,event,battle,delay);return}
       if(event.type==='monk_technique'){emitMonkTechnique(field,event,battle,delay);return}
+      if(['rogue_knife','rogue_effect'].includes(event.type)){const move=timeline.find(t=>t.event.type==='movement'&&t.event.unit_id===event.unit_id);emitRogueEffect(field,event,battle,event.from&&move&&event.type==='rogue_effect'?move.start:delay);return}
       if(event.type==='combat_feedback'){impactFeedback.emit(event,battle,delay);return}
       if(event.type==='death_burst'||event.type==='knockout'){
         if(event.type==='death_burst')combatEffects.emit(event,battle,delay+120);
@@ -784,7 +789,8 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       const offset=animatedUnits.has(unit.id)?null:offsets.get(unit.id);animatedUnits.add(unit.id);
       const baseScale=unit.id===battle.current_unit_id?1.15:1;
       let frames=[];
-      if(event.leap){const from=points[0],to=points.at(-1);frames=[{transform:`translate(${(from.x-unit.x)*cellWidth}px,${(from.y-unit.y)*cellHeight}px) scale(${baseScale})`,offset:0},{transform:`translate(${((from.x+to.x)/2-unit.x)*cellWidth}px,${((from.y+to.y)/2-unit.y)*cellHeight-cellHeight*.8}px) scale(${baseScale*1.08})`,offset:.5},{transform:`translate(${(to.x-unit.x)*cellWidth}px,${(to.y-unit.y)*cellHeight}px) scale(${baseScale*.94})`,offset:.94},{transform:`translate(${(to.x-unit.x)*cellWidth}px,${(to.y-unit.y)*cellHeight}px) scale(${baseScale})`,offset:1}]}
+      if(event.teleport){const from=points[0],to=points.at(-1),pose=p=>`translate(${(p.x-unit.x)*cellWidth}px,${(p.y-unit.y)*cellHeight}px) scale(${baseScale})`;frames=[{transform:pose(from),opacity:1,offset:0},{transform:pose(from),opacity:0,offset:.4},{transform:pose(to),opacity:0,offset:.5},{transform:pose(to),opacity:1,offset:1}]}
+      else if(event.leap){const from=points[0],to=points.at(-1);frames=[{transform:`translate(${(from.x-unit.x)*cellWidth}px,${(from.y-unit.y)*cellHeight}px) scale(${baseScale})`,offset:0},{transform:`translate(${((from.x+to.x)/2-unit.x)*cellWidth}px,${((from.y+to.y)/2-unit.y)*cellHeight-cellHeight*.8}px) scale(${baseScale*1.08})`,offset:.5},{transform:`translate(${(to.x-unit.x)*cellWidth}px,${(to.y-unit.y)*cellHeight}px) scale(${baseScale*.94})`,offset:.94},{transform:`translate(${(to.x-unit.x)*cellWidth}px,${(to.y-unit.y)*cellHeight}px) scale(${baseScale})`,offset:1}]}
       else if(event.collision)frames=collisionFrames(points,unit,event.collision.toward,cellWidth,cellHeight,baseScale);
       else frames=walkingFrames(points,unit,cellWidth,cellHeight,baseScale,event.extracted,event.forced||event.dash?'slide':'walk');
       if(offset)frames[0].transform=`translate(${offset.x}px,${offset.y}px) scale(${baseScale})`;
@@ -878,6 +884,7 @@ function warmWeaponArt(battle){
     if(unit.capture_weapon&&/\b(net|mesh)\b/i.test(unit.weapon||''))for(const phase of ['folded','opening','spread','cinched'])paths.add(`/assets/capture-net-v1/${phase}.png`);
   }
   for(const style of ['slash','hack','crush','stab'])for(const phase of ['contact','fade'])paths.add(`/assets/flesh-contact-v1/${style}_${phase}.png`);
+  if(Object.values(battle.units||{}).some(u=>u.skills?.some(s=>s.rogue_kind)))for(const name of ['knife','shadow_depart','shadow_arrive','caltrop_tile','landing_dust'])paths.add(`/assets/rogue-v1/${name}.png`);
   for(const path of paths)if(!warmedWeaponArt.has(path)){const image=new Image();warmedWeaponArt.set(path,image);image.src=path;image.decode?.().catch(()=>{});}
 }
 function renderBattle(b){
@@ -888,6 +895,7 @@ function renderBattle(b){
   const previousViewport=$('#battle-viewport');
   if(previousViewport)battlePan={left:previousViewport.scrollLeft,top:previousViewport.scrollTop};
   b=selectBattleSkill(b,selectedGearSkills.get(`${b.seed}:${b.current_unit_id}`));
+  b=roguePreviewView(b,selectedCombatAction);
   activeDecisionMission=null;activeBattleView=b;syncMusic();
   const current=b.units[b.current_unit_id];
   if(current)current.combat_skill_order=savedSkillOrder(current);
@@ -928,7 +936,7 @@ function renderBattle(b){
   const victoryPrompt=autoPause+victoryMarkup(b,{expanded:expandedVictory.has(b.seed),escape:esc})+(b.mercenary_notice&&!seenMercenaryNotices.has(b.mercenary_notice.id)?`<div class="mercenary-notice-overlay"><section role="alertdialog" aria-label="Mercenary encounter"><div class="eyebrow">ON THE BATTLEFIELD</div><h2>${esc(b.mercenary_notice.title)}</h2><p>${esc(b.mercenary_notice.text)}</p><button data-dismiss-mercenary class="primary">Continue</button></section></div>`:'');
   const usedMaterials=[...new Set((b.ground_tiles||[]).map(tile=>tile.material))].map(material=>{const info=groundMaterials[material]||{name:title(material),description:''};return `<span title="${esc(info.description||'')}"><i class="ground-swatch ground-${material}"></i>${esc(info.name)}</span>`}).join('');
   const mapLegend=`<div class="battle-map-legend"><b>Terrain</b><div>${usedMaterials}<span title="Higher terrain affects movement and physical accuracy"><i class="legend-height">▲</i>Elevation</span><span title="Guild extraction region"><i class="legend-exit">↙</i>Exit</span></div></div>`;
-  const actionHelp={move:`Position uses ${movementUsed}/${movementBudget} movement from START. Reposition within the green area before acting; movement does not refill when you click. Path numbers show the cost from START.${throwProfile?` Carrying ${throwProfile.payload_name} applies a ${current?.carried_payload_penalty||0}-point movement penalty from STR versus weight.`:''} Shallow water and rubble cost 2. Uphill movement costs 2 per level and a single step can climb at most 2 levels.`,attack:'Hover a target to preview your approach. Click a reachable target outside weapon range, then choose Move & Attack to commit. After attacking, controls return to Move. Walls and gates can also be attacked.',subdue:'Attempt a live capture with a dedicated capture weapon. Uses balanced STR, DEX and INT. Each attempt costs an action: landed attempts deal modest nonlethal damage, stopping at 1 HP. A successful capture makes the target unconscious. Misses deal no damage. Wounds and control effects help; bosses resist. Hover for the chance and approach. Returns to Move after use.',throw:throwProfile?`Throw ${throwProfile.payload_name} at an enemy. STR ${throwProfile.strength} against weight ${throwProfile.weight} gives range ${throwProfile.range} and ${throwProfile.damage} base impact before armor. The payload lands beside the target.`:'Pick up a portable object or carry an unconscious body before throwing.',skill:`${special?.description||'No combat skill is equipped.'} This commits movement and ends the activation.`,context:'Show actions available from the current tile, including objectives, portable objects, bodies, carried units, and extraction handoff.',carry:'Select an adjacent unconscious unit or corpse. The movement penalty is calculated from the carrier’s STR and the target’s weight.',drop:'Put the carried payload into the first safe adjacent tile.',extract_body:'After holding an EXIT for one activation, hand the carried body or prisoner over for free. The carrier may then leave or continue fighting.',interact:'Use an adjacent objective or pick up a portable battlefield object.',guard:'End this activation in a defensive stance. The next direct hit deals 25% less damage. Guard is consumed by that hit.',end_turn:'End this activation. If you have not used your action, automatically Guard against the next hit for 25% less damage.',leave:`Leave through ${b.extraction?.name||'the exit'}. End one activation on an EXIT tile first; Leave becomes available on that character’s next activation.`,retreat_all:'Order every guild fighter to path toward the nearest exit, hold there for one turn, and then leave automatically. Before securing the required objective this concedes the mission; afterward it preserves the victory.'};
+  const actionHelp={move:`Position uses ${movementUsed}/${movementBudget} movement from START. Reposition within the green area before acting; movement does not refill when you click. Path numbers show the cost from START.${throwProfile?` Carrying ${throwProfile.payload_name} applies a ${current?.carried_payload_penalty||0}-point movement penalty from STR versus weight.`:''} Shallow water and rubble cost 2. Uphill movement costs 2 per level and a single step can climb at most 2 levels.`,attack:'Hover a target to preview your approach. Click a reachable target outside weapon range, then choose Move & Attack to commit. After attacking, controls return to Move. Walls and gates can also be attacked.',subdue:'Attempt a live capture with a dedicated capture weapon. Uses balanced STR, DEX and INT. Each attempt costs an action: landed attempts deal modest nonlethal damage, stopping at 1 HP. A successful capture makes the target unconscious. Misses deal no damage. Wounds and control effects help; bosses resist. Hover for the chance and approach. Returns to Move after use.',throw:throwProfile?`Throw ${throwProfile.payload_name} at an enemy. STR ${throwProfile.strength} against weight ${throwProfile.weight} gives range ${throwProfile.range} and ${throwProfile.damage} base impact before armor. The payload lands beside the target.`:'Pick up a portable object or carry an unconscious body before throwing.',skill:`${special?.description||'No combat skill is equipped.'} ${special?.quick_action?'Quick Action: commits movement and locks normal walking; your main action remains.':'This commits movement and ends the activation.'}`,context:'Show actions available from the current tile, including objectives, portable objects, bodies, carried units, and extraction handoff.',carry:'Select an adjacent unconscious unit or corpse. The movement penalty is calculated from the carrier’s STR and the target’s weight.',drop:'Put the carried payload into the first safe adjacent tile.',extract_body:'After holding an EXIT for one activation, hand the carried body or prisoner over for free. The carrier may then leave or continue fighting.',interact:'Use an adjacent objective or pick up a portable battlefield object.',guard:'End this activation in a defensive stance. The next direct hit deals 25% less damage. Guard is consumed by that hit.',end_turn:'End this activation. If you have not used your action, automatically Guard against the next hit for 25% less damage.',leave:`Leave through ${b.extraction?.name||'the exit'}. End one activation on an EXIT tile first; Leave becomes available on that character’s next activation.`,retreat_all:'Order every guild fighter to path toward the nearest exit, hold there for one turn, and then leave automatically. Before securing the required objective this concedes the mission; afterward it preserves the victory.'};
   if(current?.gear_rules?.guard_heal)actionHelp.guard+=` Equipped gear also restores up to ${current.gear_rules.guard_heal} HP.`;
   if(current?.capture_weapon)actionHelp.attack=actionHelp.subdue;
   if(current?.gear_rules?.water_walk||current?.gear_rules?.rubble_walk)actionHelp.move+=` Equipped gear lowers ${[current.gear_rules.water_walk?'shallow water':null,current.gear_rules.rubble_walk?'rubble':null].filter(Boolean).join(' and ')} terrain cost to 1. Climbing still costs extra.`;
@@ -957,6 +965,7 @@ function renderBattle(b){
     dialog.onclick=event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close()}};
   });
   bindDoorControls($('.battlefield'),b,command=>sendCombat(command));
+  mountRoguePlacement({view:b,mode:selectedCombatAction,field:$('.battlefield'),host:$('.battle-action-preview'),send:sendCombat,cancel:()=>{selectedCombatAction='move';renderBattle(b)},escape:esc,blocked:()=>combatRequestPending||combatPlaybackBlocked()});
   bindLabToolbar();
   combatEffects.mount($('.battlefield'));
   $$('[data-battle-zoom]').forEach(button=>button.onclick=()=>{changeBattleZoom(b,button.dataset.battleZoom);renderBattle(b)});

@@ -103,3 +103,7 @@ Remaining: subjective visual review and a later balancing pass. Enemy/stat tunin
 ## Per-tester weapons (October 5)
 
 Open Battle Lab, choose **Temporary Job testers**, then choose **Weapon** on each tester. Starter equipment is the default; Unarmed / fists removes the weapon; all catalogue weapons use their real stats, granted abilities and capture restrictions. A Fighter can test a net; equipping it makes the basic action Subdue. Selection travels with the restart request and survives reopening the tester panel. Changing Job resets to that Job's starter weapon. Copies of the roster keep their original equipment; this override currently applies to temporary Job testers only. No saved roster/inventory writes.
+
+## Rogue test kit (October 5, implemented in dev)
+
+Select Rogue under the existing Job testers. At 16 successful contracts all eight choices are available; equip up to five. Add other testers to check opposite-side Cheap Shot and Fighter push/pull through Caltrops. Start a fresh session for reworked definitions. Mixed trap/knife/Shadowstep targeting uses the same confirmed controls as real combat. Tests and local previews do not change player saves; production debugging remains unchanged.
