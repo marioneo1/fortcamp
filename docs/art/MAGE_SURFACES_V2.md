@@ -1,5 +1,8 @@
 # Frozen portraits and top-down Scorched ground — October 6, 2026
 
+Current Scorched fire presentation is [V3](SCORCHED_V3.md): sixteen frames and one large fire per cell, replacing the mini-fire arrangement below. V2 soot/ash and Frozen remain current. The following records the earlier art pass.
+
+
 Implemented in dev. Two dedicated transparent 4×4 sheets replace the initial decorative ice cage and repeated lava/explosion ground stamps. The original surface-art pass preserved gameplay. The subsequent friendly-fire pass makes Fireball, Meteor, Flash Freeze and Singularity affect allies/caster and makes Scorched ground burn everyone; see the Mage design reference. Built-in image generation was used; no API key or new VFX dependency.
 
 ## Frozen portrait

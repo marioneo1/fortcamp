@@ -30,7 +30,7 @@ class CombatSpacesTests(unittest.TestCase):
         self.assertLess(a['hp'],100)
         self.assertEqual(a['hp'],separate['units'][a['id']]['hp'])
         crossings=[e for e in b['animation_events'] if e.get('type')=='combat_feedback' and e.get('kind')=='burn']
-        self.assertEqual(len(crossings),2)
+        self.assertEqual(len(crossings),3)  # Two entries, then the normal turn-end Burn tick.
 
     def test_validation_snapshots_and_no_speculative_effects(self):
         skill=self.skill({'type':'zone','zone':'ember','radius':1,'turns':2})
@@ -71,7 +71,7 @@ class CombatSpacesTests(unittest.TestCase):
             combat.apply_player_command(b,{'action':'skill','skill_id':s['id'],'target_id':t['id']})
         self.assertEqual(t['hp'],100);self.assertTrue(a['acted']);self.assertEqual(len(b['zones']),1)
         b.update(turn_index=1);combat._current_unit(b)
-        self.assertLess(t['hp'],100)
+        self.assertEqual(t['hp'],100)  # Standing on newly created fire does not synthesize an entry.
         hp=t['hp'];combat._current_unit(b);self.assertEqual(t['hp'],hp)
 
     def test_overlap_does_not_multiply_and_owner_defeat_suspends(self):

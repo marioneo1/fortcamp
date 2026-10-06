@@ -58,7 +58,7 @@ class AbilityFoundationTests(unittest.TestCase):
         _current_unit(b);hp=a['hp'];activation=a['ability_activation']
         for _ in range(5):_current_unit(b)
         self.assertEqual(a['hp'],hp);self.assertEqual(a['ability_activation'],activation)
-        self.assertLess(hp,100)
+        self.assertEqual(hp,100)  # Poison now waits for target turn end.
 
     def test_failed_range_mute_and_unknown_skill_do_not_spend(self):
         for case in ('range','mute','unknown'):

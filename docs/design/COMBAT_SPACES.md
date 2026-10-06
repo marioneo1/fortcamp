@@ -1,6 +1,6 @@
 # Combat zones and forms
 
-October 6 update: [Mage rework](MAGE_REWORK_REVIEW.md) implements radius-two/three elemental areas, visible armed Freeze/Meteor warnings and painted Scorched ground. Scorched reuses committed-path entry/start triggers: three damage per actual entered tile, repeated entry/forced movement included, dangerous to everyone including allies/caster; overlapping fire-ground zones do not multiply damage. Entry refreshes a bounded separate ground Burn layer rather than generating unlimited stacks by walking. Spell Burn layers remain independent. The foundation description below is historical; regular Jobs and starter selection are now playable.
+October 6 update: [Mage rework](MAGE_REWORK_REVIEW.md) implements elemental areas and delayed warnings. [Combat DoTs](COMBAT_DOTS.md) defines current percentage pools: fire entry adds Burn and triggers its current total, without decay; overlap does not multiply entry. Scorched affects everyone. [Scorched V3](../art/SCORCHED_V3.md) renders one fire per cell after spell contact. The foundation description below is historical.
 
 Implemented engine foundation in dev, October 4, 2026. This is dependency work,
 not the release of Druid/Mage/Cleric Jobs. No existing item drops or starter kits
@@ -26,7 +26,7 @@ Supported fixed rules:
 
 | Zone | Affected side | Trigger | Result |
 |---|---|---|---|
-| Ember Patch | Hostile to owner | Committed entry or activation start | One-turn Burn; each burned tile entered on the committed route deals 3 damage |
+| Ember Patch | Hostile to owner | Committed entry | Add one Burn stack and immediately trigger current Burn damage without decay |
 | Binding Circle | Hostile to owner | Committed entry | One-turn Bind attempt; resistance/recovery apply |
 | Thornbed | Hostile to owner | Committed entry | 3 damage per thorn tile entered, through the existing damage/Barrier/defeat path |
 | Consecrated Ground | Friendly to owner | Activation start | Up to 3 HP restored; Burn prevents healing |

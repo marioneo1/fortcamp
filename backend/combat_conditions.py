@@ -2,6 +2,7 @@
 import random
 from copy import deepcopy
 from .combat_feedback import record as feedback
+from . import combat_dots as dots
 
 CONTROL = {'stun', 'sleep', 'freeze', 'paralyze'}
 RECOVERY = CONTROL | {'bind'}
@@ -23,6 +24,7 @@ def resistance(unit,sid):
     return max(racial,max(0,min(100,int(innate_resistances(unit).get(sid,0)))))
 
 def status_chance(unit,sid,base=100):
+    if sid=='burn':return round(base)  # Burn resistance reduces damage, never application.
     chance=base*(100-resistance(unit,sid))/100
     if sid in unit.get('racial_weaknesses',[]) and resistance(unit,sid)<100:chance=min(95,chance+15)
     return round(chance)
@@ -46,7 +48,8 @@ def remove(unit, *ids):
             apply(unit,'wet',s.get('wet_turns',2),{'id':s.get('source_id'),'name':s.get('source_name')})
 
 def apply(unit, sid, turns, source=None):
-    if sid in {'bleed','hobbled','poison','burn'} and any(s.get('id')==sid and 'layers' in s for s in unit.get('statuses',[])):
+    if sid in dots.PERCENT:return add_stack(unit,sid,turns,source or {'id':unit['id'],'name':unit.get('name','')})
+    if sid in {'hobbled'} and any(s.get('id')==sid and 'layers' in s for s in unit.get('statuses',[])):
         return add_stack(unit,sid,turns,source or {'id':unit['id'],'name':unit.get('name','')})
     if sid in (RECOVERY if unit.get('status_version') else CONTROL) and unit.get('control_immunity', 0) > 0:
         return False
@@ -74,6 +77,16 @@ def apply(unit, sid, turns, source=None):
 def add_stack(unit,sid,turns,source):
     if sid not in {'bleed','hobbled','poison','burn'}:raise ValueError('Unsupported stacked status')
     status=next((s for s in unit.get('statuses',[]) if s['id']==sid),None)
+    if sid in dots.PERCENT:
+        if status is None:
+            status={'id':sid,'layers':[],'source_id':source.get('id'),'source_name':source.get('name','')}
+            unit.setdefault('statuses',[]).append(status)
+        else:dots.normalize(status)
+        status['layers'].append({'source_id':source.get('id'),'source_name':source.get('name',''),'applied_activation':deepcopy(unit.get('status_activation'))})
+        dots.normalize(status)
+        from .combat_martial import try_unstoppable
+        try_unstoppable(unit)
+        return has(unit,sid)
     if status is None:
         if not apply(unit,sid,turns,source):return False
         status=next(s for s in unit['statuses'] if s['id']==sid)
@@ -81,7 +94,6 @@ def add_stack(unit,sid,turns,source):
     elif 'layers' not in status:
         status['layers']=[{k:status.get(k) for k in ('turns','applied_activation','source_id','source_name')}]
         status['layers'][0]['turns']=max(1,int(status.get('turns') or turns))
-        if sid in {'poison','burn'}:status['layers'][0]['tick_damage']=status.get('tick_damage',max(2,min(5,round(unit['max_hp']*.04))))
     status['layers'].append({'turns':turns,'applied_activation':deepcopy(unit.get('status_activation')),'source_id':source['id'],'source_name':source.get('name','')})
     status['stacks']=len(status['layers']);status['turns']=max(l['turns'] for l in status['layers'])
     from .combat_martial import try_unstoppable
@@ -117,7 +129,12 @@ def finish_activation(unit):
         if unit.get('status_finished_stamp')==stamp:return
         unit['status_finished_stamp']=deepcopy(stamp)
     for status in list(unit.get('statuses', [])):
-        if status.get('id') in {'poison','burn'}:continue  # Its layers expire at activation start, after their tick.
+        if status.get('id') in dots.PERCENT:
+            dots.normalize(status)
+            if status['layers']:status['layers'].pop(0)
+            if not status['layers']:remove(unit,status['id'])
+            else:dots.normalize(status)
+            continue
         if 'layers' in status:
             for layer in status['layers']:
                 if layer.get('applied_activation')!=stamp:layer['turns']-=1

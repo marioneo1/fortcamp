@@ -1,5 +1,6 @@
 """Deterministic tactical combat engine for Fortcamp's first battle encounter."""
 from __future__ import annotations
+from . import combat_dots as dots
 
 import random
 from .relationships import ensure_character, independence_check, independent_chance, personality_profile
@@ -60,13 +61,13 @@ STATUS_DEFINITIONS = {
     "stun": {"name": "Stun", "icon": "✦", "description": "Cannot act during the next activation."},
     "sleep": {"name": "Sleep", "icon": "Zz", "description": "Cannot act. Taking direct damage wakes the unit."},
     "ambush_sleep": {"name": "Sleeping camp", "icon": "Zz", "description": "Cannot move or act for the opening three rounds. Attacking any enemy wakes the whole camp, even if the attack misses."},
-    "poison": {"name": "Poison", "icon": "☠", "description": "Takes damage at activation start; armor does not reduce it."},
-    "bleed": {"name": "Bleed", "icon": "◆", "description": "Takes physical damage after moving or using a physical action."},
+    "poison": {"name": "Poison", "icon": "☠", "description": "At turn end, takes 10% max HP per Poison stack, then loses one stack. Armor does not reduce it."},
+    "bleed": {"name": "Bleed", "icon": "◆", "description": "At turn end, takes 5% max HP per Bleed stack, then loses one stack. Moving and Caltrops placement do not trigger damage."},
     "charm": {"name": "Charm", "icon": "♥", "description": "Treats the charmer's faction as friendly and former allies as hostile."},
     "confuse": {"name": "Confuse", "icon": "?", "description": "Offensive actions may redirect to another valid nearby target."},
     "berserk": {"name": "Berserk", "icon": "‼", "description": "Must attack if possible and treats every nearby unit as hostile."},
     "freeze": {"name": "Freeze", "icon": "❄", "description": "Mage ice prevents actions. Direct HP damage breaks elemental ice after the full hit, grants Wet and starts control recovery. Older weapon Freeze only prevents movement and increases direct damage by 25%."},
-    "burn": {"name": "Burn", "icon": "♨", "description": "Takes damage at activation start. Suppresses status Regeneration."},
+    "burn": {"name": "Burn", "icon": "♨", "description": "At turn end, takes 2% max HP (minimum 1) per Burn stack, then loses one stack. Flame entry adds a stack and triggers current Burn without consuming it. Burn resistance reduces damage after modifiers. Suppresses Regeneration."},
     "blind": {"name": "Blind", "icon": "◉", "description": "Attack accuracy loses 35 percentage points for ranged/magic attacks and 15 for melee."},
     "bind": {"name": "Bind", "icon": "⌁", "description": "Cannot move until the bind is broken, removed, or expires."},
     "slow": {"name": "Slow", "icon": "◷", "description": "Reduces movement by 2, with a minimum of 1."},
@@ -1478,9 +1479,16 @@ def _dash_ground_damage(battle,actor,path):
             if {'x':x,'y':y} not in zone['cells']:continue
             kinds.add(trigger_key)
             amount=rule.get('entry_damage',0)+rule.get('damage',0)
-            if not amount:continue
-            source={'attack':amount,'status_tick':True,'weapon':rule['name']}
-            raw=_damage_before_barrier({'animation_events':[]},source,probe,armor_pierce=probe.get('armor',0))
+            if zone['kind'] in {'ember','scorched'}:
+                for _ in range(2 if zone.get('burn_debuffer') else 1):conditions.add_stack(probe,'burn',1,owner)
+                status=next((s for s in probe['statuses'] if s['id']=='burn'),None)
+                if not status:continue
+                amount=dots.base_damage(probe,'burn',dots.count(status))
+                source={'id':status['layers'][0].get('source_id'),'attack':amount,'status_tick':True,'percent_dot':'burn','damage_kind':'burn','weapon':rule['name']}
+            else:
+                if not amount:continue
+                source={'attack':amount,'status_tick':True,'weapon':rule['name']}
+            raw=_damage_before_barrier({'units':battle['units'],'animation_events':[]},source,probe,armor_pierce=probe.get('armor',0))
             damage,_=conditions.absorb(probe,raw);total+=damage
     return total
 
@@ -1598,6 +1606,7 @@ def _trigger_zones(battle, unit, event, only_zone=None):
         if roll<=chance and (conditions.add_stack(target,sid,2,owner) if stacking else conditions.apply(target,sid,1,owner)):
             battle['log'].append(f"{target['name']} suffers {sid} from {owner['name']}'s zone.")
             if stacking:feedback(battle,target,'status',status_id=sid)
+            if sid=='burn':_tick_dot_status(battle,target,'burn')
     def damage(owner,target,amount,name):
         source={'id':owner['id'],'name':owner['name'],'attack':amount,'weapon':name,'status_tick':True,
                 'damage_kind':'burn' if name in {spaces.ZONES['ember']['name'],spaces.ZONES['scorched']['name']} else 'thorns'}
@@ -1720,9 +1729,6 @@ def _current_unit(battle: dict, activate: bool = True) -> dict | None:
                     facts=unit.setdefault("combat_record",{})
                     facts["combat_turns"]=facts.get("combat_turns",0)+1
                     unit["turn_damage"]=0
-                if any(s.get("id") in {"burn", "poison"} and "turns" in s for s in unit.get("statuses", [])):
-                    _tick_gear_statuses(battle, unit)
-                    _check_end(battle)
                 if _combat_active(unit):mage.settle(battle,unit,'start')
                 if _combat_active(unit):_start_entities(battle,unit)
                 if battle["status"] != "active" or battle.get("decision_pending"):
@@ -1777,7 +1783,7 @@ def _damage_before_barrier(battle,attacker,target,bonus=0,armor_pierce=0,intent=
     if conditions.has(target, 'vulnerable') and not attacker.get('status_tick'):
         armor = max(0, armor - 3)
         conditions.remove(target, 'vulnerable')
-    damage = max(1, (int(attacker["attack"]) if attacker.get("status_tick") else martial.attack_power(attacker)) + bonus - armor)
+    damage = max(1, (attacker["attack"] if attacker.get("percent_dot") else int(attacker["attack"]) if attacker.get("status_tick") else martial.attack_power(attacker)) + bonus - armor)
     if conditions.has(attacker, 'berserk') and not attacker.get('status_tick'):
         damage += 3
     if conditions.has(target, 'freeze') and not any(s.get('elemental_freeze') for s in target.get('statuses',[]) if s['id']=='freeze') and not attacker.get('status_tick'):
@@ -1817,7 +1823,9 @@ def _damage_before_barrier(battle,attacker,target,bonus=0,armor_pierce=0,intent=
     if attacker.get('mage_spell') and mage.specialized(attacker):damage=max(1,round(damage*.5))
     owner=battle.get('units',{}).get(attacker.get('id'),attacker)
     if conditions.has(owner,'blister'):damage=max(1,round(damage*.9))
-    return monk.incoming(target,attacker,martial.incoming_damage(target,damage))
+    damage=monk.incoming(target,attacker,martial.incoming_damage(target,damage))
+    if attacker.get('percent_dot')=='burn':damage=damage*(100-conditions.resistance(target,'burn'))/100
+    return max(0,round(damage))
 
 
 def _deal_damage(
@@ -1995,50 +2003,28 @@ def _capture_preview(battle: dict, actor: dict, target: dict) -> dict:
     return result
 
 
-def _tick_gear_statuses(battle: dict, unit: dict) -> None:
-    """Only duration-bearing gear effects tick; repeated views never tick again."""
-    for status in list(unit.get("statuses", [])):
-        if status.get("id") not in {"burn", "poison"} or "turns" not in status:
-            continue
-        if status['id'] in {'poison','burn'} and 'layers' in status:
-            groups={}
-            for layer in status['layers']:
-                key=(layer.get('source_id'),layer.get('source_name','Poison'))
-                groups[key]=groups.get(key,0)+layer.get('tick_damage',max(2,min(5,round(unit['max_hp']*.04))))
-            for (owner,name),amount in groups.items():
-                if not _combat_active(unit):break
-                dealt=_deal_damage(battle,{'id':owner,'name':name,'weapon':status['id'],'attack':amount,'status_tick':True,'damage_kind':status['id']},unit,armor_pierce=_effective_armor(unit))
-                battle['log'].append(f"{unit['name']} takes {dealt} damage from {status['id'].title()}.")
-            for layer in status['layers']:layer['turns']-=1
-            status['layers']=[l for l in status['layers'] if l['turns']>0]
-            if status['layers']:status.update(stacks=len(status['layers']),turns=max(l['turns'] for l in status['layers']))
-            else:unit['statuses'].remove(status)
-            continue
-        damage = max(2, min(5, round(unit["max_hp"] * .04)))
-        source = {"id": status.get("source_id"), "name": status.get("source_name") or status["id"].title(),
-                  "weapon": status.get("source_weapon", ""), "attack": damage, "status_tick": True,"damage_kind":status['id']}
-        dealt = _deal_damage(battle, source, unit, armor_pierce=int(unit.get("armor", 0)))
-        battle["log"].append(f"{unit['name']} takes {dealt} damage from {status['id']}.")
-        status["turns"] -= 1
-        if status["turns"] <= 0:
-            unit["statuses"] = [s for s in unit["statuses"] if s is not status]
-        if not _combat_active(unit):
-            _record_sound(battle, "unit_death")
-            break
+def _tick_dot_status(battle,unit,sid):
+    status=next((s for s in unit.get('statuses',[]) if s['id']==sid),None)
+    if not status or not _combat_active(unit):return 0
+    dots.normalize(status);count=dots.count(status)
+    owner=status['layers'][0] if status['layers'] else status
+    source={'id':owner.get('source_id'),'name':owner.get('source_name') or sid.title(),
+            'weapon':sid,'attack':dots.base_damage(unit,sid,count),'status_tick':True,'percent_dot':sid,'damage_kind':sid}
+    dealt=_deal_damage(battle,source,unit,armor_pierce=_effective_armor(unit))
+    battle['log'].append(f"{unit['name']} takes {dealt} {sid} damage from {count} stack(s).")
+    return dealt
 
 
-def _tick_bleed(battle: dict, unit: dict) -> None:
-    status = next((s for s in unit.get('statuses', []) if s.get('id') == 'bleed'), None)
-    if not status or not _combat_active(unit) or not (unit.get('moved') or unit.get('physical_action')):
-        return
-    groups={}
-    for layer in status.get('layers',[status]):
-        key=(layer.get('source_id'),layer.get('source_name','Bleeding'));groups[key]=groups.get(key,0)+1
-    for (owner,name),count in groups.items():
-        if not _combat_active(unit):break
-        source={'id':owner,'name':name,'weapon':'bleeding','attack':count*max(2,min(4,round(unit['max_hp']*.04))),'status_tick':True,'damage_kind':'bleed'}
-        dealt=_deal_damage(battle,source,unit,armor_pierce=int(unit.get('armor',0)))
-        battle['log'].append(f"{unit['name']} takes {dealt} bleeding damage from {count} stack(s) after exertion.")
+def _tick_gear_statuses(battle,unit):
+    """Turn-end DoT damage, once per activation; decay belongs to finish_activation."""
+    stamp=unit.get('status_activation')
+    if stamp is not None and unit.get('dot_finished_stamp')==stamp:return
+    if stamp is not None:unit['dot_finished_stamp']=deepcopy(stamp)
+    for sid in dots.PERCENT:_tick_dot_status(battle,unit,sid)
+
+
+def _tick_bleed(battle,unit):
+    return _tick_dot_status(battle,unit,'bleed')
 
 
 def _victory_outcome(battle: dict) -> str:
@@ -2264,7 +2250,7 @@ def _finish_turn(battle: dict) -> None:
     index = int(battle.get("turn_index", 0))
     unit = battle["units"].get(order[index]) if index < len(order) else None
     if unit:
-        _tick_bleed(battle, unit)
+        _tick_gear_statuses(battle, unit)
         _finish_entities(battle,unit)
         conditions.finish_activation(unit)
         monk.cleanup(battle,unit)
@@ -2854,7 +2840,6 @@ def _start_entities(battle,owner):
         conditions.start_activation(battle,unit)
         unit['zone_location']=[unit['x'],unit['y']]
         _trigger_zones(battle,unit,'start')
-        if _combat_active(unit):_tick_gear_statuses(battle,unit)
     entities.start_owner(battle,owner,start)
     entities.cleanup(battle,_combat_active)
 
@@ -2882,7 +2867,8 @@ def _finish_entities(battle,owner):
     if owner.get('entities_finished_stamp')==stamp:return
     owner['entities_finished_stamp']=deepcopy(stamp)
     if not _combat_active(owner) or owner.get('forced_skip'):
-        for unit in crew:conditions.finish_activation(unit)
+        for unit in crew:
+            _tick_gear_statuses(battle,unit);conditions.finish_activation(unit)
         return
     ready=[u for u in crew if u['deployed_at']<owner.get('ability_activation',0)
            and u['policy']=='automatic' and not u.get('forced_skip') and not u.get('panicked')
@@ -2913,6 +2899,7 @@ def _finish_entities(battle,owner):
         else:_entity_attack(battle,owner,unit,target,share)
     for unit in crew:
         if unit.get('movement_origin'):_commit_player_movement(battle,unit)
+        _tick_gear_statuses(battle,unit)
         conditions.finish_activation(unit)
 
 
@@ -3947,6 +3934,7 @@ def battle_view(battle: dict) -> dict:
             unit['statuses'].append({'id':'reaction','ready':bool(tactics.reaction_available(unit)),
                 'reactions':[r['name'] for r in unit['reactions']]})
         for status in unit.get("statuses", []):
+            if status.get("id") in dots.PERCENT:dots.normalize(status)
             if status.get("id") == "ambush_sleep":
                 status["rounds"] = max(0, int(view.get("ambush_sleep_until_round", view["round"])) - view["round"])
     view["current_unit_id"] = current["id"] if current else None

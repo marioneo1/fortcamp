@@ -106,7 +106,7 @@ class MageTests(unittest.TestCase):
   b,a,t=self.fixture(['enchant_weapon']);self.use(b,'enchant_weapon',a,element='fire');a['attack_elevation_rule']='melee'
   with patch('backend.combat_mage.roll',return_value=1):
    for _ in range(3):combat._deal_damage(b,deepcopy(a),t)
-  s=next(s for s in t['statuses'] if s['id']=='burn');self.assertEqual(len(s['layers']),3);hp=t['hp'];combat._tick_gear_statuses(b,t);self.assertEqual(t['hp'],hp-6);self.assertEqual(s['turns'],1)
+  s=next(s for s in t['statuses'] if s['id']=='burn');self.assertEqual(len(s['layers']),3);hp=t['hp'];combat._tick_gear_statuses(b,t);self.assertEqual(t['hp'],hp-30);conditions.finish_activation(t);self.assertEqual(s['stacks'],2)
  def test_frost_enchant_next_hit_breaks_and_recovery_blocks_relock(self):
   b,a,t=self.fixture(['enchant_weapon']);self.use(b,'enchant_weapon',a,element='frost');a['attack_elevation_rule']='melee'
   with patch('backend.combat_mage.roll',return_value=1):
@@ -128,8 +128,8 @@ class MageTests(unittest.TestCase):
   combat._deal_damage(b,{'id':a['id'],'name':a['name'],'attack':10,'status_tick':True},t);self.assertEqual(t['hp'],473)
  def test_scorched_reentries_and_caster_damage(self):
   b,a,t=self.fixture();mage.scorch(b,a,t,2);t['zone_location']=[0,0];hp=t['hp']
-  combat._apply_zone_route(b,t,[(3,2),(4,2),(3,2)]);self.assertEqual(t['hp'],hp-9)
-  a['zone_location']=[0,0];hp=a['hp'];combat._apply_zone_route(b,a,[(3,2)]);self.assertEqual(a['hp'],hp-3);self.assertTrue(conditions.has(a,'burn'))
+  combat._apply_zone_route(b,t,[(3,2),(4,2),(3,2)]);self.assertEqual(t['hp'],hp-60)
+  a['zone_location']=[0,0];hp=a['hp'];combat._apply_zone_route(b,a,[(3,2)]);self.assertEqual(a['hp'],hp-2);self.assertTrue(conditions.has(a,'burn'))
  def test_ai_spell_and_no_friendly_typhoon(self):
   b,a,t=self.fixture(['fireball']);a['skills']=a['skills'][:1];t.update(x=6,y=2)
   with self.hit():self.assertTrue(mage.auto(b,a,[t]))
@@ -149,10 +149,10 @@ class MageTests(unittest.TestCase):
   before=next(s for s in t['statuses'] if s['id']=='burn')['stacks']
   with self.hit(),patch('backend.combat_mage.roll',return_value=1):mage.damage(b,a,t,'chain_lightning',150,1)
   self.assertEqual(next(s for s in t['statuses'] if s['id']=='burn')['stacks'],before)
- def test_scorched_layers_refresh_instead_of_multiplying_per_entry(self):
+ def test_debuffer_scorched_adds_two_stacks_each_entry(self):
   b,a,t=self.fixture(debuffer=True);mage.scorch(b,a,t,2);t['zone_location']=[0,0]
   with patch('backend.combat_mage.roll',return_value=1):combat._apply_zone_route(b,t,[(3,2),(4,2),(3,2)])
-  self.assertEqual(next(s for s in t['statuses'] if s['id']=='burn')['stacks'],2)
+  self.assertEqual(next(s for s in t['statuses'] if s['id']=='burn')['stacks'],6)
  def test_freeze_cleansing_returns_wet(self):
   b,a,t=self.fixture()
   with patch('backend.combat_mage.roll',return_value=1):mage.freeze(b,a,t)
@@ -226,8 +226,8 @@ class MageFriendlyFireTests(unittest.TestCase):
  def test_dash_forecast_includes_own_fire_and_deduplicates_overlaps(self):
   b,a,t=self.fixture();mage.scorch(b,a,{'x':3,'y':2},2)
   ally=self.add(b,t,'friend',7,7,'player');mage.scorch(b,ally,{'x':3,'y':2},2)
-  before=deepcopy(b);self.assertEqual(combat._dash_ground_damage(b,a,[(3,2),(4,2),(3,2)]),9);self.assertEqual(b,before)
-  self.assertEqual(combat._dash_ground_damage(b,t,[(3,2),(4,2),(3,2)]),9)
+  before=deepcopy(b);self.assertEqual(combat._dash_ground_damage(b,a,[(3,2),(4,2),(3,2)]),12);self.assertEqual(b,before)
+  self.assertEqual(combat._dash_ground_damage(b,t,[(3,2),(4,2),(3,2)]),60)
  def test_lethal_self_hit_finishes_other_victims(self):
   b,a,t=self.fixture(['fireball']);a['hp']=1;ally=self.add(b,t,'friend',3,3,'player')
   with self.hit():self.use(b,'fireball',t)

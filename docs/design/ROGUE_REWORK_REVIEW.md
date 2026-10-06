@@ -1,5 +1,8 @@
 # Rogue rework review
 
+Current Bleed timing supersedes the historical exertion rules below: 5% target max HP per stack at every target turn end, then remove one stack. Caltrops add stacks without immediate Bleed damage. See [Combat DoTs](COMBAT_DOTS.md). Hobbled retains independent expiry.
+
+
 October 5, 2026. **Implemented in dev; final numerical/aesthetic playtesting remains pending.** User clarifications: multiple Quick Actions are allowed. Backflip and Caltrops are Quick Actions. Latest user correction: the main attack MUST end the activation; Quick Actions are usable before it only. Preserve Fighter, Barbarian, Monk, five character slots, gear abilities outside those slots and existing saves.
 
 

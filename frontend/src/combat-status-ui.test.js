@@ -13,7 +13,7 @@ test('statuses show finite absorption, owner, clock and reaction availability',(
  assert.match(statusDetails({id:'mark',source_name:'Aya',accuracy:10,turns:2}).details.join(' '),/Owner: Aya.*10 accuracy/);
  assert.equal(statusDetails({id:'reaction',ready:false,reactions:['Riposte']}).name,'Reaction spent');
  assert.match(statusDetails({id:'footing',resistance:25}).description,/25%/);
- assert.match(statusDetails({id:'poison',turns:2,expiry:'target_start'}).details.join(' '),/2 damage ticks/);
+ assert.match(statusDetails({id:'poison',turns:2,expiry:'target_start'}).details.join(' '),/10% max HP per stack/);
  assert.match(statusDetails({id:'deployment',owner_name:'Aya',policy:'commanded',ready:false}).description,/Aya.*owner action.*No extra initiative/);
  assert.match(statusDetails({id:'deployment',owner_name:'Aya',policy:'automatic',ready:true,stationary:true}).details.join(' '),/Ready this owner activation.*Stationary/);
 });

@@ -36,7 +36,7 @@ export function visibleStatuses(unit,{compact=false}={}){
 export function statusVisual(status){
  if(status.id==='passive_readiness')return {kind:'buff',image:skillIcon({id:status.skill_id,type:'passive'}),count:status.spent?'?':status.cooldown_remaining||null};
  const [kind,art]=META[status.id]||['other',null];
- const count=status.layers?status.layers.length:status.id==='barrier'?status.amount:
+ const count=['burn','poison','bleed'].includes(status.id)?status.layers?.length??status.stacks??1:status.layers?status.layers.length:status.id==='barrier'?status.amount:
   ['rally_protection','rally_power','guard','vulnerable'].includes(status.id)?'1×':
   status.rounds??status.turns??status.duration;
  return {kind,image:(art?.startsWith('mage:')||art?.startsWith('monk:')||art?.startsWith('rogue:')||art?.startsWith('ranger:'))?skillIcon({id:'job:'+art}):art?.startsWith('martial:')?`/assets/martial-jobs-v1/${art.slice(8)}.png`:art?JOB_ICON_ART['job:'+art]||null:null,count:count??null};

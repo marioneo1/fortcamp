@@ -10,6 +10,7 @@ class RogueTests(unittest.TestCase):
   b,a,t=fixtures.AbilityFoundationTests().fixture('fighter');b.update(units={a['id']:a,t['id']:t},zones=[],terrain=[],ground_tiles=[],decorations=[])
   a.update(job_id='rogue',attack=20,armor=0,evasion=0,perk_modifiers={},gear_rules={},element=None,on_hit=None,capture_weapon=None,attack_elevation_rule='melee',statuses=[],reactions=[],passives=[],skills=[deepcopy(jobs.SKILLS['job:rogue:'+k]) for k in keys])
   t.update(armor=0,evasion=0,perk_modifiers={},gear_rules={},statuses=[],reactions=[],race='Human',boss=False,kind='guard')
+  for unit in (a,t):unit.pop('dot_finished_stamp',None);unit.pop('status_finished_stamp',None)
   b.update(turn_index=0,round=1,status='active');a['loyalty']=100;combat._current_unit(b);a['loyalty_activation']=[1,0];t['zone_location']=[t['x'],t['y']]
   return b,a,t
  def use(self,b,command):
@@ -115,7 +116,7 @@ class RogueTests(unittest.TestCase):
   with patch('backend.combat._attack_hits',return_value=(True,{'chance':100,'damage_bonus':0},1)):
    self.use(b,{'action':'skill','skill_id':'job:rogue:crippling_cut','target_id':t['id']})
   self.assertEqual(a['hp'],100)
-  self.use(b,{'action':'guard'});self.assertEqual(a['hp'],92)
+  self.use(b,{'action':'guard'});self.assertEqual(a['hp'],90)
  def test_retired_loadout_migration_is_idempotent_and_preserves_practice(self):
   c=new_game({'starting_role':'rogue'})['characters'][0];c.pop('rogue_kit_version',None)
   c.update(learned_skills=['job:rogue:bleed','job:rogue:blind','job:rogue:footwork'],equipped_skills=['job:rogue:bleed','job:rogue:blind','job:rogue:footwork'],combat_skill_order=['job:rogue:blind','job:rogue:bleed'],job_practice=1)

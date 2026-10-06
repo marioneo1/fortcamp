@@ -1,6 +1,12 @@
 import {caltropsArtwork} from './caltrops-art.js';
 import {scorchedArtwork} from './mage-surfaces.js';
+export function mergeScorchedZones(zones){
+ const fire=(zones||[]).filter(z=>z.kind==='scorched');if(!fire.length)return zones||[];
+ const cells=new Map();for(const z of fire)for(const c of z.cells||[])cells.set(`${c.x},${c.y}`,c);
+ return [...zones.filter(z=>z.kind!=='scorched'),{...fire[0],id:'scorch-union',cells:[...cells.values()].sort((a,b)=>a.y-b.y||a.x-b.x),owner_name:[...new Set(fire.map(z=>z.owner_name))].join(', '),remaining:Math.max(...fire.map(z=>z.remaining||0)),merged:fire.length>1}];
+}
 export function zoneOverlay(zones,escape){
+ zones=mergeScorchedZones(zones);
   return (zones||[]).filter(z=>z.cells?.length).map((zone,index)=>{
     const x=Math.min(...zone.cells.map(c=>c.x)),y=Math.min(...zone.cells.map(c=>c.y));
     const w=Math.max(...zone.cells.map(c=>c.x))-x+1,h=Math.max(...zone.cells.map(c=>c.y))-y+1;

@@ -53,21 +53,31 @@ export function scorchedArtwork(zone,x,y,width,height,clip){
  const mask=clip+'-scorch-soft',blur=clip+'-scorch-blur';
  const rects=zone.cells.map(c=>`<rect x="${(c.x-x)*100}" y="${(c.y-y)*100}" width="100" height="100" fill="white"/>`).join('');
  const image=(name,px,py,size,cls,angle=0)=>`<image href="${SCORCH_ROOT}${name}.png" x="${px}" y="${py}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet" class="${cls}" transform="rotate(${angle} ${px+size/2} ${py+size/2})"/>`;
- let soot='',ash='',accents='',smoke=0;
+ let artwork='';
  for(const c of zone.cells){
-  const seed=surfaceSeed(`${zone.id}:${c.x}:${c.y}`),px=(c.x-x)*100,py=(c.y-y)*100;
-  soot+=image(`soot_${seed%4+1}`,px-28,py-28,156,'scorch-soot',seed%360);
-  if(seed%3!==0)ash+=image(`ash_${(seed>>>4)%4+1}`,px+8,py+5,84,'scorch-ash',(seed>>>8)%360);
-  // Same envelope as soot: one broad burning bed, not a tiny isolated fire.
-  accents+=image(`ember_${seed%2+1}`,px-28,py-28,156,'scorch-cinder-bed');
-  const flame=(ax,ay,size,key,cls)=>`<foreignObject x="${ax-size/2}" y="${ay-size/2}" width="${size}" height="${size}"><div xmlns="http://www.w3.org/1999/xhtml" class="scorch-flame ${cls}" style="animation-duration:${1200+key%800}ms;animation-delay:-${key%2000}ms"></div></foreignObject>`;
-  accents+=flame(px+50,py+50,156,seed,'scorch-main-flame');
-  // Seeded offsets survive rerenders. All instances share one cached four-frame texture.
-  for(let j=0;j<3+seed%3;j++){
-   const key=surfaceSeed(`${seed}:cinder:${j}`),ax=px+18+key%65,ay=py+18+(key>>>8)%65,size=16+(key>>>16)%10;
-   accents+=flame(ax,ay,size,key,'scorch-mini-flame');
-  }
-  if(seed%9===0&&smoke<2){smoke++;accents+=image(`smoke_${seed%2+1}`,px+6,py+3,88,'scorch-smoke')}
+  const seed=surfaceSeed(`${c.x}:${c.y}:scorch`),px=(c.x-x)*100,py=(c.y-y)*100;
+  const soot=image(`soot_${seed%4+1}`,px-28,py-28,156,'scorch-soot',seed%360);
+  const ash=seed%3!==0?image(`ash_${(seed>>>4)%4+1}`,px+8,py+5,84,'scorch-ash',(seed>>>8)%360):'';
+  const fire=`<foreignObject x="${px-28}" y="${py-28}" width="156" height="156"><div xmlns="http://www.w3.org/1999/xhtml" class="scorch-flame scorch-main-flame" style="animation-duration:${1700+seed%500}ms;animation-delay:-${seed%2000}ms"></div></foreignObject>`;
+  artwork+=`<g data-scorch-cell="${c.x},${c.y}"><g class="scorch-ground">${soot}${ash}</g>${fire}</g>`;
  }
- return `<defs><filter id="${blur}" x="-10%" y="-10%" width="120%" height="120%"><feMorphology operator="erode" radius="8"/><feGaussianBlur stdDeviation="7"/></filter><mask id="${mask}" maskUnits="userSpaceOnUse" x="0" y="0" width="${width*100}" height="${height*100}" style="mask-type:alpha"><g filter="url(#${blur})">${rects}</g></mask></defs><g mask="url(#${mask})"><g class="scorch-ground"><rect width="${width*100}" height="${height*100}" class="scorch-tone"/>${soot}${ash}</g>${accents}</g>`;
+ return `<defs><filter id="${blur}" x="-10%" y="-10%" width="120%" height="120%"><feMorphology operator="erode" radius="8"/><feGaussianBlur stdDeviation="7"/></filter><mask id="${mask}" maskUnits="userSpaceOnUse" x="0" y="0" width="${width*100}" height="${height*100}" style="mask-type:alpha"><g filter="url(#${blur})">${rects}</g></mask></defs><g mask="url(#${mask})">${artwork}</g>`;
+}
+
+// New ground is revealed at its actual spell contact, even though the API returns final state.
+export function scorchedRevealPlan(previous,timeline){
+ const seen=new Set((previous?.zones||[]).filter(z=>z.kind==='scorched').flatMap(z=>z.cells.map(c=>`${c.x},${c.y}`))),plans=[];
+ for(const {event,start} of timeline){
+  if(event.type!=='zone_created')continue;
+  for(const c of event.cells||[]){const key=`${c.x},${c.y}`;if(!seen.has(key)){plans.push({key,delay:start});seen.add(key)}}
+ }
+ return plans;
+}
+export function animateScorchedTransitions(previous,timeline,field){
+ for(const plan of scorchedRevealPlan(previous,timeline)){
+  for(const node of field.querySelectorAll(`[data-scorch-cell="${plan.key}"]`)){
+   node.style.visibility='hidden';
+   setTimeout(()=>{if(node.isConnected)node.style.visibility=''},Math.max(0,plan.delay));
+  }
+ }
 }

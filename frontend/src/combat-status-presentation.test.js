@@ -15,7 +15,7 @@ test('different owners of a Mark remain separate and counts keep their meaning',
  assert.equal(visibleStatuses({statuses:[{id:'mark',source_id:'a'},{id:'mark',source_id:'b'}]}).length,2);
  assert.equal(statusVisual({id:'barrier',amount:12,turns:1}).count,12);
  assert.equal(statusVisual({id:'rally_power'}).count,'1×');
- assert.equal(statusVisual({id:'poison',turns:2}).count,2);
+ assert.equal(statusVisual({id:'poison',turns:2}).count,1);
 });
 test('supported effects reuse installed painted artwork',()=>{
  for(const id of ['stun','sleep','freeze','poison','burn','bleed','charm','confuse','berserk','blind','bind','slow','paralyze','mute','fear','barrier','braced','rally_power','rally_protection','wild_form']){
@@ -27,7 +27,7 @@ test('map, tray and inspection retain every effect and its description',()=>{
  const unit={id:'a',statuses:[{id:'poison',turns:2},{id:'stun',turns:1},{id:'rally_power'}]};
  const map=mapStatusMarkup(unit,defs,esc);assert.equal((map.match(/data-unit-status=/g)||[]).length,3);assert.doesNotMatch(map,/status-overflow/);
  const tray=statusTrayMarkup(unit,defs,esc);assert.match(tray,/Buffs/);assert.match(tray,/Debuffs/);assert.equal((tray.match(/data-unit-status=/g)||[]).length,3);
- const list=statusListMarkup(unit,defs,esc);assert.match(list,/Cannot act/);assert.match(list,/Next attack \+25%/);assert.match(list,/2 activations/);
+ const list=statusListMarkup(unit,defs,esc);assert.match(list,/Cannot act/);assert.match(list,/Next attack \+25%/);assert.match(list,/turn end, then one stack removed/);
  assert.equal(mapStatusMarkup({...unit,alive:false},defs,esc),'');
 });
 test('stun uses a persistent orbit rather than binding art, and clears on recovery or defeat',()=>{

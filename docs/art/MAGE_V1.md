@@ -1,5 +1,8 @@
 # Mage V1 packed art and local audio
 
+Current Meteor: 6.75-cell falling sprite, upper-left-facing, with new ground revealed at impact. Current fire art: [Scorched V3](SCORCHED_V3.md).
+
+
 Surface update: [Mage surfaces V2](MAGE_SURFACES_V2.md) replaces the initial `ice_shell` and `scorched_tile` rendering with two dedicated 4×4 sheets. Other V1 icons/projectile/contact art and audio remain current. The initial sheet is retained as a reference; its old surface assets are no longer the active presentation.
 
 Implemented in dev October 6, 2026. One transparent 4×4 atlas supplies eight consistent square ability icons and eight reusable isolated spell assets. It follows existing painted fantasy maps and gold-framed skill icons. No Effekseer dependency or animation runtime was added: browser sprite motion uses the existing contact clock and Web Animations, with static/fading reduced-motion alternatives.

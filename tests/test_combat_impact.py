@@ -66,10 +66,10 @@ class CombatImpactTests(unittest.TestCase):
         self.assertLess(events.index(hit),events.index(damage))
         self.assertEqual(hit['to'],{'x':3,'y':2})
 
-    def test_ember_entries_repeat_but_start_has_only_the_separate_burn_tick(self):
+    def test_ember_entries_add_stacks_start_is_free_and_end_ticks(self):
         b,a,t=self.fixture()
         spaces.place_zone(b,a,{'zone':'ember','turns':2},[{'x':t['x'],'y':t['y']}])
-        _trigger_zones(b,t,'entry');self.assertEqual(t['hp'],97)
+        _trigger_zones(b,t,'entry');self.assertEqual(t['hp'],98)
         _trigger_zones(b,t,'entry');_trigger_zones(b,t,'start');self.assertEqual(t['hp'],94)
         self.assertTrue(conditions.has(t,'burn'))
         t['status_activation']=['next',1];_trigger_zones(b,t,'start');_tick_gear_statuses(b,t)
@@ -89,10 +89,10 @@ class CombatImpactTests(unittest.TestCase):
         _record_movement(b,t,(t['x'],t['y']),path)
         t.update(x=6,y=2)
         _apply_zone_route(b,t,path)
-        self.assertEqual(t['hp'],88)
+        self.assertEqual(t['hp'],80)
         self.assertEqual((t['x'],t['y']),(6,2))
         hits=[e for e in b['animation_events'] if e.get('kind')=='burn']
-        self.assertEqual([e['amount'] for e in hits],[3,3,3,3])
+        self.assertEqual([e['amount'] for e in hits],[2,4,6,8])
         self.assertEqual([(e['x'],e['y']) for e in hits],[(4,2),(5,2),(4,2),(5,2)])
         self.assertEqual([e['ground_step'] for e in hits],[1,2,3,4])
         movement=next(e for e in b['animation_events'] if e['type']=='movement')
@@ -144,7 +144,7 @@ class CombatImpactTests(unittest.TestCase):
         b,a,t=self.fixture()
         spaces.place_zone(b,a,{'zone':'ember','turns':2},[{'x':4,'y':2}])
         _apply_displacement(b,a,t,{'mode':'push','distance':2},original_damage=10)
-        self.assertEqual((t['x'],t['hp']),(5,97))
+        self.assertEqual((t['x'],t['hp']),(5,98))
 
     def test_fall_does_not_collide_with_wall_beyond_the_pit(self):
         b,a,t=self.fixture()

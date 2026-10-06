@@ -4,11 +4,11 @@ from . import combat_conditions as conditions
 from .combat_feedback import record as feedback
 
 ZONES = {
-    'scorched': {'name':'Scorched ground','relation':'everyone','events':{'entry','start'},'status':'burn','entry_damage':3,'entry_per_cell':True,'description':'Each committed tile entry deals 3 damage and refreshes Burn. Re-entry counts; overlapping fire patches do not add damage. Burns everyone, including allies and the caster.'},
+    'scorched': {'name':'Scorched ground','relation':'everyone','events':{'entry'},'status':'burn','entry_damage':0,'entry_per_cell':True,'description':'Each committed tile entry adds Burn and immediately triggers its current stack damage without consuming a stack. Re-entry counts; overlapping fire patches do not add damage. Burns everyone, including allies and the caster.'},
     'caltrops':{'name':'Caltrops','relation':'everyone','events':['entry','placement'],'entry_per_cell':True,'trap':True,'statuses':['bleed','hobbled'],'description':'Placement on an occupied tile and each tile entry attempt one Bleed and one Hobble stack for two target turns. Allies and push/pull count; Trap Expert avoids it. Overlapping strips do not multiply an entry.'},
-    'ember': {'name': 'Ember Patch', 'relation': 'enemy', 'events': ['entry', 'start'],
-              'status': 'burn', 'entry_damage':3, 'entry_per_cell':True,
-              'description': 'Each burned tile entered along the committed path deals 3 damage and applies Burn. Re-entry counts again; overlapping patches do not stack. Burn also ticks at activation start. Allies are safe.'},
+    'ember': {'name': 'Ember Patch', 'relation': 'enemy', 'events': ['entry'],
+              'status': 'burn', 'entry_damage':0, 'entry_per_cell':True,
+              'description': 'Each entered flame tile adds Burn and immediately triggers its current stack damage without consuming a stack. Re-entry counts again; overlapping patches do not stack. Burn ticks normally and loses one stack at turn end. Allies are safe.'},
     'binding': {'name': 'Binding Circle', 'relation': 'enemy', 'events': ['entry'],
                 'status': 'bind', 'description': 'Committed entry attempts Bind. Control recovery and resistance apply.'},
     'thorns': {'name': 'Thornbed', 'relation': 'enemy', 'events': ['entry'], 'damage': 3,

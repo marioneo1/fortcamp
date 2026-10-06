@@ -152,11 +152,11 @@ class MonkJobTests(unittest.TestCase):
     def test_dash_counts_every_committed_burning_cell_and_previews_are_free(self):
         b,a,t=self.fixture();cells=[{'x':x,'y':2} for x in (3,4,5)]
         combat.spaces.place_zone(b,t,{'zone':'ember','turns':2},cells)
-        before=deepcopy(b);self.assertEqual(combat._dash_ground_damage(b,a,[(3,2),(4,2),(5,2)]),9)
+        before=deepcopy(b);self.assertEqual(combat._dash_ground_damage(b,a,[(3,2),(4,2),(5,2)]),12)
         self.assertEqual(b,before)
         with patch('backend.combat._attack_hits',return_value=(False,{'chance':100,'damage_bonus':0},100)):
             self.cast(b,a,combat._ground_target(5,2),'sweeping_dash')
-        self.assertEqual(a['hp'],91)
+        self.assertEqual(a['hp'],88)
         damage=[e for e in b['animation_events'] if e.get('kind')=='burn']
         self.assertEqual([e['ground_step'] for e in damage],[1,2,3])
 

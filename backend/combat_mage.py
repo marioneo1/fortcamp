@@ -48,21 +48,15 @@ def burn(b,a,t,count=1,packet=None):
  from . import combat as c
  if not c._combat_active(t):return
  for _ in range(count*(2 if specialized(a) else 1)):
-  if roll(b,a,'burn')<=conditions.status_chance(t,'burn') and conditions.add_stack(t,'burn',2,a):
-   s=next(s for s in t['statuses'] if s['id']=='burn');s['layers'][-1]['tick_damage']=max(1,round(c.martial.attack_power(a)*.08))
+  if roll(b,a,'burn')<=conditions.status_chance(t,'burn'):conditions.add_stack(t,'burn',1,a)
  if conditions.has(t,'burn'):feedback(b,t,'status',status_id='burn',attack_packet=packet)
  c.martial.flush(b,t)
 def ground_burn(b,a,t):
- zone=a['scorched_source'];count=2 if zone.get('burn_debuffer') else 1
- if roll(b,a,'ground_burn')>conditions.status_chance(t,'burn'):return
- existing=next((v for v in t.get('statuses',[]) if v['id']=='burn'),None)
- layers=[l for l in (existing or {}).get('layers',[]) if l.get('ground_layer') and l.get('source_id')==a['id']]
- for layer in layers:layer['turns']=2
- for _ in range(max(0,count-len(layers))):
-  if conditions.add_stack(t,'burn',2,a):
-   existing=next(v for v in t['statuses'] if v['id']=='burn');existing['layers'][-1].update(ground_layer=True,tick_damage=max(1,round(zone['burn_source_attack']*.08)))
- if existing and existing.get('layers'):existing.update(turns=max(l['turns'] for l in existing['layers']),stacks=len(existing['layers']))
+ from . import combat as c
+ count=2 if a['scorched_source'].get('burn_debuffer') else 1
+ for _ in range(count):conditions.add_stack(t,'burn',1,a)
  feedback(b,t,'status',status_id='burn')
+ c._tick_dot_status(b,t,'burn')
 
 def enchant_hit(b,a,t,ability=None):
  from . import combat as c
@@ -100,11 +94,12 @@ def damage(b,a,t,kind,power,p,center=None):
  b['log'].append(f"{a['name']}'s {kind.replace('_',' ').title()} {'deals '+str(amount)+' damage to' if hit else 'misses'} {t['name']}.")
  return hit,amount
 
-def scorch(b,a,center,radius):
+def scorch(b,a,center,radius,impact_packet=None):
  from . import combat as c
  area=cells(b,center,radius)
  effect={'type':'zone','zone':'scorched','radius':0,'turns':2}
- zone=c.spaces.place_zone(b,a,effect,area);zone.update(burn_debuffer=specialized(a),burn_source_attack=c.martial.attack_power(a))
+ zone=c.spaces.place_zone(b,a,effect,area);zone.update(burn_debuffer=specialized(a))
+ if impact_packet is not None:b.setdefault('animation_events',[]).append({'type':'zone_created','zone_id':zone['id'],'cells':area,'attack_packet':impact_packet})
 
 def impact(b,a,kind,center):
  from . import combat as c
@@ -126,7 +121,7 @@ def impact(b,a,kind,center):
    origin={**a,'x':center['x'],'y':center['y']}
    if distance:c._apply_displacement(b,origin,t,{'mode':'pull' if kind=='singularity' else 'push','distance':1 if kind=='singularity' else 2},amount,child)
   for event in b['animation_events'][begin:]:event.update(attack_packet=child,impact_origin_packet=p,impact_offset=0)
- if kind in {'fireball','meteor'}:scorch(b,a,center,radius)
+ if kind in {'fireball','meteor'}:scorch(b,a,center,radius,p)
  conditions.remove(b['units'].get(a['id'],a),'rally_power')
  return {'attacked':True}
 def chain(b,a,t):

@@ -1,5 +1,10 @@
 # Fortcamp feature backlog
 
+## October 6: Percentage DoTs and Scorched V3 (implemented in dev)
+
+Burn 2%, Poison 10%, Bleed 5% target maximum HP per stack; regular damage and one-stack decay at target turn end. Burn resistance reduces damage, never application. Fire entry adds Burn and triggers its full pool without decay; traps add Bleed without immediate damage. Ranger cashout/previews follow the new clock. Overlapping ground renders/triggers once; one sixteen-frame overhead fire per cell replaces mini fires. Meteor is another 50% larger, faces upper-left, and reveals new ground at landing. Fireball cooldown is three. Canonical rules/art: docs/design/COMBAT_DOTS.md and docs/art/SCORCHED_V3.md. Pending: percentage damage/boss balance, human animation review and split multi-source tick credit. No production deployment or save reset.
+
+
 ## October 6: Mage friendly fire and larger cinder beds (implemented in dev)
 
 Meteor?s falling sprite is 80% larger. Scorched cells retain soot and add a same-envelope central cinder bed plus three to five seeded, independently phased small fires using the existing shared atlas/CSS animation. Flash Freeze, Singularity, Meteor and Fireball include allies and caster in resolution and forecasts; Scorched ground also burns everyone. Auto-battle rejects currently friendly-occupied areas. Dash hazard forecasts include friendly Scorched ground and deduplicate overlapping fire. No new particle runtime or asset download. Canonical rules/art: docs/design/MAGE_REWORK_REVIEW.md and docs/art/MAGE_SURFACES_V2.md. Pending: large-map/device performance and human aesthetic/numeric review; AI does not predict later friendly movement into delayed zones.

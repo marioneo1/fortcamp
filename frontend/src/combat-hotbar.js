@@ -30,7 +30,7 @@ export function unitInspectMarkup(unit,definitions,escape,preview=null,battle=nu
 }
 export function resistanceMarkup(unit,escape){
  const profile=unit.resistance_details;if(!profile)return '';
- const rows=Object.entries(profile.statuses||{}).map(([id,value])=>`${id.replaceAll('_',' ')}: ${value===100?'immune':value+'% resistance'}`);
+ const rows=Object.entries(profile.statuses||{}).map(([id,value])=>`${id.replaceAll('_',' ')}: ${id==='burn'?value+'% damage reduction (Burn can still apply)':value===100?'immune':value+'% resistance'}`);
  if(profile.control_duration_limit)rows.push(`Stun, sleep, freeze, paralysis and binding last at most ${profile.control_duration_limit} turn`);
  if(profile.control_recovery)rows.push(`Control recovery active (${profile.control_recovery} activation clock): stun, sleep, freeze, paralysis and binding cannot apply`);
  else if(profile.control_lock_active)rows.push('An active control effect prevents another stun, sleep, freeze, paralysis or binding');

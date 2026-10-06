@@ -3,6 +3,7 @@ from copy import deepcopy
 import random
 from . import combat_conditions as conditions
 from .combat_feedback import record as feedback
+from . import combat_dots as dots
 ATTACKS={'longshot','multi_shot','poison_attack','pestilence_shot','rupturing_blow'}
 def has_sharpshooter(u):return any(p.get('id')=='job:ranger:sharpshooter' for p in u.get('passives',[]))
 def marked(a,t):return any(s['id']=='mark' and s.get('quarry') and s.get('source_id')==a['id'] for s in t.get('statuses',[]))
@@ -38,21 +39,13 @@ def roll(b,a,label,low,high):
 def poison(b,a,t,count,packet=None):
  from . import combat as c
  if not c._combat_active(t):return
- damage=max(1,round(c.martial.attack_power(a)*.08))
  for _ in range(count):
   if roll(b,a,'poison',1,100)<=conditions.status_chance(t,'poison'):
    conditions.add_stack(t,'poison',2,a)
-   status=next((s for s in t['statuses'] if s['id']=='poison'),None)
-   if status and status.get('layers'):status['layers'][-1]['tick_damage']=damage
  if conditions.has(t,'poison'):feedback(b,t,'status',status_id='poison',attack_packet=packet)
  c.martial.flush(b,t)
 def dot_potential(t):
- total=0
- for s in t.get('statuses',[]):
-  if s['id'] not in {'poison','bleed'}:continue
-  base=max(2,min(5 if s['id']=='poison' else 4,round(t['max_hp']*.04)))
-  total+=sum(max(0,l.get('turns',0))*l.get('tick_damage',base) for l in s.get('layers',[s]))
- return total
+ return sum(dots.potential(t,s['id'],dots.count(s)) for s in t.get('statuses',[]) if s['id'] in {'poison','bleed'})
 
 def candidates(b,a,t):
  from . import combat as c
@@ -86,7 +79,7 @@ def preview(b,a,t,s):
    amount,_=conditions.absorb(probe,amount);total+=amount;totals.append(total)
   row.update(damage_on_hit=totals[1],damage_max=totals[3],hit_count='2-4',damage_note='2-4 arrows, independent accuracy. Damage range assumes every arrow hits; Barrier is depleted across the volley.')
  if kind=='longshot':row.update(crit_chance=20,crit_damage=max(0,(row['damage_on_hit']+row.get('absorbed_damage',0))*2-row.get('barrier',0)),distance_power=power(a,t,kind))
- if kind=='rupturing_blow':row.update(dot_cashout=round(dot_potential(t)*.5),damage_note='Direct hit plus 50% remaining Poison/Bleed damage; Bleed assumes future exertion. Consumes both on a landed hit.')
+ if kind=='rupturing_blow':row.update(dot_cashout=round(dot_potential(t)*.5),damage_note='Direct hit plus 50% remaining Poison/Bleed damage; Both tick at target turn end and lose one stack each turn. Consumes both on a landed hit.')
  return row
 
 def execute(b,a,t,s,free=False):

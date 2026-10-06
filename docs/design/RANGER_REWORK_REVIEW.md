@@ -20,12 +20,12 @@ Cooldowns count personal activations using the existing engine. All seven techni
 ## Decisions and cross-Job interactions
 
 - Mark is a main action. A free, cooldown-free mark would be mandatory bookkeeping instead of a setup decision. Ranger is vulnerable during setup; replacing a quarry has a cost.
-- Each new Ranger Poison stack snapshots **8% of effective attack, rounded, minimum 1 HP per tick**, for two target-start ticks. This scales with later weapons instead of making DoT builds obsolete at higher stats. Existing nonstacked equipment Poison retains its original damage when converted to layers.
+- Poison now deals **10% of target maximum HP per stack** at target turn end, then loses exactly one stack. Burn and Bleed follow the same pool clock with different percentages; [Combat DoTs](COMBAT_DOTS.md) is canonical.
 - Poison imbue is one attack, not one arrow. A fully missed/fully absorbed attack preserves it; a damaging volley spends it and applies one stack per damaging arrow. Poison Attack can consume an earlier coating and create a fresh one.
-- Poison resistance applies per stack. Undead/Automaton immunity remains. Durations are independent; new stacks do not extend older ones. Views do not tick or roll anything.
+- Poison resistance applies per stack. Undead/Automaton immunity remains. Stacks form one pool and decay one at a time. Views do not tick or roll anything.
 - Generic on-hit equipment effects get one attempt on the first landed arrow; flat equipment/perk damage bonuses have one volley budget. Armor applies to each arrow; finite Barrier depletes across arrows. Hold Together's attack bonus and Iron Reversal's defensive form cover the whole volley, consistent with techniques.
-- Pestilence's incoming modifier is additive with Monk direct-hit vulnerability, not multiplied repeatedly. It also amplifies Poison, Bleed, collision and other indirect damage. ATK reduction does not retroactively reduce snapshotted DoTs.
-- Rupture uses each actual layer's remaining duration and tick damage. Existing Bleed only damages a victim that exerts itself: its remaining damage is **potential**, assuming future movement/physical actions. Future defensive-status changes cannot be predicted. Compute base potential, halve it once, then apply current damage modifiers once; do not double-amplify Pestilence.
+- Pestilence's incoming modifier is additive with Monk direct-hit vulnerability, not multiplied repeatedly. It also amplifies Poison, Bleed, collision and other indirect damage. Target maximum HP sets DoT base damage; current applicable damage modifiers are applied at resolution.
+- Rupture sums remaining base Poison/Bleed damage across the shrinking stack pools: per-stack damage ? n(n+1)/2. Halve potential once, then apply current damage modifiers once; do not double-amplify Pestilence. Bleed no longer requires exertion.
 - Longshot and Multi-Shot are alternative main attacks. They are never multiplied together. Critical doubling belongs to Longshot only; this pass does not silently add random crits to every Job.
 - Rapid Fire cannot choose Mark, passives, itself, unusable/cooling-down attacks, unmarked Longshot or blocked targets. It does not choose arbitrary enemies behind the player's back. It may fire a technique again as the main action if that technique remains available. No Quick Action after the main action.
 
@@ -33,7 +33,7 @@ Cooldowns count personal activations using the existing engine. All seven techni
 
 **Marksman:** Quarry / Longshot / Multi-Shot / Rapid Fire / Sharpshooter. Spend a setup action, hold clear firing lanes, punish distance, and use Rapid Fire for occasional extra pressure. Cover, interception, forcing relocation and close pursuit deny its strongest position. Guaranteed accuracy does not ignore armor or Barrier; multi-arrow attacks are less efficient against armor.
 
-**Poison:** Quarry / Poison Attack / Pestilence Shot / Rupturing Blow / Multi-Shot. Build independent Poison layers, amplify party damage, spread an imbue across a volley, or detonate allied Caltrops Bleed. Committing Rupture sacrifices future damage for immediate pressure. Poison immunity, cleansing and forcing an early cashout interfere; direct shots remain usable.
+**Poison:** Quarry / Poison Attack / Pestilence Shot / Rupturing Blow / Multi-Shot. Build Poison stacks, amplify party damage, spread an imbue across a volley, or detonate allied Caltrops Bleed. Committing Rupture sacrifices future damage for immediate pressure. Poison immunity, cleansing and forcing an early cashout interfere; direct shots remain usable.
 
 **Hybrid:** Quarry / Longshot / Poison Attack / Rupturing Blow / Sharpshooter. Retains distance burst and DoT cashout, gives up Rapid Fire and party-wide Pestilence. No role restrictions.
 

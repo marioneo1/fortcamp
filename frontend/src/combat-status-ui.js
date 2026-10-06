@@ -4,7 +4,7 @@ export function statusDetails(status,definitions={}){
   const details=[];
   if(status.id==='weapon_enchant')details.push(`Element: ${status.element?.toUpperCase()||'unknown'}`,`${status.paralyzed_targets?.length||0} targets already paralyzed by this application`);
   if(status.id==='freeze'&&status.elemental_freeze)return {...base,name:'Frozen',description:'Cannot act. Direct HP damage breaks the ice after the full hit; ending it applies Wet and control recovery.',details:[`${status.turns} target turns remaining`,`${status.wet_turns||2} turns of Wet when ice ends`]};
-  if(status.id==='burn'&&status.layers)details.push(`${status.layers.reduce((sum,l)=>sum+(l.tick_damage||0),0)} base Burn damage next tick`);
+
   if(status.id==='deployment')return {name:'Temporary deployment',icon:'◆',description:`Owned by ${status.owner_name}. ${status.policy==='automatic'?'Automatic targeting; shares owner output budget.':'Attack commands spend the owner action.'} No extra initiative turn, loot or prisoner reward.`,details:[status.ready?'Ready this owner activation':'Ready from the next owner activation',status.stationary?'Stationary device':'Uses its own movement budget']};
   if(status.id==='wild_form')return {name:status.name,icon:'◆',description:status.description,details:[`${status.turns} owner activations remaining · no HP refill`]};
   if(status.id==='palm_exposure')return {...base,details:[`+${10*(status.stacks||1)}% direct attack damage taken ? ${status.turns} target turns remaining`,'Refreshes on each landed punch ? maximum 30%']};
@@ -12,9 +12,10 @@ export function statusDetails(status,definitions={}){
   if(status.id==='monk_siphon')return {...base,details:[`${Math.max(0,(status.turns||1)-1)} future Monk turns remaining`,'3 HP per landed hit ? does not overheal']};
   if(status.id==='dash_parry')return {...base,details:['Expires at next Monk turn start','Excludes magic and area attacks']};
   if(['open_guard','flowing_footwork','iron_reversal'].includes(status.id))return {...base,details:[status.id==='iron_reversal'?'One incoming direct attack · expires at next personal turn start':`${status.turns} turn window remaining · expires at ${status.source_name||'owner'}’s turn end`,...(status.source_name?[`From ${status.source_name}`]:[])]};
+  if(['burn','poison','bleed'].includes(status.id))return {...base,details:[`${status.layers?.length??status.stacks??1} stacks ? ${status.id==='burn'?2:status.id==='poison'?10:5}% max HP per stack${status.id==='burn'?' (minimum 1 per stack before modifiers)':''}`,'Damage at turn end, then one stack removed',...(status.id==='burn'?['Flame entry adds a stack and triggers Burn without removing one','Burn resistance reduces final damage']:[])]};
   if(status.layers)details.push(`${status.layers.length} stacks ? each expires independently${status.id==='hobbled'?' ? movement is halved once':''}`);
   if(status.id==='barrier')details.push(`${status.amount} damage absorption remaining`);
-  if(status.id==='poison'&&status.layers)details.push(`${status.layers.reduce((sum,l)=>sum+(l.tick_damage||0),0)} base damage next tick from Ranger stacks; each lasts ${status.turns} ticks at most`);
+
   if(status.id==='mark'&&status.quarry)return {...base,name:'Mark Quarry',description:'This owner?s attacks against the quarry have 100% accuracy. Other characters do not inherit it.',details:[`Owner: ${status.source_name||'unknown'}`,`${status.turns} target turns remaining`]};
   if(status.id==='mark')details.push(`Owner: ${status.source_name||'unknown'} · +${status.accuracy||10} accuracy on their first hit`);
   if(status.id==='reaction')return {name:status.ready?'Reaction ready':'Reaction spent',icon:status.ready?'↶':'↷',description:`${(status.reactions||[]).join(' / ')}. One shared reaction, refreshed at activation start. Cannot chain.`,details:[]};

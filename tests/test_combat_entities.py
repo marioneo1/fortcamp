@@ -141,12 +141,15 @@ class CombatEntityTests(unittest.TestCase):
     def test_entity_status_clock_ticks_once_and_magic_link_respects_mute(self):
         b,a,t=self.fixture();wisp=self.deploy(b,a,'wisps')[0]
         wisp['statuses']=[{'id':'burn','turns':2}]
-        self.activate(b,a);hp=wisp['hp'];self.assertLess(hp,8)
+        self.activate(b,a);hp=wisp['hp'];self.assertEqual(hp,8)
         for _ in range(5):combat._current_unit(b);combat.battle_view(b)
         self.assertEqual(wisp['hp'],hp)
         a['statuses']=[{'id':'mute','turns':2}]
         with self.hit():combat._finish_entities(b,a)
         self.assertEqual(t['hp'],100)
+        self.assertEqual(wisp['hp'],7)
+        combat._finish_entities(b,a)
+        self.assertEqual(wisp['hp'],7)
 
     def test_command_api_changes_owner_turn_and_rejected_actions_do_not_spend(self):
         b,a,t=self.fixture();wolf=self.deploy(b,a,'companion')[0];self.activate(b,a)
