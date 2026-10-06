@@ -257,3 +257,18 @@ Landed contact tightens the net with real Squeeze damage at 320 ms. A successful
 | `melee_fist_flesh.wav` | 0.6 s | One fast bare fist striking a lightly clothed body: tight sharp skin smack with compact chesty bass and tiny cloth rustle. Dry bloodless boxing impact, no crack or wet splash. |
 
 Selected from target material, not armor points. Cutting, piercing and crushing organic hits use stylized crimson art; fist/blunt remain bloodless. Original family impacts remain the metal/rigid-target variant. Sources and listening previews stay separate. Capture-net damage uses rope tightening and never flesh/blood effects.
+
+## Martial Jobs pack
+
+> Cohesive modern painterly fantasy RPG combat SFX, dry close impacts, warm low mids, restrained treble, no music, no speech, no metallic ringing tail, no shrill magic chime.
+
+| File | Duration | Prompt |
+|---|---|---|
+| `martial_brace.wav` | 0.6 s | A warrior firmly braces a shield: short leather creak, dull armor settling, grounded low thump. Confident defensive weight, no sword ring. |
+| `martial_second_wind.wav` | 0.8 s | A quiet rush of restorative breath, soft cloth flutter and gentle warm air lifting. Calm physical recovery, no voice, no sparkling magic. |
+| `martial_victory.wav` | 0.6 s | Brief heavy victorious strike accent, low wooden thud opening into a warm airy release. Clean punchy payoff, no fanfare or musical notes. |
+| `barbarian_reckless.wav` | 0.6 s | Powerful furious weapon acceleration: restrained deep whoosh with rough leather strain and a short bass punch. No shout, no metallic ringing. |
+| `barbarian_skullbreaker.wav` | 0.5 s | One dense crushing impact against a padded steel helmet, low solid body thump and short gritty crunch. Heavy stun hit, no gore, no ring. |
+| `barbarian_groundbreaker.wav` | 0.8 s | Huge physical ground strike: immediate bass-heavy thump, stone cracking outward and gravel scattering, short dry dust decay. No magic, no high-pitched tail. |
+| `barbarian_defiance.wav` | 0.7 s | Defiant survival pulse: two deep heartbeat-like impacts beneath rough armor creak and a restrained rising warm rumble. No speech or musical tone. |
+| `barbarian_unstoppable.wav` | 0.5 s | Iron restraints snapping apart: tight chain strain, decisive low crack, short falling metal pieces. Crisp liberation accent, no ringing or sharp whistle. |

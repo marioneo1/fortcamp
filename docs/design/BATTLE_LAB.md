@@ -4,10 +4,10 @@
 
 Battle Lab now defaults to Temporary Job testers. Choose up to four of the twelve
 starting Jobs independently, with matching poor starter gear and equal starting
-attributes. Practice presets are 0, 2, 5 and 9 successful contracts; they unlock
+attributes. Practice presets are 0, 2, 5, 9, 12, 16 and 20 successful contracts; they unlock
 the same skills as real progression without completing or awarding contracts.
 Each tester can equip zero to five learned active/passive skills. Skill cards
-show actual descriptions. At practice 9, select which one of six skills to omit.
+show actual descriptions. At practice 9, select which one of six skills to omit. Higher tiers expose the additional Fighter and Barbarian choices; capacity stays five.
 
 Use Test characters to switch back to Copies of my roster. The optional temporary
 companion is off by default; enable it explicitly for a solo test. Restart Same

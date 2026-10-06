@@ -1589,3 +1589,38 @@ Doorway-size follow-up: doubled the painted-hand buttons from 22px to 44px.
 Each side shifts outward by 12px so the enlarged pair remains separate at the
 normal battle view. Door anchoring, commands and action costs are unchanged.
 Verified targeted frontend tests and Vite build; production unchanged.
+
+
+## October 5, 2026 ? Fighter additions and Barbarian Fury
+
+Added Fighter Brace, Second Wind and Victory Strike at 12/16/20 successful
+contracts. Replaced Barbarian's earlier kit with eight authored choices and
+innate five-cap Fury. Direct damage/Bloodfury thresholds, missing-HP attack,
+Reckless exposure, Fury expenditure, owner-turn cooldowns, death defiance,
+nonlethal capture, multi-kill healing and automatic one-status cleansing use
+bounded hooks in the existing combat path. Groundbreaker hits all eight adjacent
+cells, enemies only, through existing wall/hit/displacement rules. Collision
+physics remains shared, including secondary damage to allies struck by bodies.
+
+Added five Fury pips to tokens and numbered HP-adjacent meters to acting/hover UI;
+inspections show effective attack and the innate Job rule. Roster unlock labels
+use each Job's real thresholds. Battle Lab presets now extend through 20, while
+regular loadouts retain five active/passive slots. Retired Barbarian learned and
+equipped IDs migrate idempotently; previously earned practice grants additions.
+Saved fights keep snapshots; no live saves were rewritten.
+
+Generated two square 4?4 painted atlases: sixteen icons plus sixteen transparent
+phases. Reproducible crop/alpha cleanup tool and briefs are documented. Added eight
+ElevenLabs physical SFX through the existing generator, preserving raw sources;
+all final 48kHz WAVs are nonempty and unclipped. Generic magic casting is absent
+from these Fighter self-care cues. Martial events share contact packets and hold
+the next actor until visual recovery; no second combat simulation was added.
+
+Validation: 155 related backend tests, 271 frontend tests and Vite build passed.
+Chrome fixture using the actual battle renderer verified all three Barbarian
+active icons, five nonzero-sized map pips, numbered Fury, and four loaded
+Groundbreaker phases. Contact sheets and the rendered shockwave were visually
+inspected. The fixture's portrait requests are mocked; it is not a live-server
+playtest. Existing bundle-size warning remains. Human sound approval, live balance
+and deeper resource-planning AI remain open. Documentation/index/backlog updated;
+production and credentials unchanged.

@@ -2,7 +2,7 @@
 
 Implemented in dev, October 4, 2026. Subsequent foundations now cover spaces,
 deployments and regular loadouts; see COMBAT_SPACES.md, COMBAT_DEPLOYMENTS.md and
-JOB_LOADOUTS.md. Twelve starting Jobs and six-skill progression are playable in dev; the larger
+JOB_LOADOUTS.md. Twelve starting Jobs are playable in dev, with six skills each except the expanded Fighter and Barbarian kits; the larger
 catalogue remains a draft. See COMBAT_CONTROLS.md for current targeting and UI.
 
 ## Player rules
@@ -75,3 +75,22 @@ and rally protection provide one 25% reduction together, not two reductions.
 Other area statuses remain unsupported; validation rejects them rather than
 silently applying incorrect resistance/chance rules. Existing single-target
 status effects retain their original behavior.
+
+
+## October 5: bounded martial extensions
+
+Versioned skills may declare `self_only`, `fury_cost` (1?5) or `fury_gain` (1?2).
+Availability reports insufficient Fury; accepted casts spend Fury once alongside
+existing independent charges/cooldowns. Healing accepts either an integer
+`amount` or `max_hp_percent`, never both. `area_attack` is intentionally narrow:
+one self-targeted effect, radius one, attack power percentage and one/two-cell
+push. Groundbreaker authors a one-cell push and excludes allies. It reuses the
+existing hit, damage, displacement, collision, immunity and death handling.
+
+`combat_martial.py` holds the eight-ability kit's bounded hooks at actual damage,
+status application, lethal resolution and owner activation. It is not a general
+skill scripting language. Fury/passive state lives in existing battle JSON;
+view polling does not advance it. Resolved `martial_effect` events share attack
+packets with contact sounds and visual playback; they do not predict damage.
+
+See [Martial Jobs](MARTIAL_JOBS_REWORK.md) for gameplay and migration details.

@@ -12,7 +12,7 @@ survive ordinary roster refreshes and stay scoped to the player/server/save.
 Regular characters can deliberately choose one of twelve initial toolboxes:
 Fighter, Barbarian, Rogue, Ranger, Mage, Cleric, Monk, Bard, Druid, Engineer,
 Summoner and Captor. Each starts with two supported actives and one passive. Three further skills
-unlock after 2, 5 and 9 successful contracts, giving 72 executable definitions
+unlock after 2, 5 and 9 successful contracts, giving the original 72 executable definitions
 across the twelve Jobs. The 96-skill draft is not fully implemented. Several
 passives overlap; deeper conditional kits and differentiation remain pending.
 
@@ -119,3 +119,21 @@ contact markers following the expanding wave after landing. Existing cooldowns
 and defensive rules remain. See [Fighter review](FIGHTER_COMBAT_REVIEW.md) for
 exact rules, balance proposals and validation. Fresh battles use these changes;
 existing snapshots and production are unchanged.
+
+
+## October 5: Fighter additions and Barbarian Fury rework
+
+The catalogue now contains 77 definitions: Fighter has nine, Barbarian eight,
+and the other ten Jobs have six each. Five equipped slots still include both
+actives and passives; learned skills remain available for later loadout changes.
+Fighter adds Brace at 12 successes, Second Wind at 16 and Victory Strike at 20.
+Barbarian adds Bloodthirst at 12 and Unstoppable at 16. Earlier unlocks still use
+2, 5 and 9 successes. The roster displays each Job's actual thresholds.
+
+Barbarian's innate Fury is part of the Job, not a sixth equipped passive.
+Old Barbarian learned/equipped IDs migrate to the corresponding new kit IDs
+when character data is initialized. Previously earned practice also unlocks
+these additions; existing battles retain their saved snapshots.
+
+See [Martial Jobs](MARTIAL_JOBS_REWORK.md) for exact effects, costs, clocks,
+visual/audio presentation, migration and testing limits.

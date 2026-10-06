@@ -33,6 +33,8 @@ export function impactTimeline(events){
       cursor=Math.max(cursor,start+duration+70);
     }else if(event.type==='ground_impact'){
       duration=650;cursor=Math.max(cursor,start+duration);
+    }else if(event.type==='martial_effect'){
+      duration=560;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='net_cast'){
       duration=COMBAT_MOTION.netDuration;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='chain_attack'){
@@ -72,6 +74,7 @@ export const feedbackStyles={
   collision:{label:'Collision',icon:'✷',color:'#ffd58a'},fall:{label:'Fall',icon:'↓',color:'#ffd58a'},
   thorns:{label:'Thorns',icon:'✣',color:'#bee798'},ice:{label:'Ice',icon:'❄',color:'#a2e5ff'},
   holy:{label:'Holy',icon:'✧',color:'#fff0a8'},lightning:{label:'Lightning',icon:'ϟ',color:'#dac4ff'},
+  fury:{label:'Fury',icon:'?',color:'#ffb56a'},
   heal:{label:'Heal',icon:'+',color:'#9beeb9'},barrier:{label:'Barrier',icon:'◇',color:'#b5dfff'},
   guard:{label:'Guard',icon:'◇',color:'#dfc788'},cleanse:{label:'Cleansed',icon:'+',color:'#9beeb9'},
   form:{label:'Form changed',icon:'◆',color:'#9beeb9'},deploy:{label:'Deployed',icon:'◆',color:'#a8ded8'},
@@ -83,7 +86,7 @@ export function feedbackText(event,definitions={}){
   const style={...(feedbackStyles[event.kind]||feedbackStyles.physical)};
   if(event.kind==='physical'&&event.melee_style)style.label=({slash:'Slash',hack:'Chop',crush:'Crush',blunt:'Strike',fist:'Punch',stab:'Stab'})[event.melee_style]||style.label;
   if(event.kind==='status')return {...style,...(event.status_id==='stun'?{color:'#f2ce72'}:{}),label:definitions[event.status_id]?.name||event.status_id,icon:definitions[event.status_id]?.icon||style.icon,value:''};
-  return {...style,value:event.amount?`${['heal','barrier'].includes(event.kind)?'+':'−'}${event.amount}`:event.absorbed?'Blocked':''};
+  return {...style,value:event.amount?`${['heal','barrier','fury'].includes(event.kind)?'+':'−'}${event.amount}`:event.absorbed?'Blocked':''};
 }
 export function protectionMarkup(unit){
   if(unit.condition&&unit.condition!=='active')return '';
@@ -91,7 +94,7 @@ export function protectionMarkup(unit){
   return `${barrier?`<span class="unit-barrier-halo" aria-hidden="true"></span><span class="unit-barrier-front" aria-hidden="true"></span><span class="unit-barrier-capacity" title="Barrier: absorbs ${Number(barrier.amount)} damage">◇ ${Number(barrier.amount)}</span>`:''}${unit.guarding?'<span class="unit-guard-halo" aria-hidden="true"></span>':''}`;
 }
 export function impactArtwork(event){
-  if(['intercept','counter','resisted','captured','capture_failed','restraint'].includes(event.kind))return [];
+  if(['fury','intercept','counter','resisted','captured','capture_failed','restraint'].includes(event.kind))return [];
   if(event.absorbed)return [event.barrier_broken?'barrier_break':'barrier_hit'];
   if(['slash','hack','crush','blunt','fist','stab'].includes(event.melee_style)){const pack=event.impact_surface==='flesh'&&['slash','hack','crush','stab'].includes(event.melee_style)?'flesh':'melee';return [`${pack}:${event.melee_style}:contact`,`${pack}:${event.melee_style}:fade`,...(['fire','magic','holy','ice','lightning'].includes(event.kind)?[event.kind==='fire'?'flame_lick':'magic_hit']:[])];}
   if(event.kind==='barrier')return ['barrier_shell'];

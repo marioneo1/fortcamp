@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Current martial kit: [Fighter additions and Barbarian Fury](design/MARTIAL_JOBS_REWORK.md) records the five-slot choices, innate resource, exact costs, healing, death defiance and migration. [Martial art/audio](art/MARTIAL_JOBS_V1.md) records the 4?4 painted packs and eight physical sounds. Battle Lab practice tiers now extend through 20 successes.
+
 Current armor-aware melee: [Flesh contact art/audio](art/FLESH_CONTACT_V1.md) distinguishes organic light armor from chain/plate and Automatons. [Capture rules](design/CAPTURE_AND_STARTING_ROLES.md) now include modest nonlethal damage and separate contact/capture outcomes.
 
 Current melee weapon and net presentation: [Melee families and capture net](art/MELEE_WEAPON_PRESENTATION_V1.md) covers six deliveries, contact timing, matching audio/art and per-tester Battle Lab weapons.

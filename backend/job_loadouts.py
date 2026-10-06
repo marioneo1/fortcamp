@@ -9,7 +9,7 @@ SKILLS = {}
 
 def active(key, name, description, effects, target='enemy', range=1, rule='melee', cooldown=2, range_shape='diamond'):
     return validate(dict(id=key, name=name, description=description, type='active',
-        source_kind='character', ability_version=1, target=target, range=range,
+        source_kind='character', ability_version=1, self_only=any(e['type']=='area_attack' for e in effects), target=target, range=range,
         elevation_rule=rule, range_shape=range_shape, cost={'cooldown':cooldown, 'charges':None}, effects=effects))
 
 
@@ -35,10 +35,12 @@ register('fighter','Fighter','Protect allies or break enemy positions.',
     strike('bash','Driving Strike','Strike with 150% attack power and push one cell. Solid collisions add half the hit as damage and stun for one activation. Colliding with a person damages and stuns both, including allies. Knockback resistance and stun immunity apply.',{'type':'displace','mode':'push','distance':1,'collision_stun':True},150),
     active('cover','Chain Snare','Hit an enemy within three cells, pull it up to two cells toward you, stopping beside you, halve its movement and reduce armor by 30% for two activations. Requires a clear chain path; displacement resistance applies.',[{'type':'attack','damage_bonus':0},{'type':'displace','mode':'pull','distance':2,'stop_adjacent':True,'conditions':[{'type':'hit'}]},{'type':'status','status':'hobbled','turns':2,'conditions':[{'type':'hit'}]},{'type':'status','status':'armor_fracture','turns':2,'conditions':[{'type':'hit'}]}],range=3,rule='ballistic',cooldown=3,range_shape='square'),
     passive('intercept','Intercept','Redirect one attack against an adjacent ally. Shares your reaction allowance.',reaction={'id':'intercept','name':'Intercept'}))
-register('barbarian','Barbarian','Disrupt nearby enemies, at the cost of staying exposed.',
-    strike('shove','Brutal Shove','Melee hit pushes one cell; walls stop displacement. Hitting a solid obstacle adds half the hit as collision damage; hitting a person hurts both, including allies.',{'type':'displace','mode':'push','distance':1}),
-    strike('expose','Crack Defenses','Melee hit applies Vulnerable for one target activation.',{'type':'status','status':'vulnerable','turns':1}),
-    passive('anchored','Anchored','50 extra knockback resistance; does not prevent damage.',{'knockback_resistance':50}))
+register('barbarian','Barbarian','Innate Fury: enemy damage that reaches HP grants 1 Fury (maximum 5). Spend Fury on heavy control attacks. Self/friendly damage and fully absorbed hits grant none.',
+    active('reckless_blow','Reckless Blow','Strike at 200% attack power and gain 1 Fury, even on a miss. Take 20% more damage from all sources until your next turn. Cooldown: 2 of your turns.',[{'type':'attack','power_percent':200}],cooldown=2),
+    active('skullbreaker','Skullbreaker','Spend 2 Fury. Strike at 125% attack power; a hit stuns for two target turns. Boss resistance and control immunity apply. Cooldown: 4 of your turns.',[{'type':'attack','power_percent':125},{'type':'status','status':'stun','turns':2,'conditions':[{'type':'hit'}]}],cooldown=4),
+    passive('bloodfury','Bloodfury','At 50% HP or below after a direct enemy hit, gain 2 Fury instead of 1. Enemy damage over time still grants 1. Fully absorbed hits grant none.'))
+SKILLS['job:barbarian:reckless_blow']['fury_gain']=1
+SKILLS['job:barbarian:skullbreaker']['fury_cost']=2
 register('rogue','Rogue','Exploit weak targets and interfere with their attacks.',
     strike('bleed','Open Wound','Melee hit applies Bleed for two target activations.',{'type':'status','status':'bleed','turns':2}),
     strike('blind','Pocket Sand','Melee hit blinds for one target activation.',{'type':'status','status':'blind','turns':1}),
@@ -94,9 +96,10 @@ later('fighter',
     active('pull','Earthbreaker','Leap up to three cells onto open ground. The landing shockwave strikes enemies within two cells with 200% attack power: the inner ring pushes two cells, the outer ring one. Collisions add half the impact damage to both people and stun surviving units for one activation. Walls, elevation and knockback resistance still matter. Ready again in five of your turns.',[{'type':'leap_attack','radius':2,'inner_push':2,'outer_push':1,'power_percent':200,'collision_stun':True}],range=3,rule='melee',cooldown=5),
     active('rally','Hold Together','Click your fighter. Remove Fear from yourself and allies within one cell. Each takes 25% less damage from their next direct hit and deals 25% more damage with their next attack, including all targets of an area attack. Each bonus is used separately; a missed attack spends the attack bonus. Walls block the effect. Bonuses do not stack.',[{'type':'cleanse','statuses':['fear'],'radius':1},{'type':'status','status':'rally_protection','turns':1,'radius':1},{'type':'status','status':'rally_power','turns':1,'radius':1}],'ally',1,'physical_care',4))
 later('barbarian',
-    passive('hide','Thick Hide','Gain 1 armor; offers durability instead of another active skill.',{'armor':1}),
-    active('drive','Drive Back','Melee hit pushes up to two cells. Walls stop the push; pit rules and resistance apply. Hitting a solid obstacle adds half the hit as collision damage; hitting a person hurts both, including allies.',[{'type':'attack','damage_bonus':0},{'type':'displace','mode':'push','distance':2,'conditions':[{'type':'hit'}]}],cooldown=3),
-    active('stand','Stand Your Ground','Remove Fear from yourself or an adjacent ally and grant Guard.',[{'type':'cleanse','statuses':['fear']},{'type':'guard'}],'ally',1,'physical_care',3))
+    passive('bloodied_strength','Bloodied Strength','Attack rises with missing HP: no bonus at full health, up to +50% attack at 1 HP. Healing reduces the bonus.'),
+    active('groundbreaker','Groundbreaker','Spend 4 Fury. Strike enemies in all eight adjacent cells at 200% attack power and push them one cell. Walls block the wave; knockback resistance and collision damage apply. Allies are safe. Target yourself. Cooldown: 5 of your turns.',[{'type':'area_attack','radius':1,'push':1,'power_percent':200}],'ally',1,'physical_care',5),
+    passive('too_angry_to_fall','Too Angry to Fall','Once per battle, lethal damage leaves you at 1 HP. Further lethal damage cannot finish you until your next turn begins. You do not automatically die afterward; another lethal hit is needed. Does not prevent capture or disappearing into a lethal pit.'))
+SKILLS['job:barbarian:groundbreaker'].update(fury_cost=4,self_only=True)
 later('rogue',
     strike('venom','Venom Edge','Melee hit attempts Poison for two target activations. Poison immunity applies.',{'type':'status','status':'poison','turns':2,'chance':75}),
     strike('pin','Pinning Strike','Melee hit attempts Bind for one activation. Control recovery prevents repeated locks.',{'type':'status','status':'bind','turns':1,'chance':75}),
@@ -139,6 +142,25 @@ later('captor',
     passive('coat','Padded Coat','Gain 1 armor. Does not improve capture chance.',{'armor':1}))
 
 
+
+def add_unlocks(job, entries):
+    for threshold, original in entries:
+        skill=deepcopy(original);skill['id']=f'job:{job}:{skill["id"]}';skill['source_name']=JOBS[job]['name']
+        SKILLS[skill['id']]=skill
+        JOBS[job]['unlocks'].append({'skill_id':skill['id'],'contracts':threshold})
+
+
+brace=active('brace','Brace','Self only: take 25% less damage from all sources for your next three turns. Cooldown: 5 of your turns.',[{'type':'status','status':'brace_defense','turns':3}],'ally',1,'physical_care',5)
+brace['self_only']=True
+wind=active('second_wind','Second Wind','Self only: immediately restore 50% of maximum HP, up to full health. One use per battle.',[{'type':'heal','max_hp_percent':50}],'ally',1,'physical_care',1)
+wind.update(self_only=True,cost={'cooldown':0,'charges':1})
+add_unlocks('fighter',[(12,brace),(16,wind),(20,active('victory_strike','Victory Strike','Strike at 150% attack power. Killing the target restores 10% of your maximum HP. Cooldown: 2 of your turns.',[{'type':'attack','power_percent':150}],cooldown=2))])
+add_unlocks('barbarian',[(12,passive('bloodthirst','Bloodthirst','A killing blow restores 10% of maximum HP. Multiple kills during the same turn each heal you. Then unavailable for 3 of your turns.')),
+                       (16,passive('unstoppable','Unstoppable','Automatically spend 1 Fury to remove one harmful status. Prioritizes disabling effects. Cooldown: 3 of your turns. Does not remove the exposure from Reckless Blow.'))])
+
+BARBARIAN_OLD_IDS = dict(zip(('shove','expose','anchored','hide','drive','stand'),
+                           ('reckless_blow','skullbreaker','bloodfury','bloodied_strength','groundbreaker','too_angry_to_fall')))
+
 def eligible(character):
     return character.get('source_kind') not in {'champion','celestial'} and not character.get('temporary_mercenary')
 
@@ -152,6 +174,14 @@ def initialize(character):
         character.setdefault('skill_slots',CAPACITY)
         character.setdefault('job_practice',0)
         character.setdefault('job_contract_credits',[])
+        if character.get('job_id')=='barbarian':
+            for field in ('learned_skills','equipped_skills'):
+                character[field]=list(dict.fromkeys('job:barbarian:'+BARBARIAN_OLD_IDS.get(key.split(':')[-1],key.split(':')[-1]) if key.startswith('job:barbarian:') else key for key in character[field]))
+        job=JOBS.get(character.get('job_id'))
+        if job:
+            for unlock in job['unlocks']:
+                if character['job_practice']>=unlock['contracts'] and unlock['skill_id'] not in character['learned_skills']:
+                    character['learned_skills'].append(unlock['skill_id'])
     return character
 
 
@@ -178,6 +208,7 @@ def update(state, character_id, skill_ids, job_id=None):
 
 def snapshot(character):
     if not eligible(character):return [],[],{}
+    initialize(character)
     equipped=character.get('equipped_skills',[])
     if len(equipped)>CAPACITY or len(set(equipped))!=len(equipped):raise ValueError('Invalid character loadout')
     actives=[];passives=[];modifiers={}

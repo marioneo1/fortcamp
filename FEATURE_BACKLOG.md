@@ -1,5 +1,13 @@
 # Fortcamp feature backlog
 
+## October 5: Fighter additions and Barbarian Fury (implemented in dev)
+
+Fighter adds Brace, Second Wind and Victory Strike. Barbarian now has innate five-segment Fury and eight authored choices, including direct-hit Bloodfury, health-based attack, death defiance, multi-kill healing and automatic one-status cleansing. Five shared active/passive slots remain. Existing learned/equipped Barbarian IDs migrate; earned practice unlocks additions. Existing battle snapshots and production stay unchanged.
+
+Two 4?4 painted atlases supply square skill/status icons and transparent effect phases. Eight physical SFX are installed, with contact synchronization and no generic magic overlay on Fighter self-care. Battle Lab tiers extend through 20 successes. Canonical rules: docs/design/MARTIAL_JOBS_REWORK.md; media: docs/art/MARTIAL_JOBS_V1.md.
+
+Still open: live balance/listening approval, deeper Fury-planning AI, authoring enemy Job kits, other Job presentation passes. No speculative universal skill scripting system or new runtime dependency.
+
 ## October 5: nonlethal restraint damage and armor-aware contacts (implemented in dev)
 
 Subdue now has modest balanced restraint power. One outcome roll selects capture, landed-but-escaped, or miss. Landed attempts deal real damage through armor/Guard/Barrier; damage stops at 1 HP so a boss still needs its capture check. Successful captures add no fabricated damage credit. The preview shows contact/capture chance and HP damage; numbers, rope cinching and sounds share the 320ms contact marker. Escaped catches cinch then slip; misses cause no damage. Capture weapons still only use Subdue as their basic attack.

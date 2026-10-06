@@ -150,7 +150,7 @@ def session_view(sid, row, snapshot=None):
 
 class JobTester(BaseModel):
     job_id: str
-    practice: Literal[0, 2, 5, 9] = 0
+    practice: Literal[0, 2, 5, 9, 12, 16, 20] = 0
     skill_ids: list[str] | None = Field(default=None, max_length=5)
     weapon_id: str | None = None
 

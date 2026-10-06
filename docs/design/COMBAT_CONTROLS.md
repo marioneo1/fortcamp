@@ -393,3 +393,15 @@ Doorway-size follow-up: doubled the painted-hand buttons from 22px to 44px.
 Each side shifts outward by 12px so the enlarged pair remains separate at the
 normal battle view. Door anchoring, commands and action costs are unchanged.
 Verified targeted frontend tests and Vite build; production unchanged.
+
+
+## October 5: Fury and self-targeted martial skills
+
+Barbarian has five Fury segments below its map token and a numbered meter below
+HP in the acting card and cursor inspection. Hovering includes its innate Job
+rule; attack inspection uses Bloodied Strength's effective attack. Skills report
+Fury costs/unavailability, existing cooldown numbers and remaining charges.
+Brace, Second Wind and Groundbreaker target the caster, not another ally.
+Groundbreaker previews all eight neighboring cells and individual enemy damage.
+New physical effects finish before the next actor moves; damage text remains
+above the effect layer. Reduced motion disables aura breathing and sprite growth.

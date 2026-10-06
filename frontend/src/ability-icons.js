@@ -2,8 +2,16 @@ import {JOB_ICON_ART} from './ability-icon-manifest.js';
 export const SKILL_CATEGORIES={damage:{label:'Damage',color:'#d97c64',badge:'✦'},dot:{label:'Damage over time',color:'#dfab51',badge:'⋮'},
   control:{label:'Control',color:'#aa91dc',badge:'↔'},self:{label:'Self buff',color:'#d3bc74',badge:'●'},ally:{label:'Ally support',color:'#82b6dd',badge:'◈'},
   heal:{label:'Restoration',color:'#8dbf91',badge:'+'},summon:{label:'Summon / device',color:'#79bdb4',badge:'◆'}};
+export const MARTIAL_ICON_ART=Object.fromEntries([
+ ['fighter','brace','brace'],['fighter','second_wind','second-wind'],['fighter','victory_strike','victory-strike'],
+ ['barbarian','bloodfury','bloodfury'],['barbarian','reckless_blow','reckless-blow'],['barbarian','skullbreaker','skullbreaker'],
+ ['barbarian','groundbreaker','groundbreaker'],['barbarian','bloodied_strength','bloodied-strength'],
+ ['barbarian','too_angry_to_fall','too-angry-to-fall'],['barbarian','bloodthirst','bloodthirst'],['barbarian','unstoppable','unstoppable']
+].map(([job,key,file])=>[`job:${job}:${key}`,`/assets/martial-jobs-v1/${file}.png`]));
 export function skillCategory(skill){
   const effects=skill.effects||[],has=type=>effects.some(e=>e.type===type);
+  if(has('area_attack'))return 'damage';
+  if(skill.self_only&&!has('heal'))return 'self';
   if(has('deploy'))return 'summon';
   if(skill.heal||skill.cleanses||has('heal')||has('cleanse')||effects.some(e=>e.status==='regeneration'))return 'heal';
   if(skill.reaction?.id==='intercept')return 'ally';
@@ -17,6 +25,7 @@ export function skillCategory(skill){
 }
 export const FIGHTER_ICON_ART={'job:fighter:cover':'chain-snare','job:fighter:pull':'earthbreaker','job:fighter:rally':'hold-together'};
 export function skillIcon(skill){
+  if(MARTIAL_ICON_ART[skill.id])return MARTIAL_ICON_ART[skill.id];
   if(FIGHTER_ICON_ART[skill.id])return '/assets/combat-fighter-v3/'+FIGHTER_ICON_ART[skill.id]+'.png';
   if(JOB_ICON_ART[skill.id])return JOB_ICON_ART[skill.id];
   const category=skillCategory(skill),effects=skill.effects||[];

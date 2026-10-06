@@ -24,11 +24,15 @@ from . import combat_abilities as abilities
 from . import combat_tactics as tactics
 from . import combat_spaces as spaces
 from . import combat_entities as entities
+from . import combat_martial as martial
 from .combat_feedback import record as feedback
 from .combat_melee import weapon_style, attack_style, capture_style, armor_material, impact_surface
 
 
 STATUS_DEFINITIONS = {
+    "brace_defense":{"name":"Brace","icon":"25%","description":"Take 25% less damage from all sources for the listed owner turns."},
+    "reckless_exposure":{"name":"Reckless Exposure","icon":"+20%","description":"Take 20% more damage from all sources until your next turn begins."},
+    "death_defiance":{"name":"Too Angry to Fall","icon":"1HP","description":"Lethal damage leaves you at 1 HP until your next turn begins. Once per battle; you do not automatically die afterward."},
     "rally_protection":{"name":"Hold Together: Protection","icon":"25%","description":"Take 25% less damage from the next direct hit. Consumed separately from the attack bonus. Does not stack with Guard; damage over time does not consume it."},
     "rally_power":{"name":"Hold Together: Attack","icon":"+25%","description":"Deal 25% more direct damage with the next attack, including every target of an area attack. A miss spends it. Does not boost damage over time, collision damage or counterattacks. Does not stack."},
     "armor_fracture": {"name":"Armor Fracture", "icon":"◇↓", "description":"Armor is reduced by 30%, rounded up, for the listed activations. Does not stack."},
@@ -328,7 +332,7 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
             skills.append({'id': 'field_care', 'name': 'Field Care', 'target': 'ally', 'effect': 'support',
                            'range': 1, 'heal': 8, 'cleanses': ['bleed'], 'scaling': 'int',
                            'elevation_rule': 'physical_care', 'description': 'One shared technique use per battle. Range 1: restore 8 + half INT HP and stop Bleed. Physical treatment works while muted; cannot revive.'})
-    from .job_loadouts import snapshot as snapshot_loadout
+    from .job_loadouts import snapshot as snapshot_loadout, JOBS
     job_skills, job_passives, job_modifiers = snapshot_loadout(character)
     skills = abilities.snapshot(skills + job_skills, _effective_attribute(state, character, 'int'))
     special = skills[0] if skills else None
@@ -350,6 +354,8 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
         "evasion": int(racial["evasion"]) + perks.get('evasion',0) + job_modifiers.get('evasion',0), "movement_type": racial["movement_type"],
         "displacement_resistance": job_modifiers.get('knockback_resistance',0),
         "job_id": character.get('job_id'), "passives": job_passives,
+        "job_description": JOBS.get(character.get('job_id'),{}).get('description',''),
+        "martial_version":1, "fury":0, "fury_cap":5 if character.get('job_id')=='barbarian' else 0,
         "perk_modifiers":perks,
         "racial_resistances": sorted(set(racial["resistances"])|set(rules['resistances'])), "racial_weaknesses": list(racial["weaknesses"]),
         "gear_rules":rules,
@@ -1596,6 +1602,7 @@ def _current_unit(battle: dict, activate: bool = True) -> dict | None:
                 if unit.get('ability_version'):
                     abilities.start_activation(unit, stamp)
                     unit['entity_budget_spent']=0
+                martial.start_activation(battle, unit)
                 spaces.expire_form(unit)
                 if battle.get('zones'):
                     spaces.expire_zones(battle,unit)
@@ -1653,7 +1660,7 @@ def _effective_armor(unit):
 
 
 def _ability_power_bonus(actor,skill,effect):
-    attack=int(skill.get('attack',actor['attack']))
+    attack=int(skill.get('attack',martial.attack_power(actor)))
     return attack*effect.get('power_percent',100)//100-attack+effect.get('damage_bonus',0)
 
 
@@ -1662,7 +1669,7 @@ def _damage_before_barrier(battle,attacker,target,bonus=0,armor_pierce=0,intent=
     if conditions.has(target, 'vulnerable') and not attacker.get('status_tick'):
         armor = max(0, armor - 3)
         conditions.remove(target, 'vulnerable')
-    damage = max(1, int(attacker["attack"]) + bonus - armor)
+    damage = max(1, (int(attacker["attack"]) if attacker.get("status_tick") else martial.attack_power(attacker)) + bonus - armor)
     if conditions.has(attacker, 'berserk') and not attacker.get('status_tick'):
         damage += 3
     if conditions.has(target, 'freeze') and not attacker.get('status_tick'):
@@ -1698,7 +1705,7 @@ def _damage_before_barrier(battle,attacker,target,bonus=0,armor_pierce=0,intent=
         target["guarding"] = False
         conditions.remove(target,"rally_protection")
         _record_sound(battle, "shield_block", offset=185)
-    return damage
+    return martial.incoming_damage(target,damage)
 
 
 def _deal_damage(
@@ -1734,6 +1741,7 @@ def _deal_damage(
     if attacker.get('nonlethal_floor'):
         damage=min(damage,max(0,previous_hp-1))
     target["hp"] = max(0, previous_hp - damage)
+    martial.survive(battle,target,intent)
     if target['hp']==0 and intent!='nonlethal' and not attacker.get('environmental_fall') and target.get('gear_rules',{}).get('lifeline') and not target.get('lifeline_used'):
         target['hp']=1;target['lifeline_used']=True
         target['statuses']=[s for s in target.get('statuses',[]) if s.get('id')!='lifeline_ready']+[{'id':'lifeline_spent'}]
@@ -1781,6 +1789,9 @@ def _deal_damage(
             carried_object.update({"x": target["x"], "y": target["y"], "state": "ground", "carried_by": None})
             target["carrying_object"] = None
             target.pop("carried_payload_penalty", None)
+    martial.after_damage(battle,attacker,target,previous_hp,ability)
+    martial.try_unstoppable(target)
+    martial.flush(battle,target)
     source=battle.get("units",{}).get(attacker.get("id"))
     if source and source.get('temporary'):source=battle['units'].get(source['owner_id'])
     if source and source.get("team")=="player" and target.get('team')!='player' and not target.get('temporary'):
@@ -2618,6 +2629,8 @@ def _guard(battle: dict,unit: dict) -> None:
 def _support_eligible(battle, actor, target, effect):
     if not target or target.get('team') != actor.get('team') or not _combat_active(target):
         return False
+    if effect.get('self_only') and target['id']!=actor['id']:return False
+    if effect.get('area_attack'):return target['id']==actor['id'] and any(_combat_active(u) and u['team']!=actor['team'] and max(abs(u['x']-actor['x']),abs(u['y']-actor['y']))<=1 and _line_of_sight(battle,actor,u) for u in battle['units'].values())
     if effect.get('area_cleanse'):
         cells=_area_cells(battle,actor,effect['area_cleanse_radius'])
         return target['id']==actor['id'] and any(
@@ -2658,10 +2671,11 @@ def _apply_support(battle, actor, target, effect):
 def _support_effect(skill, actor):
     effect = dict(skill)
     if skill.get('ability_version'):
-        effect['heal']=sum(e['amount'] for e in skill['effects'] if e['type']=='heal')
+        effect['heal']=sum(e.get('amount',max(1,round(actor['max_hp']*e.get('max_hp_percent',0)/100))) for e in skill['effects'] if e['type']=='heal')
+        effect['area_attack']=any(e['type']=='area_attack' for e in skill['effects'])
         effect['cleanses']=[s for e in skill['effects'] if e['type']=='cleanse' for s in e['statuses']]
         effect['guard_ally']=any(e['type']=='guard' for e in skill['effects'])
-        effect['support_statuses']=[e['status'] for e in skill['effects'] if e['type']=='status' and e['status'] in {'regeneration','braced','rally_protection','rally_power'}]
+        effect['support_statuses']=[e['status'] for e in skill['effects'] if e['type']=='status' and e['status'] in {'regeneration','braced','rally_protection','rally_power','brace_defense'}]
         effect['barrier']=max((e['amount'] for e in skill['effects'] if e['type']=='barrier'),default=0)
         effect['form_change']=any(e['type']=='form' for e in skill['effects'])
         effect['zone_setup']=any(e['type']=='zone' for e in skill['effects'])
@@ -2792,8 +2806,9 @@ def _resolve_ability(battle, actor, target, skill):
     if not abilities.availability(actor,skill)['available']:
         raise ValueError(abilities.availability(actor,skill)['reason'])
     abilities.validate(skill)
-    if actor.get('capture_weapon') and any(e['type'] in {'attack','leap_attack'} for e in skill['effects']):
+    if actor.get('capture_weapon') and any(e['type'] in {'attack','leap_attack','area_attack'} for e in skill['effects']):
         raise ValueError('Capture weapons cannot perform damaging techniques')
+    if skill.get('self_only') and target['id']!=actor['id']:raise ValueError('Target yourself with this ability')
     for effect in skill['effects']:
         if effect['type']=='deploy':
             if target['id']!=actor['id'] or not entities.available(battle,actor,effect['entity']):raise ValueError('Choose self with available deployment resources')
@@ -2806,11 +2821,16 @@ def _resolve_ability(battle, actor, target, skill):
     _commit_player_movement(battle, actor)
     if not _combat_active(actor):return {'interrupted':True}
     last_damage=None;attack_packet=None
+    if skill['id']=='job:barbarian:reckless_blow':
+        conditions.apply(actor,'reckless_exposure',1,actor)
     def attack(effect):
         nonlocal target,last_damage,attack_packet
         target,hit,damage,preview,roll=_perform_attack(battle,actor,target,skill['elevation_rule'],
             _ability_power_bonus(actor,skill,effect),effect.get('armor_pierce',0),ability=skill,defer_reaction=True)
         last_damage=damage;attack_packet=battle.get('attack_serial')
+        martial_skill=skill['id'].split(':')[-1]
+        if martial_skill in {'victory_strike','reckless_blow','skullbreaker'} and (hit or martial_skill=='reckless_blow'):
+            martial.effect(battle,actor if martial_skill=='reckless_blow' else target,martial_skill,attack_packet,martial_skill=='reckless_blow')
         if any(e.get('stop_adjacent') for e in skill['effects']):
             for event in battle.get('animation_events',[]):
                 if event.get('attack_packet')==attack_packet and event.get('attack_event'):
@@ -2855,8 +2875,36 @@ def _resolve_ability(battle, actor, target, skill):
         for event in battle['animation_events'][begin:]:event.setdefault('attack_packet',packet)
         conditions.remove(actor,'rally_power')
         return {'area_attack':True}
+    def area_attack(effect):
+        nonlocal attack_packet
+        battle['attack_serial']=battle.get('attack_serial',0)+1
+        packet=battle['attack_serial'];attack_packet=packet
+        battle.setdefault('animation_events',[]).append({'type':'ground_impact','unit_id':actor['id'],
+            'x':actor['x'],'y':actor['y'],'radius':1,'attack_packet':packet,'effect_art':'groundbreaker'})
+        _record_sound(battle,'barbarian_groundbreaker',offset=0)
+        battle['animation_events'][-1]['attack_packet']=packet
+        victims=[u for u in list(battle['units'].values()) if u['id']!=actor['id'] and _combat_active(u)
+                 and u['team']!=actor['team'] and max(abs(u['x']-actor['x']),abs(u['y']-actor['y']))<=1
+                 and _line_of_sight(battle,actor,u)]
+        impacts=[]
+        for enemy in victims:
+            battle['attack_serial']+=1;child=battle['attack_serial']
+            offset=round(((enemy['x']-actor['x'])**2+(enemy['y']-actor['y'])**2)**.5*400/3)
+            begin=len(battle['animation_events'])
+            hit,preview,roll=_attack_hits(battle,actor,enemy,'melee')
+            damage=_deal_damage(battle,actor,enemy,preview['damage_bonus']+_ability_power_bonus(actor,skill,effect),ability=skill) if hit else 0
+            if not hit:feedback(battle,enemy,'miss')
+            for event in battle['animation_events'][begin:]:event.update(attack_packet=child,impact_origin_packet=packet,impact_offset=offset)
+            if hit:impacts.append((enemy,damage,child,offset))
+            battle['log'].append(f"{actor['name']} hits {enemy['name']} with Groundbreaker for {damage} damage." if hit else f"{enemy['name']} avoids Groundbreaker.")
+        for enemy,damage,child,offset in impacts:
+            begin=len(battle['animation_events'])
+            _apply_displacement(battle,actor,enemy,{'mode':'push','distance':1},damage,child)
+            for event in battle['animation_events'][begin:]:event.update(attack_packet=child,impact_origin_packet=packet,impact_offset=offset)
+        conditions.remove(actor,'rally_power')
+        return {'area_attack':True}
     def heal(effect):
-        amount=min(target['max_hp']-target['hp'],effect['amount'])
+        amount=min(target['max_hp']-target['hp'],effect.get('amount',max(1,round(target['max_hp']*effect.get('max_hp_percent',0)/100))))
         target['hp']+=amount
         if amount:feedback(battle,target,'heal',amount)
         return {'healing':amount}
@@ -2911,16 +2959,21 @@ def _resolve_ability(battle, actor, target, skill):
             battle['log'].append(f"{target['name']} suffers {sid}.")
             feedback(battle,target,'status',status_id=sid,**({'attack_packet':attack_packet} if attack_packet is not None else {}))
     result=abilities.resolve(skill,target,{'attack':attack,'heal':heal,'cleanse':cleanse,'guard':guard,'status':status,
-        'barrier':barrier,'mark':mark,'displace':displace,'zone':zone,'form':form,'deploy':deploy,'leap_attack':leap_attack})
+        'barrier':barrier,'mark':mark,'displace':displace,'zone':zone,'form':form,'deploy':deploy,'leap_attack':leap_attack,'area_attack':area_attack})
     abilities.spend(actor,skill)
+    if skill['id'] in {'job:fighter:brace','job:fighter:second_wind'}:
+        martial.effect(battle,actor,skill['id'].split(':')[-1])
+    if skill.get('fury_gain'):martial.gain_fury(battle,actor,skill['fury_gain'])
+    for unit in battle['units'].values():martial.flush(battle,unit)
     if result.get('attacked'):_react_after_attack(battle,actor,target,result['hit'],skill['elevation_rule'])
-    if skill['target']=='ally':
+    if skill['target']=='ally' and not result.get('area_attack'):
         details=[f"{result.get('healing',0)} HP restored"] if result.get('healing') else []
         if skill.get('cleanses'):details.append('harmful effects treated')
         if any(e['type']=='barrier' for e in skill['effects']):details.append('Barrier applied')
         if any(e['type']=='guard' for e in skill['effects']):details.append('Guard granted')
         battle['log'].append(f"{actor['name']} uses {skill['name']} on {target['name']}"+(': '+', '.join(details) if details else '')+'.')
-        _record_sound(battle,'magic_cast' if skill['elevation_rule']=='line_of_effect' else 'guard')
+        if skill['id'] not in {'job:fighter:brace','job:fighter:second_wind'}:
+            _record_sound(battle,'magic_cast' if skill['elevation_rule']=='line_of_effect' else 'guard')
     elif not result.get('attacked') and not result.get('area_attack'):
         _record_sound(battle,'magic_cast' if skill['elevation_rule'] in {'ignore','line_of_effect'} else 'guard')
     actor['acted']=True
@@ -2932,6 +2985,10 @@ def _auto_support(battle, unit):
         if not abilities.availability(unit,skill)['available'] or skill.get('target') != 'ally' or (conditions.has(unit, 'mute') and skill['elevation_rule'] == 'line_of_effect'):
             continue
         effect = _support_effect(skill, unit)
+        if effect.get('area_attack'):
+            if _support_eligible(battle,unit,unit,effect):
+                _resolve_ability(battle,unit,unit,skill);_finish_turn(battle);return True
+            continue
         if effect.get('area_cleanse'):
             if _support_eligible(battle,unit,unit,effect):
                 _resolve_ability(battle,unit,unit,skill);_finish_turn(battle);return True
@@ -3486,6 +3543,7 @@ def battle_view(battle: dict) -> dict:
     view['zones']=spaces.presentation(view)
     for unit in view['units'].values():
         unit['effective_armor']=_effective_armor(unit)
+        unit['effective_attack']=martial.attack_power(unit)
         if unit.get('form'):
             rule=spaces.FORMS[unit['form']['id']]
             unit['statuses'].append({'id':'wild_form','name':rule['name'],'description':rule['description'],
@@ -3654,6 +3712,18 @@ def battle_view(battle: dict) -> dict:
                     actor,approach=_support_position(view,current,target,effect,reachable,parents) if allowed else (None,None)
                     entries[target['id']] = {'chance': 100, 'support': True, 'heal': effect.get('heal', 0), **(approach or {}),
                         'zones':([{'cells':_area_cells(view,current,effect['area_cleanse_radius']),'kind':'rally'}] if _rally_skill(choice) else [{'cells':_zone_cells(view,target,e),'kind':e['zone']} for e in choice.get('effects',[]) if e['type']=='zone'])} if actor else None
+                    if actor and effect.get('area_attack'):
+                        cells=_area_cells(view,actor,1)
+                        forecasts={}
+                        for enemy in _living(view,'enemy'):
+                            if {'x':enemy['x'],'y':enemy['y']} not in cells:continue
+                            hit=_attack_preview(view,actor,enemy,'melee')
+                            probe={**enemy,'statuses':[dict(s) for s in enemy.get('statuses',[])]}
+                            amount=_damage_before_barrier({'animation_events':[]},actor,probe,
+                                hit['damage_bonus']+_ability_power_bonus(actor,choice,choice['effects'][0]))
+                            shield=max((s.get('amount',0) for s in enemy.get('statuses',[]) if s['id']=='barrier'),default=0)
+                            forecasts[enemy['id']]={'damage_on_hit':max(0,amount-shield),'chance':hit['chance'],'push':1,'resistance':tactics.displacement_resistance(enemy)}
+                        entries[target['id']].update(zones=[{'kind':'impact','cells':cells}],target_forecasts=forecasts)
                     if choice['id'] == (skill or {}).get('id'):
                         view['attack_previews'][target['id']]['skill'] = entries[target['id']]
                 view['skill_previews'][choice['id']] = entries
@@ -3916,7 +3986,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         else:
             if not target or not _combat_active(target) or target['team']!='enemy' or concealment.unseen(target):
                 raise ValueError('Choose a visible living enemy')
-            if unit.get('capture_weapon') and any(e['type'] in {'attack','leap_attack'} for e in selected_skill['effects']):
+            if unit.get('capture_weapon') and any(e['type'] in {'attack','leap_attack','area_attack'} for e in selected_skill['effects']):
                 raise ValueError('Capture weapons cannot perform damaging techniques')
             if _apply_attack_approach(battle,unit,target,selected_skill['range'],command,selected_skill.get('range_shape','diamond')):return battle_view(battle)
             if not _can_attack(battle,unit,target,selected_skill['range'],selected_skill.get('range_shape','diamond')):raise ValueError('Target is outside technique range')

@@ -24,6 +24,7 @@ export function displacementPreviewMarkup(preview,battle,escape){
 // Short, resolved action effects. No persistent ground tiles or opaque ground panels.
 export function fighterEffectMarkup(event,battle){
  const x=(event.x+.5)/battle.width*100,y=(event.y+.5)/battle.height*100;
+ if(event.type==='ground_impact'&&event.effect_art==='groundbreaker')return `<div class="fighter-ground-impact martial-ground-impact" style="left:${x}%;top:${y}%;width:${3/battle.width*100}%">${Array.from({length:4},(_,i)=>`<img class="ground-phase phase-${i}" src="/assets/martial-jobs-v1/groundbreaker-${i+1}.png" alt="">`).join('')}</div>`;
  if(event.type==='ground_impact')return `<div class="fighter-ground-impact" style="left:${x}%;top:${y}%;width:${(event.radius*2+1)/battle.width*100}%"><img src="/assets/combat-fighter-v3/earth-impact.png" alt=""><i></i></div>`;
  if(event.type==='fighter_rally')return `<div class="fighter-rally-wave" style="left:${x}%;top:${y}%;width:${(event.radius*2+1)/battle.width*100}%"></div>`;
  if(event.type==='chain_attack'){

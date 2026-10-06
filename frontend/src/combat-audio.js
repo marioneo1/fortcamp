@@ -7,7 +7,11 @@ export function combatAudioSchedule(battle,events=battle?.animation_events||[]){
   for(const {event,start:delay,duration} of impactTimeline(events)){
     end=Math.max(end,delay+duration);
     if(event.type==='movement'&&event.leap)playSfx('earthbreaker_launch',.4,delay);
-    else if(event.type==='ground_impact'){playSfx('earthbreaker_land',.65,delay);playSfx('earthbreaker_crater',.38,delay)}
+    else if(event.type==='ground_impact'&&!event.effect_art){playSfx('earthbreaker_land',.65,delay);playSfx('earthbreaker_crater',.38,delay)}
+    else if(event.type==='martial_effect'){
+      const cue={brace:'martial_brace',second_wind:'martial_second_wind',victory_strike:'martial_victory',reckless_blow:'barbarian_reckless',skullbreaker:'barbarian_skullbreaker',death_defiance:'barbarian_defiance',unstoppable:'barbarian_unstoppable'}[event.skill];
+      if(cue)playSfx(cue,['victory_strike','reckless_blow','skullbreaker'].includes(event.skill)?.24:.4,delay);
+    }
     else if(event.type==='collision_recoil')playSfx(event.bystander_id?'body_into_body':'body_into_wall',event.bystander_id ? .5 : .63,delay);
     else if(event.type==='net_cast'){playSfx('capture_net_cast',.32,delay+35);playSfx(event.hit?'capture_net_cinch':'capture_net_slip',.4,delay+COMBAT_MOTION.netContact);if(event.hit&&event.captured===false)playSfx('capture_net_slip',.25,delay+COMBAT_MOTION.netContact+130)}
     else if(event.type==='chain_attack'){playSfx('melee_swing',.12,delay+40);playSfx(event.hit?'melee_hit_light':'attack_miss',event.hit?.55:.32,delay+220)}

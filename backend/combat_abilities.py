@@ -6,7 +6,7 @@ from . import combat_entities as entities
 
 VERSION = 1
 STATUSES = {'stun','sleep','poison','bleed','charm','confuse','berserk','freeze',
-            'burn','blind','bind','slow','paralyze','mute','fear','vulnerable','regeneration','braced','hobbled','armor_fracture','rally_protection','rally_power'}
+            'burn','blind','bind','slow','paralyze','mute','fear','vulnerable','regeneration','braced','hobbled','armor_fracture','rally_protection','rally_power','brace_defense','reckless_exposure'}
 RULES = {'melee','ballistic','ignore','line_of_effect','physical_care'}
 
 
@@ -37,6 +37,9 @@ def validate(skill):
         _integer(cost['charges'], 1, 20)
     if not cost['cooldown'] and cost['charges'] is None:
         raise ValueError('Ability must have a cooldown or charge limit')
+    if 'fury_cost' in skill:_integer(skill['fury_cost'],1,5)
+    if 'fury_gain' in skill:_integer(skill['fury_gain'],1,2)
+    if 'self_only' in skill and not isinstance(skill['self_only'],bool):raise ValueError('Invalid self targeting')
     effects = skill.get('effects')
     if not isinstance(effects, list) or not 1 <= len(effects) <= 4:
         raise ValueError('Ability needs one to four ordered effects')
@@ -46,11 +49,12 @@ def validate(skill):
         if not isinstance(effect, dict):
             raise ValueError('Ability effect must be an object')
         kind = effect.get('type')
-        allowed = {'attack': {'damage_bonus','armor_pierce','power_percent'}, 'heal': {'amount'},
+        allowed = {'attack': {'damage_bonus','armor_pierce','power_percent'}, 'heal': {'amount','max_hp_percent'},
                    'cleanse': {'statuses','radius'}, 'guard': set(), 'status': {'status','turns','chance','radius'},
                    'barrier': {'amount','turns'}, 'mark': {'turns','accuracy'},
                    'displace': {'mode','distance','collision_damage','stop_adjacent','collision_stun'},
                    'leap_attack': {'radius','inner_push','outer_push','power_percent','collision_stun'},
+                   'area_attack': {'radius','push','power_percent'},
                    'zone': {'zone','radius','turns'}, 'form': {'form','turns'}, 'deploy': {'entity'}}
         if kind not in allowed or set(effect) - (allowed[kind] | {'type','conditions'}):
             raise ValueError('Unsupported ability effect')
@@ -59,7 +63,7 @@ def validate(skill):
                 raise ValueError('Only one enemy attack is supported')
             _integer(effect.get('damage_bonus',0), -30, 30)
             _integer(effect.get('armor_pierce',0), 0, 30)
-        if kind in {'attack','leap_attack'}:_integer(effect.get('power_percent',100),100,250)
+        if kind in {'attack','leap_attack','area_attack'}:_integer(effect.get('power_percent',100),100,250)
         if kind in {'displace','leap_attack'} and 'collision_stun' in effect and not isinstance(effect['collision_stun'],bool):
             raise ValueError('Invalid collision stun policy')
         if kind in {'heal','cleanse','guard','barrier'} and skill['target'] != 'ally':
@@ -92,8 +96,14 @@ def validate(skill):
             for field in ('radius','inner_push','outer_push'):_integer(effect.get(field),1,2)
         if kind == 'displace' and 'stop_adjacent' in effect and not isinstance(effect['stop_adjacent'],bool):
             raise ValueError('Invalid pull stopping policy')
+        if kind == 'area_attack':
+            if skill['target']!='ally' or not skill.get('self_only') or len(effects)!=1:
+                raise ValueError('Area attacks require self targeting and one effect')
+            _integer(effect.get('radius'),1,1)
+            _integer(effect.get('push'),1,2)
         if kind == 'heal':
-            _integer(effect['amount'], 1, 200)
+            if ('amount' in effect)==('max_hp_percent' in effect):raise ValueError('Choose one healing amount')
+            _integer(effect.get('amount',effect.get('max_hp_percent')), 1, 100 if 'max_hp_percent' in effect else 200)
         if kind == 'cleanse':
             if 'radius' in effect:_integer(effect['radius'],1,2)
             if not isinstance(effect.get('statuses'), list) or not effect['statuses'] or any(s not in STATUSES for s in effect['statuses']):
@@ -101,7 +111,7 @@ def validate(skill):
         if kind == 'status':
             if 'radius' in effect:
                 _integer(effect['radius'],1,2)
-                if skill['target']!='ally' or effect.get('status') not in {'rally_protection','rally_power'} or effect.get('chance',100)!=100:
+                if skill['target']!='ally' or effect.get('status') not in {'rally_protection','rally_power','brace_defense','reckless_exposure'} or effect.get('chance',100)!=100:
                     raise ValueError('Area status effects support guaranteed one-use rally bonuses only')
             if effect.get('status') not in STATUSES:
                 raise ValueError('Unsupported status')
@@ -180,8 +190,9 @@ def availability(unit, skill):
     if charges is not None and state.get('uses',0)>=charges:
         return {'available':False,'reason':'No uses remaining','uses_remaining':0,'cooldown_remaining':0}
     remaining=max(0,state.get('ready_at',0)-unit.get('ability_activation',0))
-    restriction = ('Weapon techniques are unavailable in this form' if unit.get('form') and skill.get('source_kind','equipment')=='equipment' and any(e['type'] in {'attack','leap_attack'} for e in skill['effects']) else
-                   'Capture weapons cannot perform damaging techniques' if unit.get('capture_weapon') and any(e['type'] in {'attack','leap_attack'} for e in skill['effects']) else
+    restriction = (f"Requires {skill['fury_cost']} Fury" if unit.get('fury',0)<skill.get('fury_cost',0) else
+                   'Weapon techniques are unavailable in this form' if unit.get('form') and skill.get('source_kind','equipment')=='equipment' and any(e['type'] in {'attack','leap_attack','area_attack'} for e in skill['effects']) else
+                   'Capture weapons cannot perform damaging techniques' if unit.get('capture_weapon') and any(e['type'] in {'attack','leap_attack','area_attack'} for e in skill['effects']) else
                    'Mute prevents this spell' if skill['elevation_rule'] in {'ignore','line_of_effect'} and any(s.get('id')=='mute' for s in unit.get('statuses',[])) else None)
     return {'available':remaining==0 and not unit.get('acted') and not restriction,'reason':'Main action already used' if unit.get('acted') else restriction or (f'Ready in {remaining} of your turns' if remaining else None),
             'cooldown_remaining':remaining,'uses_remaining':None if charges is None else charges-state.get('uses',0)}
@@ -193,6 +204,7 @@ def spend(unit, skill):
     if not skill.get('ability_version'):
         unit['special_used']=True
         return
+    if skill.get('fury_cost'):unit['fury']-=skill['fury_cost']
     state=unit.setdefault('ability_state',{}).setdefault(skill['id'],{})
     state['uses']=state.get('uses',0)+1
     state['ready_at']=unit.get('ability_activation',0)+skill['cost']['cooldown']

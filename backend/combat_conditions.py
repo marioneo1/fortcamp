@@ -32,7 +32,9 @@ def apply(unit, sid, turns, source=None):
         status.pop('turns',None)  # One-use bonuses remain until consumed, within this battle.
         status.pop('expiry',None)
     unit.setdefault('statuses', []).append(status)
-    return True
+    from .combat_martial import try_unstoppable
+    try_unstoppable(unit)
+    return has(unit,sid)
 
 def start_activation(battle, unit):
     """Called once by the engine's persistent activation stamp."""
