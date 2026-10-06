@@ -1,5 +1,10 @@
 # Fortcamp feature backlog
 
+## October 6: Restore source dev and prepare spell images before playback (implemented in dev)
+
+Rolled back build-before-start/preview dev mode after reported loading regressions. Vite source serving retains no-store headers and API proxy; steady mode uses a CSS-only client without sockets/reload logic. Optional live edit restores stock Vite; production unaffected. Initial HTML hides inactive screens before CSS arrives. Mage battle entry warms equipped effect assets; manual/auto responses await required image load/decode before the shared impact timeline, retaining command lock and bounded failure timeout. Pending: user confirmation over the actual tunnel; no claim that every first-load delay is gone. Docs: docs/design/DEVELOPMENT_RUNNER.md and docs/art/MAGE_V1.md.
+
+
 ## October 6: Uninterrupted dev playtesting and calmer fire (implemented in dev)
 
 Normal dev launcher builds browser files then serves preview on 5174 with API proxy to 8001, retaining real login/bot/debug/dev saves. Removes Vite's reload client and backend automatic reloader from default playtesting. Optional FORTCAMP_DEV_AUTO_RELOAD=true restores live editing, with Python watches limited to backend. Latest logs are timestamped and previous sessions archived; failed builds stop startup. Scorched loops slowed to 3.2?4.0 seconds. Available log showed no backend crash/restart for reported browser refresh; dev reload/reconnect is plausible, exact original cause unproven. Pending: user confirmation during long play sessions and further flame-frame refinement if shape motion still feels excessive. Reference: docs/design/DEVELOPMENT_RUNNER.md and docs/art/SCORCHED_V3.md.

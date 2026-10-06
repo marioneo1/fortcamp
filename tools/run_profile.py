@@ -65,8 +65,7 @@ def launch_commands(profile,ports,env):
     if profile in ('dev','dev-discord'):
         if env.get('FORTCAMP_DEV_AUTO_RELOAD','false').lower() in {'true','1','yes'}:
             commands[0].extend(['--reload','--reload-dir',str(ROOT/'backend')])
-        script='dev' if env.get('FORTCAMP_DEV_AUTO_RELOAD','false').lower() in {'true','1','yes'} else 'preview'
-        commands.append(['cmd','/c','npm.cmd','--prefix','frontend','run',script,'--','--host','127.0.0.1','--port',str(ports[-1])])
+        commands.append(['cmd','/c','npm.cmd','--prefix','frontend','run','dev','--','--host','127.0.0.1','--port',str(ports[-1])])
     return commands
 
 
@@ -77,18 +76,6 @@ def relay_output(child, log, lock):
             log.write(f'[{datetime.now().isoformat(timespec="seconds")}] {line}');log.flush()
             try:sys.stdout.write(line);sys.stdout.flush()
             except (OSError, UnicodeError):pass
-
-
-def prepare_frontend(profile,env,cwd,log,lock):
-    if profile not in {'dev','dev-discord'} or env.get('FORTCAMP_DEV_AUTO_RELOAD','false').lower() in {'true','1','yes'}:return 0
-    print('Building current dev browser files for uninterrupted playtesting...',flush=True)
-    result=subprocess.run(['cmd','/c','npm.cmd','--prefix','frontend','run','build'],cwd=cwd,env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,encoding='utf-8',errors='replace')
-    with lock:
-        for line in result.stdout.splitlines(keepends=True):
-            log.write(f'[{datetime.now().isoformat(timespec="seconds")}] {line}')
-            print(line,end='',flush=True)
-        log.flush()
-    return result.returncode
 
 
 def main():
@@ -124,10 +111,6 @@ def main():
     log=log_path.open('w',encoding='utf-8');lock=threading.Lock()
     log.write(f'Session started {datetime.now().isoformat(timespec="seconds")} | profile={args.profile} | auto_reload={env.get("FORTCAMP_DEV_AUTO_RELOAD","false")}\n');log.flush()
     try:
-        build_code=prepare_frontend(args.profile,env,cwd,log,lock)
-        if build_code:
-            print(f'Dev browser build failed (exit {build_code}). See {log_path}.',flush=True)
-            raise SystemExit(build_code)
         for command in commands:
             child=subprocess.Popen(command,cwd=cwd,env=env,creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,encoding='utf-8',errors='replace',bufsize=1)
             children.append(child)

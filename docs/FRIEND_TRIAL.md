@@ -70,4 +70,4 @@ Release updates now include shared portrait framing defaults alongside portrait 
 Validation: 142 frontend checks passed. Full backend run passed 355/356; the remaining special-Goblin portrait test depended on an optional uninstalled male art pool. Isolated that test with both special pools supplied explicitly; production fallback behavior remains unchanged.
 
 
-October 6 dev testing update: the normal dev launcher builds browser files and serves them without automatic refresh; restart it to load code changes. Debug tools, Discord/web authentication, ports and dev saves remain the same. Optional live-edit mode and preserved session logs: [Development runner](design/DEVELOPMENT_RUNNER.md).
+October 6 dev testing update: the normal dev launcher serves source browser files without automatic refresh or a startup build; restart it to load code changes. Debug tools, Discord/web authentication, ports and dev saves remain the same. Optional live-edit mode and preserved session logs: [Development runner](design/DEVELOPMENT_RUNNER.md).

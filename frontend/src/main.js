@@ -1,3 +1,4 @@
+import {warmMageBattle,prepareMagePlayback} from './mage-assets.js';
 import {emitMageEffect,mageStatusMarkup,chooseEnchant} from './mage-effects.js';
 import './mage-effects.css';
 import {animateFrozenTransitions,animateScorchedTransitions} from './mage-surfaces.js';
@@ -901,7 +902,7 @@ function warmWeaponArt(battle){
   for(const path of paths)if(!warmedWeaponArt.has(path)){const image=new Image();warmedWeaponArt.set(path,image);image.src=path;image.decode?.().catch(()=>{});}
 }
 function renderBattle(b){
-  if(b)warmWeaponArt(b);
+  if(b){warmWeaponArt(b);warmMageBattle(b)}
   if(activeBattleView?.current_unit_id!==b.current_unit_id){selectedCombatAction='move';combatSkillPage=0}
   if(b.status==='preparing'){renderBattlePreparation(b);return}
   const previousBattle=activeBattleView;
@@ -1105,6 +1106,7 @@ async function sendCombat(command,nextMode=null,queuedMovement=false){
   combatRequestPending=true;inFlightCombatAction=command.action;updatePlaybackControls();
   try{
     const data=await rawApi(battleEndpoint('/command'),{method:'POST',body:JSON.stringify(command)});
+    await prepareMagePlayback(data.battle);
     if(activeBattleMissionId!==requestMissionId||!activeBattleView||$('#mission-modal').classList.contains('hidden'))return;
     // An older acknowledgement must not pull the displayed unit away from the
     // newest click while that destination is waiting to be sent.
@@ -1156,7 +1158,7 @@ async function resumeMercenaryContract(result){
   else if(result.resume_status==='decision')await openDecision(id);
   else {$('#mission-modal').classList.add('hidden');await refreshDynamic(true)}
 }
-async function sendCombatAuto(resolveAll){if(combatRequestPending||combatPlaybackBlocked())return;$$('.battle-utility-dialog[open]').forEach(d=>d.close());const requestMissionId=activeBattleMissionId;combatRequestPending=true;try{const tactic=$('#battle-tactic')?.value||'balanced',data=await rawApi(battleEndpoint('/auto'),{method:'POST',body:JSON.stringify({tactic,resolve_all:resolveAll})});if(activeBattleMissionId!==requestMissionId||!activeBattleView||$('#mission-modal').classList.contains('hidden'))return;tileActionMenu=null;selectedCombatAction='move';if(data.result?.scene_continuation){activeBattleView=null;await refreshDynamic(true);await openDecision(data.result.mission_id);return}if(data.result?.mercenary_interlude){await resumeMercenaryContract(data.result);return}if(data.result){syncMissionMutation({...activeMissions.find(m=>m.id===activeBattleMissionId),id:activeBattleMissionId,status:'completed',result:data.result});const soundDuration=resolveAll?0:playBattleSounds(data.battle);activeBattleView=null;retreatAllArmed=false;playOutcomeSound(data.result.outcome,soundDuration);showResult(data.result);await refreshDynamic(true)}else renderBattle(data.battle)}catch(e){toast(e.message)}finally{combatRequestPending=false}}
+async function sendCombatAuto(resolveAll){if(combatRequestPending||combatPlaybackBlocked())return;$$('.battle-utility-dialog[open]').forEach(d=>d.close());const requestMissionId=activeBattleMissionId;combatRequestPending=true;try{const tactic=$('#battle-tactic')?.value||'balanced',data=await rawApi(battleEndpoint('/auto'),{method:'POST',body:JSON.stringify({tactic,resolve_all:resolveAll})});await prepareMagePlayback(data.battle);if(activeBattleMissionId!==requestMissionId||!activeBattleView||$('#mission-modal').classList.contains('hidden'))return;tileActionMenu=null;selectedCombatAction='move';if(data.result?.scene_continuation){activeBattleView=null;await refreshDynamic(true);await openDecision(data.result.mission_id);return}if(data.result?.mercenary_interlude){await resumeMercenaryContract(data.result);return}if(data.result){syncMissionMutation({...activeMissions.find(m=>m.id===activeBattleMissionId),id:activeBattleMissionId,status:'completed',result:data.result});const soundDuration=resolveAll?0:playBattleSounds(data.battle);activeBattleView=null;retreatAllArmed=false;playOutcomeSound(data.result.outcome,soundDuration);showResult(data.result);await refreshDynamic(true)}else renderBattle(data.battle)}catch(e){toast(e.message)}finally{combatRequestPending=false}}
 $('#mission-close').onclick=()=>{latestMovement.clear();retreatAllArmed=false;tileActionMenu=null;activeBattleView=null;activeDecisionMission=null;$('#mission-modal').classList.add('hidden');syncMusic();renderVisiblePanels()};
 $('#sound-settings-open').onclick=()=>{closeAudioSettings?.();closeAudioSettings=mountAudioSettings($('#sound-settings-content'),audioMixer,name=>playSfx(name,name.startsWith('mission_')?.5:name.startsWith('ui_')?.16:.5));$('#sound-settings-modal').showModal()};
 $('#sound-settings-close').onclick=()=>$('#sound-settings-modal').close();

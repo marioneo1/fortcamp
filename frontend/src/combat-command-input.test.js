@@ -12,7 +12,7 @@ const handler=main.slice(main.indexOf('async function sendCombat('),main.indexOf
 function harness(){
   const requests=[],renders=[];
   const battle=(x=0,unit='hero')=>({status:'active',current_unit_id:unit,round:1,units:{hero:{x,y:0}},x});
-  const context={selectedSkillCommand,activeBattleMissionId:'lab',activeBattleView:battle(),combatRequestPending:false,inFlightCombatAction:null,
+  const context={prepareMagePlayback:async()=>{},selectedSkillCommand,activeBattleMissionId:'lab',activeBattleView:battle(),combatRequestPending:false,inFlightCombatAction:null,
     navigationInput:createNavigationInput(),latestMovement:createLatestMovement(),combatPlaybackBlocked:()=>false,movementSubmitTimer:null,setTimeout,clearTimeout,updatePlaybackControls:()=>{},
     $$:()=>[],$:selector=>selector==='#mission-modal'?{classList:{contains:()=>false}}:null,
     CSS:{escape:s=>s},previewMovement:()=>null,battleEndpoint:()=>'/command',
@@ -106,4 +106,12 @@ test('a temporary navigation server failure can be retried after resynchronizati
  r[1].resolve({battle:battle()});await first;
  const retry=c.sendCombat({action:'navigate',x:5,y:0});assert.equal(r.length,3);
  r[2].resolve({battle:battle()});await retry;
+});
+
+test('spell decoding holds the UI before rendering and releasing queued input',async()=>{
+ const {context:c,requests:r,renders,battle}=harness();let decoded;
+ c.prepareMagePlayback=()=>new Promise(resolve=>{decoded=resolve});
+ const action=c.sendCombat({action:'guard'});r[0].resolve({battle:battle(0,'next')});await settle();
+ assert.equal(c.combatRequestPending,true);assert.equal(renders.length,0);
+ decoded();await action;assert.equal(renders.length,1);assert.equal(c.combatRequestPending,false);
 });

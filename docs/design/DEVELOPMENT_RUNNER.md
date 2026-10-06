@@ -4,7 +4,9 @@ Run `run_dev_windows.bat` in fortcamp-dev for browser and Discord playtesting. T
 
 ## Default: uninterrupted session
 
-The launcher builds current browser files before starting the services, then serves that build with Vite preview and the existing API proxy. There is no Vite reload client in this browser build and no automatic backend source reloader. Source/art edits during play do not instruct the browser to refresh. Restart the launcher to build/load changed code. A failed build stops startup and retains its output; it does not silently serve an older build.
+The launcher serves source files with Vite dev on port 5174 and the existing API proxy. It does not build first or use preview mode. Normal mode disables watchers/backend reloading and substitutes a tiny CSS-only module for Vite's `/@vite/client`: styles still load, but there is no live socket, reconnect logic or page-reload instruction. This dev-only adapter is for installed Vite 6.4.3 and is checked by actual server tests. It is not bundled into production.
+
+Restart the launcher to load edited source in steady mode. Optional live editing restores the stock Vite client and watcher. The preceding built-preview experiment was rolled back following reported loading/effect regressions; the distinction is preserved in history rather than retaining two parallel dev paths.
 
 The server remains authoritative for combat. Debug features are controlled by the existing backend configuration, not whether frontend files are bundled. This is still the dev profile; no production credentials, data or rollout are involved.
 
@@ -18,4 +20,9 @@ Combined backend/frontend output remains visible and is timestamped in `data/log
 
 Unexpected service exit prints its code, stops only this runner's services and returns failure; the batch window pauses. Ctrl+C is a normal shutdown. The runner does not automatically restart failed services or reload the game. Timestamped logs can distinguish API failure from an ordinary browser reload, but cannot prove the reason for a browser-only event without browser evidence.
 
-Validation: runner/profile tests cover safe production isolation, optional backend reload scope, failed-build output, abnormal service exit and previous-log preservation. A real Vite preview fixture checks served HTML has no reload client, game JavaScript loads, and the API proxy still works. Vite reference: https://vite.dev/config/server-options (watch/HMR); installed Vite 6.4.3 client also explicitly reloads after its live socket reconnects.
+Validation: runner/profile tests cover safe production isolation, optional backend reload scope, abnormal service exit and previous-log preservation. A real Vite source-server fixture checks the client has no socket/reload logic, game JavaScript and CSS helpers load, no-store headers apply, and the API proxy still works. Vite reference: https://vite.dev/config/server-options (watch/HMR); installed Vite 6.4.3 client also explicitly reloads after its live socket reconnects.
+
+
+## Cold presentation assets
+
+Mage sprites are warmed from the battle's equipped skills. Before manual or automatic command playback starts, required returned spell/ground images are loaded and decoded through a shared cache. The pending-command lock remains active, so no enemy/player action races ahead of the delayed impact clock. Missing assets/timeouts resolve after a bounded eight-second wait rather than locking combat forever; normal warmed casts add no network wait. A tiny initial HTML rule hides inactive screens before the main stylesheet arrives. This pass does not preload every map/portrait or claim to eliminate all first-load network latency.

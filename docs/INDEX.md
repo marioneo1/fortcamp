@@ -1,6 +1,6 @@
 # Fortcamp documentation map
 
-Current dev playtesting: [Development runner](design/DEVELOPMENT_RUNNER.md) builds/serves browser files without the automatic reload client, retains debug tools/dev saves, offers opt-in live editing and preserves timestamped logs. Scorched V3 loops are slowed to 3.2?4.0 seconds following motion feedback.
+Current dev playtesting: [Development runner](design/DEVELOPMENT_RUNNER.md) serves source files with a CSS-only dev client, no automatic reload connection, and no startup build, retains debug tools/dev saves, offers opt-in live editing and preserves timestamped logs. Scorched V3 loops are slowed to 3.2?4.0 seconds following motion feedback.
 
 Current DoT rules: [Combat DoTs](design/COMBAT_DOTS.md) defines Burn 2%, Poison 10%, Bleed 5% maximum HP per stack, target-end damage/one-stack decay, Burn entry hits and damage resistance. Current fire art: [Scorched V3](art/SCORCHED_V3.md), one sixteen-frame patch per cell, larger upper-left Meteor and impact-gated ground. Older surface notes below record preceding passes.
 

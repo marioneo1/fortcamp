@@ -38,7 +38,7 @@ state=mageFixture.state;content=mageFixture.content;pool={event:{id:'general'}};
 const originalFetch=window.fetch.bind(window);window.mageSent=[];
 window.fetch=(url,options)=>{if(String(url).startsWith('/api/')){window.mageSent.push({url,body:JSON.parse(options?.body||'{}')});return Promise.resolve({ok:true,json:async()=>({battle:structuredClone(mageFixture.views.elemental)})})}return originalFetch(url,options)};
 $('#loading').classList.add('hidden');$('#game').classList.remove('hidden');$('#mission-modal').classList.remove('hidden');
-activeBattleMissionId='mage-preview';window.mageShow=name=>{combatPlayback.clear();renderBattle(structuredClone(mageFixture.views[name]))};
+activeBattleMissionId='mage-preview';window.mageShow=async name=>{const view=structuredClone(mageFixture.views[name]);await prepareMagePlayback(view);combatPlayback.clear();renderBattle(view)};
 window.mageShow('elemental');window.mageReady=true;window.mageInspect=()=>({mode:selectedCombatAction,actor:activeBattleView.units[activeBattleView.current_unit_id],previews:activeBattleView.skill_previews,blocked:combatPlaybackBlocked(),pending:combatRequestPending});
 '''
 out=ROOT/'staging-ui/mage-v1';out.mkdir(parents=True,exist_ok=True);(out/'preview.js').write_text(source,encoding='utf-8')

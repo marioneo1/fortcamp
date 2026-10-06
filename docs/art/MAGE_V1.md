@@ -1,5 +1,7 @@
 # Mage V1 packed art and local audio
 
+Cold-load timing: equipped Mage effects are warmed at battle entry. Manual/auto command playback waits for the returned cast's sprites, Frozen frames and Scorched textures to load/decode before starting the existing contact clock. Decoded images and promises are cached; missing/failed files have a bounded timeout. This avoids short projectile animations expiring before their pixels arrive without changing damage/forced-movement timing.
+
 Current Meteor: 6.75-cell falling sprite, upper-left-facing, with new ground revealed at impact. Current fire art: [Scorched V3](SCORCHED_V3.md).
 
 
