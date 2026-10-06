@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## October 5: map-status spacing and Monk design review
+
+Attached map-status columns now have a 3px gap instead of 6px and wrap using actual badge widths, eliminating unused fixed-track space around 27px passive badges. Vertical spacing and badge sizes are preserved. Browser fixture confirmed the computed gap and existing dock order. Twenty-one targeted UI tests and frontend build passed; the pre-existing bundle-size warning remains.
+
+Reviewed Monk against actual ability validation, damage/armor/procs, target-turn statuses, owner-turn cooldowns, reactions, AI, loadouts and finalized Fighter/Barbarian. The canonical proposal is docs/design/MONK_REWORK_REVIEW.md. Monk implementation, migration, new media and balance testing are not completed by this review. No production or player-save changes.
+
 ## October 5: nonlethal restraint damage and armor-aware contacts (implemented in dev)
 
 Subdue now has modest balanced restraint power. One outcome roll selects capture, landed-but-escaped, or miss. Landed attempts deal real damage through armor/Guard/Barrier; damage stops at 1 HP so a boss still needs its capture check. Successful captures add no fabricated damage credit. The preview shows contact/capture chance and HP damage; numbers, rope cinching and sounds share the 320ms contact marker. Escaped catches cinch then slip; misses cause no damage. Capture weapons still only use Subdue as their basic attack.

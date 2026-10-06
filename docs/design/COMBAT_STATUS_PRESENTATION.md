@@ -1,5 +1,7 @@
 # Combat status presentation
 
+October 5 spacing refinement: attached map badges use wrapping flex rows with a 3px column gap (previously 6px) and unchanged 6px row gap. Removing fixed 36px grid tracks also removes unused column space around 27px passive-readiness badges. Icon sizes, attached position and the dock/inspection displays are unchanged. Verified in the browser with two readiness badges; transformed visual gap is 3.45px at 115% token scale, corresponding to 3px CSS spacing. Twenty-one related UI tests and the frontend build pass; the existing large-bundle warning remains.
+
 Implemented in dev, October 5, 2026. Reference: the player supplied
 `question/dota 2 buff and debuff.png`. Its useful principle is readable square
 art with distinct positive/negative framing, adapted for a turn-based map.

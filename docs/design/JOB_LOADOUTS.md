@@ -1,5 +1,7 @@
 # Jobs and character loadouts
 
+Pending Monk redesign: [Monk rework review](MONK_REWORK_REVIEW.md) proposes eight choices, a complete starter combo, owner-turn readiness, multi-hit budgets and mobility. It is a reviewed design proposal, not an implemented replacement for the current six Monk skills.
+
 Implemented in dev, October 4, 2026. The twelve starting Jobs, matching poor-quality equipment and first skill unlocks
 are playable. The larger catalogue in STARTING_JOBS_AND_SKILLS_V1.md remains a draft.
 

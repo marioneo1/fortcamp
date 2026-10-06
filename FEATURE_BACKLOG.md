@@ -1,5 +1,11 @@
 # Fortcamp feature backlog
 
+## October 5: Monk review and map-status spacing
+
+Implemented in dev: map-status column gap reduced from 6px to 3px; wrapping rows fit actual badge widths instead of leaving unused 36px grid tracks around smaller passive icons. Row gap remains 6px. Browser spacing/dock checks, 21 targeted UI tests and frontend build pass; existing bundle-size warning remains.
+
+Pending proposal: docs/design/MONK_REWORK_REVIEW.md records eight Monk skills, complete starter combo, five-slot choices, two-turn readiness windows, source-owned Open Guard, technique-budget multi-hit damage/procs and enemy-crossing dash. No Monk combat code, live saves, art/audio or production changes in this review. Next pass must implement/migrate and validate the agreed kit, including AI and animation timing; numerical balance remains untested.
+
 ## October 5: passive slots and combat skill arrangement (implemented in dev)
 
 Layout refinement: card ? Traits ? skills ? commands share the desktop row, buffs below all four. Passive readiness map badges are 75% of their previous size. Narrow screens wrap rather than squeeze controls.
