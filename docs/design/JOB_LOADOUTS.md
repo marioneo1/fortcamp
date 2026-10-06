@@ -137,3 +137,11 @@ these additions; existing battles retain their saved snapshots.
 
 See [Martial Jobs](MARTIAL_JOBS_REWORK.md) for exact effects, costs, clocks,
 visual/audio presentation, migration and testing limits.
+
+
+Combat display order is independent of learned/equipped IDs. The character's
+`combat_skill_order` contains display preferences only and may be saved while on
+a mission; it never replaces a battle snapshot or permits equipping a new skill
+mid-combat. Unknown or retired display IDs are ignored when composing the bar,
+while newly available skills append. Slotted passives appear in the bar, not the
+innate/equipment Traits panel. See COMBAT_CONTROLS.md for drag/Arrange behavior.

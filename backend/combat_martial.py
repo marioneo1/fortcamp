@@ -16,6 +16,23 @@ def has_passive(unit, name):
     return any(p.get('id') == 'job:barbarian:'+name for p in unit.get('passives', []))
 
 
+def passive_availability(unit, passive):
+    key=passive['id'].split(':')[-1]
+    clock=unit.get('ability_activation',0)
+    state=unit.get('martial_state',{})
+    if key in {'bloodthirst','unstoppable'}:
+        active=key=='bloodthirst' and state.get('bloodthirst_window')==clock
+        remaining=max(0,state.get(key+'_ready',0)-clock)
+        return {'ready':active or remaining==0,'active_window':active,'cooldown_remaining':remaining if not active else 0}
+    if key=='too_angry_to_fall':
+        active=unit.get('angry_until') is not None
+        return {'ready':active or not unit.get('angry_used',False),'active_window':active,'spent':bool(unit.get('angry_used')) and not active,'cooldown_remaining':0}
+    if passive.get('reaction'):
+        from .combat_tactics import reaction_available
+        return {'ready':bool(reaction_available(unit)),'cooldown_remaining':0 if reaction_available(unit) else 1}
+    return None
+
+
 def attack_power(unit):
     base = int(unit.get('attack', 0))
     if not has_passive(unit, 'bloodied_strength'):
@@ -85,7 +102,7 @@ def after_damage(battle, attacker, target, previous_hp, ability):
         state = source.setdefault('martial_state',{})
         if state.get('bloodthirst_window')==clock or clock>=state.get('bloodthirst_ready',0):
             state.update(bloodthirst_window=clock,bloodthirst_ready=clock+3)
-            if heal(battle,source,10,'Bloodthirst'):
+            if heal(battle,source,20,'Bloodthirst'):
                 effect(battle,source,'bloodthirst')
 
 

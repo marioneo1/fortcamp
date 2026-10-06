@@ -31,7 +31,7 @@ equipped slot. Fury remains in the persisted battle, never in the roster.
 | Bloodied Strength | Attack rises linearly with missing HP, from no bonus at full HP to +50% at 1 HP | Passive slot | 2 successes |
 | Groundbreaker | 200% attack against enemies in all eight neighboring cells; push one cell | 4 Fury; main action; 5 turns | 5 |
 | Too Angry to Fall | First lethal damage leaves 1 HP; subsequent lethal damage cannot kill until your next turn | Passive slot; once per battle | 9 |
-| Bloodthirst | Each lethal kill heals 10% maximum HP; multiple kills in the triggering turn each heal | Passive slot; 3 owner-turn cooldown | 12 |
+| Bloodthirst | Each lethal kill heals 20% maximum HP; multiple kills in the triggering turn each heal | Passive slot; 3 owner-turn cooldown | 12 |
 | Unstoppable | Automatically spend one Fury to remove one harmful status, prioritizing disabling control | Passive slot; 3 owner-turn cooldown | 16 |
 
 Regular characters still equip five active/passive skills in total. This makes

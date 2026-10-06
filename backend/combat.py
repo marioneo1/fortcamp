@@ -354,6 +354,7 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
         "evasion": int(racial["evasion"]) + perks.get('evasion',0) + job_modifiers.get('evasion',0), "movement_type": racial["movement_type"],
         "displacement_resistance": job_modifiers.get('knockback_resistance',0),
         "job_id": character.get('job_id'), "passives": job_passives,
+        "skill_slot_order": list(character.get('equipped_skills',[])),
         "job_description": JOBS.get(character.get('job_id'),{}).get('description',''),
         "martial_version":1, "fury":0, "fury_cap":5 if character.get('job_id')=='barbarian' else 0,
         "perk_modifiers":perks,
@@ -3598,6 +3599,12 @@ def battle_view(battle: dict) -> dict:
         if unit.get('special'):
             unit['special']['availability']=abilities.availability(unit,unit['special'])
     for unit in view["units"].values():
+        for passive in unit.get('passives',[]):
+            ready=martial.passive_availability(unit,passive)
+            if ready is not None:
+                passive['passive_availability']=ready
+                unit['statuses'].append({'id':'passive_readiness','source_id':passive['id'],
+                    'name':passive['name'],'description':passive['description'],'skill_id':passive['id'],**ready})
         resistance=tactics.displacement_resistance(unit)
         if resistance:unit['statuses'].append({'id':'footing','resistance':resistance})
         if unit.get('reactions'):

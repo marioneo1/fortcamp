@@ -74,8 +74,8 @@ class MartialJobTests(unittest.TestCase):
 
     def test_bloodthirst_multi_kill_window_and_three_turn_cooldown(self):
         b,a,t=self.fixture(('bloodthirst',));a['hp']=30;t['hp']=1
-        combat._deal_damage(b,a,t);self.assertEqual(a['hp'],40)
-        for clock,expected in ((a['ability_activation'],50),(a['ability_activation']+1,50),(a['ability_activation']+3,60)):
+        combat._deal_damage(b,a,t);self.assertEqual(a['hp'],50)
+        for clock,expected in ((a['ability_activation'],70),(a['ability_activation']+1,70),(a['ability_activation']+3,90)):
             a['ability_activation']=clock
             victim={**t,'id':str(clock)+str(expected),'hp':1,'alive':True,'conscious':True,'condition':'active'}
             b['units'][victim['id']]=victim;combat._deal_damage(b,a,victim)

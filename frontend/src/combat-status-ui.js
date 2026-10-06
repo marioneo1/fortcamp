@@ -1,4 +1,5 @@
 export function statusDetails(status,definitions={}){
+  if(status.id==='passive_readiness')return {name:status.name,description:status.description,details:[status.spent?'Used for this battle':status.active_window?'Active now':status.ready?'Ready to trigger':`Ready in ${status.cooldown_remaining} of this character's turns`]};
   const base=definitions[status.id]||{name:status.id,icon:'•',description:'Status effect'};
   const details=[];
   if(status.id==='deployment')return {name:'Temporary deployment',icon:'◆',description:`Owned by ${status.owner_name}. ${status.policy==='automatic'?'Automatic targeting; shares owner output budget.':'Attack commands spend the owner action.'} No extra initiative turn, loot or prisoner reward.`,details:[status.ready?'Ready this owner activation':'Ready from the next owner activation',status.stationary?'Stationary device':'Uses its own movement budget']};

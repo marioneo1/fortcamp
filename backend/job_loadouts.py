@@ -14,7 +14,7 @@ def active(key, name, description, effects, target='enemy', range=1, rule='melee
 
 
 def passive(key, name, description, modifiers=None, reaction=None):
-    return dict(id=key, name=name, description=description, type='passive',
+    return dict(id=key, name=name, description=description, type='passive', source_kind='character',
                 modifiers=modifiers or {}, reaction=reaction)
 
 
@@ -155,7 +155,7 @@ brace['self_only']=True
 wind=active('second_wind','Second Wind','Self only: immediately restore 50% of maximum HP, up to full health. One use per battle.',[{'type':'heal','max_hp_percent':50}],'ally',1,'physical_care',1)
 wind.update(self_only=True,cost={'cooldown':0,'charges':1})
 add_unlocks('fighter',[(12,brace),(16,wind),(20,active('victory_strike','Victory Strike','Strike at 150% attack power. Killing the target restores 10% of your maximum HP. Cooldown: 2 of your turns.',[{'type':'attack','power_percent':150}],cooldown=2))])
-add_unlocks('barbarian',[(12,passive('bloodthirst','Bloodthirst','A killing blow restores 10% of maximum HP. Multiple kills during the same turn each heal you. Then unavailable for 3 of your turns.')),
+add_unlocks('barbarian',[(12,passive('bloodthirst','Bloodthirst','A killing blow restores 20% of maximum HP. Multiple kills during the same turn each heal you. Then unavailable for 3 of your turns.')),
                        (16,passive('unstoppable','Unstoppable','Automatically spend 1 Fury to remove one harmful status. Prioritizes disabling effects. Cooldown: 3 of your turns. Does not remove the exposure from Reckless Blow.'))])
 
 BARBARIAN_OLD_IDS = dict(zip(('shove','expose','anchored','hide','drive','stand'),
@@ -220,6 +220,16 @@ def snapshot(character):
             passives.append(skill)
             for stat,value in skill['modifiers'].items():modifiers[stat]=modifiers.get(stat,0)+value
     return actives,passives,modifiers
+
+
+def save_skill_order(state, character_id, skill_ids):
+    """Presentation only: never alters skills, availability or a battle snapshot."""
+    character=next((c for c in state['characters'] if c['id']==character_id),None)
+    if character is None:raise ValueError('Character not found')
+    if len(skill_ids)>100 or len(set(skill_ids))!=len(skill_ids) or any(not isinstance(k,str) or not k or len(k)>160 for k in skill_ids):
+        raise ValueError('Invalid skill order')
+    character['combat_skill_order']=list(skill_ids)
+    return list(skill_ids)
 
 
 def credit_contract(state, party_ids, outcome, contract_key, debug=False):

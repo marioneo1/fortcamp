@@ -1,3 +1,4 @@
+import {skillIcon} from './ability-icons.js';
 import {statusDetails} from './combat-status-ui.js';
 import {JOB_ICON_ART} from './ability-icon-manifest.js';
 import {impactTimeline} from './combat-impact.js';
@@ -24,11 +25,12 @@ export function visibleStatuses(unit,{compact=false}={}){
  if(!unit||unit.alive===false||unit.conscious===false||unit.extracted||unit.carried_by)return [];
  const statuses=[...(unit.statuses||[])];
  if(unit.guarding&&!statuses.some(s=>s.id==='guard'))statuses.unshift({id:'guard'});
- const unique=[...new Map(statuses.map(s=>[`${s.id}:${s.id==='mark'?s.source_id||'':''}`,s])).values()];
+ const unique=[...new Map(statuses.map(s=>[`${s.id}:${['mark','passive_readiness'].includes(s.id)?s.source_id||'':''}`,s])).values()];
  return unique.filter(s=>!compact||!['footing','reaction','deployment','lifeline_spent'].includes(s.id))
   .sort((a,b)=>(META[a.id]?.[2]??30)-(META[b.id]?.[2]??30));
 }
 export function statusVisual(status){
+ if(status.id==='passive_readiness')return {kind:'buff',image:skillIcon({id:status.skill_id,type:'passive'}),count:status.spent?'?':status.cooldown_remaining||null};
  const [kind,art]=META[status.id]||['other',null];
  const count=status.id==='barrier'?status.amount:
   ['rally_protection','rally_power','guard','vulnerable'].includes(status.id)?'1×':
@@ -38,7 +40,7 @@ export function statusVisual(status){
 function details(status,definitions){return statusDetails(status,{guard:guardDefinition,...definitions})}
 export function statusBadge(status,definitions,escape,{unitId='',compact=false}={}){
  const d=details(status,definitions),v=statusVisual(status);
- return `<span class="status-badge status-${v.kind}" data-unit-status="${escape(status.id)}" data-status-owner="${escape(status.source_id||'')}" data-status-unit="${escape(unitId)}" tabindex="0" role="img" aria-label="${escape([d.name,d.description,...d.details].join('. '))}">${v.image?`<img src="${v.image}" alt="" draggable="false">`:'<span class="status-fallback" aria-hidden="true">?</span>'}${v.count!==null?`<span class="status-count" aria-hidden="true">${escape(v.count)}</span>`:''}${compact?'':`<span class="status-short-name" aria-hidden="true">${escape(d.name.replace('Hold Together: ',''))}</span>`}</span>`;
+ return `<span class="status-badge status-${v.kind} ${status.id==='passive_readiness'&&!status.ready?'passive-cooling':''}" data-unit-status="${escape(status.id)}" data-status-owner="${escape(status.source_id||'')}" data-status-unit="${escape(unitId)}" tabindex="0" role="img" aria-label="${escape([d.name,d.description,...d.details].join('. '))}">${v.image?`<img src="${v.image}" alt="" draggable="false">`:'<span class="status-fallback" aria-hidden="true">?</span>'}${v.count!==null?`<span class="status-count" aria-hidden="true">${escape(v.count)}</span>`:''}${compact?'':`<span class="status-short-name" aria-hidden="true">${escape(d.name.replace('Hold Together: ',''))}</span>`}</span>`;
 }
 export function mapStatusMarkup(unit,definitions,escape){
  const statuses=visibleStatuses(unit,{compact:true});if(!statuses.length)return '';

@@ -1624,3 +1624,30 @@ inspected. The fixture's portrait requests are mocked; it is not a live-server
 playtest. Existing bundle-size warning remains. Human sound approval, live balance
 and deeper resource-planning AI remain open. Documentation/index/backlog updated;
 production and credentials unchanged.
+
+
+## October 5 ? slotted passives, saved battle-bar order and Bloodthirst tuning
+
+Slotted passives now occupy bottom skill slots alongside actives, with automatic
+behavior descriptions and readiness tooltips. Drag-to-swap exchanges positions;
+Arrange exposes all pages simultaneously. Optimistic device persistence is scoped
+to environment/server/user/save/character; real roster characters also persist
+through an authenticated, locked skill-order endpoint. Display order is separate
+from equipped/learned IDs, battle state, costs and cooldowns. Lab testers remain
+local. Retired IDs are ignored and new skills append. Open battle dialogs survive
+live patching; hotbar buttons have stable skill-ID keys.
+
+Moved Traits beside a wider horizontal acting card, before the skill bar. Its
+racial/innate/equipment descriptions exclude slotted Job passives. Passive
+cooldown, once-use and reaction readiness are derived view-only buffs with painted
+icons, counts and hover explanations. Bloodthirst now heals 20% maximum HP per
+lethal kill, retaining three owner-turn cooldown and same-turn multi-kill healing.
+
+Validation: 54 relevant backend tests, including authenticated save ownership and
+rollback, 276 frontend tests, Vite build and diff checks passed. Chrome actual-UI
+fixture verified five slots/two passives, map readiness, an active/passive swap,
+one save request, retained Arrange dialog, Traits exclusion and horizontal actor
+card (390?105px). Browser save response was mocked; API transaction behavior is
+covered separately. Existing build-size warning remains. Production untouched;
+no runtime dependencies or extra art generation needed. Controls/loadouts/martial
+rules, backlog and index updated.

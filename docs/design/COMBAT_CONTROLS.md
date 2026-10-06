@@ -405,3 +405,32 @@ Brace, Second Wind and Groundbreaker target the caster, not another ally.
 Groundbreaker previews all eight neighboring cells and individual enemy damage.
 New physical effects finish before the next actor moves; damage text remains
 above the effect layer. Reduced motion disables aura breathing and sprite growth.
+
+
+## October 5: equipped passives and saved skill order
+
+Equipped Job passives occupy visible slots beside actives in the bottom bar.
+Their P label and tooltip identify automatic behavior; clicking or pressing a
+number never casts a passive. Slotted passives are excluded from the Traits
+panel. Traits sits beside the horizontal acting card, before the skills, and
+lists racial/innate and equipment effects with readable full descriptions.
+
+Drag one skill onto another to exchange their positions. Order saves immediately
+on the device and, for roster characters, through the authenticated skill-order
+endpoint in their existing player save. No turn/action, Fury, cooldown or equipped
+skill changes. Saves serialize so rapid swaps cannot arrive out of order. Storage
+keys include environment, player, server and save creation. Battle Lab orders are
+separate local preferences; testers never write to the real roster. Arrange opens
+all skills together so swaps can cross hotbar pages. Dropping elsewhere cancels.
+Actives on cooldown remain draggable, while their cast is unavailable.
+
+Passive cooldown/once-use/reaction state appears with the actual skill icon in
+map buffs and the acting effects tray. A number counts owner turns until ready;
+used once-per-battle passives show ?. Hover explains Ready, Active now or Used.
+Bloodthirst's same-turn multi-kill window remains active before its cooldown.
+These are derived view indicators, not extra statuses influencing combat. Map
+polls therefore do not advance or alter their state. Equipped-passive tooltips
+also show their readiness. Bloodthirst now heals 20% maximum HP per lethal kill.
+
+Open battle dialogs survive live rendering, including a swap in Arrange. Hotbar
+DOM nodes are keyed by skill ID so a swap moves the correct button/tooltip.

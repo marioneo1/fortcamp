@@ -1,5 +1,5 @@
 // Retain map cells, decoded portraits, focus, scroll positions and active animations.
-const keys=['data-battle-cell','data-battle-unit','data-battle-object','data-battle-terrain','data-combat-mode','data-combat-action','data-tile-action','data-context-action','data-prep-unit','data-prep-defense','data-prep-remove','data-battle-zoom','data-roster','data-roster-page','data-roster-collection','data-building','data-char'];
+const keys=['data-hotbar-slot','data-battle-cell','data-battle-unit','data-battle-object','data-battle-terrain','data-combat-mode','data-combat-action','data-tile-action','data-context-action','data-prep-unit','data-prep-defense','data-prep-remove','data-battle-zoom','data-roster','data-roster-page','data-roster-collection','data-building','data-char'];
 const transient=['is-walking','is-attacking','is-hit'];
 const rendered=new WeakMap();
 const trackedAnimations=new WeakMap();
@@ -12,7 +12,7 @@ function key(node){
 }
 function compatible(a,b){return a?.nodeType===b.nodeType&&(b.nodeType!==1||a.tagName===b.tagName)}
 function attributes(node,fresh){
-  for(const attr of [...node.attributes])if(!fresh.hasAttribute(attr.name))node.removeAttribute(attr.name);
+  for(const attr of [...node.attributes])if(!fresh.hasAttribute(attr.name)&&!(node.tagName==='DIALOG'&&attr.name==='open'))node.removeAttribute(attr.name);
   for(const attr of fresh.attributes){
     let value=attr.value;
     if(attr.name==='class')for(const cls of transient)if(node.classList.contains(cls)&&!fresh.classList.contains(cls))value+=` ${cls}`;

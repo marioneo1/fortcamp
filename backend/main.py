@@ -602,6 +602,26 @@ class RelationshipRequest(BaseModel):
     meal: str | None = None
 
 
+class SkillOrderRequest(BaseModel):
+    skill_ids: list[str] = Field(max_length=100)
+
+
+@app.post('/api/characters/{character_id}/skill-order')
+async def character_skill_order(character_id: str, req: SkillOrderRequest, identity: IdentityDep):
+    from .services import _player_locks
+    from .job_loadouts import save_skill_order
+    async with _player_locks.setdefault((identity.guild_id,identity.user_id),asyncio.Lock()):
+        session,row=await locked_player(identity)
+        try:
+            state=deepcopy(row.state)
+            order=save_skill_order(state,character_id,req.skill_ids)
+            row.state=state;row.updated_at=int(time.time());await session.commit()
+            return {'skill_order':order}
+        except ValueError as exc:
+            await session.rollback();raise HTTPException(400,str(exc))
+        finally:await session.close()
+
+
 @app.post("/api/characters/{character_id}/conversation")
 async def character_conversation(character_id: str,req: RelationshipRequest,identity: IdentityDep):
     from .relationships import conversation
