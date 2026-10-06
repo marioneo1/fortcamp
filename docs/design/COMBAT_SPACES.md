@@ -1,6 +1,6 @@
 # Combat zones and forms
 
-October 6 update: [Mage rework](MAGE_REWORK_REVIEW.md) implements radius-two/three elemental areas, visible armed Freeze/Meteor warnings and painted Scorched ground. Scorched reuses committed-path entry/start triggers: three damage per actual entered tile, repeated entry/forced movement included, ally-safe; overlapping fire-ground zones do not multiply damage. Entry refreshes a bounded separate ground Burn layer rather than generating unlimited stacks by walking. Spell Burn layers remain independent. The foundation description below is historical; regular Jobs and starter selection are now playable.
+October 6 update: [Mage rework](MAGE_REWORK_REVIEW.md) implements radius-two/three elemental areas, visible armed Freeze/Meteor warnings and painted Scorched ground. Scorched reuses committed-path entry/start triggers: three damage per actual entered tile, repeated entry/forced movement included, dangerous to everyone including allies/caster; overlapping fire-ground zones do not multiply damage. Entry refreshes a bounded separate ground Burn layer rather than generating unlimited stacks by walking. Spell Burn layers remain independent. The foundation description below is historical; regular Jobs and starter selection are now playable.
 
 Implemented engine foundation in dev, October 4, 2026. This is dependency work,
 not the release of Druid/Mage/Cleric Jobs. No existing item drops or starter kits

@@ -20,10 +20,16 @@ def cells(b,center,radius):
  result=[{'x':x,'y':y} for y in range(max(0,center['y']-radius),min(b['height'],center['y']+radius+1)) for x in range(max(0,center['x']-radius),min(b['width'],center['x']+radius+1)) if abs(x-center['x'])+abs(y-center['y'])<=radius and c._line_of_sight(b,center,{'x':x,'y':y})]
  if cache is not None:cache[key]=result
  return result
-def targets(b,a,center,radius,allies=False):
+def targets(b,a,center,radius,allies=False,include_self=False,preview=False):
  from . import combat as c
  area={(p['x'],p['y']) for p in cells(b,center,radius)}
- return sorted([u for u in b['units'].values() if c._combat_active(u) and u['id']!=a['id'] and (allies or u['team']!=a['team'] or u.get('mercenary_hostile_all')) and (u['x'],u['y']) in area],key=lambda u:(c._distance(center,u),u['id']))
+ candidates=[]
+ for u in b['units'].values():
+  # Forecast the caster at their proposed approach tile; execution mutates the live unit.
+  position=a if u['id']==a['id'] else u
+  if c._combat_active(u) and (include_self or u['id']!=a['id']) and (allies or u['team']!=a['team'] or u.get('mercenary_hostile_all')) and (position['x'],position['y']) in area:
+   candidates.append(position if preview else u)
+ return sorted(candidates,key=lambda u:(c._distance(center,u),u['id']))
 def duration(a,turns):return turns*(2 if specialized(a) else 1)
 def status(b,a,t,sid,turns=2,chance=100,packet=None):
  from . import combat as c
@@ -103,7 +109,8 @@ def scorch(b,a,center,radius):
 def impact(b,a,kind,center):
  from . import combat as c
  radius=3 if kind in {'meteor','typhoon'} else 2
- victims=targets(b,a,center,radius,kind=='typhoon');p=packet(b,a,kind,center,radius)
+ # Keep this cast's power stable even if self-contact burns, debuffs or kills its caster.
+ victims=targets(b,a,center,radius,True,kind in GROUND);a=deepcopy(a);p=packet(b,a,kind,center,radius)
  # Snapshot positions/area first; push inner units before their outer collision victims.
  for t in victims:
   b['attack_serial']+=1;child=b['attack_serial'];begin=len(b['animation_events'])
@@ -120,7 +127,7 @@ def impact(b,a,kind,center):
    if distance:c._apply_displacement(b,origin,t,{'mode':'pull' if kind=='singularity' else 'push','distance':1 if kind=='singularity' else 2},amount,child)
   for event in b['animation_events'][begin:]:event.update(attack_packet=child,impact_origin_packet=p,impact_offset=0)
  if kind in {'fireball','meteor'}:scorch(b,a,center,radius)
- conditions.remove(a,'rally_power')
+ conditions.remove(b['units'].get(a['id'],a),'rally_power')
  return {'attacked':True}
 def chain(b,a,t):
  from . import combat as c
@@ -160,7 +167,7 @@ def execute(b,a,t,s,element=None):
    conditions.remove(a,'rally_power')
    a['mage_channel']={'origin':[a['x'],a['y']]};a.setdefault('statuses',[]).append({'id':'channeling'})
   packet(b,a,kind+'_armed',t,3 if kind=='meteor' else 2)
-  b['log'].append(f"{a['name']} prepares {s['name']}: "+('lands on their next activation and spends it; control, silence or displacement interrupts.' if kind=='meteor' else 'freezes enemies still inside after their next activation.'))
+  b['log'].append(f"{a['name']} prepares {s['name']}: "+('lands on their next activation and spends it; control, silence or displacement interrupts.' if kind=='meteor' else 'freezes everyone still inside, including allies and the caster, after their next activation.'))
   result={'delayed':True}
  c.abilities.spend(a,s);a['acted']=True
  return result
@@ -177,11 +184,11 @@ def settle(b,a,phase):
    a.pop('mage_channel',None);conditions.remove(a,'channeling');impact(b,source,'meteor',d['center']);a['forced_skip']=True;a['acted']=True
   else:
    p=packet(b,source,'flash_freeze',d['center'],2)
-   for t in targets(b,source,d['center'],2):freeze(b,source,t,packet=p)
+   for t in targets(b,source,d['center'],2,True,True):freeze(b,source,t,packet=p)
 
 def presentation(b):
  from . import combat as c
- return [{'id':f"mage-delay-{i}",'kind':d['kind']+'_armed','name':'Meteor: incoming' if d['kind']=='meteor' else 'Flash Freeze: armed','cells':cells(b,d['center'],3 if d['kind']=='meteor' else 2),'owner_id':d['owner_id'],'owner_name':d['source']['name'],'remaining':max(0,d['due']-clock(b['units'].get(d['owner_id'],{}))),'description':'Leave the marked ground before impact. '+('Interrupt the caster to stop Meteor.' if d['kind']=='meteor' else 'Triggers after the caster’s next action.')} for i,d in enumerate(b.get('mage_delays',[])) if c._combat_active(b['units'].get(d['owner_id'],{}))]
+ return [{'id':f"mage-delay-{i}",'kind':d['kind']+'_armed','name':'Meteor: incoming' if d['kind']=='meteor' else 'Flash Freeze: armed','cells':cells(b,d['center'],3 if d['kind']=='meteor' else 2),'owner_id':d['owner_id'],'owner_name':d['source']['name'],'remaining':max(0,d['due']-clock(b['units'].get(d['owner_id'],{}))),'description':'Danger to allies and caster: leave the marked ground before impact. '+('Interrupt the caster to stop Meteor.' if d['kind']=='meteor' else 'Triggers after the caster’s next action.')} for i,d in enumerate(b.get('mage_delays',[])) if c._combat_active(b['units'].get(d['owner_id'],{}))]
 def preview(b,a,t,s):
  from . import combat as c
  kind=s['mage_kind'];radius=3 if kind in {'meteor','typhoon'} else 2
@@ -192,7 +199,7 @@ def preview(b,a,t,s):
    options=[u for u in b['units'].values() if c._combat_active(u) and u['team']!=a['team'] and u['id'] not in seen and c._distance(targets_[-1],u)<=2 and c._line_of_sight(b,targets_[-1],u)]
    if not options:break
    nxt=min(options,key=lambda u:(c._distance(targets_[-1],u),u['id']));seen.add(nxt['id']);targets_.append(nxt)
- else:targets_=targets(b,a,t,radius,kind=='typhoon')
+ else:targets_=targets(b,a,t,radius,True,kind in GROUND,preview=True)
  forecasts={};tactics=[]
  for index,victim in enumerate(targets_):
   d=c._distance(t,victim);wet=conditions.has(victim,'wet')
@@ -205,7 +212,7 @@ def preview(b,a,t,s):
    origin={**a,'x':t['x'],'y':t['y']};entry=c._displacement_preview(b,origin,victim,{'mode':'push' if kind=='typhoon' else 'pull','distance':2 if kind=='typhoon' else 1})
    entry.update(type='push' if kind=='typhoon' else 'pull',unit_id=victim['id'],collision_damage=max(1,amount//2) if entry.get('solid_collision') else 0);tactics.append(entry)
  row=forecasts.get(t.get('id'),{'chance':100,'damage_on_hit':0})
- return {**row,'target_forecasts':forecasts,'zones':[{'kind':'impact','cells':cells(b,t,radius)}] if kind!='chain_lightning' else [],'tactics':tactics,'damage_note':'Forecast uses current positions; delayed enemies may leave. '+('Typhoon also hits and pushes allies.' if kind=='typhoon' else 'Direct spell damage; collisions and status ticks are separate.')}
+ return {**row,'target_forecasts':forecasts,'zones':[{'kind':'impact','cells':cells(b,t,radius)}] if kind!='chain_lightning' else [],'tactics':tactics,'damage_note':'Forecast uses current positions; units may leave delayed areas. '+('Typhoon also hits and pushes allies.' if kind=='typhoon' else 'Hits allies and caster too. Scorched ground burns everyone.' if kind in {'fireball','meteor'} else 'Affects allies and caster too; collisions and status ticks are separate.' if kind in GROUND else 'Enemy-only chain; direct damage and status ticks are separate.')}
 def view_previews(b,a,s,reachable,parents):
  from . import combat as c
  ground={};units={}
@@ -260,8 +267,8 @@ def auto(b,a,opponents):
    continue
   for t in ([a] if kind=='typhoon' else opponents):
    if not c._can_attack(b,a,t,s['range']):continue
-   area=targets(b,a,t,3 if kind in {'meteor','typhoon'} else 2,kind=='typhoon')
-   if kind=='typhoon' and any(u['team']==a['team'] for u in area):continue
+   area=targets(b,a,t,3 if kind in {'meteor','typhoon'} else 2,kind!='chain_lightning',kind in GROUND)
+   if kind in GROUND|{'typhoon'} and any(u['team']==a['team'] and not u.get('mercenary_hostile_all') for u in area):continue
    if kind=='chain_lightning':score=len(preview(b,a,t,s)['target_forecasts'])+3*sum(conditions.has(u,'wet') for u in opponents)
    else:score=len(area)*2+(1 if kind=='fireball' else 0)
    if score:options.append((score,s,t))

@@ -9,6 +9,7 @@
 .scorch-ground{mix-blend-mode:multiply}
 .scorch-tone{fill:#231a13;opacity:.26}
 .scorch-soot{opacity:.72}.scorch-ash{opacity:.38}.scorch-embers{opacity:.65;animation:scorch-ember-glow 3.1s ease-in-out infinite alternate}
+.scorch-cinder-bed{opacity:.48}.scorch-mini-flame{opacity:.7}
 .scorch-smoke{opacity:.11;animation:scorch-smoke-drift 4.5s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
 .scorch-flame{width:100%;height:100%;background:url('/assets/mage-scorched-v2/flame_strip.png') 0 0/400% 100% no-repeat;opacity:.88;animation:scorch-flame-frames 1.3s steps(1,end) infinite}
 @keyframes scorch-flame-frames{0%{background-position:0% 0}25%{background-position:33.333333% 0}50%{background-position:66.666667% 0}75%,100%{background-position:100% 0}}

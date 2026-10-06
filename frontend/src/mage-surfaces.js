@@ -53,17 +53,19 @@ export function scorchedArtwork(zone,x,y,width,height,clip){
  const mask=clip+'-scorch-soft',blur=clip+'-scorch-blur';
  const rects=zone.cells.map(c=>`<rect x="${(c.x-x)*100}" y="${(c.y-y)*100}" width="100" height="100" fill="white"/>`).join('');
  const image=(name,px,py,size,cls,angle=0)=>`<image href="${SCORCH_ROOT}${name}.png" x="${px}" y="${py}" width="${size}" height="${size}" preserveAspectRatio="xMidYMid meet" class="${cls}" transform="rotate(${angle} ${px+size/2} ${py+size/2})"/>`;
- const flameCells=new Set(zone.cells.map((c,i)=>({i,seed:surfaceSeed(`${zone.id}:${c.x}:${c.y}`)})).sort((a,b)=>a.seed-b.seed).slice(0,Math.ceil(zone.cells.length/4)).map(c=>c.i));
  let soot='',ash='',accents='',smoke=0;
- for(const [i,c] of zone.cells.entries()){
+ for(const c of zone.cells){
   const seed=surfaceSeed(`${zone.id}:${c.x}:${c.y}`),px=(c.x-x)*100,py=(c.y-y)*100;
   soot+=image(`soot_${seed%4+1}`,px-28,py-28,156,'scorch-soot',seed%360);
   if(seed%3!==0)ash+=image(`ash_${(seed>>>4)%4+1}`,px+8,py+5,84,'scorch-ash',(seed>>>8)%360);
-  const ax=px+22+(seed>>>12)%40,ay=py+20+(seed>>>18)%42;
-  accents+=image(`ember_${seed%2+1}`,ax-13,ay-13,26,'scorch-embers');
-  if(flameCells.has(i)){
-   const size=26+(seed>>>5)%14;
-   accents+=`<foreignObject x="${ax-size/2}" y="${ay-size/2}" width="${size}" height="${size}"><div xmlns="http://www.w3.org/1999/xhtml" class="scorch-flame" style="animation-delay:-${seed%1300}ms"></div></foreignObject>`;
+  // Same envelope as soot: one broad burning bed, not a tiny isolated fire.
+  accents+=image(`ember_${seed%2+1}`,px-28,py-28,156,'scorch-cinder-bed');
+  const flame=(ax,ay,size,key,cls)=>`<foreignObject x="${ax-size/2}" y="${ay-size/2}" width="${size}" height="${size}"><div xmlns="http://www.w3.org/1999/xhtml" class="scorch-flame ${cls}" style="animation-duration:${1200+key%800}ms;animation-delay:-${key%2000}ms"></div></foreignObject>`;
+  accents+=flame(px+50,py+50,156,seed,'scorch-main-flame');
+  // Seeded offsets survive rerenders. All instances share one cached four-frame texture.
+  for(let j=0;j<3+seed%3;j++){
+   const key=surfaceSeed(`${seed}:cinder:${j}`),ax=px+18+key%65,ay=py+18+(key>>>8)%65,size=16+(key>>>16)%10;
+   accents+=flame(ax,ay,size,key,'scorch-mini-flame');
   }
   if(seed%9===0&&smoke<2){smoke++;accents+=image(`smoke_${seed%2+1}`,px+6,py+3,88,'scorch-smoke')}
  }

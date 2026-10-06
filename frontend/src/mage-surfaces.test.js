@@ -13,9 +13,9 @@ test('Freeze onset and shatter follow real contact; poison expiry melts instead'
  assert.equal(frozenTransitionPlan(view(frozen),view(normal),[{start:20,event:{type:'combat_feedback',unit_id:'test',kind:'poison',amount:8}}])[0].mode,'thaw');
  assert.deepEqual(frozenTransitionPlan(view(frozen),view(frozen),[]),[]);
 });
-test('Scorched material joins cells with one soft region mask and sparse flames',()=>{
+test('Scorched material joins cells with one soft region mask, full-size cinders and staggered small fires',()=>{
  const z={id:'region',cells:Array.from({length:25},(_,i)=>({x:i%5,y:Math.floor(i/5)}))};
- const html=scorchedArtwork(z,0,0,5,5,'test');assert.equal(html,scorchedArtwork(z,0,0,5,5,'test'));assert.match(html,/feGaussianBlur/);assert.equal((html.match(/<mask /g)||[]).length,1);assert.ok((html.match(/class="scorch-flame"/g)||[]).length<z.cells.length/2);assert.doesNotMatch(html,/fire_contact|scorched_tile/);assert.ok(surfaceSeed('a')!==surfaceSeed('b'));
+ const html=scorchedArtwork(z,0,0,5,5,'test');assert.equal(html,scorchedArtwork(z,0,0,5,5,'test'));assert.match(html,/feGaussianBlur/);assert.equal((html.match(/<mask /g)||[]).length,1);assert.equal((html.match(/scorch-main-flame/g)||[]).length,z.cells.length);const minis=(html.match(/scorch-mini-flame/g)||[]).length;assert.ok(minis>=3*z.cells.length&&minis<=5*z.cells.length);assert.equal((html.match(/class="scorch-cinder-bed"/g)||[]).length,z.cells.length);assert.ok(new Set([...html.matchAll(/animation-delay:-(\d+)ms/g)].map(m=>m[1])).size>20);assert.doesNotMatch(html,/fire_contact|scorched_tile/);assert.ok(surfaceSeed('a')!==surfaceSeed('b'));
 });
 test('Both complete surface packs and the aligned flame strip exist',()=>{
  for(const kind of ['freeze','frozen','break','thaw'])for(let i=1;i<=4;i++)assert.ok(existsSync(new URL(`../public/assets/mage-frozen-v2/${kind}_${i}.png`,import.meta.url)));

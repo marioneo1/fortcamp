@@ -1472,9 +1472,11 @@ def _dash_ground_damage(battle,actor,path):
         kinds=set()
         for zone in battle.get('zones',[]):
             owner=battle['units'].get(zone['owner_id']);rule=spaces.ZONES[zone['kind']]
-            if not owner or not _combat_active(owner) or zone['kind'] in kinds or not rule.get('entry_per_cell'):continue
-            if actor['team']==owner['team'] or {'x':x,'y':y} not in zone['cells']:continue
-            kinds.add(zone['kind'])
+            trigger_key='fire_ground' if zone['kind'] in {'ember','scorched'} else zone['kind']
+            if not owner or not _combat_active(owner) or trigger_key in kinds or not rule.get('entry_per_cell'):continue
+            if rule['relation']!='everyone' and (actor['id'] in {u['id'] for u in conditions.hostile_units(battle,owner,_living(battle))})!=(rule['relation']=='enemy'):continue
+            if {'x':x,'y':y} not in zone['cells']:continue
+            kinds.add(trigger_key)
             amount=rule.get('entry_damage',0)+rule.get('damage',0)
             if not amount:continue
             source={'attack':amount,'status_tick':True,'weapon':rule['name']}

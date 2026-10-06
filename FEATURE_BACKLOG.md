@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## October 6: Mage friendly fire and larger cinder beds (implemented in dev)
+
+Meteor?s falling sprite is 80% larger. Scorched cells retain soot and add a same-envelope central cinder bed plus three to five seeded, independently phased small fires using the existing shared atlas/CSS animation. Flash Freeze, Singularity, Meteor and Fireball include allies and caster in resolution and forecasts; Scorched ground also burns everyone. Auto-battle rejects currently friendly-occupied areas. Dash hazard forecasts include friendly Scorched ground and deduplicate overlapping fire. No new particle runtime or asset download. Canonical rules/art: docs/design/MAGE_REWORK_REVIEW.md and docs/art/MAGE_SURFACES_V2.md. Pending: large-map/device performance and human aesthetic/numeric review; AI does not predict later friendly movement into delayed zones.
+
 ## October 6: Dedicated Frozen and Scorched presentation (implemented in dev)
 
 Two complete 4×4 generated atlases: portrait ice spread/stable patterns/fracture/thaw, and flat soot/ash/top-down flame frames/embers/smoke. Ice fits the face circle and uses actual contact timing. Scorch forms one feathered connected region, with stable variations and sparse offset fire; removes repeated lava tiles and explosion stamps. Removed Freeze's old binding-tether flash. Actual Chrome fixtures cover real portrait geometry, grass/dirt/stone, loaded art and cleanup. No damage, status, sound, save or production changes. Docs/prompts: docs/art/MAGE_SURFACES_V2.md. Pending: human aesthetic feedback, a separate Meteor centre impact mark and reconstructing ice that applies/breaks within one returned multi-hit activation.

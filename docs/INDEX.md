@@ -1,8 +1,8 @@
 # Fortcamp documentation map
 
-Current Mage surface art: [Frozen portraits and Scorched ground V2](art/MAGE_SURFACES_V2.md) records two dedicated 4×4 sheets, portrait frost/spread/shatter/thaw, connected feathered scorch, top-down residual flames, exact prompts and browser validation. Replaces the initial ice cage and explosion ground stamps.
+Current Mage surface art: [Frozen portraits and Scorched ground V2](art/MAGE_SURFACES_V2.md) records two dedicated 4×4 sheets, portrait frost/spread/shatter/thaw, connected feathered scorch, large central cinders and three to five independently phased small fires per cell, exact prompts and browser validation. Replaces the initial ice cage and explosion ground stamps.
 
-Implemented Mage: [Mage rework](design/MAGE_REWORK_REVIEW.md) covers eight elemental skills, Wet/Blister, breakable ice, delayed Freeze, interruptible Meteor, chosen ally enchantments, layered Burn, Scorched paths, migration and AI limitations. [Mage art/audio](art/MAGE_V1.md) records the single packed atlas, animated effects and five locally synthesized clips. Current catalogue: 85 executable definitions across twelve Jobs. Numeric playtesting remains open.
+Implemented Mage: [Mage rework](design/MAGE_REWORK_REVIEW.md) covers eight elemental skills, Wet/Blister, breakable ice, delayed Freeze, interruptible Meteor, chosen ally enchantments, layered Burn, four self/ally-hitting area spells, Scorched paths dangerous to everyone, migration and AI limitations. [Mage art/audio](art/MAGE_V1.md) records the single packed atlas, animated effects and five locally synthesized clips. Current catalogue: 85 executable definitions across twelve Jobs. Numeric playtesting remains open.
 
 Implemented Ranger: [Ranger rework](design/RANGER_REWORK_REVIEW.md) covers eight skills, owner Quarry, Longshot crits, Rapid Fire, independent Poison layers, party-wide Pestilence, allied DoT cashout, stationary Sharpshooter, migration and AI. [Ranger art](art/RANGER_V1.md) documents the packed icons/projectiles and reviewed crop bounds. Numeric playtesting remains open.
 

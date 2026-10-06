@@ -27,7 +27,7 @@ Use one evenly partitioned 4×4 sheet with transparent background and ample empt
 
 ## Playback
 
-Lightning links each previous victim to the next; 120ms bounce offsets share damage timing. Fireball travels from the caster then bursts; Meteor falls then impacts at 420ms. Gravity/wind expand and rotate; ice persists around a Frozen token. Scorched terrain uses painted char and a restrained ember pulse. Damage feedback remains above spell art. Transient effects remove themselves on finish/cancel, skip hidden/disconnected fields and respect reduced motion.
+Lightning links each previous victim to the next; 120ms bounce offsets share damage timing. Fireball travels from the caster then bursts; Meteor now uses a 4.5-cell falling sprite (previously 2.5), then impacts at the same 420ms contact. The existing seven-cell impact burst and gameplay radius remain. Gravity/wind expand and rotate; ice persists around a Frozen token. Scorched terrain uses the dedicated surface kit described above, now with large central cinders and independently phased smaller fires. Damage feedback remains above spell art. Transient effects remove themselves on finish/cancel, skip hidden/disconnected fields and respect reduced motion.
 
 ## Audio
 

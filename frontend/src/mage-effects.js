@@ -36,7 +36,7 @@ export function emitMageEffect(field,event,battle,delay=0){
   });return;
  }
  if(k==='fireball')later(0,()=>{const from=event.from_point,dx=(at.x-from.x)*cw,dy=(at.y-from.y)*ch;sprite('fire_contact',from,.8,[{opacity:0,transform:'translate(-50%,-50%) scale(.35)'},{opacity:.95,offset:.2,transform:'translate(-50%,-50%) scale(.7)'},{opacity:1,offset:.95,transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.8)`},{opacity:0,transform:`translate(calc(-50% + ${dx}px),calc(-50% + ${dy}px)) scale(.8)`}],contact)});
- if(k==='meteor')later(0,()=>sprite('meteor_rock',at,2.5,[{opacity:0,transform:'translate(-130%,-210%) scale(.45)'},{opacity:1,offset:.15,transform:'translate(-120%,-185%) scale(.7)'},{opacity:1,offset:.9,transform:'translate(-50%,-50%) scale(1)'},{opacity:0,transform:'translate(-50%,-50%) scale(1.05)'}],contact));
+ if(k==='meteor')later(0,()=>sprite('meteor_rock',at,4.5,[{opacity:0,transform:'translate(-130%,-210%) scale(.45)'},{opacity:1,offset:.15,transform:'translate(-120%,-185%) scale(.7)'},{opacity:1,offset:.9,transform:'translate(-50%,-50%) scale(1)'},{opacity:0,transform:'translate(-50%,-50%) scale(1.05)'}],contact));
  if(k.endsWith('_armed')){later(contact,()=>pulse(k==='meteor_armed'?'gravity_vortex':'frost_ground',2.2,15));return}
  later(contact,()=>pulse(k==='meteor'||k==='fireball'?'fire_contact':k==='flash_freeze'?'frost_ground':k==='singularity'?'gravity_vortex':k==='typhoon'?'wind_ring':event.enchant_element==='fire'?'fire_contact':event.enchant_element==='frost'?'frost_ground':'lightning_arc',k==='enchant_weapon'?1.2:(event.radius||1)*2+1,k==='typhoon'?100:k==='singularity'?70:0));
 }

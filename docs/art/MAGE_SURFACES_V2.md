@@ -1,6 +1,6 @@
 # Frozen portraits and top-down Scorched ground — October 6, 2026
 
-Implemented in dev. Two dedicated transparent 4×4 sheets replace the initial decorative ice cage and repeated lava/explosion ground stamps. Gameplay, damage, timing, saved portraits and status duration are unchanged. Built-in image generation was used; no API key or new VFX dependency.
+Implemented in dev. Two dedicated transparent 4×4 sheets replace the initial decorative ice cage and repeated lava/explosion ground stamps. The original surface-art pass preserved gameplay. The subsequent friendly-fire pass makes Fireball, Meteor, Flash Freeze and Singularity affect allies/caster and makes Scorched ground burn everyone; see the Mage design reference. Built-in image generation was used; no API key or new VFX dependency.
 
 ## Frozen portrait
 
@@ -16,9 +16,9 @@ Limitation: state-to-state transition animation does not reconstruct a brief Fre
 
 Runtime assets: `frontend/public/assets/mage-scorched-v2/` — four `soot`, four `ash`, four `flame` source frames, two `ember`, two `smoke` crops, plus the assembled `flame_strip.png`. All source crops are 256px; strip is 1024×256.
 
-Soot overlaps adjacent tiles into one connected darkened region. One union mask erodes then feathers only the perimeter, preventing both internal seams and a hard square-cut outer edge. Seeded placement/rotation keeps it stable across rerenders while varying the surface. Original flooring remains visible. Ash is sparse; one small flame patch per approximately four cells uses four fixed-alignment frames. Ember intensity varies gently; at most two faint smoke patches per zone. No whole-ground expansion/pulsing, lava-rock platforms, per-cell explosions or duplicated boundary outline. Terrain and props retain their normal ordering; characters/feedback stay above the floor effect.
+Soot overlaps adjacent tiles into one connected darkened region. One union mask erodes then feathers only the perimeter, preventing both internal seams and a hard square-cut outer edge. Seeded placement/rotation keeps it stable across rerenders while varying the surface. Original flooring remains visible. Ash is sparse. Each cell now has a central cinder bed and fire overlay sharing soot?s 156% cell envelope, plus three to five small seeded cinder/fire patches. Stable positions and independent 1.2?2.0-second frame periods/negative start offsets prevent synchronized flickering; at most two faint smoke patches per zone. All fires reuse one cached four-frame strip with CSS stepping: no per-sprite JavaScript timer or particle emitter, no additional image downloads. A full 25-cell Meteor footprint has 100?150 animated fire sprites; A 25-cell fixture generated 123 animated sprites; 1,000 markup generations averaged 0.073 ms locally. This measures markup construction, not browser painting, GPU cost or frame rate; real-device large-map performance remains a playtesting concern. No whole-ground expansion/pulsing, lava-rock platforms, per-cell explosions or duplicated boundary outline. Terrain and props retain their normal ordering; characters/feedback stay above the floor effect.
 
-This intentionally uses low residual fire rather than a bonfire on every damaged tile. Fireball and Meteor currently share this material; a distinct central Meteor crater remains future work.
+These are overhead burning cinders, composited over the original soot rather than upright bonfires. Fireball and Meteor currently share this material; a distinct central Meteor crater remains future work.
 
 ## Import and source references
 
@@ -42,4 +42,4 @@ Production game VFX/terrain decal atlas dedicated ONLY to SCORCHED GROUND for a 
 
 ## Validation
 
-Actual-renderer Chrome fixtures use a cropped portrait reference without modifying source portraits or metadata. They cover grass/dirt/stone, correct face/ice geometry, loaded surface art, sparse flame placement, visible animation and shatter cleanup. Captures: ignored `staging-ui/mage-v1/surface-*.png` and `frozen.png`. New frontend checks cover deterministic placement, frozen identity preservation, contact versus thaw, complete packs and reduced motion. The old binding-tether flash was removed for Freeze. Existing Mage damage/status tests remain green; final counts are in the history entry. Aesthetic judgment still needs the user's in-game test pass.
+Actual-renderer Chrome fixtures use a cropped portrait reference without modifying source portraits or metadata. They cover grass/dirt/stone, correct face/ice geometry, loaded surface art, one broad cinder bed per cell and three to five offset fires, visible animation and shatter cleanup. Captures: ignored `staging-ui/mage-v1/surface-*.png` and `frozen.png`. New frontend checks cover deterministic placement, frozen identity preservation, contact versus thaw, complete packs and reduced motion. The old binding-tether flash was removed for Freeze. Existing Mage damage/status tests remain green; final counts are in the history entry. Aesthetic judgment still needs the user's in-game test pass.

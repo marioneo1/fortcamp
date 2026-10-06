@@ -91,7 +91,7 @@ class MageTests(unittest.TestCase):
  def test_meteor_damage_does_not_interrupt(self):
   b,a,t=self.fixture(['meteor']);self.use(b,'meteor',t);combat._deal_damage(b,{**t,'attack':1},a);self.assertTrue(a.get('mage_channel'))
  def test_singularity_displacement_uses_hazards(self):
-  b,a,t=self.fixture(['singularity']);t.update(x=4,y=2)
+  b,a,t=self.fixture(['singularity']);t.update(x=4,y=2);a.update(x=0,y=2)
   with self.hit():self.use(b,'singularity',x=3,y=2)
   self.assertEqual(t['hp'],495);self.assertEqual((t['x'],t['y']),(3,2));self.assertTrue(any(e.get('forced') for e in b['animation_events']))
  def test_typhoon_hits_allies_and_wets_everyone_except_caster(self):
@@ -126,12 +126,12 @@ class MageTests(unittest.TestCase):
   b,a,t=self.fixture();conditions.apply(a,'blister',2,t)
   self.assertEqual(combat._attack_preview(b,a,t,'ignore')['chance'],90);combat._deal_damage(b,a,t);self.assertEqual(t['hp'],482)
   combat._deal_damage(b,{'id':a['id'],'name':a['name'],'attack':10,'status_tick':True},t);self.assertEqual(t['hp'],473)
- def test_scorched_reentries_and_friendly_safety(self):
+ def test_scorched_reentries_and_caster_damage(self):
   b,a,t=self.fixture();mage.scorch(b,a,t,2);t['zone_location']=[0,0];hp=t['hp']
   combat._apply_zone_route(b,t,[(3,2),(4,2),(3,2)]);self.assertEqual(t['hp'],hp-9)
-  a['zone_location']=[0,0];hp=a['hp'];combat._apply_zone_route(b,a,[(3,2)]);self.assertEqual(a['hp'],hp)
+  a['zone_location']=[0,0];hp=a['hp'];combat._apply_zone_route(b,a,[(3,2)]);self.assertEqual(a['hp'],hp-3);self.assertTrue(conditions.has(a,'burn'))
  def test_ai_spell_and_no_friendly_typhoon(self):
-  b,a,t=self.fixture(['fireball']);a['skills']=a['skills'][:1]
+  b,a,t=self.fixture(['fireball']);a['skills']=a['skills'][:1];t.update(x=6,y=2)
   with self.hit():self.assertTrue(mage.auto(b,a,[t]))
   self.assertTrue(a['acted']);self.assertLess(t['hp'],500)
  def test_previews_ground_support_and_no_mutation(self):
@@ -190,5 +190,48 @@ class MageTests(unittest.TestCase):
   self.assertFalse(any(k.startswith('_mage_preview') or k.startswith('_routing') for k in first))
   b['terrain'].append({'id':'new-wall','x':t['x']-1,'y':t['y'],'blocking':True,'blocks_sight':True})
   second=combat.battle_view(b);self.assertNotEqual(first['ground_skill_previews'],second['ground_skill_previews'])
+
+class MageFriendlyFireTests(unittest.TestCase):
+ fixture=MageTests.fixture
+ hit=MageTests.hit
+ use=MageTests.use
+ skill=MageTests.skill
+ add=MageTests.add
+ def test_area_damage_hits_live_caster_and_allies(self):
+  for kind in ('fireball','meteor','singularity'):
+   with self.subTest(kind=kind):
+    b,a,t=self.fixture();a.update(x=3,y=2,hp=500,max_hp=500)
+    ally=self.add(b,t,'friend',3,3,'player');outside=self.add(b,t,'outside',7,7,'player')
+    with self.hit(),patch('backend.combat_mage.roll',return_value=1):mage.impact(b,deepcopy(a),kind,{'x':3,'y':2})
+    self.assertLess(a['hp'],500);self.assertLess(ally['hp'],500);self.assertEqual(outside['hp'],500)
+    if kind in ('meteor','fireball'):self.assertTrue(conditions.has(a,'burn'));self.assertTrue(conditions.has(ally,'burn'))
+ def test_delayed_freeze_includes_caster_and_allies(self):
+  b,a,t=self.fixture(['flash_freeze']);ally=self.add(b,t,'friend',3,3,'player');outside=self.add(b,t,'outside',7,7,'player')
+  self.use(b,'flash_freeze',t);a['ability_activation']+=1
+  with patch('backend.combat_mage.roll',return_value=1):mage.settle(b,a,'end')
+  for u in (a,t,ally):self.assertTrue(conditions.has(u,'freeze'))
+  self.assertFalse(conditions.has(outside,'freeze'))
+ def test_forecast_uses_proposed_caster_position_without_mutation(self):
+  b,a,t=self.fixture();a.update(x=0,y=0);source={**deepcopy(a),'x':3,'y':3};before=deepcopy(b)
+  row=mage.preview(b,source,{'x':3,'y':2},self.skill('fireball'))
+  self.assertIn(a['id'],row['target_forecasts']);self.assertGreater(row['target_forecasts'][a['id']]['damage_on_hit'],0);self.assertEqual(b,before)
+  source.update(x=7,y=7);self.assertNotIn(a['id'],mage.preview(b,source,{'x':3,'y':2},self.skill('fireball'))['target_forecasts'])
+ def test_ai_rejects_caster_or_ally_in_blast(self):
+  for kind in ('fireball','meteor','singularity','flash_freeze'):
+   with self.subTest(kind=kind):
+    b,a,t=self.fixture([kind]);self.assertFalse(mage.auto(b,a,[t]));self.assertFalse(a['acted'])
+    a.update(x=0,y=2);t.update(x=4,y=2);ally=self.add(b,t,'friend',4,3,'player')
+    self.assertFalse(mage.auto(b,a,[t]));ally.update(x=7,y=7)
+    with self.hit():self.assertTrue(mage.auto(b,a,[t]))
+ def test_dash_forecast_includes_own_fire_and_deduplicates_overlaps(self):
+  b,a,t=self.fixture();mage.scorch(b,a,{'x':3,'y':2},2)
+  ally=self.add(b,t,'friend',7,7,'player');mage.scorch(b,ally,{'x':3,'y':2},2)
+  before=deepcopy(b);self.assertEqual(combat._dash_ground_damage(b,a,[(3,2),(4,2),(3,2)]),9);self.assertEqual(b,before)
+  self.assertEqual(combat._dash_ground_damage(b,t,[(3,2),(4,2),(3,2)]),9)
+ def test_lethal_self_hit_finishes_other_victims(self):
+  b,a,t=self.fixture(['fireball']);a['hp']=1;ally=self.add(b,t,'friend',3,3,'player')
+  with self.hit():self.use(b,'fireball',t)
+  self.assertFalse(combat._combat_active(a));self.assertLess(t['hp'],500);self.assertLess(ally['hp'],500)
+  json.dumps(combat.battle_view(b))
 
 if __name__=='__main__' :unittest.main()
