@@ -978,3 +978,8 @@ Past unrecorded server-window closure remains unconfirmed; saved logs now allow
 diagnosis if it recurs. Production and player saves unchanged.
 
 Validation for this pass: 263 frontend tests, 99 backend tests (including all Battle Lab catalogue starts, API/persistence and runner isolation tests), and Vite build pass. Existing bundle-size warning remains. No new browser animation benchmark in this pass.
+
+Completed in dev: reduced initial Command Post navigation CPU from 238ms to 32ms
+with transient routing lookups. See docs/design/COMBAT_CONTROLS.md for benchmark
+and regression coverage. Network latency and any future process-exit diagnosis
+remain separate concerns; production unchanged.

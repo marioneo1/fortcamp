@@ -824,7 +824,24 @@ def _living(battle: dict, team: str | None = None) -> list[dict]:
     return [unit for unit in battle["units"].values() if _combat_active(unit) and (team is None or unit["team"] == team)]
 
 
+def _routing_snapshot(battle: dict) -> dict:
+    """Index footprints for one read-only search, never the persistent battle.
+
+    Build again after each mutation; tile lists preserve authored overlap order.
+    """
+    terrain = {}
+    for tile in battle.get("terrain", []):
+        for cell in occupied_tiles(tile):
+            terrain.setdefault(cell, []).append(tile)
+    ground = {}
+    for tile in battle.get("ground_tiles", []):
+        ground.setdefault((tile["x"], tile["y"]), tile)
+    return {**battle, "_routing_terrain": terrain, "_routing_ground": ground}
+
+
 def _terrain_at(battle: dict, x: int, y: int) -> list[dict]:
+    if "_routing_terrain" in battle:
+        return battle["_routing_terrain"].get((x, y), [])
     return [tile for tile in battle.get("terrain", []) if (x, y) in occupied_tiles(tile)]
 
 
@@ -842,7 +859,8 @@ def _player_exit_tiles(battle: dict) -> set[tuple[int, int]]:
 
 
 def _ground_at(battle: dict, x: int, y: int) -> tuple[str, dict]:
-    tile = next((tile for tile in battle.get("ground_tiles", []) if tile["x"] == x and tile["y"] == y), None)
+    tile = (battle["_routing_ground"].get((x, y)) if "_routing_ground" in battle
+            else next((tile for tile in battle.get("ground_tiles", []) if tile["x"] == x and tile["y"] == y), None))
     material = tile.get("material", "grass") if tile else "grass"
     return material, battle.get("ground_materials", {}).get(material, {})
 
@@ -916,16 +934,17 @@ def _step_cost(battle: dict, x: int, y: int, nx: int, ny: int, unit: dict) -> in
     climb = _tile_height(battle, nx, ny) - _tile_height(battle, x, y)
     elevation_cost = max(1, climb * 2)
     material, ground = _ground_at(battle, nx, ny)
+    terrain = _terrain_at(battle, nx, ny)
     terrain_cost = max(
-        [int(tile.get("movement_cost", 1)) for tile in _terrain_at(battle, nx, ny) if not tile.get("destroyed")]
-        + [int(tile.get("destroyed_movement_cost", 1)) for tile in _terrain_at(battle, nx, ny) if tile.get("destroyed")]
+        [int(tile.get("movement_cost", 1)) for tile in terrain if not tile.get("destroyed")]
+        + [int(tile.get("destroyed_movement_cost", 1)) for tile in terrain if tile.get("destroyed")]
         + [int(ground.get("movement_cost", 1))]
         + [1]
     )
     rules=unit.get('gear_rules',{})
-    kinds={tile.get('kind') for tile in _terrain_at(battle,nx,ny)}
+    kinds={tile.get('kind') for tile in terrain}
     water=bool(kinds.intersection({'shallow_water','water'})) or material.startswith('water')
-    rubble='rubble' in kinds or 'rubble' in material or any(tile.get('destroyed') for tile in _terrain_at(battle,nx,ny))
+    rubble='rubble' in kinds or 'rubble' in material or any(tile.get('destroyed') for tile in terrain)
     if water and rules.get('water_walk') or rubble and rules.get('rubble_walk'):terrain_cost=1
     return elevation_cost + terrain_cost - 1
 
@@ -1253,6 +1272,7 @@ def _climb_out(battle,unit,destination):
 
 
 def _reachable(battle: dict, unit: dict, limit: int) -> dict[tuple[int, int], int]:
+    battle = _routing_snapshot(battle)
     found = {(unit["x"], unit["y"]): 0}
     queue = [(0, unit["x"], unit["y"])]
     while queue:
@@ -1271,6 +1291,7 @@ def _reachable(battle: dict, unit: dict, limit: int) -> dict[tuple[int, int], in
 
 
 def _movement_tree(battle: dict, unit: dict) -> tuple[dict[tuple[int, int], int], dict[tuple[int, int], tuple[int, int] | None]]:
+    battle = _routing_snapshot(battle)
     origin = unit.get("movement_origin") or {"x": unit["x"], "y": unit["y"]}
     start = (int(origin["x"]), int(origin["y"]))
     found = {start: 0}
@@ -1308,6 +1329,7 @@ def _reposition_route(battle, unit, destination, reachable):
 
     The original activation budget still determines available destinations.
     """
+    battle = _routing_snapshot(battle)
     start = (unit['x'], unit['y'])
     costs, parents = {start: 0}, {start: None}
     queue = [(0, *start)]
@@ -2230,6 +2252,7 @@ def _navigation_tree(battle, unit):
     # Intent routing may look past a standing NPC, but actual movement below
     # still uses the occupied, authoritative movement tree. Never walk through it.
     planning={**battle,'units':{uid:{**u,'conscious':False} if uid!=unit['id'] else u for uid,u in battle['units'].items()},'terrain':[{**t,'blocking':False} if t.get('kind')=='gate' and not t.get('destroyed') else t for t in battle.get('terrain',[])]}
+    planning = _routing_snapshot(planning)
     gates={cell:t for t in battle.get('terrain',[]) if t.get('kind')=='gate' and not t.get('destroyed') and t.get('state')!='opened' and not t.get('edge_wall') for cell in occupied_tiles(t)}
     start=(unit['x'],unit['y']);queue=[(0,0,*start)];costs={start:(0,0)};parents={start:None};doors={}
     while queue:

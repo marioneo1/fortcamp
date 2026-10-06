@@ -145,3 +145,6 @@ Navigation hardening: [Combat controls](design/COMBAT_CONTROLS.md) covers occupi
 doors, final-position API validation and repeated-request suppression.
 [Development runner](design/DEVELOPMENT_RUNNER.md) explains retained logs and
 visible abnormal exits.
+
+Initial house-navigation performance and temporary spatial lookups: see
+[Combat controls](design/COMBAT_CONTROLS.md), October 5 latency pass.

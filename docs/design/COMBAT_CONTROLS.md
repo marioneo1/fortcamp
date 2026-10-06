@@ -339,3 +339,26 @@ unrecorded server process exit. Regression tests cover an NPC in the doorway,
 See [Development runner](DEVELOPMENT_RUNNER.md) for persistent failure logs.
 
 Validation for this pass: 263 frontend tests, 99 backend tests (including all Battle Lab catalogue starts, API/persistence and runner isolation tests), and Vite build pass. Existing bundle-size warning remains. No new browser animation benchmark in this pass.
+
+## October 5: initial house-navigation latency (dev)
+
+The Command Post reproduction already uses current edge-wall geometry (14x10,
+30 terrain structures, 28 edge walls, `small_command_4`, seed `layout-0`). Its
+initial navigation delay came mainly from repeated terrain footprint scans, not
+outdated construction assets. Movement, repositioning and entrance searches now
+build temporary terrain/ground lookups once per search. Movement-cost evaluation
+also reuses its terrain lookup. Overlapping and rotated footprints preserve their
+original rules and order. These indexes never enter saved battles or API views;
+every search rebuilds from current door/structure state, avoiding stale blockers.
+
+Eight isolated uncached navigation commands averaged 238ms before and 32ms after
+on this PC (about 7.4x faster). This includes battle-view construction, excludes
+network latency, and does not establish the cause of the earlier unrecorded server
+exit. Existing server authority, explicit door opening, START movement budgets,
+hazard handling and animation locks remain unchanged. No frontend changes.
+
+Validation: 77 backend tests pass, including all Battle Lab catalogue starts and
+persistence checks, covering indexed/unindexed route equivalence,
+rotated/overlapping footprints, fresh searches after door/footprint mutations,
+absence of indexes from saved/public state, navigation API, approach movement,
+wall boundaries, committed ground hazards and combat tactics.
