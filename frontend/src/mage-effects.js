@@ -1,4 +1,5 @@
 // Painted Mage assets use the same contact clock as damage and forced movement.
+import {frozenMarkup,warmFrozenSurfaces} from './mage-surfaces.js';
 const root='/assets/mage-v1/';
 export const MAGE_ELEMENTS=[{id:'fire',name:'Fire',description:'One Burn stack per weapon hit.'},{id:'frost',name:'Frost',description:'20% Freeze chance per hit; later hits break the ice.'},{id:'lightning',name:'Lightning',description:'25% Paralysis chance against Wet; once successfully per target.'}];
 export function enchantCommand(command,element){if(!MAGE_ELEMENTS.some(e=>e.id===element))throw Error('Choose a supported element');return {...command,element}}
@@ -15,7 +16,7 @@ export function chooseEnchant({view,command,send,cancel,escape,blocked}){
 export function mageStatusMarkup(unit){
  if(unit.alive===false||unit.conscious===false)return '';
  const has=id=>unit.statuses?.some(s=>s.id===id);
- return `${has('freeze')&&unit.statuses.some(s=>s.id==='freeze'&&s.elemental_freeze)?'<span class="mage-ice-shell" aria-hidden="true"></span>':''}${has('wet')?'<span class="mage-wet-rim" aria-hidden="true"></span>':''}${has('channeling')?'<span class="mage-channel-orbit" aria-hidden="true"></span>':''}`;
+ return `${frozenMarkup(unit)}${has('wet')?'<span class="mage-wet-rim" aria-hidden="true"></span>':''}${has('channeling')?'<span class="mage-channel-orbit" aria-hidden="true"></span>':''}`;
 }
 export function emitMageEffect(field,event,battle,delay=0){
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
@@ -28,6 +29,7 @@ export function emitMageEffect(field,event,battle,delay=0){
  const later=(ms,fn)=>setTimeout(fn,Math.max(0,delay+ms));
  const pulse=(name,size=1.3,spin=0)=>sprite(name,at,size,[{opacity:.9,transform:'translate(-50%,-50%) scale(.8)'},{opacity:.95,offset:.15,transform:'translate(-50%,-50%) scale(1)'},{opacity:0,transform:`translate(-50%,-50%) scale(1.15) rotate(${spin}deg)`}],550);
  const k=event.mage_skill,contact=event.contact_ms??240;
+ if(k==='flash_freeze_armed'||(k==='enchant_weapon'&&event.enchant_element==='frost'))warmFrozenSurfaces();
  if(k==='chain_lightning'){
   later(contact-80,()=>{if(!field.isConnected||document.hidden)return;const from=event.from_point,dx=(at.x-from.x)*cw,dy=(at.y-from.y)*ch,angle=Math.atan2(dy,dx)*180/Math.PI;
    const img=document.createElement('img');img.src=root+'lightning_arc.png';img.className='mage-effect mage-lightning';img.style.cssText=`left:${(from.x+.5)*cw+dx/2}px;top:${(from.y+.5)*ch+dy/2}px;width:${Math.max(cw*.65,Math.hypot(dx,dy))}px;height:${ch*.7}px;--bolt-angle:${angle}deg`;field.append(img);const animation=img.animate(reduced?[{opacity:.8},{opacity:0}]:[{opacity:0},{opacity:1,offset:.15},{opacity:.25,offset:.4},{opacity:.95,offset:.55},{opacity:0}],{duration:280,fill:'both'});animation.onfinish=animation.oncancel=()=>img.remove();

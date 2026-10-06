@@ -1,5 +1,7 @@
 # Combat status presentation
 
+October 6 Mage surface update: elemental Frozen covers the actual portrait with translucent painted ice, four stable patterns and contact-timed spreading/shattering or thawing. The old Freeze binding-tether flash is removed. Status badge placement and gameplay remain unchanged. Dedicated sheet, import and limitations: [Mage surfaces V2](../art/MAGE_SURFACES_V2.md).
+
 October 6 Ranger additions: owner-specific Quarry badges identify the owner and guaranteed accuracy; Poison shows independent layer counts/ticks. Pestilence, Poison Imbue and Sharpshooter have painted status art. Longshot critical feedback is labelled Critical; Rupture has its own damage label. See [Ranger rules](RANGER_REWORK_REVIEW.md) and [Ranger art](../art/RANGER_V1.md). Existing badge sizes/layout are unchanged.
 
 October 5 spacing refinement: attached map badges use wrapping flex rows with a 3px column gap (previously 6px) and unchanged 6px row gap. Removing fixed 36px grid tracks also removes unused column space around 27px passive-readiness badges. Icon sizes, attached position and the dock/inspection displays are unchanged. Verified in the browser with two readiness badges; transformed visual gap is 3.45px at 115% token scale, corresponding to 3px CSS spacing. Twenty-one related UI tests and the frontend build pass; the existing large-bundle warning remains.

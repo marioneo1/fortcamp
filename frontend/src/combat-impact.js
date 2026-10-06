@@ -115,7 +115,7 @@ export function impactArtwork(event){
   if(event.kind==='barrier')return ['barrier_shell'];
   if(['heal','cleanse','form'].includes(event.kind))return ['restoration_wisp'];
   if(['guard','deploy'].includes(event.kind))return ['magic_hit'];
-  if(event.kind==='status'&&event.status_id==='stun')return [];
+  if(event.kind==='status'&&['stun','freeze'].includes(event.status_id))return [];
   if(event.critical){style.label='Critical';style.color='#ffd479'}
   if(event.kind==='status')return ['bind','mute','slow','hobbled','stun','freeze'].includes(event.status_id)?['binding_tether']:event.status_id==='burn'?['flame_lick']:event.status_id==='poison'?['poison_cloud']:['magic_hit'];
   if(['burn','fire'].includes(event.kind))return ['flame_lick'];

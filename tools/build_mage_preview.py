@@ -7,14 +7,22 @@ ROOT=Path(__file__).resolve().parents[1];sys.path.insert(0,str(ROOT))
 from backend import combat,combat_mage as mage,combat_conditions as conditions,job_loadouts as jobs
 from backend.game import new_game,public_content
 from tests.test_mage_jobs import MageTests
+from PIL import Image
 state=new_game({'name':'Mage Preview','starting_role':'mage'});views={}
+preview_face=ROOT/'staging-ui/mage-v1/preview-face.png';preview_face.parent.mkdir(parents=True,exist_ok=True)
+portrait=ROOT/'portraits/aasimar_female_healer.png'
+if portrait.exists():
+ atlas=Image.open(portrait);atlas.crop((0,0,atlas.width//5,atlas.height//4)).save(preview_face)
 def fixture(keys,debuffer=False):
- b,a,t=MageTests().fixture(keys,debuffer);profile=combat._player_unit(state,state['characters'][0],2,2);a.update(name='Mage Tester',portrait=profile['portrait'],weapon=profile['weapon'],weapon_type=profile['weapon_type'],job_description=jobs.JOBS['mage']['description'],special=a['skills'][0]);t.update(name='Training target',portrait='',x=5,y=2)
+ b,a,t=MageTests().fixture(keys,debuffer);profile=combat._player_unit(state,state['characters'][0],2,2);a.update(name='Mage Tester',portrait='/staging-ui/mage-v1/preview-face.png' if preview_face.exists() else profile['portrait'],weapon=profile['weapon'],weapon_type=profile['weapon_type'],job_description=jobs.JOBS['mage']['description'],special=a['skills'][0]);t.update(name='Training target',portrait=a['portrait'],x=5,y=2)
  b['units']['second']={**deepcopy(t),'id':'second','x':6,'y':3,'name':'Second target'};b['units']['ally']={**deepcopy(a),'id':'ally','x':2,'y':4,'name':'Monk ally','attack_elevation_rule':'melee','statuses':[],'skills':[],'passives':[]}
  b['animation_events']=[];return b,a,t
 b,a,t=fixture(['chain_lightning','fireball','flash_freeze','typhoon','enchant_weapon']);conditions.apply(t,'wet',2,a);views['elemental']=combat.battle_view(b)
 with patch('backend.combat_mage.roll',return_value=1):mage.freeze(b,a,t)
 views['frozen']=combat.battle_view(b)
+for material in ['grass','dirt','stone']:
+ surface=deepcopy(b);surface['ground_tiles']=[{'x':x,'y':y,'material':material} for y in range(surface['height']) for x in range(surface['width'])]
+ mage.scorch(surface,a,{'x':5,'y':4},2);views['surface_'+material]=combat.battle_view(surface)
 for name,key in [('fireball','fireball'),('chain','chain_lightning'),('gravity','singularity'),('wind','typhoon')]:
  b,a,t=fixture([key]);a['special']=a['skills'][0];conditions.apply(t,'wet',2,a)
  with patch('backend.combat._attack_hits',return_value=(True,{'chance':100,'damage_bonus':0},1)),patch('backend.combat_mage.roll',return_value=1):mage.execute(b,a,a if key=='typhoon' else t,a['special'])

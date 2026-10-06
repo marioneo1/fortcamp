@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## October 6: Dedicated Frozen and Scorched presentation (implemented in dev)
+
+Two complete 4×4 generated atlases: portrait ice spread/stable patterns/fracture/thaw, and flat soot/ash/top-down flame frames/embers/smoke. Ice fits the face circle and uses actual contact timing. Scorch forms one feathered connected region, with stable variations and sparse offset fire; removes repeated lava tiles and explosion stamps. Removed Freeze's old binding-tether flash. Actual Chrome fixtures cover real portrait geometry, grass/dirt/stone, loaded art and cleanup. No damage, status, sound, save or production changes. Docs/prompts: docs/art/MAGE_SURFACES_V2.md. Pending: human aesthetic feedback, a separate Meteor centre impact mark and reconstructing ice that applies/breaks within one returned multi-hit activation.
+
 ## October 6: Mage elemental rework (implemented in dev)
 
 Eight-skill Mage pool, three starter actives, five-slot progression and saved-ID migration. Wet → Lightning / Fire → Blister, delayed breakable Freeze → Wet, grouped Singularity, interruptible two-activation Meteor, friendly-displacing Typhoon, player-chosen per-hit weapon enchantments and slotted Debuffer reuse current engine systems. Layered Burn and painted Scorched terrain use committed routes, repeated/forced entries and ally-safe ground; no infinite ground-stack multiplication. Forecasts retain movement/cast combination and shared damage/push/next-actor timing. One packed 16-asset atlas plus five locally synthesized sound clips; no extra cloud or Effekseer dependency. Request-local preview caches reduced the measured 8×8 five-skill fixture from ~85ms to ~24ms. Canonical rules: docs/design/MAGE_REWORK_REVIEW.md; art: docs/art/MAGE_V1.md.

@@ -30,7 +30,7 @@ test('Meteor sound is a physical layered landing and fire; no magical shrill rel
  for(const id of ['lightning','freeze','gravity','fireball','typhoon'])assert.ok(existsSync(new URL('../public/assets/sfx/mage_'+id+'.wav',import.meta.url)));
 });
 test('Ground warnings and scorch use explicit labels and painted top-down art',()=>{
- const z={cells:[{x:2,y:3}],owner_name:'Mage',name:'Meteor',remaining:1,description:'Leave before impact'};assert.match(zoneOverlay([{...z,kind:'meteor_armed'}],escape),/METEOR INCOMING/);assert.match(zoneOverlay([{...z,kind:'flash_freeze_armed'}],escape),/FREEZE ARMED/);assert.match(zoneOverlay([{...z,kind:'scorched'}],escape),/mage-v1\/scorched_tile/);
+ const z={cells:[{x:2,y:3}],owner_name:'Mage',name:'Meteor',remaining:1,description:'Leave before impact'};assert.match(zoneOverlay([{...z,kind:'meteor_armed'}],escape),/METEOR INCOMING/);assert.match(zoneOverlay([{...z,kind:'flash_freeze_armed'}],escape),/FREEZE ARMED/);assert.match(zoneOverlay([{...z,kind:'scorched'}],escape),/mage-scorched-v2\/soot_/);
 });
 test('Enchantment and Frozen tooltips disclose element, duration and ice breaking',()=>{
  const e=statusDetails({id:'weapon_enchant',element:'lightning',turns:2,paralyzed_targets:['enemy']});assert.ok(e.details.some(v=>v.includes('LIGHTNING')));const f=statusDetails({id:'freeze',elemental_freeze:true,turns:2,wet_turns:4});assert.match(f.description,/Cannot act/);assert.ok(f.details.some(v=>v.includes('4 turns of Wet')));

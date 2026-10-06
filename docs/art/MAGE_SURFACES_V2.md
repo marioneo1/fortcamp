@@ -1,0 +1,45 @@
+# Frozen portraits and top-down Scorched ground — October 6, 2026
+
+Implemented in dev. Two dedicated transparent 4×4 sheets replace the initial decorative ice cage and repeated lava/explosion ground stamps. Gameplay, damage, timing, saved portraits and status duration are unchanged. Built-in image generation was used; no API key or new VFX dependency.
+
+## Frozen portrait
+
+Runtime assets: `frontend/public/assets/mage-frozen-v2/` — `freeze_1`–`freeze_4`, `frozen_1`–`frozen_4`, `break_1`–`break_4`, `thaw_1`–`thaw_4`. Sixteen 256px RGBA crops.
+
+The translucent blue-white surface is clipped to the same circle and exact 17%/66% geometry as the face, rather than outside the portrait. Four stable frost patterns are selected by unit ID. The face remains visible beneath the ice; HP and status badges remain above it. A restrained glint supplies idle motion without moving the entire ice pattern.
+
+On a newly Frozen state, four spreading frames begin at the recorded status contact, followed by the stable surface. When an existing Frozen state ends on direct damage, fracture/shard frames begin at that damage contact. Other endings use thaw/droplet frames. The removed surface remains until that contact so it cannot disappear early. Death transitions use the existing live ghost token. Effects skip disconnected/hidden tokens, clean up and respect reduced motion. Frost frames preload when Freeze is armed or Frost enchantment is cast, avoiding cold frame downloads at the hit. Legacy movement-only equipment Freeze keeps its earlier representation.
+
+Limitation: state-to-state transition animation does not reconstruct a brief Freeze that both applies and breaks within the same returned multi-hit activation. The gameplay remains correct; a dedicated per-hit elemental transition event can extend this later.
+
+## Scorched ground
+
+Runtime assets: `frontend/public/assets/mage-scorched-v2/` — four `soot`, four `ash`, four `flame` source frames, two `ember`, two `smoke` crops, plus the assembled `flame_strip.png`. All source crops are 256px; strip is 1024×256.
+
+Soot overlaps adjacent tiles into one connected darkened region. One union mask erodes then feathers only the perimeter, preventing both internal seams and a hard square-cut outer edge. Seeded placement/rotation keeps it stable across rerenders while varying the surface. Original flooring remains visible. Ash is sparse; one small flame patch per approximately four cells uses four fixed-alignment frames. Ember intensity varies gently; at most two faint smoke patches per zone. No whole-ground expansion/pulsing, lava-rock platforms, per-cell explosions or duplicated boundary outline. Terrain and props retain their normal ordering; characters/feedback stay above the floor effect.
+
+This intentionally uses low residual fire rather than a bonfire on every damaged tile. Fireball and Meteor currently share this material; a distinct central Meteor crater remains future work.
+
+## Import and source references
+
+Ignored workspace references: `staging-mage-surfaces/frozen-atlas.png`, `scorched-atlas.png`, and their review sheets. Original generated filenames: `exec-840eb730-ade3-44ba-9314-f74196814811.png` (Frozen), `exec-76c3aa5b-3905-4e68-b856-3acb627ced02.png` (Scorched).
+
+```powershell
+.\.venv\Scripts\python.exe tools/import_mage_surfaces.py
+```
+
+Optional `--frozen` and `--scorched` paths import replacement source sheets. This importer targets the reviewed 1254px 4×4 layout. It preserves a fixed cell coordinate system across frames; individually auto-centering each frame would cause visible jitter. Alpha values below four are cleared to remove almost-transparent export noise. It preserves usable transparency and assembles the four aligned flame frames. Runtime crops are tracked in Git; staging sheets are not shipped.
+
+## Prompt set used with built-in image generation
+
+### Frozen sheet
+
+Create a dedicated production sprite atlas for FREEZING A CHARACTER PORTRAIT in a hand-painted fantasy tactical RPG. Square atlas, exactly 4 columns by 4 rows, sixteen evenly sized square cells with equal spacing and ample empty gutters. True transparent background. No text, no labels, no frames, no characters, no landscape. Every cell contains the SAME aligned frontal circular ice overlay, intended to composite directly ON TOP OF an existing round face portrait: it is a thin translucent blue-white frozen glass surface with delicate branching frost across its entire circular face, NEVER a hollow ring, crown, upright ice cage or crystals standing around a hole. The character face beneath must remain recognizable through the central clear/translucent regions. The circular overlay fills about 76% of each cell, centered precisely at the same location and diameter throughout the sheet. Match rich illustrated painterly fantasy game art, fine readable textures at small size, restrained icy highlights, natural irregular frost, no neon glow. Row 1: four aligned progressive freezing frames, left to right: sparse frost starting around circumference; branching frost spreads inward; frosted translucent surface covers most of circle; completed frozen portrait surface with translucent facets and frost branches. Row 2: four completed frozen surface variants, each different fine frost pattern with thicker irregular icy perimeter, almost-clear face-sized centre still covered by a few translucent cracks and facets. These are overlays, not medals or icons. Row 3: four aligned breaking-ice frames: fine fracture across frozen surface; denser fracture; broken ice fragments separating slightly leaving central transparency; shards moving radially outward leaving empty center. Row 4: four aligned thawing frames: surface thinning and watery edges; melting frosted patches and droplets; sparse rim droplets with two small frost patches; several isolated droplets nearly gone. All ice surfaces and fragments stay within their own cells. Delicate semi-transparent ice wherever possible; no solid white discs and absolutely no repeated ice-ring asset. Use all sixteen cells for these useful material/animation states.
+
+### Scorched sheet
+
+Production game VFX/terrain decal atlas dedicated ONLY to SCORCHED GROUND for a hand-painted fantasy tactical RPG. Exactly 4 columns and 4 rows, sixteen evenly sized square cells in a square image, equal cell dimensions with ample empty transparent gutters. True transparent background; no text, grid lines, labels or frames. CRITICAL camera: strict straight overhead 90-degree TOP DOWN, matching a painted grass/dirt/stone tactical map. No tilted view, horizon, vertical flames viewed sideways, rock platforms, lava rocks or perspective discs. Assets must overlay the existing floor and preserve its texture, NOT replace it with new ground chunks. Restrained realistic fantasy painting, matte charcoal-black and warm ash gray with small orange ember accents, no neon orange glowing cracked lava. Row 1: four distinct flat irregular soot scorch decals, wide soft ragged edges fading to transparency, sparse char flecks, semi-transparent smoky charcoal smudges; footprints occupy about 80% of square with NO hard outlines, NO stone slabs, NO raised terrain, NO flames in these four cells. Row 2: four distinct flat top-down scatter decals: charcoal flecks and ash; burnt grass remnants and ash; tiny scorched wooden fragments and cinders; smoky gray powder with small deep red embers. Low profile and small dispersed pieces, no large objects. Row 3: four sequential frames of THE SAME tiny residual flame patch viewed exactly from directly above, centred identically, same square footprint: a few small orange yellow flame tips twisting around several black cinders, seen from above as a compact irregular curling pattern, smoothly changing shape between frames; not huge fireball explosions, not giant starbursts, not a bonfire side view. Maintain only 40% cell coverage and leave ample transparency. Row 4: four atmospheric accents: tiny dim red orange ember cluster variant one; tiny dim ember cluster variant two; very faint overhead translucent wispy smoke patch variant one; faint overhead wispy smoke patch variant two. Fill all sixteen cells with these usable decals/animation pieces. Every piece remains inside its cell with generous separation; no artificial background, no cast long shadows. This is aftermath of fire, with sparse remaining combustion, and should visually integrate into real map flooring.
+
+## Validation
+
+Actual-renderer Chrome fixtures use a cropped portrait reference without modifying source portraits or metadata. They cover grass/dirt/stone, correct face/ice geometry, loaded surface art, sparse flame placement, visible animation and shatter cleanup. Captures: ignored `staging-ui/mage-v1/surface-*.png` and `frozen.png`. New frontend checks cover deterministic placement, frozen identity preservation, contact versus thaw, complete packs and reduced motion. The old binding-tether flash was removed for Freeze. Existing Mage damage/status tests remain green; final counts are in the history entry. Aesthetic judgment still needs the user's in-game test pass.

@@ -1,5 +1,7 @@
 # Mage rework — implemented in dev, October 6, 2026
 
+Current Frozen/Scorched presentation: [Mage surfaces V2](../art/MAGE_SURFACES_V2.md) supersedes the initial cage and ground stamps with two dedicated sheets, face frost/spread/shatter/thaw and a connected terrain stain with sparse top-down flame frames. Gameplay below is unchanged.
+
 Mage creates elemental states and dangerous ground, then exploits them with spells or allies. This extends the existing five-slot loadouts, damage pipeline, resistance, displacement, movement previews, zones and persisted battle JSON. No Mana system, new Champion kits or production rollout.
 
 ## Kit and progression

@@ -1,0 +1,18 @@
+/* Portrait-sized frozen material, rather than a decorative cage outside the token. */
+.battle-token .mage-ice-shell,.battle-token .mage-ice-transition{position:absolute;left:17%;top:17%;width:66%;height:66%;z-index:9;pointer-events:none;border-radius:50%;background:none;filter:none;animation:none}
+.mage-ice-shell{overflow:hidden;isolation:isolate}
+.mage-ice-shell .ice-surface{position:absolute;inset:0;background:var(--ice-surface) center/112% 112% no-repeat;opacity:.68}
+.mage-ice-shell .ice-glint{position:absolute;inset:0;background:linear-gradient(115deg,transparent 38%,#d7f3ff35 47%,transparent 55%);opacity:.22;animation:portrait-ice-glint 6s ease-in-out infinite}
+.battle-token .mage-ice-transition{background-position:center;background-size:112% 112%;background-repeat:no-repeat;opacity:.8;transform-origin:center}
+.battle-zone.zone-scorched{opacity:1;color:#ae7746}
+.zone-scorched .zone-boundary{display:none}
+.scorch-ground{mix-blend-mode:multiply}
+.scorch-tone{fill:#231a13;opacity:.26}
+.scorch-soot{opacity:.72}.scorch-ash{opacity:.38}.scorch-embers{opacity:.65;animation:scorch-ember-glow 3.1s ease-in-out infinite alternate}
+.scorch-smoke{opacity:.11;animation:scorch-smoke-drift 4.5s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
+.scorch-flame{width:100%;height:100%;background:url('/assets/mage-scorched-v2/flame_strip.png') 0 0/400% 100% no-repeat;opacity:.88;animation:scorch-flame-frames 1.3s steps(1,end) infinite}
+@keyframes scorch-flame-frames{0%{background-position:0% 0}25%{background-position:33.333333% 0}50%{background-position:66.666667% 0}75%,100%{background-position:100% 0}}
+@keyframes scorch-ember-glow{to{opacity:.34}}
+@keyframes scorch-smoke-drift{to{opacity:.18;translate:3px -4px}}
+@keyframes portrait-ice-glint{0%,70%,100%{opacity:.12;translate:-15% 0}85%{opacity:.4;translate:15% 0}}
+@media(prefers-reduced-motion:reduce){.ice-glint,.scorch-embers,.scorch-smoke,.scorch-flame{animation:none!important}}

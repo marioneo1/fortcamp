@@ -1,5 +1,7 @@
 import {emitMageEffect,mageStatusMarkup,chooseEnchant} from './mage-effects.js';
 import './mage-effects.css';
+import {animateFrozenTransitions} from './mage-surfaces.js';
+import './mage-surfaces.css';
 import {emitRangerEffect} from './ranger-effects.js';
 import {isTurret,turretMarkup,emitTurretAttack} from './turret-art.js';
 import './turret-art.css';
@@ -723,6 +725,7 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       ghosts.set(event.unit_id,{ghost,finalToken,bodyTransition,placement:{...collapsePlacement(ghost.getBoundingClientRect(),finalToken.getBoundingClientRect()),scale:parseFloat(getComputedStyle(finalToken).width)/parseFloat(getComputedStyle(ghost).width)}});
     }
     const tokenFor=id=>ghosts.get(id)?.ghost||field.querySelector(`[data-battle-unit="${CSS.escape(id)}"]`);
+    animateFrozenTransitions(previous,battle,timeline,tokenFor);
     const motions=new Map();
     const queueMotion=(token,frames,options,className,onFinish=()=>{})=>{
       if(!motions.has(token))motions.set(token,[]);

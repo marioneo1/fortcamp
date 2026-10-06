@@ -16,8 +16,17 @@ await writeFile('staging-ui/mage-v1/enchant.png',Buffer.from((await call('Page.c
 await evaluate(`document.querySelector('[data-mage-cancel]').click()`);assert.equal(await evaluate('window.mageSent.length'),0);
 await evaluate(`document.querySelector('[data-hotbar-skill="job:mage:enchant_weapon"]').click();document.querySelector('.battle-token.player.current').click();document.querySelector('[data-mage-element="frost"]').click()`);await wait(250);
 assert.equal(await evaluate('window.mageSent[0].body.element'),'frost');
-await evaluate(`window.mageShow('frozen')`);await wait(150);assert.ok(await evaluate(`document.querySelectorAll('.mage-ice-shell').length>0`));
+await evaluate(`window.mageShow('frozen')`);await wait(650);assert.ok(await evaluate(`document.querySelectorAll('.mage-ice-shell .ice-surface').length>0`));
 await writeFile('staging-ui/mage-v1/frozen.png',Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
+for(const material of ['grass','dirt','stone']){
+ await evaluate(`window.mageShow('surface_${material}')`);await wait(650);
+ const counts=await evaluate(`({flames:document.querySelectorAll('.scorch-flame').length,soot:document.querySelectorAll('.scorch-soot').length,legacy:document.querySelectorAll('.mage-zone-flame').length})`);
+ assert.ok(counts.soot>0&&counts.flames>0&&counts.flames<counts.soot);assert.equal(counts.legacy,0);
+ const surfaceLoaded=await evaluate(`Promise.all([...new Set(Array.from(document.querySelectorAll('.battlefield svg image')).map(i=>i.getAttribute('href')).filter(h=>h?.includes('mage-scorched-v2')))].map(async url=>(await fetch(url)).ok)).then(v=>v.every(Boolean))`);assert.equal(surfaceLoaded,true);
+ const geometry=await evaluate(`(()=>{const shell=document.querySelector('.mage-ice-shell'),face=shell.parentElement.querySelector('.portrait-crop'),a=shell.getBoundingClientRect(),b=face.getBoundingClientRect();return {delta:Math.abs(a.x-b.x)+Math.abs(a.y-b.y)+Math.abs(a.width-b.width),flame:document.querySelector('.scorch-flame').getBoundingClientRect().width}})()`);assert.ok(geometry.delta<1&&geometry.flame>10);
+ await writeFile(`staging-ui/mage-v1/surface-${material}.png`,Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
+}
+await evaluate(`window.mageShow('fireball')`);await wait(280);assert.ok(await evaluate(`document.querySelectorAll('.mage-ice-transition').length>0`));await wait(1000);assert.equal(await evaluate(`document.querySelectorAll('.mage-ice-transition').length`),0);
 await evaluate(`window.mageShow('channel')`);await wait(250);assert.ok(await evaluate(`document.querySelectorAll('.zone-meteor_armed').length>0`));
 await writeFile('staging-ui/mage-v1/channel.png',Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
 await evaluate(`window.mageShow('meteor')`);await wait(300);assert.ok(await evaluate(`document.querySelectorAll('.mage-effect').length>0`));
