@@ -1,6 +1,6 @@
 import {COMBAT_MOTION} from './combat-animation.js';
 // Shared contact markers for sound, visible contact, recoil and feedback.
-export function movementDuration(event){return event.preview_settle?Math.max(80,Math.min(350,event.duration||220)):event.leap?420:event.forced?(event.collision?COMBAT_MOTION.collisionMove:220):Math.max(220,Math.min(850,Math.max(1,(event.points||[]).length-1)*155))}
+export function movementDuration(event){return event.preview_settle?Math.max(80,Math.min(350,event.duration||220)):event.dash?Math.max(180,(event.points?.length-1||1)*110):event.leap?420:event.forced?(event.collision?COMBAT_MOTION.collisionMove:220):Math.max(220,Math.min(850,Math.max(1,(event.points||[]).length-1)*155))}
 export function impactTimeline(events){
   // Defeat facts can precede their lethal hit's displacement in server order.
   // Resolve the body's push/rebound first, then collapse at its final cell.
@@ -19,13 +19,15 @@ export function impactTimeline(events){
     let packet=packets.get(key),start=cursor,duration=0;
     if(!packet&&event.impact_origin_packet!=null){
       const origin=packets.get(event.impact_origin_packet);
-      if(origin){const impact=origin.impact+(event.impact_offset||0);packet={start:impact,impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
+      if(origin){const impact=origin.impact+(event.impact_offset||0);packet={start:impact-(event.type==='melee_attack'?(event.contact_ms??COMBAT_MOTION.contact):0),impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
     }
-    const attack=event.type==='melee_attack'||event.type==='net_cast'||event.attack_event||event.type==='magic_projectile'||event.type==='chain_attack'||event.type==='ground_impact';
+    const attack=event.type==='monk_technique'||event.type==='melee_attack'||event.type==='net_cast'||event.attack_event||event.type==='magic_projectile'||event.type==='chain_attack'||event.type==='ground_impact';
     if(key!=null&&attack){
-      if(!packet){const impact=cursor+(event.type==='ground_impact'?0:event.type==='net_cast'?COMBAT_MOTION.netContact:event.type==='melee_attack'?COMBAT_MOTION.contact:220);packet={start:cursor,impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
+      if(!packet){const impact=cursor+(['ground_impact','monk_technique'].includes(event.type)?0:event.type==='net_cast'?COMBAT_MOTION.netContact:event.type==='melee_attack'?(event.contact_ms??COMBAT_MOTION.contact):220);packet={start:cursor,impact,land:impact,recovery:impact+COMBAT_MOTION.recoil};packets.set(key,packet)}
       start=packet.start;
     }else if(packet){start=event.before_contact?packet.start:event.after_displacement?packet.land:packet.impact}
+    const routed=groundRoutes.get(event.ground_route_id);
+    if(routed&&event.ground_step!=null)start=routed.start+routed.duration*Math.min(routed.steps,event.ground_step)/routed.steps;
     if(event.type==='movement'){
       duration=movementDuration(event);
       if(event.forced&&packet){start=packet.impact;packet.land=start+(event.collision?COMBAT_MOTION.collisionContact:duration);packet.recovery=start+duration}
@@ -40,9 +42,11 @@ export function impactTimeline(events){
     }else if(event.type==='chain_attack'){
       duration=400;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='melee_attack'){
-      duration=490;cursor=Math.max(cursor,start+duration);
+      duration=(event.attack_duration||400)+90;cursor=Math.max(cursor,start+duration);
+    }else if(event.type==='monk_technique'){
+      duration=event.duration||500;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='sound'){
-      if(packet&&!event.attack_event)start=event.after_displacement?packet.land:packet.start;
+      if(packet&&!event.attack_event&&!routed)start=event.after_displacement?packet.land:packet.start;
       duration=event.duration||0;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='magic_projectile'){
       duration=250;cursor=Math.max(cursor,start+duration);
@@ -83,6 +87,7 @@ export const feedbackStyles={
   status:{label:'Status',icon:'•',color:'#dfcbff'},
 };
 export function feedbackText(event,definitions={}){
+  if(event.kind==='combo')return {label:event.stage==='finisher'?'Finisher Ready':'Follow-up Ready',icon:'◆',color:'#e9c97a',value:''};
   const style={...(feedbackStyles[event.kind]||feedbackStyles.physical)};
   if(event.kind==='physical'&&event.melee_style)style.label=({slash:'Slash',hack:'Chop',crush:'Crush',blunt:'Strike',fist:'Punch',stab:'Stab'})[event.melee_style]||style.label;
   if(event.kind==='status')return {...style,...(event.status_id==='stun'?{color:'#f2ce72'}:{}),label:definitions[event.status_id]?.name||event.status_id,icon:definitions[event.status_id]?.icon||style.icon,value:''};
@@ -94,8 +99,11 @@ export function protectionMarkup(unit){
   return `${barrier?`<span class="unit-barrier-halo" aria-hidden="true"></span><span class="unit-barrier-front" aria-hidden="true"></span><span class="unit-barrier-capacity" title="Barrier: absorbs ${Number(barrier.amount)} damage">◇ ${Number(barrier.amount)}</span>`:''}${unit.guarding?'<span class="unit-guard-halo" aria-hidden="true"></span>':''}`;
 }
 export function impactArtwork(event){
+  if(event.kind==='combo')return [];
   if(['fury','intercept','counter','resisted','captured','capture_failed','restraint'].includes(event.kind))return [];
   if(event.absorbed)return [event.barrier_broken?'barrier_break':'barrier_hit'];
+  if(event.monk_skill&&event.kind==='physical')return [event.monk_skill==='heaven_piercing'?'monk:palm_expand':'monk:palm_contact'];
+  if(event.kind==='status'&&['iron_reversal','flowing_footwork','open_guard'].includes(event.status_id))return ['monk:'+({iron_reversal:'defensive_expand',flowing_footwork:'dash_ribbon',open_guard:'broken_guard'})[event.status_id]];
   if(['slash','hack','crush','blunt','fist','stab'].includes(event.melee_style)){const pack=event.impact_surface==='flesh'&&['slash','hack','crush','stab'].includes(event.melee_style)?'flesh':'melee';return [`${pack}:${event.melee_style}:contact`,`${pack}:${event.melee_style}:fade`,...(['fire','magic','holy','ice','lightning'].includes(event.kind)?[event.kind==='fire'?'flame_lick':'magic_hit']:[])];}
   if(event.kind==='barrier')return ['barrier_shell'];
   if(['heal','cleanse','form'].includes(event.kind))return ['restoration_wisp'];
@@ -139,7 +147,7 @@ export function createImpactFeedback(){
         const flesh=art.startsWith('flesh:'),melee=flesh||art.startsWith('melee:'),parts=art.split(':'),fade=melee&&parts[2]==='fade';
         const angle=melee&&!['crush','blunt','fist'].includes(parts[1])?Math.atan2(event.impact_direction?.y??0,event.impact_direction?.x??1)*180/Math.PI:0;
         const size=field.clientWidth/battle.width*(event.absorbed||event.kind==='barrier'?1.5:melee?1.25:1.05);
-        const url=melee?`/assets/${flesh?'flesh-contact-v1':'melee-families-v1'}/${parts[1]}_${parts[2]}.png`:`/assets/combat-presentation-v2/effects/${art}.png`;
+        const url=art.startsWith('monk:')?`/assets/monk-v1/${parts[1]}.png`:melee?`/assets/${flesh?'flesh-contact-v1':'melee-families-v1'}/${parts[1]}_${parts[2]}.png`:`/assets/combat-presentation-v2/effects/${art}.png`;
         sprite.style.cssText=`left:${x}%;top:${y}%;width:${size}px;height:${size}px;background-image:url('${url}')`;layer.append(sprite);
         const transform=s=>`translate(-50%,-50%) rotate(${angle}deg) scale(${s})`;
         const frames=fade?[{transform:transform(.95),opacity:0},{transform:transform(1.08),opacity:flesh&&parts[1]==='slash'?.22:.65,offset:.28},{transform:transform(1.2),opacity:0}]:[{transform:transform(.85),opacity:.9},{transform:transform(1.05),opacity:.72,offset:.3},{transform:transform(melee?1.1:1.25),opacity:0}];

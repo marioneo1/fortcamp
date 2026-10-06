@@ -1,5 +1,13 @@
 # Mission Refinement Phase
 
+## October 5: accepted Monk kit implemented in dev
+
+Replaced the six overlapping Monk skills with eight sequence/mobility choices; full three-active starter, five equipped slots, unlocks at 2/5/9/12/16 successful contracts. Added deterministic owner-clock stages, budgeted multi-hit damage/procs, source-clock Open Guard, Iron Reversal, Footwork, short enemy-crossing dash with committed hazard forecast and stage-aware AI. Retired-ID migration preserves earned progress/order and leaves existing battle snapshots intact. Fighter/Barbarian rules and production saves were preserved.
+
+One packed 4?4 atlas supplies square skill icons and physical contact/defensive/finisher sprites. Contact/audio/defeat share the existing serialized playback timeline. Browser fixture checked five icons, all combo stages and completion without runtime errors. Full Monk Goblin Warcamp preview measured ~19?23 ms locally. 121 focused backend tests and all 280 frontend tests pass, along with the build; the existing bundle-size warning remains. See MONK_REWORK_REVIEW.md and MONK_V1.md through docs/INDEX.md for behavior/media. Automated coverage includes budgets, gates, source expiry, hazards, concealment, migration and auto selection.
+
+Remaining: manual Fighter/Barbarian/Monk comparison with equal gear/enemies; tune initial numbers and review the final effects in real battles. No production rollout in this pass. New cloud tagging, advanced Jobs, additional gear restrictions and a Ki resource were not introduced.
+
 ## October 5: map-status spacing and Monk design review
 
 Attached map-status columns now have a 3px gap instead of 6px and wrap using actual badge widths, eliminating unused fixed-track space around 27px passive badges. Vertical spacing and badge sizes are preserved. Browser fixture confirmed the computed gap and existing dock order. Twenty-one targeted UI tests and frontend build passed; the pre-existing bundle-size warning remains.

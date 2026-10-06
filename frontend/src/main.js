@@ -1,7 +1,9 @@
 import {bindSkillSwaps,swapSkillSlots} from './combat-skill-order.js';
 import {traitsMarkup} from './combat-traits.js';
 import {emitMartialEffect,martialAuraMarkup} from './martial-effects.js';
-import {furyMarkup} from './martial-ui.js';
+import {furyMarkup,comboMarkup} from './martial-ui.js';
+import {emitMonkTechnique,monkAuraMarkup} from './monk-effects.js';
+import './monk-effects.css';
 import './martial-effects.css';
 import {doorControlsMarkup,bindDoorControls} from './battle-door-controls.js';
 import {mapStatusMarkup,statusTrayMarkup,stunMarkup,stunOnsets} from './combat-status-presentation.js';
@@ -636,7 +638,7 @@ function battleToken(unit,current,battle,stunDelay=0){
   const support=selectedCombatAction==='skill'&&battle.units?.[battle.current_unit_id]?.special?.target==='ally';
   const targeting=unit.alive&&unit.conscious!==false&&!unit.extracted&&!unit.carried_by&&['attack','subdue','skill','throw'].includes(selectedCombatAction)&&(support?unit.team==='player':unit.team==='enemy'),validTarget=selectedCombatAction==='throw'?throwTarget:!!preview;
   const occupiedAbove=condition!=='active'&&Object.values(battle.units||{}).some(other=>other.id!==unit.id&&other.x===unit.x&&other.y===unit.y&&other.alive&&other.conscious!==false&&!other.extracted&&!other.carried_by);
-  return `<button class="battle-token ${unit.team} ${current?'current':''} ${boss?'boss':''} ${throwTarget?'throw-target':''} ${targeting?(validTarget?'valid-target':'invalid-target'):''} ${unit.extracted?'extracted':''} ${unit.carried_by?'carried':''} ${occupiedAbove?'body-under-unit':''} ${condition}" data-battle-unit="${unit.id}" style="grid-column:${unit.x+1};grid-row:${unit.y+1}" title="${esc(unit.name)} · ${unit.hp}/${unit.max_hp} HP · ${title(condition)} · elevation ${height}${boss?' · BOSS':''}${targeting?validTarget?' · valid target':' · out of range or line of sight':''}${throwTarget?` · ${battle.throw_profile.damage} throw damage`:''}${accuracy}${tacticalPreviewText(preview)?` | ${esc(tacticalPreviewText(preview))}`:''}">${boss?'<strong class="boss-label">BOSS</strong>':''}${height?`<strong class="height-badge">▲${height}</strong>`:''}${face}${protectionMarkup(unit)}${martialAuraMarkup(unit)}${stunMarkup(unit,stunDelay)}${condition==='active'?`<i><b>${unit.hp}</b><small>HP</small></i>`:''}${furyMarkup(unit,{compact:true})}${bodyLabel?`<em class="body-label">${condition==='dead'?'† CORPSE':'ZZZ · UNCONSCIOUS'}</em>`:''}${statuses}</button>`;
+  return `<button class="battle-token ${unit.team} ${current?'current':''} ${boss?'boss':''} ${throwTarget?'throw-target':''} ${targeting?(validTarget?'valid-target':'invalid-target'):''} ${unit.extracted?'extracted':''} ${unit.carried_by?'carried':''} ${occupiedAbove?'body-under-unit':''} ${condition}" data-battle-unit="${unit.id}" style="grid-column:${unit.x+1};grid-row:${unit.y+1}" title="${esc(unit.name)} · ${unit.hp}/${unit.max_hp} HP · ${title(condition)} · elevation ${height}${boss?' · BOSS':''}${targeting?validTarget?' · valid target':' · out of range or line of sight':''}${throwTarget?` · ${battle.throw_profile.damage} throw damage`:''}${accuracy}${tacticalPreviewText(preview)?` | ${esc(tacticalPreviewText(preview))}`:''}">${boss?'<strong class="boss-label">BOSS</strong>':''}${height?`<strong class="height-badge">▲${height}</strong>`:''}${face}${protectionMarkup(unit)}${martialAuraMarkup(unit)}${monkAuraMarkup(unit)}${stunMarkup(unit,stunDelay)}${condition==='active'?`<i><b>${unit.hp}</b><small>HP</small></i>`:''}${furyMarkup(unit,{compact:true})}${bodyLabel?`<em class="body-label">${condition==='dead'?'† CORPSE':'ZZZ · UNCONSCIOUS'}</em>`:''}${statuses}</button>`;
 }
 
 function tileActionsForBattle(b,x,y){
@@ -732,6 +734,7 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       }
       if(['ground_impact','fighter_rally','chain_attack'].includes(event.type)){emitFighterEffect(field,event,battle,delay,animationEvents);return}
       if(event.type==='martial_effect'){emitMartialEffect(field,event,battle,delay);return}
+      if(event.type==='monk_technique'){emitMonkTechnique(field,event,battle,delay);return}
       if(event.type==='combat_feedback'){impactFeedback.emit(event,battle,delay);return}
       if(event.type==='death_burst'||event.type==='knockout'){
         if(event.type==='death_burst')combatEffects.emit(event,battle,delay+120);
@@ -769,10 +772,10 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
         const from=event.from||attacker,to=event.to||target;
         const dx=Math.sign(to.x-from.x)*cellWidth*.42,dy=Math.sign(to.y-from.y)*cellHeight*.42;
         const attackerScale=attacker.id===battle.current_unit_id?1.15:1,targetScale=target.id===battle.current_unit_id?1.15:1;
-        queueMotion(attackerToken,poseFrames(weaponAttackFrames(event.melee_style,dx,dy,attackerScale),from,attacker,cellWidth,cellHeight),{duration:COMBAT_MOTION.melee,delay},'is-attacking');
+        queueMotion(attackerToken,poseFrames(weaponAttackFrames(event.melee_style,dx,dy,attackerScale),from,attacker,cellWidth,cellHeight),{duration:event.attack_duration||COMBAT_MOTION.melee,delay},'is-attacking');
         const displaced=animationEvents.some(e=>['movement','collision_recoil'].includes(e.type)&&e.unit_id===event.target_id&&e.attack_packet===event.attack_packet&&(e.forced||e.type==='collision_recoil'));
         if(event.hit&&!displaced&&targetToken&&event.target_kind!=='terrain'){
-          queueMotion(targetToken,poseFrames(weaponHitFrames(event.melee_style,Math.sign(to.x-from.x)*cellWidth*.12,Math.sign(to.y-from.y)*cellHeight*.12,targetScale),to,target,cellWidth,cellHeight),{duration:COMBAT_MOTION.recoil,delay:delay+COMBAT_MOTION.contact},'is-hit');
+          queueMotion(targetToken,poseFrames(weaponHitFrames(event.melee_style,Math.sign(to.x-from.x)*cellWidth*.12,Math.sign(to.y-from.y)*cellHeight*.12,targetScale),to,target,cellWidth,cellHeight),{duration:COMBAT_MOTION.recoil,delay:delay+(event.contact_ms??COMBAT_MOTION.contact)},'is-hit');
         }
         return;
       }
@@ -783,7 +786,7 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       let frames=[];
       if(event.leap){const from=points[0],to=points.at(-1);frames=[{transform:`translate(${(from.x-unit.x)*cellWidth}px,${(from.y-unit.y)*cellHeight}px) scale(${baseScale})`,offset:0},{transform:`translate(${((from.x+to.x)/2-unit.x)*cellWidth}px,${((from.y+to.y)/2-unit.y)*cellHeight-cellHeight*.8}px) scale(${baseScale*1.08})`,offset:.5},{transform:`translate(${(to.x-unit.x)*cellWidth}px,${(to.y-unit.y)*cellHeight}px) scale(${baseScale*.94})`,offset:.94},{transform:`translate(${(to.x-unit.x)*cellWidth}px,${(to.y-unit.y)*cellHeight}px) scale(${baseScale})`,offset:1}]}
       else if(event.collision)frames=collisionFrames(points,unit,event.collision.toward,cellWidth,cellHeight,baseScale);
-      else frames=walkingFrames(points,unit,cellWidth,cellHeight,baseScale,event.extracted,event.forced?'slide':'walk');
+      else frames=walkingFrames(points,unit,cellWidth,cellHeight,baseScale,event.extracted,event.forced||event.dash?'slide':'walk');
       if(offset)frames[0].transform=`translate(${offset.x}px,${offset.y}px) scale(${baseScale})`;
       token.classList.remove('extracted');
       queueMotion(token,frames,{duration:plannedDuration,delay},'is-walking',()=>{if(event.extracted)token.classList.add('extracted')});
@@ -921,7 +924,7 @@ function renderBattle(b){
   const throwProfile=b.throw_profile;
   const contextPanel=contextMenuOpen?`<div class="context-action-menu"><div><b>Context Actions</b><small>Available from ${esc(current?.name||'the current position')}</small></div>${contextActions.map((entry,index)=>`<button data-context-action="${index}" title="${esc(entry.description)}"><kbd>${esc(entry.hotkey||'I')}</kbd><span><b>${esc(entry.label)}</b><small>${esc(entry.target)} · ${esc(entry.cost)}</small><em>${esc(entry.description)}</em></span></button>`).join('')}</div>`:'';
   const autoPause=b.auto_pause_reason?`<p role="status" class="muted">${esc(b.auto_pause_reason)}</p>`:'';
-  const currentActor=current?`<div class="active-unit-card"><div class="active-unit-portrait">${current.portrait?framedImage(portraitSrc(current.portrait),current.portrait_frame,esc):`<span>${initials(current.name)}</span>`}</div><div><small>ACTING NOW</small><b>${esc(current.name)}</b><span>${esc(current.weapon||'Unarmed')}${throwProfile?` · Carrying ${esc(throwProfile.payload_name)}`:''}</span><i><em style="width:${Math.max(0,Math.min(100,current.hp/current.max_hp*100))}%"></em></i><small>${current.hp}/${current.max_hp} HP</small>${furyMarkup(current)}</div></div>`:`<p>${title(b.outcome||b.status)}</p>`;
+  const currentActor=current?`<div class="active-unit-card"><div class="active-unit-portrait">${current.portrait?framedImage(portraitSrc(current.portrait),current.portrait_frame,esc):`<span>${initials(current.name)}</span>`}</div><div><small>ACTING NOW</small><b>${esc(current.name)}</b><span>${esc(current.weapon||'Unarmed')}${throwProfile?` · Carrying ${esc(throwProfile.payload_name)}`:''}</span><i><em style="width:${Math.max(0,Math.min(100,current.hp/current.max_hp*100))}%"></em></i><small>${current.hp}/${current.max_hp} HP</small>${furyMarkup(current)}${comboMarkup(current)}</div></div>`:`<p>${title(b.outcome||b.status)}</p>`;
   const victoryPrompt=autoPause+victoryMarkup(b,{expanded:expandedVictory.has(b.seed),escape:esc})+(b.mercenary_notice&&!seenMercenaryNotices.has(b.mercenary_notice.id)?`<div class="mercenary-notice-overlay"><section role="alertdialog" aria-label="Mercenary encounter"><div class="eyebrow">ON THE BATTLEFIELD</div><h2>${esc(b.mercenary_notice.title)}</h2><p>${esc(b.mercenary_notice.text)}</p><button data-dismiss-mercenary class="primary">Continue</button></section></div>`:'');
   const usedMaterials=[...new Set((b.ground_tiles||[]).map(tile=>tile.material))].map(material=>{const info=groundMaterials[material]||{name:title(material),description:''};return `<span title="${esc(info.description||'')}"><i class="ground-swatch ground-${material}"></i>${esc(info.name)}</span>`}).join('');
   const mapLegend=`<div class="battle-map-legend"><b>Terrain</b><div>${usedMaterials}<span title="Higher terrain affects movement and physical accuracy"><i class="legend-height">▲</i>Elevation</span><span title="Guild extraction region"><i class="legend-exit">↙</i>Exit</span></div></div>`;

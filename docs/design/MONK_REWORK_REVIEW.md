@@ -1,12 +1,12 @@
 # Monk rework review
 
-October 5, 2026. **Proposal only: the Monk rework is not implemented.** The map-status spacing adjustment described in the history is implemented separately. This review preserves the finalized Fighter and Barbarian, twelve starting Jobs, five shared active/passive slots, equipment abilities outside those slots and existing combat turns.
+October 5, 2026. **Accepted and implemented in dev.** The sections below preserve the inspected rationale and agreed initial tuning; they are not a claim of final gameplay balance. The map-status spacing adjustment described in the history is implemented separately. This review preserves the finalized Fighter and Barbarian, twelve starting Jobs, five shared active/passive slots, equipment abilities outside those slots and existing combat turns.
 
-## Current implementation and reuse
+## Pre-rework inspection and reuse
 
-`backend/job_loadouts.py` currently gives Monk Driving Palm, ally Brace, Riposte, Joint Lock, Returning Hand and Patient Stance. This is predominantly displacement, protection and counters, overlapping Fighter rather than producing a sequence-based damage dealer. There is no combo state or multi-hit technique resolver.
+Before this pass, `backend/job_loadouts.py` gave Monk Driving Palm, ally Brace, Riposte, Joint Lock, Returning Hand and Patient Stance. This is predominantly displacement, protection and counters, overlapping Fighter rather than producing a sequence-based damage dealer. There was no combo state or multi-hit technique resolver.
 
-`backend/combat_abilities.py` already has stable skill IDs, learned/equipped snapshots, ordered effects, hit conditions, owner-activation cooldowns and charge limits. Cooldown 1 means ready on the next personal turn; cooldown 3 means ready on the third subsequent personal turn. Selecting a skill or hovering does not tick these clocks. The validator currently permits only one attack effect and attack power from 100% to 250%; this proposal needs explicit multi-hit support and a narrowly extended power range, not several attack effects slipped past validation.
+`backend/combat_abilities.py` already has stable skill IDs, learned/equipped snapshots, ordered effects, hit conditions, owner-activation cooldowns and charge limits. Cooldown 1 means ready on the next personal turn; cooldown 3 means ready on the third subsequent personal turn. Selecting a skill or hovering does not tick these clocks. The pre-rework validator permitted only one attack effect and attack power from 100% to 250%; the implementation adds explicit multi-hit support and a narrowly extended power range, not several attack effects slipped past validation.
 
 `backend/combat.py` already provides accuracy previews, deterministic hit rolls, movement plus casting, walls/doors, line of sight, reactions/interception, committed-path ground damage, Barrier absorption, attack packets and synchronized feedback. Hit chance can reach 100%. The inspected direct-attack resolver does not supply an ordinary critical-hit result; do not invent a critical guarantee for Crushing Fist.
 
@@ -47,7 +47,7 @@ Open Guard benefits direct attacks, including other allies, but does not amplify
 
 This permits one utility turn without unlimited preparation. Choosing utility before a finisher can lose Open Guard's shorter damage window: a visible tradeoff rather than a hidden timing bug.
 
-At 90% individual accuracy, Rapid Palm lands at least two punches 97.2% of the time. Including the 80% one-hit fallback gives 99.36% opener progression, versus 63% for Crushing Fist. At 70% individual accuracy these become 91.98% versus 49%. These are probabilities for this proposed rule, not measured balance results. Rapid Palm is intentionally a reliable setup option; Crushing Fist trades reliability for immediate damage. No opener is guaranteed through blind or extreme evasion.
+At 90% individual accuracy, Rapid Palm lands at least two punches 97.2% of the time. Including the 80% one-hit fallback gives 99.36% opener progression, versus 63% for Crushing Fist. At 70% individual accuracy these become 91.98% versus 49%. These are probabilities for this implemented rule, not measured balance results. Rapid Palm is intentionally a reliable setup option; Crushing Fist trades reliability for immediate damage. No opener is guaranteed through blind or extreme evasion.
 
 ## Multi-hit resolution and proc budget
 
@@ -67,7 +67,7 @@ The preview shows the route, crossed targets, landing tile and committed ground 
 
 ## Progression and five-slot builds
 
-Start with Rapid Palm, Iron Reversal and Heaven-Piercing Strike, giving a complete chain immediately. Unlike the current two-active/one-passive starter convention, these are three actives; the existing registration/loadout structure permits it. Proposed unlocks: Perfect Rhythm at 2 successful contracts, Crushing Fist at 5, Sweeping Dash at 9, Breaking Combination at 12, Flowing Footwork at 16. All eight are published in the Job progression view from the outset.
+Start with Rapid Palm, Iron Reversal and Heaven-Piercing Strike, giving a complete chain immediately. Unlike the current two-active/one-passive starter convention, these are three actives; the existing registration/loadout structure permits it. Implemented unlocks: Perfect Rhythm at 2 successful contracts, Crushing Fist at 5, Sweeping Dash at 9, Breaking Combination at 12, Flowing Footwork at 16. All eight are published in the Job progression view from the outset.
 
 Example loadouts:
 
@@ -86,7 +86,7 @@ Counterplay: deny melee setup, break line of effect, use control to waste readin
 
 Auto-battle needs stage-aware choices, not simply the first available attack. Score finishers against valuable reachable targets, preserve a stage for necessary survival/objective actions, choose defensive follow-up under pressure, prefer reliable setup normally, and use dash only when its landing improves survival/objective pressure. Existing hidden personality may weight aggression and risk; it must not bypass legal targeting, combo gates or costs. Expose the same legal action/preview data to player, Lab and AI. No extra map-wide planner or per-frame database work is required.
 
-Presentation should use the existing square hotbar/readiness icons and a compact three-stage display. Produce one coherent packed icon sheet for the eight skills and stage/form icons when implementation begins. Author punch contact timing, defensive-flow accents, the dash trail and physical finisher impact; use flesh/hard-contact audio families rather than generic magic casting. No new artwork or sounds have been generated for this review.
+Presentation should use the existing square hotbar/readiness icons and a compact three-stage display. Produce one coherent packed icon sheet for the eight skills and stage/form icons when implementation begins. Author punch contact timing, defensive-flow accents, the dash trail and physical finisher impact; use flesh/hard-contact audio families rather than generic magic casting. The implementation imports one coherent 4?4 icon/effect atlas; see ../art/MONK_V1.md. Audio reuses approved fist flesh/hard-contact sounds, with quieter repeated swings; no new audio was generated.
 
 ## Implementation gates and verification
 
@@ -94,8 +94,20 @@ Small engine extensions: technique-scoped multi-hit resolution; owner-clock comb
 
 Monk IDs/loadouts require an explicit migration from six existing skills to eight new skills. Preserve earned progress, map retired IDs into sensible unlocked replacements, deduplicate, preserve five-slot limits and publish a truthful migration summary. Already-running battle snapshots should finish on their existing kit. Combo state is battle-local, starts Neutral and persists through reconnects.
 
-Before shipping: test stage timing/expiry and reconnect; miss/partial-hit/lethal-hit transitions; Barrier/armor/rounding; one-use damage/protection and per-technique procs; interception/counters/Fury interactions; source-owned vulnerability expiry and cleanse; dash walls/doors/corners/occupied landings and committed hazards; player/AI parity; migration; and browser contact/defeat/input-lock playback. Test five-slot builds against the same Battle Lab enemies and weapon tiers as Fighter/Barbarian. Do not report the numerical proposal as validated gameplay balance.
+Verification scope: test stage timing/expiry and reconnect; miss/partial-hit/lethal-hit transitions; Barrier/armor/rounding; one-use damage/protection and per-technique procs; interception/counters/Fury interactions; source-owned vulnerability expiry and cleanse; dash walls/doors/corners/occupied landings and committed hazards; player/AI parity; migration; and browser contact/defeat/input-lock playback. Test five-slot builds against the same Battle Lab enemies and weapon tiers as Fighter/Barbarian. Do not report the numerical proposal as validated gameplay balance.
 
 ## Changes from the supplied proposal
 
 Recommend reliable hit-based follow-up progression, two-turn readiness windows, no invented critical-hit guarantee, attack-scoped armor/proc handling, direct-attack-only vulnerability, movement/evasion instead of cooldown acceleration, and a full starter combo. Preserve all eight skill roles, long-range earned payoff, both opener/follow-up decisions, five-slot customization and the existing Job system.
+
+## Implementation and verification record
+
+The eight definitions, complete three-active starter, deterministic combo state, technique-scoped multi-hit budget, short enemy-crossing dash, temporary forms and stage-aware AI are implemented in dev. State uses existing personal activations, not timers. Perfect Rhythm is still a slotted passive, not a free innate bonus. Existing regular Monks receive an idempotent retired-ID migration preserving earned skills/practice, ordering and the five-slot limit. A player-facing migration note explains the replacement. Already-running battle snapshots retain their existing authored abilities.
+
+The battle hotbar has eight matching packed icons, a three-stage acting-card meter, source-owned status tooltips, physical contact artwork, a defensive-flow aura and a physical finisher release. Individual punch damage/audio share contact timestamps, and existing playback locks serialize the next actor. Sweeping Dash previews route, empty landing, visible crossed targets and committed ground damage; hidden units remain hidden in forecasts. Burned ground charges every crossed tile on commitment. Interrupted movement on an occupied enemy crossing returns to the last empty route tile without creating a second normal walk.
+
+Automated coverage includes combo gates/expiry/misses/lethal hits, armor/Barrier/rounding, one-use modifiers, proc/counter limits, Open Guard expiry and Unstoppable, Footwork clocks, hidden enemies, dash blockers/hazards, preview immutability, migration and auto selection. Browser fixture checked Neutral ? Follow-up ? Finisher display, all five equipped icons and playback completion without runtime errors. A full Monk Goblin Warcamp preview measured approximately 19?23 ms locally. This is a small development sample, not a deployment latency guarantee. Frontend build passes with the existing large-bundle warning. Manual balance comparisons, broader weapon interactions and final aesthetic approval remain to be played in Battle Lab. Production and player save files were not changed.
+
+### What +10 evasion means
+
+Flowing Footwork adds ten **evasion stat points**, not ten percentage points of dodge. Current accuracy formulas subtract 0.6 times evasion for ordinary melee, 1.0 for ballistic ranged attacks, and 0.3 for magic using the ignore-elevation rule. Away from accuracy limits this changes enemy hit chance by approximately 6, 10 or 3 percentage points respectively. Other accuracy modifiers, resistance rules and the hit-chance clamp can reduce the actual change; Perfect Rhythm's guaranteed finisher remains guaranteed.

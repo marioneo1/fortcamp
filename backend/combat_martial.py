@@ -2,7 +2,7 @@
 from .combat_feedback import record as feedback
 
 HARMFUL = ('stun','freeze','sleep','paralyze','bind','charm','confuse','fear','mute',
-           'blind','hobbled','slow','armor_fracture','vulnerable','poison','burn','bleed')
+           'blind','hobbled','slow','armor_fracture','vulnerable','open_guard','poison','burn','bleed')
 
 
 def effect(battle, unit, skill, packet=None, before_contact=False):

@@ -27,9 +27,13 @@ from . import combat_entities as entities
 from . import combat_martial as martial
 from .combat_feedback import record as feedback
 from .combat_melee import weapon_style, attack_style, capture_style, armor_material, impact_surface
+from . import combat_monk as monk
 
 
 STATUS_DEFINITIONS = {
+    'iron_reversal':{'name':'Iron Reversal','icon':'◈','description':'The next direct attack deals 20% less damage. Covers a whole multi-hit technique; expires at the start of this Monk’s next turn.'},
+    'flowing_footwork':{'name':'Flowing Footwork','icon':'↗','description':'+1 movement on the next personal turn and +10 evasion until that turn ends. Normal melee hit chance drops by about 6 percentage points; ranged by 10. Does not stack.'},
+    'open_guard':{'name':'Open Guard','icon':'◇↓','description':'Direct attacks deal 25% more damage until the end of the applying Monk’s next turn. Damage over time, ground damage and collisions are unaffected. Does not stack.'},
     "brace_defense":{"name":"Brace","icon":"25%","description":"Take 25% less damage from all sources for the listed owner turns."},
     "reckless_exposure":{"name":"Reckless Exposure","icon":"+20%","description":"Take 20% more damage from all sources until your next turn begins."},
     "death_defiance":{"name":"Too Angry to Fall","icon":"1HP","description":"Lethal damage leaves you at 1 HP until your next turn begins. Once per battle; you do not automatically die afterward."},
@@ -907,7 +911,7 @@ def _movement_limit(unit: dict) -> int:
     if conditions.has(unit, 'freeze') or conditions.has(unit, 'bind') or conditions.has(unit,'pit_trapped') or unit.get('paralyzed_move'):
         return 0
     penalty = int(unit.get("carried_payload_penalty", 2 if unit.get("carrying") else 0))
-    movement=max(1, int(unit["move"]) - penalty - (2 if conditions.has(unit, 'slow') else 0))
+    movement=max(1, int(unit["move"]) + monk.movement_bonus(unit) - penalty - (2 if conditions.has(unit, 'slow') else 0))
     return max(1,movement//2) if conditions.has(unit,'hobbled') else movement
 
 
@@ -996,12 +1000,12 @@ def _elevation_attack_modifier(battle: dict, attacker: dict, target: dict, rule:
     return 0, 0
 
 
-def _attack_preview(battle: dict, attacker: dict, target: dict, rule: str) -> dict:
+def _attack_preview(battle: dict, attacker: dict, target: dict, rule: str, skill=None) -> dict:
     accuracy, damage = _elevation_attack_modifier(battle, attacker, target, rule)
     mark_accuracy=conditions.mark_bonus(attacker,target)
     accuracy+=mark_accuracy
     base = 90 if rule == "ballistic" else 100
-    target_evasion = int(target.get("evasion", 0))
+    target_evasion = int(target.get("evasion", 0)) + monk.evasion_bonus(target)
     evasion_factor = 1.0 if rule == "ballistic" else .3 if rule == "ignore" else .6
     evasion_penalty = round(target_evasion * evasion_factor)
     if conditions.has(attacker, 'blind'):
@@ -1010,8 +1014,10 @@ def _attack_preview(battle: dict, attacker: dict, target: dict, rule: str) -> di
         accuracy -= 15
     if conditions.has(attacker, 'berserk'):
         accuracy -= 10
+    rhythm,guaranteed=monk.accuracy(attacker,skill)
     return {
-        "chance": max(5, min(100, base + accuracy - evasion_penalty + attacker.get('perk_modifiers',{}).get('accuracy',0))), "damage_bonus": damage,
+        "chance": 100 if guaranteed else max(5, min(100, base + accuracy + rhythm - evasion_penalty + attacker.get('perk_modifiers',{}).get('accuracy',0))), "damage_bonus": damage,
+        "guaranteed_hit":guaranteed,"rhythm_accuracy":rhythm,
         "target_evasion": target_evasion, "evasion_penalty": evasion_penalty,
         "mark_accuracy":mark_accuracy,
         "attacker_height": _tile_height(battle, attacker["x"], attacker["y"]),
@@ -1019,10 +1025,10 @@ def _attack_preview(battle: dict, attacker: dict, target: dict, rule: str) -> di
     }
 
 
-def _attack_hits(battle: dict, attacker: dict, target: dict, rule: str) -> tuple[bool, dict, int]:
+def _attack_hits(battle: dict, attacker: dict, target: dict, rule: str, skill=None) -> tuple[bool, dict, int]:
     concealment.reveal(battle, attacker)
     _wake_ambush(battle, target)
-    preview = _attack_preview(battle, attacker, target, rule)
+    preview = _attack_preview(battle, attacker, target, rule, skill)
     counter = int(battle.get("roll_counter", 0))
     battle["roll_counter"] = counter + 1
     roll = random.Random(f"{battle.get('seed')}:{counter}:{attacker['id']}:{target['id']}").randint(1, 100)
@@ -1070,13 +1076,13 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
             target['reaction_ready']=False
             concealment.reveal(battle,target)
             battle['log'].append(f"{target['name']} intercepts the attack on {original['name']}.")
-    hit,preview,roll=_attack_hits(battle,attacker,target,rule)
+    hit,preview,roll=_attack_hits(battle,attacker,target,rule,ability)
     events=battle.setdefault('animation_events',[])
     begin=len(events)
     damage=_deal_damage(battle,attacker,target,bonus+preview['damage_bonus'],pierce,intent,ability=ability) if hit else 0
     if not hit:feedback(battle,target,'miss')
     resolved=events[begin:];del events[begin:]
-    style = attack_style(attacker, ability) if rule == 'melee' else None
+    style = (ability or {}).get('melee_style') or (attack_style(attacker, ability) if rule == 'melee' else None)
     surface=impact_surface(target)
     _record_melee_animation(battle,attacker,target,hit,rule,style)
     for event in events[begin:]:event['impact_surface']=surface
@@ -1100,7 +1106,7 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
 def _strike_preview(battle,actor,target,rule,reach,skill=None):
     direct = not skill or any(e['type']=='attack' for e in skill.get('effects',[]))
     recipient=_interceptor(battle,actor,target,reach) if direct else target
-    preview=_attack_preview(battle,actor,recipient,rule)
+    preview=_attack_preview(battle,actor,recipient,rule,skill)
     preview['barrier']=max((s.get('amount',0) for s in recipient.get('statuses',[]) if s['id']=='barrier'),default=0)
     if recipient is not target:preview['intercepted_by']=recipient['name']
     preview['tactics']=[{'type':e['mode'],**_displacement_preview(battle,actor,recipient,e)}
@@ -1121,6 +1127,8 @@ def _strike_preview(battle,actor,target,rule,reach,skill=None):
         preview['absorbed_damage']=min(amount,preview['barrier'])
         preview['damage_on_hit']=max(0,amount-preview['barrier'])
         preview['damage_note']='Direct hit only; collision, reactions and chance-based effects are separate.'
+        if effect.get('hits',1)>1:
+            preview.update(hit_count=effect['hits'],damage_note='Total if all punches land; each punch rolls accuracy. Armor and equipment bonuses have one technique budget.')
         for displacement in preview['tactics']:
             if displacement.get('solid_collision'):
                 collision=max(1,preview['damage_on_hit']//2) if preview['damage_on_hit'] else 0
@@ -1391,6 +1399,44 @@ def _attack_position(battle, unit, target, attack_range, reachable, parents, ran
                    'path': _approach_path(battle, unit, (x, y), reachable, parents)}
 
 
+def _dash_skill(skill):
+    return any(e['type']=='dash_attack' for e in skill.get('effects',[]))
+
+
+def _dash_routes(battle,actor,reach=3):
+    """One bounded traversal tree: enemies may be crossed, never walls or pits."""
+    if _movement_limit(actor)==0 or actor.get('carrying') or actor.get('carrying_object'):return {}
+    original=(actor['x'],actor['y'])
+    ghost={**battle,'units':{key:value for key,value in battle['units'].items()
+        if value['team']==actor['team'] or key==actor['id']}}
+    routes={original:[]};queue=[original]
+    for x,y in queue:
+        path=routes[(x,y)]
+        if len(path)>=reach:continue
+        for nx,ny in ((x+1,y),(x-1,y),(x,y+1),(x,y-1)):
+            if (nx,ny) in routes or tactics.pit_at(battle,nx,ny):continue
+            if not _can_step(ghost,x,y,nx,ny,actor):continue
+            routes[(nx,ny)]=path+[(nx,ny)];queue.append((nx,ny))
+    return {point:path for point,path in routes.items() if path and not _blocked(battle,*point,actor['id'],actor.get('movement_type'))}
+
+
+def _dash_ground_damage(battle,actor,path):
+    probe=deepcopy(actor);total=0
+    for x,y in path:
+        kinds=set()
+        for zone in battle.get('zones',[]):
+            owner=battle['units'].get(zone['owner_id']);rule=spaces.ZONES[zone['kind']]
+            if not owner or not _combat_active(owner) or zone['kind'] in kinds or not rule.get('entry_per_cell'):continue
+            if actor['team']==owner['team'] or {'x':x,'y':y} not in zone['cells']:continue
+            kinds.add(zone['kind'])
+            amount=rule.get('entry_damage',0)+rule.get('damage',0)
+            if not amount:continue
+            source={'attack':amount,'status_tick':True,'weapon':rule['name']}
+            raw=_damage_before_barrier({'animation_events':[]},source,probe,armor_pierce=probe.get('armor',0))
+            damage,_=conditions.absorb(probe,raw);total+=damage
+    return total
+
+
 def _leap_skill(skill):
     return any(e['type']=='leap_attack' for e in skill.get('effects',[]))
 
@@ -1400,7 +1446,7 @@ def _rally_skill(skill):
 
 
 def _ground_skill(skill):
-    return _leap_skill(skill) or bool(skill.get('effects')) and all(e['type'] == 'zone' for e in skill['effects'])
+    return _leap_skill(skill) or _dash_skill(skill) or bool(skill.get('effects')) and all(e['type'] == 'zone' for e in skill['effects'])
 
 
 def _area_cells(battle,center,radius):
@@ -1604,6 +1650,7 @@ def _current_unit(battle: dict, activate: bool = True) -> dict | None:
                     abilities.start_activation(unit, stamp)
                     unit['entity_budget_spent']=0
                 martial.start_activation(battle, unit)
+                monk.start_activation(battle, unit)
                 spaces.expire_form(unit)
                 if battle.get('zones'):
                     spaces.expire_zones(battle,unit)
@@ -1706,12 +1753,12 @@ def _damage_before_barrier(battle,attacker,target,bonus=0,armor_pierce=0,intent=
         target["guarding"] = False
         conditions.remove(target,"rally_protection")
         _record_sound(battle, "shield_block", offset=185)
-    return martial.incoming_damage(target,damage)
+    return monk.incoming(target,attacker,martial.incoming_damage(target,damage))
 
 
 def _deal_damage(
     battle: dict, attacker: dict, target: dict, bonus: int = 0, armor_pierce: int = 0,
-    intent: str = "lethal", ability: dict | None = None,
+    intent: str = "lethal", ability: dict | None = None, resolved_damage: int | None = None,
 ) -> int:
     source_unit=battle.get('units',{}).get(attacker.get('id'))
     if not attacker.get('status_tick') and source_unit and not _combat_active(source_unit):return 0
@@ -1723,7 +1770,7 @@ def _deal_damage(
                     "attack_elevation_rule": ability["elevation_rule"],
                     "element": ability.get("element", attacker.get("element")),
                     "on_hit": ability.get("on_hit", attacker.get("on_hit")),"weapon":ability.get('source_name',attacker.get('weapon',''))}
-    damage = _damage_before_barrier(battle,attacker,target,bonus,armor_pierce,intent)
+    damage = _damage_before_barrier(battle,attacker,target,bonus,armor_pierce,intent) if resolved_damage is None else max(0,resolved_damage)
     element = attacker.get('element')
     absorbed=0
     if not attacker.get('capture_only') and not attacker.get('environmental_fall'):
@@ -1780,6 +1827,8 @@ def _deal_damage(
         target["defeated_by_id"] = attacker.get("id", "")
         target["defeated_round"] = battle.get("round", 1)
         target["defeat_weapon"] = attacker.get("weapon", "")
+        target.pop('monk_combo',None)
+        conditions.remove(target,'iron_reversal','flowing_footwork')
         if target.get("carrying") in battle["units"]:
             carried = battle["units"][target["carrying"]]
             carried["carried_by"] = None
@@ -2133,6 +2182,7 @@ def _finish_turn(battle: dict) -> None:
         _tick_bleed(battle, unit)
         _finish_entities(battle,unit)
         conditions.finish_activation(unit)
+        monk.cleanup(battle,unit)
         unit.pop('physical_action', None)
         unit.pop("movement_origin", None)
         unit.pop("movement_path", None)
@@ -2144,6 +2194,7 @@ def _finish_turn(battle: dict) -> None:
             unit["exit_ready"] = at_exit
     battle["turn_index"] += 1
     _check_end(battle)
+    monk.cleanup(battle)
 
 
 def _scout_path(battle, unit, path):
@@ -2503,6 +2554,7 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
     else:
         targets = _living(battle,'player') + [u for u in _living(battle,'enemy') if u.get('mercenary_hostile_all') and u['id']!=unit['id']]
     targets = conditions.hostile_units(battle, unit, _living(battle))
+    if targets and _auto_monk_turn(battle,unit,targets):return
     if not targets:
         _finish_turn(battle); return
     targets = [target for target in targets if unit.get('team') != 'player' or not concealment.unseen(target)]
@@ -2802,12 +2854,58 @@ def _entity_command(battle,owner,command):
     _entity_attack(battle,owner,unit,target,power);owner['acted']=True
 
 
+def _perform_monk_attack(battle,actor,target,skill,effect):
+    """One damage/proc budget, separate contact rolls, one final reaction."""
+    original=target;target=_interceptor(battle,actor,target,skill['range'])
+    if target is not original:
+        target['reaction_ready']=False;concealment.reveal(battle,target)
+        battle['log'].append(f"{target['name']} intercepts {skill['name']} for {original['name']}.")
+    hits=effect.get('hits',1);events=battle.setdefault('animation_events',[])
+    battle['attack_serial']=battle.get('attack_serial',0)+1;parent=battle['attack_serial']
+    events.append({'type':'monk_technique','attack_packet':parent,'unit_id':actor['id'],
+        'x':actor['x'],'y':actor['y'],'target_id':target['id'],'target_point':{'x':target['x'],'y':target['y']},'skill':skill['id'].split(':')[-1],
+        'duration':hits*210+110})
+    if target is not original:feedback(battle,target,'intercept',attack_packet=parent,before_contact=True)
+    source={**actor,'attack_elevation_rule':skill['elevation_rule'],'element':skill.get('element',actor.get('element'))}
+    before=len(events)
+    amount=_damage_before_barrier(battle,source,target,_ability_power_bonus(actor,skill,effect),effect.get('armor_pierce',0))
+    for event in events[before:]:
+        event.update(attack_packet=parent)
+        for cue in event.get('cues',[]):cue['offset']=83 if hits>1 else 185
+    budgets=[amount//hits+(i<amount%hits) for i in range(hits)]
+    landed=0;total=0;last=parent
+    for index,budget in enumerate(budgets):
+        if not _combat_active(target):break
+        hit,preview,roll=_attack_hits(battle,actor,target,skill['elevation_rule'],skill)
+        battle['attack_serial']+=1;last=battle['attack_serial'];begin=len(events)
+        # Generic proc attempts belong to the first landed punch only.
+        technique={**skill,'on_hit':actor.get('on_hit') if landed==0 else None}
+        damage=_deal_damage(battle,actor,target,ability=technique,resolved_damage=budget) if hit else 0
+        if not hit:feedback(battle,target,'miss')
+        landed+=bool(hit);total+=damage
+        contact=83 if hits>1 else 185
+        event={'type':'melee_attack','attacker_id':actor['id'],'target_id':target['id'],'hit':hit,
+            'target_condition':target.get('condition','active'),'melee_style':'fist','impact_surface':impact_surface(target),
+            'from':{'x':actor['x'],'y':actor['y']},'to':{'x':target['x'],'y':target['y']},
+            'contact_ms':contact,'attack_duration':180 if hits>1 else 400}
+        events.insert(begin,event)
+        for row in events[begin:]:
+            row.update(attack_packet=last,impact_origin_packet=parent,impact_offset=index*210+contact)
+            for cue in row.get('cues',[]):cue['offset']=contact
+            if row.get('type')=='combat_feedback':row.update(melee_style='fist',impact_surface=impact_surface(target),monk_skill=skill['id'].split(':')[-1])
+            if row.get('type')=='death_burst':row['bloodless']=True
+        battle['log'].append(f"{actor['name']} uses {skill['name']}: punch {index+1} deals {damage} damage." if hit else
+                            f"{actor['name']} misses punch {index+1} ({roll} vs {preview['chance']}% accuracy).")
+    conditions.remove(actor,'rally_power')
+    return target,bool(landed),total,landed,last
+
+
 def _resolve_ability(battle, actor, target, skill):
     """Apply a snapshotted ordered ability through the existing combat primitives."""
     if not abilities.availability(actor,skill)['available']:
         raise ValueError(abilities.availability(actor,skill)['reason'])
     abilities.validate(skill)
-    if actor.get('capture_weapon') and any(e['type'] in {'attack','leap_attack','area_attack'} for e in skill['effects']):
+    if actor.get('capture_weapon') and any(e['type'] in {'attack','leap_attack','area_attack','dash_attack'} for e in skill['effects']):
         raise ValueError('Capture weapons cannot perform damaging techniques')
     if skill.get('self_only') and target['id']!=actor['id']:raise ValueError('Target yourself with this ability')
     for effect in skill['effects']:
@@ -2817,6 +2915,7 @@ def _resolve_ability(battle, actor, target, skill):
         if effect['type']=='form' and (target['id']!=actor['id'] or actor.get('capture_weapon') or actor.get('carrying') or actor.get('carrying_object')):
             raise ValueError('Forms require self targeting without a payload or capture weapon')
         if effect['type']=='leap_attack' and not _leap_eligible(battle,actor,target,skill):raise ValueError('Choose open ground within three cells, clear of walls, with at most two levels of elevation change')
+        if effect['type']=='dash_attack' and (target['x'],target['y']) not in _dash_routes(battle,actor,skill['range']):raise ValueError('Choose empty ground on a clear dash route within three cells')
         if effect['type']=='zone' and not _zone_cells(battle,target,effect):
             raise ValueError('No legal ground for this zone')
     _commit_player_movement(battle, actor)
@@ -2826,6 +2925,9 @@ def _resolve_ability(battle, actor, target, skill):
         conditions.apply(actor,'reckless_exposure',1,actor)
     def attack(effect):
         nonlocal target,last_damage,attack_packet
+        if skill.get('combo_kind') or effect.get('hits',1)>1:
+            target,hit,last_damage,hits,attack_packet=_perform_monk_attack(battle,actor,target,skill,effect)
+            return {'hit':hit,'hits':hits,'damage':last_damage,'target':target,'attacked':True}
         target,hit,damage,preview,roll=_perform_attack(battle,actor,target,skill['elevation_rule'],
             _ability_power_bonus(actor,skill,effect),effect.get('armor_pierce',0),ability=skill,defer_reaction=True)
         last_damage=damage;attack_packet=battle.get('attack_serial')
@@ -2839,6 +2941,38 @@ def _resolve_ability(battle, actor, target, skill):
         battle['log'].append(f"{actor['name']} uses {skill['name']} on {target['name']} for {damage} damage." if hit else
                              f"{actor['name']} misses {target['name']} ({roll} vs {preview['chance']}% accuracy).")
         return {'hit':hit,'damage':damage,'target':target,'attacked':True}
+    def dash_attack(effect):
+        path=_dash_routes(battle,actor,skill['range'])[(target['x'],target['y'])]
+        points=[{'x':actor['x'],'y':actor['y']}];seen=set()
+        battle['ground_route_counter']=battle.get('ground_route_counter',0)+1;route=battle['ground_route_counter']
+        begin=len(battle.setdefault('animation_events',[]))
+        for step,(x,y) in enumerate(path,1):
+            if not _combat_active(actor) or _movement_limit(actor)==0:break
+            actor.update(x=x,y=y,moved=True,exit_ready=False)
+            points.append({'x':x,'y':y})
+            actor.setdefault('zone_location',[points[-2]['x'],points[-2]['y']])
+            entry=len(battle['animation_events']);_apply_tile_entry(battle,actor)
+            for event in battle['animation_events'][entry:]:event.update(ground_route_id=route,ground_step=step)
+            if not _combat_active(actor) or _movement_limit(actor)==0:break
+            enemies=[u for u in battle['units'].values() if u['team']!=actor['team'] and _combat_active(u)
+                     and (u['x'],u['y'])==(x,y) and u['id'] not in seen]
+            for enemy in enemies:
+                seen.add(enemy['id']);entry=len(battle['animation_events'])
+                hit,preview,roll=_attack_hits(battle,actor,enemy,'melee',skill)
+                battle['attack_serial']=battle.get('attack_serial',0)+1;packet=battle['attack_serial']
+                if hit:_deal_damage(battle,actor,enemy,_ability_power_bonus(actor,skill,effect),ability=skill)
+                else:feedback(battle,enemy,'miss')
+                for event in battle['animation_events'][entry:]:
+                    event.update(ground_route_id=route,ground_step=step,attack_packet=packet,melee_style='fist',monk_skill='sweeping_dash')
+                    for cue in event.get('cues',[]):cue['offset']=0
+                battle['log'].append(f"{actor['name']} sweeps past {enemy['name']} with {skill['name']}.")
+        # If a ground control effect interrupts on an occupied crossing, return to the last empty tile.
+        if _combat_active(actor) and any(_combat_active(u) and u['id']!=actor['id'] and (u['x'],u['y'])==(actor['x'],actor['y']) for u in battle['units'].values()):
+            safe=next(p for p in reversed(points[:-1]) if not _blocked(battle,p['x'],p['y'],actor['id'],actor.get('movement_type')))
+            actor.update(x=safe['x'],y=safe['y'],zone_location=[safe['x'],safe['y']]);points.append(safe)
+        battle['animation_events'].insert(begin,{'type':'movement','unit_id':actor['id'],'points':points,'dash':True,'ground_route_id':route})
+        conditions.remove(actor,'rally_power')
+        return {'dash_attack':True}
     def leap_attack(effect):
         start={'x':actor['x'],'y':actor['y']}
         actor.update(x=target['x'],y=target['y'],exit_ready=False,moved=True)
@@ -2960,8 +3094,9 @@ def _resolve_ability(battle, actor, target, skill):
             battle['log'].append(f"{target['name']} suffers {sid}.")
             feedback(battle,target,'status',status_id=sid,**({'attack_packet':attack_packet} if attack_packet is not None else {}))
     result=abilities.resolve(skill,target,{'attack':attack,'heal':heal,'cleanse':cleanse,'guard':guard,'status':status,
-        'barrier':barrier,'mark':mark,'displace':displace,'zone':zone,'form':form,'deploy':deploy,'leap_attack':leap_attack,'area_attack':area_attack})
+        'barrier':barrier,'mark':mark,'displace':displace,'zone':zone,'form':form,'deploy':deploy,'leap_attack':leap_attack,'area_attack':area_attack,'dash_attack':dash_attack})
     abilities.spend(actor,skill)
+    if skill.get('combo_kind'):monk.complete_technique(battle,actor,target,skill,result.get('hits',0),attack_packet)
     if skill['id'] in {'job:fighter:brace','job:fighter:second_wind'}:
         martial.effect(battle,actor,skill['id'].split(':')[-1])
     if skill.get('fury_gain'):martial.gain_fury(battle,actor,skill['fury_gain'])
@@ -2979,6 +3114,46 @@ def _resolve_ability(battle, actor, target, skill):
         _record_sound(battle,'magic_cast' if skill['elevation_rule'] in {'ignore','line_of_effect'} else 'guard')
     actor['acted']=True
     return result
+
+
+def _auto_monk_turn(battle,unit,targets,tactic='balanced'):
+    if unit.get('forced_skip') or unit.get('capture_weapon'):return False
+    techniques=[s for s in unit.get('skills',[]) if s.get('combo_kind') and abilities.availability(unit,s)['available']]
+    dashes=[s for s in unit.get('skills',[]) if _dash_skill(s) and abilities.availability(unit,s)['available']]
+    if not techniques and not dashes:return False
+    reachable,parents=_movement_tree(battle,unit);options=[]
+    pressure=sum(_distance(unit,e)<=2 for e in targets)
+    aggressive=personality_profile(unit)[2]=='aggressive' or unit.get('independent_style')=='aggressive'
+    for skill in techniques:
+        for target in targets:
+            if tactic=='objective' and target.get('capture_role')=='live_target':continue
+            actor,approach=_attack_position(battle,unit,target,skill['range'],reachable,parents)
+            if not actor:continue
+            key=skill['id'].split(':')[-1]
+            priority=100 if skill.get('combo_kind')=='finisher' else 70 if skill.get('combo_kind')=='follow_up' else 35
+            if key=='iron_reversal':priority+=15 if unit['hp']<=unit['max_hp']*.6 or pressure>=2 or tactic=='defensive' else -5
+            if key=='breaking_combination':priority+=10
+            if key=='rapid_palm':priority+=10 if not aggressive else 0
+            if key=='crushing_fist':priority+=15 if aggressive else 0
+            damage=_strike_preview(battle,actor,target,skill['elevation_rule'],skill['range'],skill)['damage_on_hit']
+            options.append((priority,min(damage,target['hp']),-int((approach or {}).get('movement_cost',0)),skill,target,approach))
+    if dashes and (not options or unit['hp']<=unit['max_hp']*.35 and pressure>=2):
+        routes=_dash_routes(battle,unit,dashes[0]['range']);landings=[]
+        current_distance=min((_distance(unit,t) for t in targets),default=0)
+        for (x,y),path in routes.items():
+            caught=[t for t in targets if (t['x'],t['y']) in path]
+            if tactic=='objective' and any(t.get('capture_role')=='live_target' for t in caught):continue
+            danger=sum(abs(t['x']-x)+abs(t['y']-y)<=2 for t in targets)
+            distance=min((abs(t['x']-x)+abs(t['y']-y) for t in targets),default=0)
+            escaping=unit['hp']<=unit['max_hp']*.35 and danger<pressure
+            if escaping or danger<=max(1,pressure) and (caught or distance<current_distance):
+                landings.append((int(escaping)*20+len(caught)*5+current_distance-distance-danger,-len(path),x,y))
+        if landings:
+            _,_,x,y=max(landings);_resolve_ability(battle,unit,_ground_target(x,y),dashes[0]);_finish_turn(battle);return True
+    if not options:return False
+    _,_,_,skill,target,approach=max(options,key=lambda row:row[:3])
+    if approach and _apply_attack_approach(battle,unit,target,skill['range'],approach):return False
+    _resolve_ability(battle,unit,target,skill);_finish_turn(battle);return True
 
 
 def _auto_support(battle, unit):
@@ -3106,8 +3281,9 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
                     if len(caught)>=2:landings.append((len(caught),-sum(e['hp'] for e in caught),-y,-x,ground))
             if landings:
                 _resolve_ability(battle,unit,max(landings,key=lambda r:r[:4])[-1],leap);_finish_turn(battle);return
+    if not pursuing_objective and _auto_monk_turn(battle,unit,targets,tactic):return
     available_skills=[s for s in (unit.get('skills') or ([unit['special']] if unit.get('special') else []))
-                      if abilities.availability(unit,s)['available'] and s.get('target') != 'ally' and not _leap_skill(s) and not (conditions.has(unit, 'mute') and s['elevation_rule'] in {'ignore', 'line_of_effect'})]
+                      if abilities.availability(unit,s)['available'] and s.get('target') != 'ally' and not _leap_skill(s) and not _dash_skill(s) and not (conditions.has(unit, 'mute') and s['elevation_rule'] in {'ignore', 'line_of_effect'})]
     if conditions.has(unit, 'mute') and unit['attack_elevation_rule'] in {'ignore','line_of_effect'} and not available_skills:
         _guard(battle, unit)
         unit['acted'] = True
@@ -3680,6 +3856,30 @@ def battle_view(battle: dict) -> dict:
         view['ground_skill_previews']={}
         for choice in current.get('skills',[]):
             entries={}
+            if _dash_skill(choice):
+                ground_entries={}
+                if abilities.availability(current,choice)['available']:
+                    candidates=[((current['x'],current['y']),0)]+[(p,c) for p,c in sorted(reachable.items(),key=lambda row:(row[1],row[0])) if p!=(current['x'],current['y'])]
+                    for point,cost in candidates:
+                        actor={**current,'x':point[0],'y':point[1]}
+                        for landing,route in _dash_routes(view,actor,choice['range']).items():
+                            key=f'{landing[0]},{landing[1]}'
+                            if key in ground_entries:continue
+                            forecasts={}
+                            for enemy in _living(view,'enemy'):
+                                if (enemy['x'],enemy['y']) not in route:continue
+                                forecast=_attack_preview(view,actor,enemy,'melee',choice)
+                                amount=_damage_before_barrier({'animation_events':[]},actor,deepcopy(enemy),_ability_power_bonus(actor,choice,choice['effects'][0]))
+                                shield=max((s.get('amount',0) for s in enemy.get('statuses',[]) if s['id']=='barrier'),default=0)
+                                forecasts[enemy['id']]={'damage_on_hit':max(0,amount-shield),'chance':forecast['chance']}
+                            approach={} if point==(current['x'],current['y']) else {'move_to':{'x':point[0],'y':point[1]},'movement_cost':cost,'path':_approach_path(view,current,point,reachable,parents)}
+                            ground_entries[key]={'zones':[{'kind':'dash','cells':[{'x':x,'y':y} for x,y in route]}],
+                                'dash_path':[{'x':actor['x'],'y':actor['y']}]+[{'x':x,'y':y} for x,y in route],
+                                'landing':{'x':landing[0],'y':landing[1]},'target_forecasts':forecasts,
+                                'ground_damage':_dash_ground_damage(view,actor,route),**approach}
+                view['ground_skill_previews'][choice['id']]=ground_entries
+                view['skill_previews'][choice['id']]={}
+                continue
             if _ground_skill(choice) and abilities.availability(current,choice)['available'] and not (conditions.has(current,'mute') and choice['elevation_rule']=='line_of_effect'):
                 ground_entries={}
                 for y in range(view['height']):
@@ -3772,6 +3972,10 @@ def battle_view(battle: dict) -> dict:
         view["throw_profile"] = None
     view["status_definitions"] = STATUS_DEFINITIONS
     view["log"] = view["log"][-30:]
+    for unit in view['units'].values():
+        monk.view(unit,view)
+        unit['effective_move']=_movement_limit(unit)
+        if monk.evasion_bonus(unit):unit['evasion_base']=unit['evasion'];unit['evasion']+=monk.evasion_bonus(unit)
     return view
 
 
@@ -3972,7 +4176,13 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             x,y=int(command['x']),int(command['y'])
             if not (0<=x<battle['width'] and 0<=y<battle['height']):raise ValueError('Choose ground inside the map')
             target=_ground_target(x,y)
-            if _leap_skill(selected_skill):
+            if _dash_skill(selected_skill):
+                if command.get('move_to') is not None:
+                    costs,parents=_movement_tree(battle,unit);p=command['move_to'];point=(int(p.get('x',-1)),int(p.get('y',-1)))
+                    if point not in costs or (x,y) not in _dash_routes(battle,{**unit,'x':point[0],'y':point[1]},selected_skill['range']):raise ValueError('That approach cannot reach the dash landing')
+                    if _apply_attack_approach(battle,unit,_ground_target(*point),1,command):return battle_view(battle)
+                if (x,y) not in _dash_routes(battle,unit,selected_skill['range']):raise ValueError('Invalid dash landing')
+            elif _leap_skill(selected_skill):
                 if command.get('move_to') is not None:
                     costs,parents=_movement_tree(battle,unit);p=command['move_to'];point=(int(p.get('x',-1)),int(p.get('y',-1)))
                     if point not in costs or not _leap_eligible(battle,{**unit,'x':point[0],'y':point[1]},target,selected_skill):raise ValueError('That approach cannot reach the landing')

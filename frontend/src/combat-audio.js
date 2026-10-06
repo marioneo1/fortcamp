@@ -19,9 +19,9 @@ export function combatAudioSchedule(battle,events=battle?.animation_events||[]){
       for(const cue of event.cues||[]){if(['unit_death','unit_unconscious'].includes(cue.name)&&events.some(e=>['death_burst','knockout'].includes(e.type)&&e.attack_packet===event.attack_packet))continue;playSfx(cue.name,cue.name==='melee_swing'?.12:cue.name==='structure_hit'?.55:cue.name==='barrier_absorb'?.28:cue.name==='shield_block'?.35:.4,delay+(cue.offset||0))}
     }else if(event.type==='melee_attack'&&event.target_kind!=='terrain'){
       const style=['slash','hack','crush','blunt','fist','stab'].includes(event.melee_style)?event.melee_style:null;
-      if(!(style==='slash'&&event.hit&&event.impact_surface==='flesh'))playSfx(style?`melee_${style}_swing`:'melee_swing',.12,delay+45);
+      if(!(style==='slash'&&event.hit&&event.impact_surface==='flesh'))playSfx(style?`melee_${style}_swing`:'melee_swing',event.contact_ms===83?.07:.12,delay+Math.min(45,(event.contact_ms??185)/2));
       const blocked=events.some(e=>e.type==='combat_feedback'&&e.attack_packet===event.attack_packet&&e.absorbed>0&&!e.amount);
-      if(!blocked)playSfx(event.hit?(event.target_condition==='unconscious'?'subdue_hit':style?`melee_${style}_${event.impact_surface==='flesh'?'flesh':'hit'}`:'melee_hit_light'):'attack_miss',event.hit?.55:.32,delay+COMBAT_MOTION.contact);
+      if(!blocked)playSfx(event.hit?(event.target_condition==='unconscious'?'subdue_hit':style?`melee_${style}_${event.impact_surface==='flesh'?'flesh':'hit'}`:'melee_hit_light'):'attack_miss',event.hit?.55:.32,delay+(event.contact_ms??COMBAT_MOTION.contact));
       if(event.hit&&!events.some(e=>e.type==='death_burst'&&e.attack_packet===event.attack_packet)&&event.target_condition==='dead')playSfx('unit_death',.4,delay+330);
       else if(event.hit&&!events.some(e=>e.type==='knockout'&&e.attack_packet===event.attack_packet)&&event.target_condition==='unconscious')playSfx('unit_unconscious',.4,delay+315);
     }else if(event.type==='death_burst'||event.type==='knockout'){

@@ -1,5 +1,9 @@
 # Combat controls and targeting
 
+## October 5: Monk sequence presentation
+
+The acting card shows Neutral, Follow-up Ready or Finisher Ready, with a three-stage meter and remaining personal turns. Setup becomes usable on the next activation. Locked skill tooltips explain the required stage. Eight square icons share one packed art set; existing saved drag ordering and five-slot loadouts remain unchanged. Slotted Perfect Rhythm/Flowing Footwork remain in the skill bar. Temporary Iron Reversal, Open Guard and Footwork have explicit status tooltips. Punch damage, sound and defeat use authored contact offsets; enemy actions wait for packet playback. Dash previews the route, landing, visible crossed enemies and committed ground damage. No extra click or separate resource meter is introduced.
+
 Implemented in dev, October 4, 2026.
 
 ## Movement and finishing turns

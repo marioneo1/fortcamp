@@ -42,13 +42,13 @@ class JobStarterTests(unittest.TestCase):
                 self.assertEqual(char['equipped_skills'],char['learned_skills'])
                 actor=combat._player_unit(state,char,2,2)
                 self.assertGreater(actor['attack'] if job!='captor' else actor['capture_attributes']['str'],0)
-                if job=='captor':self.assertEqual(actor['attack'],0);self.assertTrue(actor['capture_weapon'])
+                if job=='captor':self.assertGreater(actor['attack'],0);self.assertTrue(actor['capture_weapon'])
                 if job in {'rogue','monk'}:self.assertEqual((actor['scaling'],actor['attack_range']),('dex',1))
                 if job in {'mage','cleric','bard','druid','summoner'}:self.assertEqual((actor['scaling'],actor['attack_range']),('int',3))
                 for iid in definition['kit']:
                     self.assertLessEqual(ITEMS[iid].get('power',0),1)
                     icon=ITEMS[iid].get('icon');self.assertTrue((Path('frontend/public')/icon.lstrip('/')).is_file(),icon)
-        self.assertEqual(len(jobs.SKILLS),72)
+        self.assertEqual(len(jobs.SKILLS),79)
 
     def test_matching_gear_available_without_resale_profit(self):
         state=new_game({'starting_role':'engineer'});offers={o['item']:o for o in trade_view(state,'qa',100)['camp_items']}

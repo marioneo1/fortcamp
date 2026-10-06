@@ -1,6 +1,6 @@
 # Jobs and character loadouts
 
-Pending Monk redesign: [Monk rework review](MONK_REWORK_REVIEW.md) proposes eight choices, a complete starter combo, owner-turn readiness, multi-hit budgets and mobility. It is a reviewed design proposal, not an implemented replacement for the current six Monk skills.
+Implemented Monk rework: [Monk rework review](MONK_REWORK_REVIEW.md) records eight choices, a complete starter combo, owner-turn readiness, technique damage/proc budgets, Sweeping Dash and save migration. Initial tuning still needs gameplay comparison.
 
 Implemented in dev, October 4, 2026. The twelve starting Jobs, matching poor-quality equipment and first skill unlocks
 are playable. The larger catalogue in STARTING_JOBS_AND_SKILLS_V1.md remains a draft.
@@ -13,9 +13,7 @@ survive ordinary roster refreshes and stay scoped to the player/server/save.
 
 Regular characters can deliberately choose one of twelve initial toolboxes:
 Fighter, Barbarian, Rogue, Ranger, Mage, Cleric, Monk, Bard, Druid, Engineer,
-Summoner and Captor. Each starts with two supported actives and one passive. Three further skills
-unlock after 2, 5 and 9 successful contracts, giving the original 72 executable definitions
-across the twelve Jobs. The 96-skill draft is not fully implemented. Several
+Summoner and Captor. Most start with two supported actives and one passive; Monk starts with three actives forming its complete combo. Most Jobs unlock three further skills after 2, 5 and 9 successful contracts. Expanded Fighter, Barbarian and Monk pools bring the current catalogue to 79 executable definitions across twelve Jobs. The 96-skill draft is not fully implemented. Several
 passives overlap; deeper conditional kits and differentiation remain pending.
 
 New characters choose their Job in the creator, with matching starter gear and

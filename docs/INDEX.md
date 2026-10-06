@@ -1,6 +1,6 @@
 # Fortcamp documentation map
 
-Pending Monk design: [Monk rework review](design/MONK_REWORK_REVIEW.md) compares the current engine and finished martial kits, recommends eight skills and five-slot builds, and specifies combo/proc/timing/migration safeguards. Proposal only; current Monk remains unchanged. Map status columns now use 3px gaps with no unused grid-track space around smaller passive badges; see [Status presentation](design/COMBAT_STATUS_PRESENTATION.md).
+Implemented Monk: [Monk rework](design/MONK_REWORK_REVIEW.md) documents eight skills, full starter combo, technique budgets, readiness, AI and migration. [Monk art](art/MONK_V1.md) records the packed assets and import workflow. Numerical balance remains provisional. Map status columns use 3px gaps; see [Status presentation](design/COMBAT_STATUS_PRESENTATION.md).
 
 Current skill-bar layout and saved order: [Combat controls](design/COMBAT_CONTROLS.md) covers slotted passives, drag swaps, Arrange, innate/equipment Traits, horizontal acting card and passive readiness buffs. Bloodthirst healing is now 20% max HP per kill.
 

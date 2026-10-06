@@ -4,6 +4,7 @@ export function statusDetails(status,definitions={}){
   const details=[];
   if(status.id==='deployment')return {name:'Temporary deployment',icon:'◆',description:`Owned by ${status.owner_name}. ${status.policy==='automatic'?'Automatic targeting; shares owner output budget.':'Attack commands spend the owner action.'} No extra initiative turn, loot or prisoner reward.`,details:[status.ready?'Ready this owner activation':'Ready from the next owner activation',status.stationary?'Stationary device':'Uses its own movement budget']};
   if(status.id==='wild_form')return {name:status.name,icon:'◆',description:status.description,details:[`${status.turns} owner activations remaining · no HP refill`]};
+  if(['open_guard','flowing_footwork','iron_reversal'].includes(status.id))return {...base,details:[status.id==='iron_reversal'?'One incoming direct attack · expires at next personal turn start':`${status.turns} turn window remaining · expires at ${status.source_name||'owner'}’s turn end`,...(status.source_name?[`From ${status.source_name}`]:[])]};
   if(status.id==='barrier')details.push(`${status.amount} damage absorption remaining`);
   if(status.id==='mark')details.push(`Owner: ${status.source_name||'unknown'} · +${status.accuracy||10} accuracy on their first hit`);
   if(status.id==='reaction')return {name:status.ready?'Reaction ready':'Reaction spent',icon:status.ready?'↶':'↷',description:`${(status.reactions||[]).join(' / ')}. One shared reaction, refreshed at activation start. Cannot chain.`,details:[]};

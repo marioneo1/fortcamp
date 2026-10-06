@@ -1,5 +1,11 @@
 # Combat ability foundation
 
+## October 5: bounded Monk techniques
+
+An authored attack may specify `hits` (1?3), with total `power_percent` up to 300. Monk techniques add `combo_kind` and optional `combo_stage`; availability uses the same personal-turn clocks as cooldowns. `backend/combat_monk.py` owns sequence/readiness and temporary modifiers. One total damage/armor/additive budget is divided into separately rolled punches. A technique gets one generic on-hit eligibility and one counter reaction; contact packets retain each punch's timestamp. `resolved_damage` is an internal resolver argument, never a client-submitted damage value.
+
+`dash_attack` is a single bounded ground-target effect (range ?3, 50?250% power). It reuses walkability, hazards, feedback, costs and playback. Legal endpoints are empty; its route alone can cross enemies. Capture weapons cannot use damaging techniques. Existing single-hit skills keep their rules. See MONK_REWORK_REVIEW.md for eight definitions, source-clock statuses and edge cases.
+
 Implemented in dev, October 4, 2026. Subsequent foundations now cover spaces,
 deployments and regular loadouts; see COMBAT_SPACES.md, COMBAT_DEPLOYMENTS.md and
 JOB_LOADOUTS.md. Twelve starting Jobs are playable in dev, with six skills each except the expanded Fighter and Barbarian kits; the larger

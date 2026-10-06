@@ -1,5 +1,9 @@
 # Battle Lab — implemented development tool
 
+## October 5: Monk combo testing
+
+Temporary Job testers ? Monk starts with Rapid Palm, Iron Reversal and Heaven-Piercing Strike. Select 16 successes to unlock the full eight-skill pool, then choose any five active/passive slots. Try reliable skirmisher (Rapid Palm, Iron Reversal, Heaven-Piercing Strike, Perfect Rhythm, Sweeping Dash) or offensive sequence (replace Iron Reversal with Breaking Combination). Battle-only combo/forms persist across commands but reset on a fresh test. Lab cannot edit real progression or saves. Skill damage remains initial tuning; compare against Fighter/Barbarian using the same enemies/weapon tier before declaring final balance.
+
 ## October 4: Temporary Job parties
 
 Battle Lab now defaults to Temporary Job testers. Choose up to four of the twelve

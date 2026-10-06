@@ -3,10 +3,11 @@ from copy import deepcopy
 import math
 from . import combat_spaces as spaces
 from . import combat_entities as entities
+from . import combat_monk as monk
 
 VERSION = 1
 STATUSES = {'stun','sleep','poison','bleed','charm','confuse','berserk','freeze',
-            'burn','blind','bind','slow','paralyze','mute','fear','vulnerable','regeneration','braced','hobbled','armor_fracture','rally_protection','rally_power','brace_defense','reckless_exposure'}
+            'burn','blind','bind','slow','paralyze','mute','fear','vulnerable','regeneration','braced','hobbled','armor_fracture','rally_protection','rally_power','brace_defense','reckless_exposure','open_guard'}
 RULES = {'melee','ballistic','ignore','line_of_effect','physical_care'}
 
 
@@ -27,6 +28,9 @@ def validate(skill):
         raise ValueError('Ability must declare an elevation rule')
     if skill.get('source_kind','equipment') not in {'equipment','character'}:
         raise ValueError('Unsupported ability source')
+    if 'combo_kind' in skill and skill['combo_kind'] not in {'opener','follow_up','finisher'}:raise ValueError('Invalid combo technique')
+    if 'combo_stage' in skill and skill['combo_stage'] not in {'follow_up','finisher'}:raise ValueError('Invalid combo stage')
+    if skill.get('combo_kind') in {'follow_up','finisher'} and skill.get('combo_stage')!=skill['combo_kind']:raise ValueError('Combo stage must match technique')
     _integer(skill.get('range'), 1, 20)
     if skill.get('range_shape','diamond') not in {'diamond','square'}:raise ValueError('Unsupported range shape')
     cost = skill.get('cost', {})
@@ -49,13 +53,13 @@ def validate(skill):
         if not isinstance(effect, dict):
             raise ValueError('Ability effect must be an object')
         kind = effect.get('type')
-        allowed = {'attack': {'damage_bonus','armor_pierce','power_percent'}, 'heal': {'amount','max_hp_percent'},
+        allowed = {'attack': {'damage_bonus','armor_pierce','power_percent','hits'}, 'heal': {'amount','max_hp_percent'},
                    'cleanse': {'statuses','radius'}, 'guard': set(), 'status': {'status','turns','chance','radius'},
                    'barrier': {'amount','turns'}, 'mark': {'turns','accuracy'},
                    'displace': {'mode','distance','collision_damage','stop_adjacent','collision_stun'},
                    'leap_attack': {'radius','inner_push','outer_push','power_percent','collision_stun'},
                    'area_attack': {'radius','push','power_percent'},
-                   'zone': {'zone','radius','turns'}, 'form': {'form','turns'}, 'deploy': {'entity'}}
+                   'zone': {'zone','radius','turns'}, 'form': {'form','turns'}, 'deploy': {'entity'}, 'dash_attack': {'power_percent'}}
         if kind not in allowed or set(effect) - (allowed[kind] | {'type','conditions'}):
             raise ValueError('Unsupported ability effect')
         if kind == 'attack':
@@ -63,7 +67,9 @@ def validate(skill):
                 raise ValueError('Only one enemy attack is supported')
             _integer(effect.get('damage_bonus',0), -30, 30)
             _integer(effect.get('armor_pierce',0), 0, 30)
-        if kind in {'attack','leap_attack','area_attack'}:_integer(effect.get('power_percent',100),100,250)
+            _integer(effect.get('hits',1),1,3)
+        if kind in {'attack','leap_attack','area_attack','dash_attack'}:_integer(effect.get('power_percent',100),50 if kind=='dash_attack' else 100,300 if kind=='attack' else 250)
+        if kind=='dash_attack' and (skill['target']!='enemy' or len(effects)!=1 or skill['range']>3):raise ValueError('Dash attacks require short ground targeting')
         if kind in {'displace','leap_attack'} and 'collision_stun' in effect and not isinstance(effect['collision_stun'],bool):
             raise ValueError('Invalid collision stun policy')
         if kind in {'heal','cleanse','guard','barrier'} and skill['target'] != 'ally':
@@ -190,10 +196,10 @@ def availability(unit, skill):
     if charges is not None and state.get('uses',0)>=charges:
         return {'available':False,'reason':'No uses remaining','uses_remaining':0,'cooldown_remaining':0}
     remaining=max(0,state.get('ready_at',0)-unit.get('ability_activation',0))
-    restriction = (f"Requires {skill['fury_cost']} Fury" if unit.get('fury',0)<skill.get('fury_cost',0) else
-                   'Weapon techniques are unavailable in this form' if unit.get('form') and skill.get('source_kind','equipment')=='equipment' and any(e['type'] in {'attack','leap_attack','area_attack'} for e in skill['effects']) else
-                   'Capture weapons cannot perform damaging techniques' if unit.get('capture_weapon') and any(e['type'] in {'attack','leap_attack','area_attack'} for e in skill['effects']) else
-                   'Mute prevents this spell' if skill['elevation_rule'] in {'ignore','line_of_effect'} and any(s.get('id')=='mute' for s in unit.get('statuses',[])) else None)
+    restriction = (monk.restriction(unit,skill) or (f"Requires {skill['fury_cost']} Fury" if unit.get('fury',0)<skill.get('fury_cost',0) else
+                   'Weapon techniques are unavailable in this form' if unit.get('form') and skill.get('source_kind','equipment')=='equipment' and any(e['type'] in {'attack','leap_attack','area_attack','dash_attack'} for e in skill['effects']) else
+                   'Capture weapons cannot perform damaging techniques' if unit.get('capture_weapon') and any(e['type'] in {'attack','leap_attack','area_attack','dash_attack'} for e in skill['effects']) else
+                   'Mute prevents this spell' if skill['elevation_rule'] in {'ignore','line_of_effect'} and any(s.get('id')=='mute' for s in unit.get('statuses',[])) else None))
     return {'available':remaining==0 and not unit.get('acted') and not restriction,'reason':'Main action already used' if unit.get('acted') else restriction or (f'Ready in {remaining} of your turns' if remaining else None),
             'cooldown_remaining':remaining,'uses_remaining':None if charges is None else charges-state.get('uses',0)}
 

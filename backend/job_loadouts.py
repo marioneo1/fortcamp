@@ -57,10 +57,16 @@ register('cleric','Cleric','Treat wounds and maintain a safe fighting position.'
     active('mend','Mend','Restore 12 HP to a living ally. Cannot revive.',[{'type':'heal','amount':12}],'ally',3,'line_of_effect',3),
     active('cleanse','Cleanse','Remove Poison, Bleed, Burn and Slow from an ally.',[{'type':'cleanse','statuses':['poison','bleed','burn','slow']}],'ally',3,'line_of_effect',3),
     passive('steadfast','Steadfast','Gain 1 armor. Does not make healing mandatory.',{'armor':1}))
-register('monk','Monk','Fight nearby enemies with displacement and retaliation.',
-    strike('palm','Driving Palm','Melee hit pushes one cell. Knockback resistance applies. Hitting a solid obstacle adds half the hit as collision damage; hitting a person hurts both, including allies.',{'type':'displace','mode':'push','distance':1}),
-    active('brace','Brace','Guard a nearby ally against the next incoming hit.',[{'type':'guard'}],'ally',1,'physical_care'),
-    passive('riposte','Riposte','After surviving a melee hit, counter at half attack if in reach. Uses the shared reaction.',reaction={'id':'riposte','name':'Riposte'}))
+def monk_technique(key, name, description, power, hits=1, cooldown=1, reach=1, stage=None, kind=None):
+    skill=active(key,name,description,[{'type':'attack','power_percent':power,'hits':hits}],range=reach,cooldown=cooldown)
+    skill.update(combo_kind=kind,melee_style='fist')
+    if stage:skill['combo_stage']=stage
+    return validate(skill)
+
+register('monk','Monk','Chain close-range techniques into a powerful finishing strike, using footwork and defensive forms to stay alive.',
+    monk_technique('rapid_palm','Rapid Palm','Three adjacent punches totaling 120% attack. Two landed punches guarantee Follow-up Ready; one has an 80% chance. Readiness lasts through your next two turns. Cooldown: 1 turn.',120,3,kind='opener'),
+    monk_technique('iron_reversal','Iron Reversal','Requires Follow-up Ready. Adjacent 100% strike; a hit prepares the finisher and reduces the next direct attack against you by 20%, until your next turn. Cooldown: 1 turn.',100,stage='follow_up',kind='follow_up'),
+    monk_technique('heaven_piercing','Heaven-Piercing Strike','Requires Finisher Ready. Release a physical palm-force strike at 300% attack, up to three cells away with clear sight. Consumes readiness even on a miss. Cooldown: 3 turns.',300,cooldown=3,reach=3,stage='finisher',kind='finisher'))
 register('bard','Bard','Keep allies fighting and weaken an enemy approach.',
     active('rally','Steady Song','Remove Fear and Slow from an ally and give an 8 HP Barrier for one activation.',[{'type':'cleanse','statuses':['fear','slow']},{'type':'barrier','amount':8,'turns':1}],'ally',3,'line_of_effect',3),
     active('discord','Discord','Slow an enemy for one activation. Resistance and immunities apply.',[{'type':'status','status':'slow','turns':1}],range=3,rule='line_of_effect',cooldown=3),
@@ -116,10 +122,6 @@ later('cleric',
     active('sanctuary','Sanctuary','Create healing ground around a chosen cell for two of your activations. Restores 3 HP at ally activation start; Burn prevents healing.',[{'type':'zone','zone':'sanctuary','radius':1,'turns':2}],'ally',3,'line_of_effect',3),
     active('barrier','Shelter','Give an ally a 14 HP Barrier for two target activations. Replaces weaker Barriers; does not stack.',[{'type':'barrier','amount':14,'turns':2}],'ally',3,'line_of_effect',3),
     passive('intercept','Stand Beside Them','Intercept one direct attack against an adjacent ally. Shares your reaction allowance.',reaction={'id':'intercept','name':'Stand Beside Them'}))
-later('monk',
-    strike('bind','Joint Lock','Melee hit attempts Bind for one activation; 75% before resistance.',{'type':'status','status':'bind','turns':1,'chance':75}),
-    passive('returning','Returning Hand','After an enemy misses a melee attack, counter at half attack if in reach. Competes with Riposte for one reaction.',reaction={'id':'returning_hand','name':'Returning Hand'}),
-    passive('stance','Patient Stance','Gain 1 armor. Trades a slot for staying power.',{'armor':1}))
 later('bard',
     active('refrain','Restoring Refrain','Apply Regeneration for two ally activations. Cannot revive.',[{'type':'status','status':'regeneration','turns':2}],'ally',3,'line_of_effect',3),
     active('silence','Silencing Note','Attempt Mute for one target activation; 70% before resistance.',[{'type':'status','status':'mute','turns':1,'chance':70}],range=3,rule='line_of_effect',cooldown=3),
@@ -147,7 +149,7 @@ def add_unlocks(job, entries):
     for threshold, original in entries:
         skill=deepcopy(original);skill['id']=f'job:{job}:{skill["id"]}';skill['source_name']=JOBS[job]['name']
         SKILLS[skill['id']]=skill
-        JOBS[job]['unlocks'].append({'skill_id':skill['id'],'contracts':threshold})
+        JOBS[job].setdefault('unlocks',[]).append({'skill_id':skill['id'],'contracts':threshold})
 
 
 brace=active('brace','Brace','Self only: take 25% less damage from all sources for your next three turns. Cooldown: 5 of your turns.',[{'type':'status','status':'brace_defense','turns':3}],'ally',1,'physical_care',5)
@@ -160,6 +162,17 @@ add_unlocks('barbarian',[(12,passive('bloodthirst','Bloodthirst','A killing blow
 
 BARBARIAN_OLD_IDS = dict(zip(('shove','expose','anchored','hide','drive','stand'),
                            ('reckless_blow','skullbreaker','bloodfury','bloodied_strength','groundbreaker','too_angry_to_fall')))
+
+dash=active('sweeping_dash','Sweeping Dash','Dash through up to three cells to empty ground. Each crossed enemy takes one 50% attack attempt. Walls, closed gates and pits block the route; ground hazards still hurt. Does not advance your combo. Cooldown: 2 turns.',[{'type':'dash_attack','power_percent':50}],range=3,cooldown=2)
+dash['melee_style']='fist'
+add_unlocks('monk',[(2,passive('perfect_rhythm','Perfect Rhythm','Follow-ups gain 10 percentage points of accuracy. Your ready finisher cannot miss, but armor, Barrier and interception still apply.')),
+    (5,monk_technique('crushing_fist','Crushing Fist','Adjacent 150% strike. A hit has a 70% chance to grant Follow-up Ready. More immediate damage, less reliable setup. Cooldown: 1 turn.',150,kind='opener')),
+    (9,dash),
+    (12,monk_technique('breaking_combination','Breaking Combination','Requires Follow-up Ready. Two adjacent punches totaling 120% attack. Any hit prepares the finisher and opens the target guard: +25% direct attack damage from all allies until the end of your next turn. Does not amplify damage over time or collisions. Cooldown: 2 turns.',120,2,2,stage='follow_up',kind='follow_up')),
+    (16,passive('flowing_footwork','Flowing Footwork','Advancing your combo grants +1 movement on your next turn and +10 evasion until that turn ends. Refreshes without stacking. Ten evasion points reduce normal melee hit chance by about 6 percentage points and ranged hit chance by 10.'))])
+
+MONK_OLD_IDS=dict(zip(('palm','brace','riposte','bind','returning','stance'),
+                     ('rapid_palm','iron_reversal','perfect_rhythm','crushing_fist','sweeping_dash','flowing_footwork')))
 
 def eligible(character):
     return character.get('source_kind') not in {'champion','celestial'} and not character.get('temporary_mercenary')
@@ -177,6 +190,17 @@ def initialize(character):
         if character.get('job_id')=='barbarian':
             for field in ('learned_skills','equipped_skills'):
                 character[field]=list(dict.fromkeys('job:barbarian:'+BARBARIAN_OLD_IDS.get(key.split(':')[-1],key.split(':')[-1]) if key.startswith('job:barbarian:') else key for key in character[field]))
+        if character.get('job_id')=='monk' and character.get('monk_kit_version',0)<1:
+            legacy=any(key.startswith('job:monk:') and key.split(':')[-1] in MONK_OLD_IDS for key in character['learned_skills'])
+            for field in ('learned_skills','equipped_skills','combat_skill_order'):
+                if field in character:
+                    character[field]=list(dict.fromkeys('job:monk:'+MONK_OLD_IDS.get(key.split(':')[-1],key.split(':')[-1]) if key.startswith('job:monk:') else key for key in character[field]))
+            for key in JOBS['monk']['starter_skills']:
+                if key not in character['learned_skills']:character['learned_skills'].append(key)
+            if legacy and 'job:monk:heaven_piercing' not in character['equipped_skills']:
+                if len(character['equipped_skills'])<CAPACITY:character['equipped_skills'].append('job:monk:heaven_piercing')
+            character['monk_kit_version']=1
+            if legacy:character['job_migration_note']='Monk now uses combo techniques. Existing choices were mapped to replacements; earned practice and learned skills are preserved. Heaven-Piercing Strike is learned; equip it if your five slots were already full.'
         job=JOBS.get(character.get('job_id'))
         if job:
             for unlock in job['unlocks']:

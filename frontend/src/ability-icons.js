@@ -25,6 +25,7 @@ export function skillCategory(skill){
 }
 export const FIGHTER_ICON_ART={'job:fighter:cover':'chain-snare','job:fighter:pull':'earthbreaker','job:fighter:rally':'hold-together'};
 export function skillIcon(skill){
+  if(/^job:monk:(rapid_palm|crushing_fist|iron_reversal|breaking_combination|heaven_piercing|sweeping_dash|perfect_rhythm|flowing_footwork)$/.test(skill.id))return `/assets/monk-v1/${skill.id.split(':').at(-1)}.png`;
   if(MARTIAL_ICON_ART[skill.id])return MARTIAL_ICON_ART[skill.id];
   if(FIGHTER_ICON_ART[skill.id])return '/assets/combat-fighter-v3/'+FIGHTER_ICON_ART[skill.id]+'.png';
   if(JOB_ICON_ART[skill.id])return JOB_ICON_ART[skill.id];

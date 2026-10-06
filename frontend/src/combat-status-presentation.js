@@ -4,6 +4,7 @@ import {JOB_ICON_ART} from './ability-icon-manifest.js';
 import {impactTimeline} from './combat-impact.js';
 
 const META={
+ iron_reversal:['buff','monk:iron_reversal',10],flowing_footwork:['buff','monk:flowing_footwork',12],open_guard:['debuff','monk:breaking_combination',8],
  brace_defense:['buff','martial:brace-defense',10],reckless_exposure:['debuff','martial:reckless-exposure',8],death_defiance:['buff','martial:too-angry-to-fall',9],
  stun:['debuff','fighter:bash',0],sleep:['debuff','bard:discord',1],ambush_sleep:['debuff','bard:discord',1],
  freeze:['debuff','mage:binding',2],paralyze:['debuff','captor:bind',2],bind:['debuff','captor:bind',3],
@@ -35,7 +36,7 @@ export function statusVisual(status){
  const count=status.id==='barrier'?status.amount:
   ['rally_protection','rally_power','guard','vulnerable'].includes(status.id)?'1×':
   status.rounds??status.turns??status.duration;
- return {kind,image:art?.startsWith('martial:')?`/assets/martial-jobs-v1/${art.slice(8)}.png`:art?JOB_ICON_ART['job:'+art]||null:null,count:count??null};
+ return {kind,image:art?.startsWith('monk:')?skillIcon({id:'job:'+art}):art?.startsWith('martial:')?`/assets/martial-jobs-v1/${art.slice(8)}.png`:art?JOB_ICON_ART['job:'+art]||null:null,count:count??null};
 }
 function details(status,definitions){return statusDetails(status,{guard:guardDefinition,...definitions})}
 export function statusBadge(status,definitions,escape,{unitId='',compact=false}={}){
