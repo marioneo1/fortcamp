@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {createLatestMovement} from './latest-movement.js';
+import {createNavigationInput} from './navigation-input.js';
 
 // Exercise the actual UI request handler with a deliberately delayed connection.
 const main=readFileSync(new URL('./main.js',import.meta.url),'utf8');
@@ -11,7 +12,7 @@ function harness(){
   const requests=[],renders=[];
   const battle=(x=0,unit='hero')=>({status:'active',current_unit_id:unit,round:1,units:{hero:{x,y:0}},x});
   const context={activeBattleMissionId:'lab',activeBattleView:battle(),combatRequestPending:false,inFlightCombatAction:null,
-    latestMovement:createLatestMovement(),combatPlaybackBlocked:()=>false,movementSubmitTimer:null,setTimeout,clearTimeout,updatePlaybackControls:()=>{},
+    navigationInput:createNavigationInput(),latestMovement:createLatestMovement(),combatPlaybackBlocked:()=>false,movementSubmitTimer:null,setTimeout,clearTimeout,updatePlaybackControls:()=>{},
     $$:()=>[],$:selector=>selector==='#mission-modal'?{classList:{contains:()=>false}}:null,
     CSS:{escape:s=>s},previewMovement:()=>null,battleEndpoint:()=>'/command',
     rawApi:(_url,options)=>new Promise((resolve,reject)=>requests.push({command:options?JSON.parse(options.body):null,resolve,reject})),
@@ -88,4 +89,20 @@ test('a flood of alternating clicks followed by Guard commits only the final int
  assert.deepEqual(r[1].command.position,{x:2,y:0});
  r[1].resolve({battle:battle(2,'next')});await settle();
  assert.equal(c.activeBattleView.x,2);
+});
+
+test('repeated entrance clicks at an unchanged door produce one request',async()=>{
+ const {context:c,requests:r,battle}=harness();
+ const first=c.sendCombat({action:'navigate',x:5,y:0});
+ r[0].resolve({battle:battle()});await first;
+ for(let i=0;i<100;i++)await c.sendCombat({action:'navigate',x:5,y:0});
+ assert.equal(r.length,1);
+});
+test('a temporary navigation server failure can be retried after resynchronization',async()=>{
+ const {context:c,requests:r,battle}=harness();
+ const first=c.sendCombat({action:'navigate',x:5,y:0});
+ r[0].reject(Object.assign(new Error('temporary'),{status:502}));await settle();
+ r[1].resolve({battle:battle()});await first;
+ const retry=c.sendCombat({action:'navigate',x:5,y:0});assert.equal(r.length,3);
+ r[2].resolve({battle:battle()});await retry;
 });

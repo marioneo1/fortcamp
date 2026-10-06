@@ -1513,3 +1513,25 @@ centre within .02px of target, no stuck walking class. Prompt renders and submit
 interact. 200-input regression, debounce-consumption regression, fractional
 reversal and six entrance cases also pass. Existing bundle warning remains.
 No live network benchmark, production/save changes or audio changes.
+
+## October 5: actual request validation, occupied doors and runner diagnostics
+
+Found an integration mistake in the previous input pass: normal combat and Lab
+Pydantic models omitted position, silently losing combined movement intent. Both
+now preserve it; an actual Lab-handler regression verifies final position/Guard.
+NPC occupancy is ignored only for entrance intent selection; real traversal still
+stops before occupied tiles. Added a blocked-door regression with repeated clicks.
+
+Browser entrance requests are deduplicated by traversal-relevant state. Lab
+commands reuse identical validated navigation results until battle/activation
+changes, and use the engine's returned view without recomputing it. Local
+Command Post measurements: 20 uncached engine requests 4.541s; 100 repeated handler
+requests after caching .227s. These are local CPU measurements, not network
+benchmarks or proof that the historical process closure was caused by this work.
+
+The runner now tees output to ignored per-profile latest logs and returns a
+failure when an owned child exits unexpectedly, triggering the existing batch
+pause. Test simulates a failing child and checks log/exit code. No production or
+live save changes; actual earlier server-exit cause remains unknown without logs.
+
+Validation for this pass: 263 frontend tests, 99 backend tests (including all Battle Lab catalogue starts, API/persistence and runner isolation tests), and Vite build pass. Existing bundle-size warning remains. No new browser animation benchmark in this pass.

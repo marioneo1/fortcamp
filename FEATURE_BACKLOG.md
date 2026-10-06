@@ -966,3 +966,15 @@ Closed-door shortcuts get a hand-icon Open Door prompt; no automatic opening.
 260 frontend / 94 backend tests, build and isolated delayed-response browser QA
 pass. Live player feel still needs testing. Axe/bludgeon sound refinement deferred
 at the player's request; this pass makes no audio changes.
+
+## October 5: doorway blocking and navigation spam hardening (dev)
+
+Fixed final-position fields dropped by both API models; actual Lab-handler test
+now covers combined movement plus Guard. NPCs do not hide entrance intent, but
+remain physical movement blockers. Suppressed unchanged repeated clicks, reused
+validated Lab navigation responses and removed duplicate view construction.
+Launcher preserves output and fails visibly when an owned child exits.
+Past unrecorded server-window closure remains unconfirmed; saved logs now allow
+diagnosis if it recurs. Production and player saves unchanged.
+
+Validation for this pass: 263 frontend tests, 99 backend tests (including all Battle Lab catalogue starts, API/persistence and runner isolation tests), and Vite build pass. Existing bundle-size warning remains. No new browser animation benchmark in this pass.

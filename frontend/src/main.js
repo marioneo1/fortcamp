@@ -68,6 +68,7 @@ import './social-ui.css';
 const combatEffects=createCombatEffects();
 import {patchLiveHTML,captureMovingPositions,restartWalking,trackBattleAnimation} from './live-dom.js';
 import {createLatestMovement} from './latest-movement.js';
+import {createNavigationInput} from './navigation-input.js';
 import {previewMovement} from './movement-preview.js';
 import {emitNetCast} from './combat-net.js';
 import {applyContractUpdate} from './contract-state.js';
@@ -139,6 +140,7 @@ const appearanceDrafts={};
 const rosterFilters={query:'',status:'',race:'',kind:'',sort:'name',page:0};
 let rosterDetailTab='overview',rosterNeedsRefresh=false,baseNeedsRefresh=true;
 const latestMovement=createLatestMovement();
+const navigationInput=createNavigationInput();
 const selectedGearSkills=new Map();
 let inFlightCombatAction=null;
 let movementSubmitTimer=null;
@@ -1029,6 +1031,10 @@ async function sendCombat(command,nextMode=null,queuedMovement=false){
     }
     return;
   }
+  if(command.action==='navigate'&&!navigationInput.accept(movementContext,activeBattleView,command)){
+    $('[data-navigation-open]')?.focus();return;
+  }
+  if(command.action!=='navigate')navigationInput.clear();
   if(command.action!=='move')latestMovement.clear();
   combatRequestPending=true;inFlightCombatAction=command.action;updatePlaybackControls();
   try{
@@ -1059,6 +1065,7 @@ async function sendCombat(command,nextMode=null,queuedMovement=false){
     renderBattle(data.battle);
   }catch(e){
     latestMovement.clear();
+    if(command.action==='navigate'&&e.status!==400)navigationInput.clear();
     toast(e.message);
     if(activeBattleMissionId===requestMissionId&&activeBattleView&&!$('#mission-modal').classList.contains('hidden'))try{const fresh=await rawApi(battleEndpoint('',requestMissionId));if(activeBattleMissionId===requestMissionId&&activeBattleView&&!$('#mission-modal').classList.contains('hidden'))renderBattle(fresh.battle)}catch{}
   }finally{

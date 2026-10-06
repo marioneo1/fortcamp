@@ -55,3 +55,12 @@ class PlayerNavigationTests(unittest.TestCase):
         view=self.navigate(b,5,2)
         self.assertEqual((a['x'],a['y']),(2,2))
         self.assertEqual(view['navigation_prompt']['command']['target_id'],'edge-door')
+
+    def test_npc_in_closed_door_does_not_hide_the_open_option_or_allow_overlap(self):
+        b,a=self.fixture((1,2));npc=next(u for u in b['units'].values() if u['id']!=a['id']);npc.update(x=3,y=2,conscious=True)
+        view=self.navigate(b,5,2)
+        self.assertEqual((a['x'],a['y']),(2,2))
+        self.assertEqual(view['navigation_prompt']['command']['target_id'],'door')
+        self.assertEqual((npc['x'],npc['y']),(3,2))
+        for _ in range(25):view=self.navigate(b,5,2)
+        self.assertEqual((a['x'],a['y']),(2,2));self.assertEqual(b['terrain'][-1]['state'],'closed')

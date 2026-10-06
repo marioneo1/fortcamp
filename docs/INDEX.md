@@ -140,3 +140,8 @@ sword sound layering and slash fade changes.
 Movement/entrance refinement: [Combat controls](design/COMBAT_CONTROLS.md) documents
 persistent destination intent, fractional reversal animation, nearest doorway
 routing and explicit painted-hand door prompts.
+
+Navigation hardening: [Combat controls](design/COMBAT_CONTROLS.md) covers occupied
+doors, final-position API validation and repeated-request suppression.
+[Development runner](design/DEVELOPMENT_RUNNER.md) explains retained logs and
+visible abnormal exits.

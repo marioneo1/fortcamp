@@ -2227,7 +2227,9 @@ def _route_with_gates(battle, unit, goals):
 
 
 def _navigation_tree(battle, unit):
-    planning={**battle,'terrain':[{**t,'blocking':False} if t.get('kind')=='gate' and not t.get('destroyed') else t for t in battle.get('terrain',[])]}
+    # Intent routing may look past a standing NPC, but actual movement below
+    # still uses the occupied, authoritative movement tree. Never walk through it.
+    planning={**battle,'units':{uid:{**u,'conscious':False} if uid!=unit['id'] else u for uid,u in battle['units'].items()},'terrain':[{**t,'blocking':False} if t.get('kind')=='gate' and not t.get('destroyed') else t for t in battle.get('terrain',[])]}
     gates={cell:t for t in battle.get('terrain',[]) if t.get('kind')=='gate' and not t.get('destroyed') and t.get('state')!='opened' and not t.get('edge_wall') for cell in occupied_tiles(t)}
     start=(unit['x'],unit['y']);queue=[(0,0,*start)];costs={start:(0,0)};parents={start:None};doors={}
     while queue:

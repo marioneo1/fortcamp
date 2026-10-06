@@ -282,6 +282,7 @@ class CombatCommandRequest(BaseModel):
     y: int | None = None
     target_id: str | None = None
     move_to: CombatApproachPosition | None = None
+    position: CombatApproachPosition | None = None
     placement_id: str | None = None
     skill_id: str | None = None
     item_id: str | None = None

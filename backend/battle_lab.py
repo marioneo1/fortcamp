@@ -139,9 +139,13 @@ def get_session(sid, identity):
     return row
 
 
-def session_view(sid, row):
+def session_view(sid, row, snapshot=None):
+    cached=row.get('_view')
+    if snapshot is None:
+        snapshot=cached[1] if cached and cached[0] is row['battle'] else battle_view(row['battle'])
+    row['_view']=(row['battle'],snapshot)
     return {'session_id': sid, 'mission': row['mission'], 'variant': row['variant'],
-            'seed': row['seed'], 'battle': battle_view(row['battle'])}
+            'seed': row['seed'], 'battle': snapshot}
 
 
 class JobTester(BaseModel):
@@ -292,6 +296,7 @@ class CommandRequest(BaseModel):
     y: int | None = None
     target_id: str | None = None
     move_to: Position | None = None
+    position: Position | None = None
     placement_id: str | None = None
     skill_id: str | None = None
     item_id: str | None = None
@@ -300,14 +305,20 @@ class CommandRequest(BaseModel):
 @router.post('/{sid}/command')
 async def command_battle(sid: str, request: CommandRequest, identity: IdentityDep):
     row = get_session(sid, identity)
+    command=request.model_dump(exclude_none=True)
+    repeated=row.get('_navigation_reply')
+    if command.get('action')=='navigate' and repeated and repeated[0] is row['battle'] and repeated[1]==command:
+        return session_view(sid,row)
     # Invalid commands must not leave partially changed sandbox state.
+    activation=(row['battle'].get('round'),row['battle'].get('turn_index'))
     battle = deepcopy(row['battle'])
     try:
-        apply_player_command(battle, request.model_dump(exclude_none=True))
+        snapshot=apply_player_command(battle,command)
     except (ValueError, TypeError, KeyError) as exc:
         raise HTTPException(400, str(exc))
     row['battle'] = battle
-    return session_view(sid, row)
+    row['_navigation_reply']=(battle,command) if command.get('action')=='navigate' and activation==(battle.get('round'),battle.get('turn_index')) and battle.get('status')=='active' else None
+    return session_view(sid,row,snapshot)
 
 
 class AutoRequest(BaseModel):

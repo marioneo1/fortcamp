@@ -6,6 +6,8 @@ import signal
 import socket
 import subprocess
 import time
+import sys
+import threading
 from urllib.request import urlopen
 from pathlib import Path
 from dotenv import dotenv_values
@@ -54,6 +56,15 @@ def profile_config(profile):
         return env,ROOT,[8001,5174]
     return env,ROOT,[8001,5174]
 
+def relay_output(child, log, lock):
+    """Keep child output visible while preserving it after the console closes."""
+    for line in child.stdout:
+        with lock:
+            log.write(line);log.flush()
+            try:sys.stdout.write(line);sys.stdout.flush()
+            except (OSError, UnicodeError):pass
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('profile',choices=['stable','release','prod','dev','dev-discord'])
     args=parser.parse_args()
@@ -77,15 +88,29 @@ def main():
     if args.profile=='dev-discord':
         print('Discord development: dev.fortcampgame.fyi -> port 5174, with real Discord login and DEV saves. Use your dev application credentials in fortcamp-dev .env; keep Cloudflare running.',flush=True)
     print(f'{args.profile.upper()}: http://127.0.0.1:{ports[-1]} | separate {args.profile} save | Ctrl+C to stop this session',flush=True)
-    children=[]
+    children=[];threads=[];exit_code=0
+    log_dir=ROOT/'data'/'logs';log_dir.mkdir(parents=True,exist_ok=True)
+    log_path=log_dir/f'{args.profile}-latest.log'
+    print(f'Session log: {log_path}',flush=True)
+    log=log_path.open('w',encoding='utf-8');lock=threading.Lock()
     try:
-        for command in commands:children.append(subprocess.Popen(command,cwd=cwd,env=env,creationflags=subprocess.CREATE_NEW_PROCESS_GROUP))
+        for command in commands:
+            child=subprocess.Popen(command,cwd=cwd,env=env,creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,encoding='utf-8',errors='replace',bufsize=1)
+            children.append(child)
+            thread=threading.Thread(target=relay_output,args=(child,log,lock),daemon=True)
+            thread.start();threads.append(thread)
         next_conflict_check=time.monotonic()+5
         while all(child.poll() is None for child in children):
             time.sleep(.25)
             if time.monotonic()>=next_conflict_check:
                 if conflicting_application(args.profile,env):raise SystemExit(conflict_message)
                 next_conflict_check=time.monotonic()+5
+        stopped=next((child for child in children if child.poll() is not None),None)
+        if stopped:
+            exit_code=stopped.returncode or 1
+            message=f'Fortcamp process stopped unexpectedly (exit {stopped.returncode}). See {log_path}.\n'
+            with lock:log.write(message);log.flush()
+            print(message,flush=True)
     except KeyboardInterrupt:pass
     finally:
         for child in children:
@@ -96,4 +121,7 @@ def main():
             try:child.wait(timeout=8)
             except subprocess.TimeoutExpired:
                 subprocess.run(['taskkill','/PID',str(child.pid),'/T','/F'],stdout=subprocess.DEVNULL,stderr=subprocess.DEVNULL)
+        for thread in threads:thread.join(timeout=3)
+        log.close()
+    if exit_code:raise SystemExit(exit_code)
 if __name__=='__main__':main()

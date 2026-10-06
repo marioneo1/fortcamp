@@ -308,3 +308,34 @@ Backend cases cover open entrance ties, a closed shortcut versus an in-range ope
 detour, insufficient movement, sealed walls and edge-mounted doors. Existing
 bundle warning remains. No live Cloudflare latency benchmark; production/saves
 unchanged.
+
+## October 5: occupied doorways and real API validation (dev)
+
+Corrected both normal combat and Battle Lab request models: they now retain the
+combined `position` field instead of silently discarding it during Pydantic input
+validation. Earlier engine-only/delayed-fetch tests did not cover this request
+model boundary; new tests exercise the actual Lab handler and both models.
+
+Entrance intent planning looks past unit occupancy so a standing NPC inside a
+closed door does not hide the entrance. Actual movement still uses the unchanged
+occupied movement tree, stopping before the NPC and never overlapping it. Door
+operation remains explicit and requires a legal adjacent/inside approach.
+
+The browser suppresses repeated unchanged entrance requests. Changes in the
+activation, units, door/structure state or props permit a new request; temporary
+network/server errors permit retry. Unchanged invalid destination requests are
+also suppressed after their 400 response. Battle Lab reuses an unchanged validated
+navigation response only while the same battle object and activation remain.
+Its command handler now uses the view already produced by the engine, avoiding
+a second expensive battle-view construction. GET views share that bounded
+per-session cache; other commands replace the battle and invalidate it.
+
+An isolated 14x10 Command Post reproduction took 4.541s for 20 uncached engine
+navigation commands. After duplicate handling, 100 repeated actual Lab-handler
+commands took .227s total on this PC, with one engine computation. These measure
+local CPU/request work, not Cloudflare latency, and do not prove the cause of an
+unrecorded server process exit. Regression tests cover an NPC in the doorway,
+25 repeated engine clicks, 100 repeated actual handler calls and cache invalidation.
+See [Development runner](DEVELOPMENT_RUNNER.md) for persistent failure logs.
+
+Validation for this pass: 263 frontend tests, 99 backend tests (including all Battle Lab catalogue starts, API/persistence and runner isolation tests), and Vite build pass. Existing bundle-size warning remains. No new browser animation benchmark in this pass.
