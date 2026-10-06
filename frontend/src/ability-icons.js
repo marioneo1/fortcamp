@@ -10,6 +10,8 @@ export const MARTIAL_ICON_ART=Object.fromEntries([
 ].map(([job,key,file])=>[`job:${job}:${key}`,`/assets/martial-jobs-v1/${file}.png`]));
 export function skillCategory(skill){
   const effects=skill.effects||[],has=type=>effects.some(e=>e.type===type);
+  if(['poison_attack','pestilence_shot','rupturing_blow'].includes(skill.ranger_kind))return 'dot';
+  if(skill.ranger_kind==='rapid_fire')return 'self';
   if(skill.rogue_kind==='caltrops')return 'dot';
   if(['shadowstep','backflip'].includes(skill.rogue_kind))return 'self';
   if(skill.rogue_kind==='crippling_cut')return 'control';
@@ -28,6 +30,7 @@ export function skillCategory(skill){
 }
 export const FIGHTER_ICON_ART={'job:fighter:cover':'chain-snare','job:fighter:pull':'earthbreaker','job:fighter:rally':'hold-together'};
 export function skillIcon(skill){
+  if(/^job:ranger:(mark_quarry|longshot|multi_shot|rapid_fire|poison_attack|pestilence_shot|rupturing_blow|sharpshooter)$/.test(skill.id))return `/assets/ranger-v1/${skill.id.split(':').at(-1)}.png`;
   if(/^job:rogue:(cheap_shot|crippling_cut|exploit_weakness|shadowstep|caltrops|backflip|trap_expert|throwing_knife)$/.test(skill.id))return `/assets/rogue-v1/${skill.id.split(':').at(-1)}.png`;
   if(/^job:monk:(rapid_palm|crushing_fist|iron_reversal|breaking_combination|heaven_piercing|sweeping_dash|perfect_rhythm|flowing_footwork)$/.test(skill.id))return `/assets/monk-v1/${skill.id.split(':').at(-1)}.png`;
   if(MARTIAL_ICON_ART[skill.id])return MARTIAL_ICON_ART[skill.id];

@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Implemented Ranger: [Ranger rework](design/RANGER_REWORK_REVIEW.md) covers eight skills, owner Quarry, Longshot crits, Rapid Fire, independent Poison layers, party-wide Pestilence, allied DoT cashout, stationary Sharpshooter, migration and AI. [Ranger art](art/RANGER_V1.md) documents the packed icons/projectiles and reviewed crop bounds. Numeric playtesting remains open.
+
 Current painted combat props: [Tactical props pack](art/TACTICAL_PROPS_V1.md) covers grounded Caltrops, animated Scrap Turret/projectile/wreckage and reserved Engineer props. Both combat API schemas preserve Knife delivery/strip rotation; placing traps immediately affects occupants.
 
 Implemented Rogue: [Rogue rework](design/ROGUE_REWORK_REVIEW.md) documents eight skills, multiple Quick Actions before one activation-ending main action, traps, positional/stack forecasts, chosen landings, migration and AI limitations. [Rogue art/audio](art/ROGUE_V1.md) records the packed atlas and four generated sounds. October 6: centred Rogue confirmation/attack selection, fixed Knife Exploit dispatch and fixed Caltrops previews with smaller pulsing steel art; see those same documents. Numerical/aesthetic playtesting remains open.

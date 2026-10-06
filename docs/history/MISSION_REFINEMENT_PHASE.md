@@ -1,5 +1,15 @@
 # Mission Refinement Phase
 
+## October 6: Ranger Marksman and Poison rework (implemented in dev)
+
+Eight Ranger skills now share the existing five-slot Job system: Mark Quarry, Longshot, Multi-Shot, Rapid Fire, Poison Attack, Pestilence Shot, Rupturing Blow and Sharpshooter. Mark is an owner-specific main-action setup; marked arrows cannot miss. Longshot uses distance power and a separate 20% double-damage critical roll. Rapid Fire is a target-selected Quick Action with a legal equipped-attack pool and Basic Attack fallback; the chosen attack's cooldown is not spent, walking is committed/locked and the main action remains.
+
+Ranger Poison stacks snapshot 8% attack (minimum 1 HP) for two independent target-start ticks. Imbue gives one stack per damaging hit of the next successful attack. Pestilence reduces ATK by 25% and amplifies all incoming damage by 25%, including allied damage and DoTs; it adds to Monk direct-hit vulnerability. Rupture consumes every owner's Poison/Bleed for half their remaining base potential; Bleed assumes future exertion. Sharpshooter grants 10% damage and two range after a stationary activation; discarded previews are free, committed/forced movement cancels it. Walking approaches use the unboosted range.
+
+Packed painted icons/projectiles/contacts use the existing 220 ms contact and serialized playback, with readable owner/stack/crit/cashout forecasts. Generic proc/flat-damage budgets are bounded per volley. Legacy loadouts preserve practice and order. Existing practice tiers unlock all eight in Battle Lab; choose Ranger, practice 16 or 20, and select a five-skill build. No production rollout or save reset. Numerical rank-by-rank playtesting remains open. Canonical rules: docs/design/RANGER_REWORK_REVIEW.md; assets: docs/art/RANGER_V1.md.
+
+Validation: 235 combined backend regression tests, 36 final Ranger checks, all 297 frontend tests, frontend build and real Chrome checks for both builds/projectile cleanup. Existing bundle-size warning remains.
+
 ## October 6: Painted tactical props and Rogue API fixes (implemented in dev)
 
 Replaced the temporary steel-vector Caltrops with three seeded, pure top-down painted scatter props. They keep transparent gutters, contact shading, a small footprint, and the established subtle pulse/glow above terrain/props. New equal 4x4 atlas also supplies anchored Scrap Turret ready/fire/recoil/destroyed frames and its north-oriented bolt. The existing stationary Engineer turret now renders as a prop, aims toward its target, animates firing/recoil, launches a bolt to the shared 220 ms contact, and uses wreckage when destroyed. HP/hover controls and automatic targeting remain. Heavy turret variants, tools, spare bolts and bear traps are imported for later use; no new equipment or deployment rules are implied.

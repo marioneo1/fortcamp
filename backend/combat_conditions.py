@@ -6,7 +6,7 @@ from .combat_feedback import record as feedback
 CONTROL = {'stun', 'sleep', 'freeze', 'paralyze'}
 RECOVERY = CONTROL | {'bind'}
 
-STATUS_IDS = {'stun','sleep','freeze','paralyze','bind','poison','burn','bleed','blind','fear','slow','mute','hobbled'}
+STATUS_IDS = {'stun','sleep','freeze','paralyze','bind','poison','burn','bleed','blind','fear','slow','mute','hobbled','pestilence'}
 
 def innate_resistances(unit):
     # Selective authored identities, never a blanket boss debuff resistance.
@@ -41,7 +41,7 @@ def remove(unit, *ids):
     unit['statuses'] = [s for s in unit.get('statuses', []) if s.get('id') not in ids]
 
 def apply(unit, sid, turns, source=None):
-    if sid in {'bleed','hobbled'} and any(s.get('id')==sid and 'layers' in s for s in unit.get('statuses',[])):
+    if sid in {'bleed','hobbled','poison'} and any(s.get('id')==sid and 'layers' in s for s in unit.get('statuses',[])):
         return add_stack(unit,sid,turns,source or {'id':unit['id'],'name':unit.get('name','')})
     if sid in (RECOVERY if unit.get('status_version') else CONTROL) and unit.get('control_immunity', 0) > 0:
         return False
@@ -67,7 +67,7 @@ def apply(unit, sid, turns, source=None):
     return has(unit,sid)
 
 def add_stack(unit,sid,turns,source):
-    if sid not in {'bleed','hobbled'}:raise ValueError('Unsupported stacked status')
+    if sid not in {'bleed','hobbled','poison'}:raise ValueError('Unsupported stacked status')
     status=next((s for s in unit.get('statuses',[]) if s['id']==sid),None)
     if status is None:
         if not apply(unit,sid,turns,source):return False
@@ -76,6 +76,7 @@ def add_stack(unit,sid,turns,source):
     elif 'layers' not in status:
         status['layers']=[{k:status.get(k) for k in ('turns','applied_activation','source_id','source_name')}]
         status['layers'][0]['turns']=max(1,int(status.get('turns') or turns))
+        if sid=='poison':status['layers'][0]['tick_damage']=status.get('tick_damage',max(2,min(5,round(unit['max_hp']*.04))))
     status['layers'].append({'turns':turns,'applied_activation':deepcopy(unit.get('status_activation')),'source_id':source['id'],'source_name':source.get('name','')})
     status['stacks']=len(status['layers']);status['turns']=max(l['turns'] for l in status['layers'])
     from .combat_martial import try_unstoppable
@@ -111,6 +112,7 @@ def finish_activation(unit):
         if unit.get('status_finished_stamp')==stamp:return
         unit['status_finished_stamp']=deepcopy(stamp)
     for status in list(unit.get('statuses', [])):
+        if status.get('id')=='poison':continue  # Its layers expire at activation start, after their tick.
         if 'layers' in status:
             for layer in status['layers']:
                 if layer.get('applied_activation')!=stamp:layer['turns']-=1

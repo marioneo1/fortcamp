@@ -4,6 +4,7 @@ import {JOB_ICON_ART} from './ability-icon-manifest.js';
 import {impactTimeline} from './combat-impact.js';
 
 const META={
+ pestilence:['debuff','ranger:pestilence_shot',8],poison_imbue:['buff','ranger:poison_attack',12],sharpshooter:['buff','ranger:sharpshooter',12],
  palm_exposure:['debuff','monk:rapid_palm',8],iron_reversal_evasion:['buff','monk:iron_reversal',10],monk_siphon:['buff','monk:breaking_combination',12],dash_parry:['buff','monk:sweeping_dash',10],
  iron_reversal:['buff','monk:iron_reversal',10],flowing_footwork:['buff','monk:flowing_footwork',12],open_guard:['debuff','monk:breaking_combination',8],
  brace_defense:['buff','martial:brace-defense',10],reckless_exposure:['debuff','martial:reckless-exposure',8],death_defiance:['buff','martial:too-angry-to-fall',9],
@@ -11,10 +12,10 @@ const META={
  freeze:['debuff','mage:binding',2],paralyze:['debuff','captor:bind',2],bind:['debuff','captor:bind',3],
  fear:['debuff','bard:discord',4],panic:['debuff','bard:discord',4],charm:['debuff','bard:refrain',4],
  confuse:['debuff','captor:dust',4],berserk:['debuff','barbarian:stand',4],mute:['debuff','bard:silence',4],
- blind:['debuff','captor:dust',5],poison:['debuff','ranger:poison',6],burn:['debuff','mage:scorch',6],
+ blind:['debuff','captor:dust',5],poison:['debuff','ranger:poison_attack',6],burn:['debuff','mage:scorch',6],
  bleed:['debuff','rogue:caltrops',6],hobbled:['debuff','rogue:crippling_cut',7],slow:['debuff','mage:binding',7],
  armor_fracture:['debuff','barbarian:expose',8],vulnerable:['debuff','barbarian:expose',8],
- mark:['debuff','ranger:mark',8],pit_trapped:['debuff','captor:bind',3],
+ mark:['debuff','ranger:mark_quarry',8],pit_trapped:['debuff','captor:bind',3],
  barrier:['buff','cleric:barrier',10],guard:['buff','fighter:intercept',10],
  rally_protection:['buff','fighter:intercept',10],rally_power:['buff','barbarian:drive',11],
  regeneration:['buff','cleric:mend',12],braced:['buff','barbarian:anchored',12],
@@ -37,7 +38,7 @@ export function statusVisual(status){
  const count=status.layers?status.layers.length:status.id==='barrier'?status.amount:
   ['rally_protection','rally_power','guard','vulnerable'].includes(status.id)?'1×':
   status.rounds??status.turns??status.duration;
- return {kind,image:(art?.startsWith('monk:')||art?.startsWith('rogue:'))?skillIcon({id:'job:'+art}):art?.startsWith('martial:')?`/assets/martial-jobs-v1/${art.slice(8)}.png`:art?JOB_ICON_ART['job:'+art]||null:null,count:count??null};
+ return {kind,image:(art?.startsWith('monk:')||art?.startsWith('rogue:')||art?.startsWith('ranger:'))?skillIcon({id:'job:'+art}):art?.startsWith('martial:')?`/assets/martial-jobs-v1/${art.slice(8)}.png`:art?JOB_ICON_ART['job:'+art]||null:null,count:count??null};
 }
 function details(status,definitions){return statusDetails(status,{guard:guardDefinition,...definitions})}
 export function statusBadge(status,definitions,escape,{unitId='',compact=false}={}){

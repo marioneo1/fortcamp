@@ -87,10 +87,11 @@ def direct_attack(source):
 
 
 def incoming(target, source, amount):
+    pestilence=.25 if conditions.has(target,'pestilence') else 0
     if not direct_attack(source):
-        return amount
+        return max(1,round(amount*(1+pestilence))) if pestilence else amount
     exposure=next((s.get('stacks',0) for s in target.get('statuses',[]) if s['id']=='palm_exposure'),0)
-    bonus=(.25 if conditions.has(target,'open_guard') else 0)+.1*exposure
+    bonus=pestilence+(.25 if conditions.has(target,'open_guard') else 0)+.1*exposure
     if bonus:amount=max(1,round(amount*(1+bonus)))
     if conditions.has(target, 'iron_reversal'):
         conditions.remove(target, 'iron_reversal')

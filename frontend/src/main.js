@@ -1,3 +1,4 @@
+import {emitRangerEffect} from './ranger-effects.js';
 import {isTurret,turretMarkup,emitTurretAttack} from './turret-art.js';
 import './turret-art.css';
 import {roguePreviewView,mountRoguePlacement} from './rogue-ui.js';
@@ -727,7 +728,8 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
     const animatedUnits=new Set();
     playBattleSounds(battle,animationEvents);
     timeline.forEach(({event,start:delay,duration:plannedDuration})=>{
-      if(event.type==='sound'&&event.attack_event)emitTurretAttack(field,event,battle,delay,tokenFor);
+      if(event.type==='sound'&&event.attack_event){emitTurretAttack(field,event,battle,delay,tokenFor);if(event.ranger_skill)emitRangerEffect(field,event,battle,delay)}
+      if(event.type==='combat_feedback'&&event.kind==='status'&&['mark','sharpshooter'].includes(event.status_id))emitRangerEffect(field,event,battle,delay);
       if(event.type==='net_cast'){
         emitNetCast(field,event,battle,delay);
         const actor=battle.units?.[event.attacker_id],token=tokenFor(event.attacker_id);

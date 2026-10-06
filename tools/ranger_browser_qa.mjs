@@ -1,0 +1,30 @@
+// Requires isolated preview (8766) and headless Chrome CDP (9229).
+import assert from 'node:assert/strict';
+import {writeFile} from 'node:fs/promises';
+const tabs=await(await fetch('http://127.0.0.1:9229/json')).json();
+const ws=new WebSocket(tabs.find(t=>t.type==='page').webSocketDebuggerUrl);
+await new Promise(r=>ws.onopen=r);
+let serial=0;const pending=new Map(),errors=[];
+ws.onmessage=e=>{const m=JSON.parse(e.data);if(m.id){pending.get(m.id)?.(m);pending.delete(m.id)}if(m.method==='Runtime.exceptionThrown')errors.push(m.params.exceptionDetails.text)};
+const call=(method,params={})=>new Promise((resolve,reject)=>{const id=++serial;pending.set(id,m=>m.error?reject(m.error):resolve(m.result));ws.send(JSON.stringify({id,method,params}))});
+const evaluate=async expression=>{const r=await call('Runtime.evaluate',{expression,returnByValue:true,awaitPromise:true});if(r.exceptionDetails)throw Error(JSON.stringify(r.exceptionDetails));return r.result.value};
+const wait=ms=>new Promise(r=>setTimeout(r,ms));
+await call('Runtime.enable');await call('Page.enable');
+await call('Emulation.setDeviceMetricsOverride',{width:1440,height:1000,deviceScaleFactor:1,mobile:false});
+await call('Page.navigate',{url:'http://127.0.0.1:8766/staging-ui/ranger-v1/preview.html'});
+for(let i=0;i<60;i++){if(await evaluate('Boolean(window.rangerReady)'))break;await wait(180)}
+assert.equal(await evaluate('Boolean(window.rangerReady)'),true);
+await wait(400);
+assert.equal(await evaluate(`Array.from(document.querySelectorAll('.ability-icon img[src*="ranger-v1"]')).length>0`),true);
+assert.equal(await evaluate(`Array.from(document.images).filter(i=>i.src.includes('ranger-v1')&&i.getClientRects().length).every(i=>i.complete&&i.naturalWidth>0)`),true);
+await writeFile('staging-ui/ranger-v1/marksman-in-game.png',Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
+await evaluate(`window.rangerShow('volley')`);await wait(150);
+assert.ok(await evaluate(`document.querySelectorAll('.rogue-effect-sprite[src*="ranger-v1"]').length>0`));
+await writeFile('staging-ui/ranger-v1/volley-in-game.png',Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
+await wait(2300);assert.equal(await evaluate(`document.querySelectorAll('.rogue-effect-sprite[src*="ranger-v1"]').length`),0);
+await evaluate(`window.rangerShow('dot')`);await wait(350);
+assert.ok(await evaluate(`document.querySelectorAll('[data-unit-status="poison"]').length>0`));
+assert.ok(await evaluate(`document.querySelectorAll('[data-unit-status="pestilence"]').length>0`));
+assert.equal(await evaluate(`Array.from(document.images).filter(i=>i.src.includes('ranger-v1')&&i.getClientRects().length).every(i=>i.complete&&i.naturalWidth>0)`),true);
+await writeFile('staging-ui/ranger-v1/dot-in-game.png',Buffer.from((await call('Page.captureScreenshot',{format:'png'})).data,'base64'));
+assert.deepEqual(errors,[]);console.log('Ranger browser checks passed: both five-slot builds, painted icons/statuses, serialized arrow animation and cleanup.');ws.close();

@@ -28,10 +28,14 @@ from . import combat_martial as martial
 from .combat_feedback import record as feedback
 from .combat_melee import weapon_style, attack_style, capture_style, armor_material, impact_surface
 from . import combat_monk as monk
+from . import combat_ranger as ranger
 from . import combat_rogue as rogue
 
 
 STATUS_DEFINITIONS = {
+    'pestilence':{'name':'Pestilence','icon':'-25%','description':'Attack reduced by 25%; all incoming damage increased by 25%, including party attacks, damage over time and collisions. Adds to other direct-damage vulnerabilities.'},
+    'poison_imbue':{'name':'Poison Imbue','icon':'P','description':'Your next successfully damaging attack applies one Poison stack per damaging hit. Misses and fully absorbed hits do not spend it.'},
+    'sharpshooter':{'name':'Sharpshooter','icon':'+2','description':'+10% damage and +2 basic/technique range while remaining on this tile. Committed and forced movement end it.'},
     'palm_exposure':{'name':'Exposed Guard','icon':'??','description':'Each landed Rapid Palm punch adds 10% incoming direct attack damage, up to 30%. Lasts three target turns, refreshed on hit. Adds to Open Guard; does not multiply it. Does not amplify damage over time or collisions.'},
     'iron_reversal_evasion':{'name':'Reversal Footwork','icon':'?','description':'+25 evasion against the enemy struck by Iron Reversal until the next Monk turn. About 15 percentage points less melee accuracy for that enemy.'},
     'monk_siphon':{'name':'Combat Rhythm','icon':'+','description':'Each landed attack restores up to 3 HP for the next three Monk turns. Each punch and each enemy crossed by Sweeping Dash counts. Misses and ongoing/collision damage do not heal.'},
@@ -1009,7 +1013,7 @@ def _attack_preview(battle: dict, attacker: dict, target: dict, rule: str, skill
     accuracy, damage = _elevation_attack_modifier(battle, attacker, target, rule)
     mark_accuracy=conditions.mark_bonus(attacker,target)
     accuracy+=mark_accuracy
-    base = 90 if rule == "ballistic" else 100
+    base = (skill or {}).get("ranger_accuracy",90 if rule == "ballistic" else 100)
     target_evasion = int(target.get("evasion", 0)) + monk.evasion_bonus(target) + monk.evasion_against(target,attacker)
     evasion_factor = 1.0 if rule == "ballistic" else .3 if rule == "ignore" else .6
     evasion_penalty = round(target_evasion * evasion_factor)
@@ -1020,6 +1024,7 @@ def _attack_preview(battle: dict, attacker: dict, target: dict, rule: str, skill
     if conditions.has(attacker, 'berserk'):
         accuracy -= 10
     rhythm,guaranteed=monk.accuracy(attacker,skill)
+    guaranteed=guaranteed or ranger.marked(attacker,target)
     raw_chance=100 if guaranteed else max(5,min(100,base+accuracy+rhythm-evasion_penalty+attacker.get('perk_modifiers',{}).get('accuracy',0)))
     parry=0 if guaranteed else monk.parry_rate(target,attacker,rule,skill)
     return {
@@ -1078,7 +1083,7 @@ def _react_after_attack(battle,attacker,target,hit,rule):
 
 def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal',ability=None,reaction=False,defer_reaction=False):
     original=target
-    if not reaction and intent=='lethal':
+    if not reaction and intent=='lethal' and not (ability or {}).get('skip_intercept'):
         target=_interceptor(battle,attacker,target,int((ability or {}).get('range',attacker.get('attack_range',1))))
         if target is not original:
             target['reaction_ready']=False
@@ -1104,6 +1109,8 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
     events.extend(resolved)
     for event in events[begin:]:
         event['attack_packet']=packet
+        if event.get('attack_event') and ability is None and attacker.get('job_id')=='ranger' and rule=='ballistic':
+            event.update(ranger_skill='basic_attack',hit=hit,ranger_poison=conditions.has(attacker,'poison_imbue'))
         if event.get('type')=='death_burst' and style in {'blunt','fist'} and surface=='flesh':event['bloodless']=True
         if style and event.get('type')=='combat_feedback' and event.get('kind') not in {'status','captured','miss'}:
             event.update(melee_style=style,impact_surface=surface,impact_direction={'x':target['x']-attacker['x'],'y':target['y']-attacker['y']})
@@ -1112,11 +1119,15 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
     if reaction:
         feedback(battle,attacker,'counter',attack_packet=packet,before_contact=True)
     if not reaction and intent=='lethal':conditions.remove(battle['units'].get(attacker['id'],attacker),'rally_power')
+    if hit and damage>0 and not (ability or {}).get('ranger_attack') and conditions.has(attacker,'poison_imbue'):
+        ranger.poison(battle,attacker,target,1,packet)
+        conditions.remove(battle['units'].get(attacker['id'],attacker),'poison_imbue')
     if not reaction and not defer_reaction and intent=='lethal':_react_after_attack(battle,attacker,target,hit,rule)
     return target,hit,damage,preview,roll
 
 
 def _strike_preview(battle,actor,target,rule,reach,skill=None):
+    if skill and skill.get('ranger_kind'):return ranger.preview(battle,actor,target,skill)
     direct = not skill or any(e['type']=='attack' for e in skill.get('effects',[]))
     recipient=_interceptor(battle,actor,target,reach) if direct else target
     if skill and skill.get('rogue_kind') in {'cheap_shot','exploit_weakness'}:
@@ -1404,6 +1415,7 @@ def _commit_player_movement(battle: dict, unit: dict) -> None:
         battle["log"].append(f"{unit['name']} takes position at {unit['x'] + 1},{unit['y'] + 1}.")
     if origin and unit.get('movement_path'):
         _apply_zone_route(battle,unit,[(p['x'],p['y']) for p in unit['movement_path']])
+    ranger.committed_move(unit)
     unit.pop("movement_origin", None)
     unit.pop("movement_path", None)
     _apply_tile_entry(battle, unit)
@@ -1527,6 +1539,7 @@ def _apply_attack_approach(battle, unit, target, attack_range, command,range_sha
     x, y = int(destination.get('x', -1)), int(destination.get('y', -1))
     costs, parents = _movement_tree(battle, unit)
     actor = {**unit, 'x': x, 'y': y}
+    if ranger.steady(unit) and not ranger.steady(actor) and command.get('action')=='attack':attack_range=unit.get('ranger_base_range',attack_range)
     if (x, y) not in costs or not _can_attack(battle, actor, target, attack_range,range_shape):
         raise ValueError('That approach cannot reach the target within this turn')
     desired = (x, y)
@@ -1610,6 +1623,7 @@ def _apply_zone_route(battle,unit,path):
 
 def _apply_tile_entry(battle: dict, unit: dict) -> None:
     """Resolve immediate effects from the tile where a committed move ends."""
+    ranger.committed_move(unit)
     if battle.get('zones'):
         position=[unit['x'],unit['y']]
         old=unit.get('zone_location')
@@ -1683,6 +1697,7 @@ def _current_unit(battle: dict, activate: bool = True) -> dict | None:
                 unit.pop('rogue_walk_locked',None);unit['quick_actions_used']=0
                 martial.start_activation(battle, unit)
                 monk.start_activation(battle, unit)
+                ranger.start(unit)
                 spaces.expire_form(unit)
                 if battle.get('zones'):
                     spaces.expire_zones(battle,unit)
@@ -1780,6 +1795,7 @@ def _damage_before_barrier(battle,attacker,target,bonus=0,armor_pierce=0,intent=
         damage = max(1, round(damage * factor))
     if conditions.has(attacker,'rally_power') and not any(attacker.get(k) for k in ('status_tick','environmental_fall','reaction_attack','collision_attack')):
         damage=max(1,round(damage*1.25))
+    if ranger.steady(attacker) and not attacker.get('status_tick'):damage=max(1,round(damage*1.1))
     if (target.get("guarding") or conditions.has(target,'rally_protection')) and not attacker.get("status_tick") and not attacker.get('environmental_fall'):
         damage = max(1, (damage * 3 + 2) // 4)
         target["guarding"] = False
@@ -1803,6 +1819,7 @@ def _deal_damage(
                     "element": ability.get("element", attacker.get("element")),
                     "on_hit": ability.get("on_hit", attacker.get("on_hit")),"weapon":ability.get('source_name',attacker.get('weapon',''))}
     damage = _damage_before_barrier(battle,attacker,target,bonus,armor_pierce,intent) if resolved_damage is None else max(0,resolved_damage)
+    if (ability or {}).get('ranger_crit'):damage*=2
     element = attacker.get('element')
     absorbed=0
     if not attacker.get('capture_only') and not attacker.get('environmental_fall'):
@@ -1962,6 +1979,20 @@ def _tick_gear_statuses(battle: dict, unit: dict) -> None:
     """Only duration-bearing gear effects tick; repeated views never tick again."""
     for status in list(unit.get("statuses", [])):
         if status.get("id") not in {"burn", "poison"} or "turns" not in status:
+            continue
+        if status['id']=='poison' and 'layers' in status:
+            groups={}
+            for layer in status['layers']:
+                key=(layer.get('source_id'),layer.get('source_name','Poison'))
+                groups[key]=groups.get(key,0)+layer.get('tick_damage',max(2,min(5,round(unit['max_hp']*.04))))
+            for (owner,name),amount in groups.items():
+                if not _combat_active(unit):break
+                dealt=_deal_damage(battle,{'id':owner,'name':name,'weapon':'poison','attack':amount,'status_tick':True,'damage_kind':'poison'},unit,armor_pierce=_effective_armor(unit))
+                battle['log'].append(f"{unit['name']} takes {dealt} damage from Poison.")
+            for layer in status['layers']:layer['turns']-=1
+            status['layers']=[l for l in status['layers'] if l['turns']>0]
+            if status['layers']:status.update(stacks=len(status['layers']),turns=max(l['turns'] for l in status['layers']))
+            else:unit['statuses'].remove(status)
             continue
         damage = max(2, min(5, round(unit["max_hp"] * .04)))
         source = {"id": status.get("source_id"), "name": status.get("source_name") or status["id"].title(),
@@ -2217,6 +2248,7 @@ def _finish_turn(battle: dict) -> None:
         _finish_entities(battle,unit)
         conditions.finish_activation(unit)
         monk.cleanup(battle,unit)
+        ranger.finish(unit)
         unit.pop('physical_action', None)
         unit.pop("movement_origin", None)
         unit.pop("movement_path", None)
@@ -2589,6 +2621,8 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
         targets = _living(battle,'player') + [u for u in _living(battle,'enemy') if u.get('mercenary_hostile_all') and u['id']!=unit['id']]
     targets = conditions.hostile_units(battle, unit, _living(battle))
     if targets and not (unit.get('bush_ambusher') and concealment.unseen(unit) and not battle.get('ambush_sprung')) and _auto_rogue_turn(battle,unit,targets):return
+    if targets and ranger.auto(battle,unit,targets):
+        _finish_turn(battle);return
     if targets and _auto_monk_turn(battle,unit,targets):return
     if not targets:
         _finish_turn(battle); return
@@ -2945,6 +2979,7 @@ def _resolve_ability(battle, actor, target, skill):
     if not abilities.availability(actor,skill)['available']:
         raise ValueError(abilities.availability(actor,skill)['reason'])
     abilities.validate(skill)
+    if skill.get('ranger_kind'):return ranger.execute(battle,actor,target,skill)
     if actor.get('capture_weapon') and any(e['type'] in {'attack','leap_attack','area_attack','dash_attack'} for e in skill['effects']):
         raise ValueError('Capture weapons cannot perform damaging techniques')
     if skill.get('self_only') and target['id']!=actor['id']:raise ValueError('Target yourself with this ability')
@@ -3374,6 +3409,8 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
             if landings:
                 _resolve_ability(battle,unit,max(landings,key=lambda r:r[:4])[-1],leap);_finish_turn(battle);return
     if not pursuing_objective and _auto_rogue_turn(battle,unit,targets,tactic):return
+    if not pursuing_objective and ranger.auto(battle,unit,targets):
+        _finish_turn(battle);return
     if not pursuing_objective and _auto_monk_turn(battle,unit,targets,tactic):return
     available_skills=[s for s in (unit.get('skills') or ([unit['special']] if unit.get('special') else []))
                       if not s.get('quick_action') and s.get('rogue_kind') not in rogue.UTILITY and abilities.availability(unit,s)['available'] and s.get('target') != 'ally' and not _leap_skill(s) and not _dash_skill(s) and not (conditions.has(unit, 'mute') and s['elevation_rule'] in {'ignore', 'line_of_effect'})]
@@ -3812,6 +3849,9 @@ def battle_view(battle: dict) -> dict:
     _ensure_battle_schema(view)
     view['zones']=spaces.presentation(view)
     for unit in view['units'].values():
+        ranger.sync(unit)
+        unit['skills']=[ranger.skill_for(unit,skill) for skill in unit.get('skills',[])]
+        unit['special']=ranger.skill_for(unit,unit.get('special'))
         unit['effective_armor']=_effective_armor(unit)
         unit['effective_attack']=martial.attack_power(unit)
         if unit.get('form'):
@@ -3944,8 +3984,9 @@ def battle_view(battle: dict) -> dict:
         for target in _living(view, 'enemy'):
             previews = {}
             for action, (reach, rule, available) in options.items():
-                actor, approach = _attack_position(view, current, target, reach, reachable, parents) if available else (None, None)
-                previews[action] = {**(_capture_preview(view, actor, target) if current.get('capture_weapon') and action in {'attack','subdue'} else _strike_preview(view, actor, target, rule,reach,skill if action=='skill' else None)), **(approach or {})} if actor else None
+                actor, approach = (ranger.position(view,current,target,skill if action=='skill' else None,reachable,parents) if ranger.steady(current) and action in {'attack','skill'} and (action=='attack' or (skill or {}).get('ranger_kind')) else _attack_position(view,current,target,reach,reachable,parents)) if available else (None,None)
+                forecast=(_capture_preview(view,actor,target) if current.get('capture_weapon') and action in {'attack','subdue'} else _strike_preview(view,actor,target,rule,reach,skill if action=='skill' else None)) if actor else None
+                previews[action]={**forecast,**(approach or {})} if forecast else None
             view['attack_previews'][target['id']] = previews
         view['skill_previews']={}
         view['ground_skill_previews']={}
@@ -4035,8 +4076,9 @@ def battle_view(battle: dict) -> dict:
                 continue
             for target in _living(view,'enemy'):
                 allowed = abilities.availability(current,choice)['available'] and not (conditions.has(current, 'mute') and choice['elevation_rule'] in {'ignore', 'line_of_effect'})
-                actor,approach=_attack_position(view,current,target,choice['range'],reachable,parents,choice.get('range_shape','diamond')) if allowed else (None,None)
-                entries[target['id']]={**_strike_preview(view,actor,target,choice['elevation_rule'],choice['range'],choice),**(approach or {})} if actor else None
+                actor,approach=(ranger.position(view,current,target,choice,reachable,parents) if choice.get('ranger_kind') else _attack_position(view,current,target,choice['range'],reachable,parents,choice.get('range_shape','diamond'))) if allowed else (None,None)
+                forecast=_strike_preview(view,actor,target,choice['elevation_rule'],choice['range'],choice) if actor else None
+                entries[target['id']]={**forecast,**(approach or {})} if forecast else None
             view['skill_previews'][choice['id']]=entries
         view['terrain_attack_previews'] = {}
         for tile in view.get('terrain', []):
@@ -4209,6 +4251,7 @@ def _position_player(battle, unit, destination):
         carried["x"], carried["y"] = x, y
     unit["moved"] = (x, y) != (int(origin["x"]), int(origin["y"]))
     unit["movement_path"] = _movement_path(parents, reachable, (x, y))
+    ranger.sync(unit)
     return (x, y) != (int(destination["x"]), int(destination["y"]))
 
 
@@ -4261,6 +4304,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             return battle_view(battle)
     if action=='navigate':return _player_navigation(battle,unit,command)
     selected_skill=next((s for s in unit.get('skills',[]) if s['id']==command.get('skill_id',(unit.get('special') or {}).get('id'))),None) if action=='skill' else None
+    selected_skill=ranger.skill_for(unit,selected_skill)
     if selected_skill and selected_skill.get('rogue_kind') in rogue.UTILITY:
         rogue.utility_command(battle,unit,selected_skill,command)
         concealment.refresh(battle);_check_end(battle);battle['action_count']+=1
@@ -4283,10 +4327,13 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         abilities.validate(selected_skill)
         availability=abilities.availability(unit,selected_skill)
         if not availability['available']:raise ValueError(availability['reason'])
+        if selected_skill.get('ranger_kind') and command.get('move_to'):
+            selected_skill=ranger.skill_for({**unit,**command['move_to']},selected_skill)
         rule=selected_skill['elevation_rule']
         if conditions.has(unit,'mute') and rule in {'ignore','line_of_effect'}:
             raise ValueError('Mute prevents this spell')
         target=battle['units'].get(command.get('target_id'))
+        if selected_skill.get('ranger_kind')=='longshot' and target and not ranger.marked(unit,target):raise ValueError('Longshot requires your Mark Quarry')
         if _ground_skill(selected_skill) and command.get('x') is not None and command.get('y') is not None:
             x,y=int(command['x']),int(command['y'])
             if not (0<=x<battle['width'] and 0<=y<battle['height']):raise ValueError('Choose ground inside the map')

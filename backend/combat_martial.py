@@ -35,6 +35,7 @@ def passive_availability(unit, passive):
 
 def attack_power(unit):
     base = int(unit.get('attack', 0))
+    if any(s.get('id')=='pestilence' for s in unit.get('statuses',[])):base=max(1,round(base*.75))
     if not has_passive(unit, 'bloodied_strength'):
         return base
     maximum = max(1, int(unit.get('max_hp', 1)))

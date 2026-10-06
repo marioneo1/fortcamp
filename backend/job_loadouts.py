@@ -50,10 +50,15 @@ register('rogue','Rogue','Exploit surrounding and debuffs with burst attacks; ch
     rogue_active('cheap_shot','Cheap Shot','Main action. Cardinal surround determines attack power: alone 100%; two non-opposite sides 150%; opposite sides 200%; three sides 220%; four sides 250%. Highest only. Cooldown 1.',[{'type':'attack','power_percent':100}],cd=1),
     rogue_active('crippling_cut','Crippling Cut','Quick Action. 25% attack; a landed hit adds one Hobble stack for two target turns. Commits and locks normal walking; your main action and other Quick Actions remain. Cooldown 3.',[{'type':'attack','power_percent':25}],quick=True,cd=3),
     rogue_active('exploit_weakness','Exploit Weakness','Main action. 100% attack plus 50 percentage points per negative status stack, capped at 400%. Buffs and cooldown markers do not count. Cooldown 2.',[{'type':'attack','power_percent':100}],cd=2))
-register('ranger','Ranger','Set up accurate shots and control approaches.',
-    active('mark','Track Quarry','Mark an enemy for two activations. Your first successful hit each activation gains 10 accuracy.',[{'type':'mark','turns':2,'accuracy':10}],range=5,rule='ballistic'),
-    active('snare','Snaring Ground','Create binding ground at a chosen cell and adjacent legal cells for two of your activations.',[{'type':'zone','zone':'binding','radius':1,'turns':2}],range=4,rule='ballistic',cooldown=3),
-    passive('footwork','Field Footwork','Gain 5 evasion; no extra damage.',{'evasion':5}))
+def ranger_active(key,name,description,power=100,cd=2,quick=False,reach=5):
+    skill=active(key,name,description,[{'type':'mark','turns':3,'accuracy':1}] if key=='mark_quarry' else [{'type':'attack','power_percent':power}],range=reach,rule='ballistic',cooldown=max(1,cd))
+    skill.update(ranger_kind=key,quick_action=quick);skill['cost']['cooldown']=cd
+    return validate(skill)
+
+register('ranger','Ranger','Mark your quarry for reliable shots. Exploit distance and stationary firing positions, or stack Poison and consume allied damage over time.',
+    ranger_active('mark_quarry','Mark Quarry','Main action. Mark one target for three of its turns. All your attacks against your own marked target have 100% accuracy; other Rangers need their own mark. Marking a new quarry replaces your previous mark. No cooldown.',cd=0),
+    ranger_active('longshot','Longshot','Requires your own Mark Quarry. Attack power by distance: 1-2 cells 100%; 3 cells 150%; 4 cells 175%; 5+ cells 200%. Has a 20% critical chance for double final damage before Barrier. Cooldown 2.'),
+    ranger_active('poison_attack','Poison Attack','Main action. 150% attack and two Poison stacks, or four against your own quarry. Each stack deals 8% of your attack (minimum 1 HP) on the next two target turns; resistance applies. Imbue your next successfully damaging attack with one Poison stack per landed hit. No cooldown.',power=150,cd=0))
 register('mage','Mage','Create dangerous ground or protect a threatened ally.',
     active('embers','Ember Ground','Create burning ground for two of your activations. Each burned tile entered on a committed path deals 3 damage and applies Burn. Re-entry counts again; overlapping patches do not stack. Allies are safe.',[{'type':'zone','zone':'ember','radius':1,'turns':2}],range=3,rule='line_of_effect',cooldown=3),
     active('ward','Ward','Give an ally a 10 HP Barrier for two of their activations.',[{'type':'barrier','amount':10,'turns':2}],'ally',3,'line_of_effect',3),
@@ -111,10 +116,6 @@ later('barbarian',
     active('groundbreaker','Groundbreaker','Spend 4 Fury. Strike enemies in all eight adjacent cells at 200% attack power and push them one cell. Walls block the wave; knockback resistance and collision damage apply. Allies are safe. Target yourself. Cooldown: 5 of your turns.',[{'type':'area_attack','radius':1,'push':1,'power_percent':200}],'ally',1,'physical_care',5),
     passive('too_angry_to_fall','Too Angry to Fall','Once per battle, lethal damage leaves you at 1 HP. Further lethal damage cannot finish you until your next turn begins. You do not automatically die afterward; another lethal hit is needed. Does not prevent capture or disappearing into a lethal pit.'))
 SKILLS['job:barbarian:groundbreaker'].update(fury_cost=4,self_only=True)
-later('ranger',
-    active('poison','Poisoned Dart','Attempt Poison at range 4 for two target activations. 75% before resistance; no direct damage.',[{'type':'status','status':'poison','turns':2,'chance':75}],range=4,rule='ballistic',cooldown=3),
-    active('dust','Dust Shot','Attempt Blind at range 4 for one activation. 75% before resistance; no direct damage.',[{'type':'status','status':'blind','turns':1,'chance':75}],range=4,rule='ballistic',cooldown=3),
-    passive('anchored','Steady Position','Gain 25 knockback resistance. Does not improve accuracy.',{'knockback_resistance':25}))
 later('mage',
     active('binding','Binding Circle','Create enemy-binding ground around a target for two of your activations. Entering triggers control recovery rules.',[{'type':'zone','zone':'binding','radius':1,'turns':2}],range=3,rule='line_of_effect',cooldown=3),
     active('scorch','Scorch','Attempt Burn for two target activations, 75% before resistance. No direct damage.',[{'type':'status','status':'burn','turns':2,'chance':75}],range=3,rule='line_of_effect',cooldown=3),
@@ -152,6 +153,14 @@ def add_unlocks(job, entries):
         SKILLS[skill['id']]=skill
         JOBS[job].setdefault('unlocks',[]).append({'skill_id':skill['id'],'contracts':threshold})
 
+
+add_unlocks('ranger',[
+    (2,ranger_active('multi_shot','Multi-Shot','Fire 2-4 arrows, each at 75% attack and 50% base accuracy. Your quarry guarantees every arrow hits. Poison imbue applies one stack per damaging arrow. Generic weapon procs have one volley budget. Cooldown 2.',power=75)),
+    (5,ranger_active('rapid_fire','Rapid Fire','Quick Action. Select an enemy; randomly execute a currently usable equipped Ranger attack that can reach it, without spending the selected attack cooldown. Basic Attack fallback if none qualify. Commits and locks normal walking; your main action remains. Cooldown 4.',cd=4,quick=True)),
+    (9,passive('sharpshooter','Sharpshooter','Finish a full turn without changing tiles to gain +10% damage and +2 attack/technique range. Lasts while you stay put. Committed or forced movement ends it; discarded movement previews do not.')),
+    (12,ranger_active('pestilence_shot','Pestilence Shot','100% attack. A hit reduces target attack by 25% and increases damage it receives from ALL sources by 25%, including allied attacks and Poison/Bleed, for three target turns. Adds to other incoming-damage vulnerabilities. Cooldown 4.',cd=4)),
+    (16,ranger_active('rupturing_blow','Rupturing Blow','150% attack. On a landed hit, consume all allied Poison and Bleed and immediately deal 50% of their remaining base damage, amplified by Pestilence. Bleed potential assumes future exertion. A miss consumes nothing. Cooldown 2.',power=150)),
+])
 
 brace=active('brace','Brace','Self only: take 25% less damage from all sources for your next three turns. Cooldown: 5 of your turns.',[{'type':'status','status':'brace_defense','turns':3}],'ally',1,'physical_care',5)
 brace['self_only']=True
@@ -198,6 +207,15 @@ def initialize(character):
         if character.get('job_id')=='barbarian':
             for field in ('learned_skills','equipped_skills'):
                 character[field]=list(dict.fromkeys('job:barbarian:'+BARBARIAN_OLD_IDS.get(key.split(':')[-1],key.split(':')[-1]) if key.startswith('job:barbarian:') else key for key in character[field]))
+        if character.get('job_id')=='ranger' and character.get('ranger_kit_version',0)<1:
+            replacements={'mark':'mark_quarry','snare':'multi_shot','footwork':'sharpshooter','anchored':'sharpshooter','poison':'poison_attack','dust':'pestilence_shot'}
+            legacy=any(k.startswith('job:ranger:') and k.split(':')[-1] in replacements for k in character['learned_skills'])
+            for field in ('learned_skills','equipped_skills','combat_skill_order'):
+                if field in character:character[field]=list(dict.fromkeys('job:ranger:'+replacements.get(k.split(':')[-1],k.split(':')[-1]) if k.startswith('job:ranger:') else k for k in character[field]))
+            for key in JOBS['ranger']['starter_skills']:
+                if key not in character['learned_skills']:character['learned_skills'].append(key)
+            character['ranger_kit_version']=1
+            if legacy:character['job_migration_note']='Ranger now uses owner-specific Quarry, distance shots and stacking Poison. Existing choices and earned practice are preserved; additional learned techniques can be equipped while idle.'
         if character.get('job_id')=='rogue' and character.get('rogue_kit_version',0)<1:
             legacy=any(k.startswith('job:rogue:') and k.split(':')[-1] in ROGUE_OLD_IDS for k in character['learned_skills'])
             for field in ('learned_skills','equipped_skills','combat_skill_order'):

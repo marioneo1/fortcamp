@@ -11,6 +11,8 @@ export function statusDetails(status,definitions={}){
   if(['open_guard','flowing_footwork','iron_reversal'].includes(status.id))return {...base,details:[status.id==='iron_reversal'?'One incoming direct attack · expires at next personal turn start':`${status.turns} turn window remaining · expires at ${status.source_name||'owner'}’s turn end`,...(status.source_name?[`From ${status.source_name}`]:[])]};
   if(status.layers)details.push(`${status.layers.length} stacks ? each expires independently${status.id==='hobbled'?' ? movement is halved once':''}`);
   if(status.id==='barrier')details.push(`${status.amount} damage absorption remaining`);
+  if(status.id==='poison'&&status.layers)details.push(`${status.layers.reduce((sum,l)=>sum+(l.tick_damage||0),0)} base damage next tick from Ranger stacks; each lasts ${status.turns} ticks at most`);
+  if(status.id==='mark'&&status.quarry)return {...base,name:'Mark Quarry',description:'This owner?s attacks against the quarry have 100% accuracy. Other characters do not inherit it.',details:[`Owner: ${status.source_name||'unknown'}`,`${status.turns} target turns remaining`]};
   if(status.id==='mark')details.push(`Owner: ${status.source_name||'unknown'} · +${status.accuracy||10} accuracy on their first hit`);
   if(status.id==='reaction')return {name:status.ready?'Reaction ready':'Reaction spent',icon:status.ready?'↶':'↷',description:`${(status.reactions||[]).join(' / ')}. One shared reaction, refreshed at activation start. Cannot chain.`,details:[]};
   if(status.id==='footing')return {name:'Knockback resistance',icon:'▣',description:`${status.resistance}% chance to resist a push or pull.`,details:[]};
@@ -26,6 +28,11 @@ export function statusDetails(status,definitions={}){
 export function tacticalPreviewText(preview){
   if(!preview)return '';
   const parts=[];
+  if(preview.hit_count)parts.push(`${preview.hit_count} hits; damage range assumes all land`);
+  if(preview.damage_max!=null)parts.push(`${preview.damage_on_hit} to ${preview.damage_max} total damage`);
+  if(preview.crit_chance)parts.push(`${preview.crit_chance}% critical chance: ${preview.crit_damage} damage`);
+  if(preview.dot_cashout!=null)parts.push(`${preview.dot_cashout} base Poison/Bleed cashout; consumes both`);
+  if(preview.rapid_pool)parts.push(`Rapid Fire: ${preview.rapid_pool.join(' / ')}`);
   if(preview.position_power)parts.push(`Cheap Shot: ${(preview.position_power/100).toFixed(1)}? positional damage`);
   if(preview.debuff_stacks)parts.push(`Exploit: ${Object.values(preview.debuff_stacks).reduce((a,b)=>a+b,0)} debuff stacks ? ${(preview.exploit_power/100).toFixed(1)}? damage`);
   if(preview.intercepted_by)parts.push(`Intercepted by ${preview.intercepted_by}`);

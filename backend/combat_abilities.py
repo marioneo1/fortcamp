@@ -33,6 +33,7 @@ def validate(skill):
     if skill.get('combo_kind') in {'follow_up','finisher'} and skill.get('combo_stage')!=skill['combo_kind']:raise ValueError('Combo stage must match technique')
     if 'quick_action' in skill and not isinstance(skill['quick_action'],bool):raise ValueError('Invalid quick action')
     if skill.get('rogue_kind') not in {None,'cheap_shot','crippling_cut','exploit_weakness','shadowstep','caltrops','backflip','throwing_knife'}:raise ValueError('Invalid Rogue technique')
+    if skill.get('ranger_kind') not in {None,'mark_quarry','longshot','multi_shot','rapid_fire','poison_attack','pestilence_shot','rupturing_blow'}:raise ValueError('Invalid Ranger technique')
     _integer(skill.get('range'), 1, 20)
     if skill.get('range_shape','diamond') not in {'diamond','square'}:raise ValueError('Unsupported range shape')
     cost = skill.get('cost', {})
@@ -41,7 +42,7 @@ def validate(skill):
     _integer(cost['cooldown'], 0, 20)
     if cost['charges'] is not None:
         _integer(cost['charges'], 1, 20)
-    if not cost['cooldown'] and cost['charges'] is None:
+    if not cost['cooldown'] and cost['charges'] is None and skill.get('ranger_kind') not in {'mark_quarry','poison_attack'}:
         raise ValueError('Ability must have a cooldown or charge limit')
     if 'fury_cost' in skill:_integer(skill['fury_cost'],1,5)
     if 'fury_gain' in skill:_integer(skill['fury_gain'],1,2)

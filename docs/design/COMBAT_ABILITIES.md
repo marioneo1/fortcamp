@@ -1,5 +1,9 @@
 # Combat ability foundation
 
+## October 6: Ranger ranged techniques and stackable Poison
+
+See [Ranger rework](RANGER_REWORK_REVIEW.md). Seven bounded Ranger technique identifiers reuse attack/mark definitions, activation clocks and damage packets. Only Mark Quarry and Poison Attack deliberately allow cooldown-free main actions. Longshot has an explicit crit; no global random-crit system is implied. Poison layers tick/expire at target start; legacy single Poison remains valid. Pestilence is a distinct all-source damage modifier, unlike Monk's direct-only vulnerability. Multiple Quick Actions still precede one main action. AI reuses one movement tree and discards walking plans after Rapid Fire.
+
 ## October 5: Monk buffs and resistance inspection
 
 See MONK_REWORK_REVIEW.md for the updated kit: capped per-punch exposure, advancement-gated stun, enemy-specific reversal evasion, three-turn hit healing and brief physical parry. Effects reuse existing clocks, feedback and packed icons. Direct damage amplifiers add together; damage-over-time/collision/environmental sources are excluded. Unit inspection now separates individual status resistance, boss control-duration limits and temporary control recovery. Status chance for weapons, abilities, zones and collision stuns shares `combat_conditions.status_chance`; missing percentages do not imply universal boss resistance. Authored per-boss profiles override thematic defaults. Parry excludes magic and area attacks, with a distinct contact label. Fresh battle snapshots use the updated skills.

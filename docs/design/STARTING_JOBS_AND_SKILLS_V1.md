@@ -162,22 +162,22 @@ Assassin specializes in access/Exposure/Getaway; saboteur in Trick/Signal/Sabota
 Protected targets, resistance and blocked escape routes are real weaknesses.
 Do not imply a fully implemented player-stealth system in this first catalogue.
 
-### Ranger — lines of fire, pursuit and preparation
+### Ranger - Marksman and Poison specialist (implemented October 6)
 
-| Skill | Type | Behavior |
-|---|---|---|
-| Pinning Shot | S/A | Ranged weapon attack; on hit applies short Slow. Does not automatically immobilize. |
-| Hunter's Mark | S/A | Mark a visible target; own first hit each activation gains a bounded accuracy benefit. One own mark at a time. |
-| Steady Aim | S/P | Accuracy improves when firing without committed movement. Target's cover/sight still applies. |
-| Toxic Shot | A | Attack applies one Poison stack on hit, maximum three. Damage/refresh rules bounded; immunity visible. |
-| Venom Extraction | A | Weapon strike; on hit consumes own applied Poison stacks for payoff. Other characters' stacks are not stolen. |
-| Running Shot | A | Reduced ranged strike grants a short retreating movement opportunity; movement is the benefit. |
-| Snare Placement | A | Place one visible temporary trap on a valid nearby ground tile. Entry binds briefly; controlled enemies receive recovery protection. |
-| Clear Lane | P | A modest advantage when no unit or obstacle intervenes. Does not grant sight through walls. |
+This section supersedes the original Ranger draft. Exact costs, timing, counterplay and migration: [Ranger rework](RANGER_REWORK_REVIEW.md).
 
-Marksman favors firing lanes and stationary aim; hunter spends actions on Poison
-and movement. Traps expire and consume setup time. Cleansing, resistance, close
-pressure and moving objectives counter these builds.
+| Skill | Type | Distinctive contribution |
+| --- | --- | --- |
+| Mark Quarry | Starter active | Main-action owner-specific guaranteed-accuracy setup. |
+| Longshot | Starter active | Distance payoff, own Mark required, 20% double-damage crit. |
+| Poison Attack | Starter active | Reliable damage plus independent Poison layers; coats the next attack. |
+| Multi-Shot | Active | 2-4 independently resolved arrows; Mark accuracy and per-hit Poison synergy. |
+| Rapid Fire | Quick active | Target-selected random legal equipped attack, free of the selected cooldown, basic fallback. |
+| Pestilence Shot | Active | Reduces enemy ATK and increases ALL party/DoT damage received. |
+| Rupturing Blow | Active | Consumes allied Poison/Bleed for immediate remaining-damage payoff. |
+| Sharpshooter | Passive | Stationary range/damage advantage cancelled by actual movement. |
+
+Marksman favors Quarry, distance, a stationary firing lane and volleys. Poison builds set up party vulnerability and damage layers, then decide whether to wait or cash out. Hybrid builds trade specialization for flexibility. Cover, interception, relocation pressure, armor, cleansing and selective resistances create counterplay. No subclass lock.
 
 ### Mage — temporary spaces, elements and wards
 
