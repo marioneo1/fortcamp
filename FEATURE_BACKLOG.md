@@ -1,5 +1,10 @@
 # Fortcamp feature backlog
 
+## October 6: Connecting-screen regression fixed (implemented in dev)
+
+Added the missing inert createHotContext interface required by Vite's versioned CSS imports. Its absence prevented game initialization; reproduced on the actual running dev page. Full source startup reaches the expected environment sign-in guard with no JS exceptions; fixture preview now uses the same steady client. Regression coverage includes context methods, style injection and versioned CSS. Restart the running launcher to replace its cached client. No save/auth/production changes. Reference: docs/design/DEVELOPMENT_RUNNER.md.
+
+
 ## October 6: Restore source dev and prepare spell images before playback (implemented in dev)
 
 Rolled back build-before-start/preview dev mode after reported loading regressions. Vite source serving retains no-store headers and API proxy; steady mode uses a CSS-only client without sockets/reload logic. Optional live edit restores stock Vite; production unaffected. Initial HTML hides inactive screens before CSS arrives. Mage battle entry warms equipped effect assets; manual/auto responses await required image load/decode before the shared impact timeline, retaining command lock and bounded failure timeout. Pending: user confirmation over the actual tunnel; no claim that every first-load delay is gone. Docs: docs/design/DEVELOPMENT_RUNNER.md and docs/art/MAGE_V1.md.

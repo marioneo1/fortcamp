@@ -12,3 +12,10 @@ export function injectQuery(url,query){
  const parsed=new URL(url,'http://vite.local');
  return `${url.replace(/[?#].*$/,'')}?${query}${parsed.search?'&'+parsed.search.slice(1):''}${parsed.hash}`;
 }
+
+// Vite CSS transforms can still request a hot context with HMR disabled,
+// including previously transformed modules. Preserve its public interface.
+const noop=()=>{};
+export function createHotContext(){
+ return {data:{},accept:noop,acceptExports:noop,dispose:noop,prune:noop,on:noop,off:noop,send:noop,invalidate:noop};
+}

@@ -29,9 +29,9 @@ test('source dev serves CSS and API with a socket-free reload client',async()=>{
   server=await createServer({...config,configFile:false,root,optimizeDeps:{noDiscovery:true,include:[]},server:{...config.server,port:0,proxy:{'/api':{target:`http://127.0.0.1:${api.address().port}`,changeOrigin:false}}}});await server.listen();
   const origin=`http://127.0.0.1:${server.httpServer.address().port}`;
   const html=await (await fetch(origin)).text();assert.match(html,/Dev game/);
-  const client=await (await fetch(origin+'/@vite/client')).text();assert.match(client,/export function updateStyle/);assert.doesNotMatch(client,/WebSocket|location\.reload|transport\.connect/);
+  const client=await (await fetch(origin+'/@vite/client')).text();assert.match(client,/export function updateStyle/);assert.match(client,/export function createHotContext/);assert.doesNotMatch(client,/WebSocket|location\.reload|transport\.connect/);
   assert.match(await (await fetch(origin+'/game.js')).text(),/gameLoaded/);
-  const css=await (await fetch(origin+'/style.css')).text();assert.match(css,/updateStyle/);assert.match(css,/color:red/);
+  const css=await (await fetch(origin+'/style.css?v=startup-regression')).text();assert.match(css,/updateStyle/);assert.match(css,/color:red/);
   assert.deepEqual(await (await fetch(origin+'/api/state')).json(),{path:'/api/state',debug:true});
   assert.equal((await fetch(origin)).headers.get('cache-control'),'no-store, max-age=0');
  } finally {if(server)await server.close();await new Promise(resolve=>api.close(resolve));await rm(root,{recursive:true,force:true})}
