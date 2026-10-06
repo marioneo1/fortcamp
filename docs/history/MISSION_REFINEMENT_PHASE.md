@@ -1584,3 +1584,8 @@ rotated legacy footprints, occupied gates, bounds, navigation API and routing),
 actual Command Post battle UI rendered all six controls and confirmed a side
 button sends its corresponding approach command. Production and saves unchanged.
 Existing bundle-size warning remains. Network multiplayer latency was not tested.
+
+Doorway-size follow-up: doubled the painted-hand buttons from 22px to 44px.
+Each side shifts outward by 12px so the enlarged pair remains separate at the
+normal battle view. Door anchoring, commands and action costs are unchanged.
+Verified targeted frontend tests and Vite build; production unchanged.

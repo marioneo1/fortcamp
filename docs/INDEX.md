@@ -151,3 +151,6 @@ Initial house-navigation performance and temporary spatial lookups: see
 
 Permanent two-sided doorway buttons: [Combat controls](design/COMBAT_CONTROLS.md),
 October 5 persistent doorway controls pass.
+
+Job/build brainstorming catalogue: [Starting Jobs and Skills V1](design/STARTING_JOBS_AND_SKILLS_V1.md).
+Implemented loadouts: [Jobs and character loadouts](design/JOB_LOADOUTS.md).

@@ -988,3 +988,7 @@ Completed in dev: permanent, small Open/Close doorway controls on both sides.
 Far clicks approach; adjacent clicks operate without crossing. Existing action
 costs and enemy-animation locks retained. General non-door object buttons and
 full map/structure audit remain deferred. See docs/design/COMBAT_CONTROLS.md.
+
+Completed in dev: doubled persistent doorway buttons to 44px and spaced the
+pair apart. Original Job/build design catalogue remains available in
+docs/design/STARTING_JOBS_AND_SKILLS_V1.md; distinguish it from implemented kits.
