@@ -1,3 +1,5 @@
+import {isTurret,turretMarkup,emitTurretAttack} from './turret-art.js';
+import './turret-art.css';
 import {roguePreviewView,mountRoguePlacement} from './rogue-ui.js';
 import {emitRogueEffect} from './rogue-effects.js';
 import './rogue-effects.css';
@@ -632,17 +634,17 @@ function terrainVariant(mapId,material,x,y){const choices={grass:[0,0,0,0,0,1,1,
 function combatActionArt(name){return `<span class="combat-action-art action-${name}" aria-hidden="true"></span>`}
 function battleToken(unit,current,battle,stunDelay=0){
   if(unit.lost_in_pit||(unit.temporary&&unit.condition==='dismissed'))return '';
-  const face=unit.portrait?framedImage(portraitSrc(unit.portrait),unit.portrait_frame,esc):`<span>${initials(unit.name)}</span>`;
+  const face=isTurret(unit)?turretMarkup(unit):unit.portrait?framedImage(portraitSrc(unit.portrait),unit.portrait_frame,esc):`<span>${initials(unit.name)}</span>`;
   const boss=unit.boss||unit.kind==='chieftain';
   const height=battle.elevation?.find(tile=>tile.x===unit.x&&tile.y===unit.y)?.height||0,preview=battle.attack_previews?.[unit.id]?.[selectedCombatAction];
   const accuracy=preview?.support?` · Ability available${preview.heal?` · restores up to ${preview.heal} HP`:''}`:preview?.setup_only?' · Effect available · see ability conditions':preview?` · ${preview.chance}% ${preview.capture?'capture chance':'accuracy'}${preview.damage_bonus?` · +${preview.damage_bonus} height damage`:''}`:'';
   const statuses=mapStatusMarkup(unit,battle.status_definitions,esc);
-  const condition=unit.condition||(!unit.alive?'dead':'active'),bodyLabel=condition==='unconscious'?'UNCONSCIOUS':condition==='dead'?'CORPSE':'';
+  const condition=unit.condition||(!unit.alive?'dead':'active'),bodyLabel=isTurret(unit)?'':condition==='unconscious'?'UNCONSCIOUS':condition==='dead'?'CORPSE':'';
   const throwTarget=(battle.throw_profile?.target_ids||[]).includes(unit.id);
   const support=selectedCombatAction==='skill'&&battle.units?.[battle.current_unit_id]?.special?.target==='ally';
   const targeting=unit.alive&&unit.conscious!==false&&!unit.extracted&&!unit.carried_by&&['attack','subdue','skill','throw'].includes(selectedCombatAction)&&(support?unit.team==='player':unit.team==='enemy'),validTarget=selectedCombatAction==='throw'?throwTarget:!!preview;
   const occupiedAbove=condition!=='active'&&Object.values(battle.units||{}).some(other=>other.id!==unit.id&&other.x===unit.x&&other.y===unit.y&&other.alive&&other.conscious!==false&&!other.extracted&&!other.carried_by);
-  return `<button class="battle-token ${unit.team} ${current?'current':''} ${boss?'boss':''} ${throwTarget?'throw-target':''} ${targeting?(validTarget?'valid-target':'invalid-target'):''} ${unit.extracted?'extracted':''} ${unit.carried_by?'carried':''} ${occupiedAbove?'body-under-unit':''} ${condition}" data-battle-unit="${unit.id}" style="grid-column:${unit.x+1};grid-row:${unit.y+1}" title="${esc(unit.name)} · ${unit.hp}/${unit.max_hp} HP · ${title(condition)} · elevation ${height}${boss?' · BOSS':''}${targeting?validTarget?' · valid target':' · out of range or line of sight':''}${throwTarget?` · ${battle.throw_profile.damage} throw damage`:''}${accuracy}${tacticalPreviewText(preview)?` | ${esc(tacticalPreviewText(preview))}`:''}">${boss?'<strong class="boss-label">BOSS</strong>':''}${height?`<strong class="height-badge">▲${height}</strong>`:''}${face}${protectionMarkup(unit)}${martialAuraMarkup(unit)}${monkAuraMarkup(unit)}${stunMarkup(unit,stunDelay)}${condition==='active'?`<i><b>${unit.hp}</b><small>HP</small></i>`:''}${furyMarkup(unit,{compact:true})}${bodyLabel?`<em class="body-label">${condition==='dead'?'† CORPSE':'ZZZ · UNCONSCIOUS'}</em>`:''}${statuses}</button>`;
+  return `<button class="battle-token ${isTurret(unit)?'turret-prop':''} ${unit.team} ${current?'current':''} ${boss?'boss':''} ${throwTarget?'throw-target':''} ${targeting?(validTarget?'valid-target':'invalid-target'):''} ${unit.extracted?'extracted':''} ${unit.carried_by?'carried':''} ${occupiedAbove?'body-under-unit':''} ${condition}" data-battle-unit="${unit.id}" style="grid-column:${unit.x+1};grid-row:${unit.y+1}" title="${esc(unit.name)} · ${unit.hp}/${unit.max_hp} HP · ${title(condition)} · elevation ${height}${boss?' · BOSS':''}${targeting?validTarget?' · valid target':' · out of range or line of sight':''}${throwTarget?` · ${battle.throw_profile.damage} throw damage`:''}${accuracy}${tacticalPreviewText(preview)?` | ${esc(tacticalPreviewText(preview))}`:''}">${boss?'<strong class="boss-label">BOSS</strong>':''}${height?`<strong class="height-badge">▲${height}</strong>`:''}${face}${protectionMarkup(unit)}${martialAuraMarkup(unit)}${monkAuraMarkup(unit)}${stunMarkup(unit,stunDelay)}${condition==='active'?`<i><b>${unit.hp}</b><small>HP</small></i>`:''}${furyMarkup(unit,{compact:true})}${bodyLabel?`<em class="body-label">${condition==='dead'?'† CORPSE':'ZZZ · UNCONSCIOUS'}</em>`:''}${statuses}</button>`;
 }
 
 function tileActionsForBattle(b,x,y){
@@ -725,6 +727,7 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
     const animatedUnits=new Set();
     playBattleSounds(battle,animationEvents);
     timeline.forEach(({event,start:delay,duration:plannedDuration})=>{
+      if(event.type==='sound'&&event.attack_event)emitTurretAttack(field,event,battle,delay,tokenFor);
       if(event.type==='net_cast'){
         emitNetCast(field,event,battle,delay);
         const actor=battle.units?.[event.attacker_id],token=tokenFor(event.attacker_id);

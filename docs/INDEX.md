@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Current painted combat props: [Tactical props pack](art/TACTICAL_PROPS_V1.md) covers grounded Caltrops, animated Scrap Turret/projectile/wreckage and reserved Engineer props. Both combat API schemas preserve Knife delivery/strip rotation; placing traps immediately affects occupants.
+
 Implemented Rogue: [Rogue rework](design/ROGUE_REWORK_REVIEW.md) documents eight skills, multiple Quick Actions before one activation-ending main action, traps, positional/stack forecasts, chosen landings, migration and AI limitations. [Rogue art/audio](art/ROGUE_V1.md) records the packed atlas and four generated sounds. October 6: centred Rogue confirmation/attack selection, fixed Knife Exploit dispatch and fixed Caltrops previews with smaller pulsing steel art; see those same documents. Numerical/aesthetic playtesting remains open.
 
 Implemented Monk: [Monk rework](design/MONK_REWORK_REVIEW.md) documents eight skills, full starter combo, technique budgets, readiness, AI and migration. [Monk art](art/MONK_V1.md) records the packed assets and import workflow. Numerical balance remains provisional. Map status columns use 3px gaps; see [Status presentation](design/COMBAT_STATUS_PRESENTATION.md).

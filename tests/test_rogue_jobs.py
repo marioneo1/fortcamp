@@ -44,7 +44,7 @@ class RogueTests(unittest.TestCase):
   self.use(b,{'action':'skill','skill_id':'job:rogue:backflip','x':1,'y':2});self.assertEqual(a['x'],1);self.assertFalse(a['acted'])
  def test_main_ends_activation_after_quicks(self):
   b,a,t=self.fixture(['caltrops','crippling_cut','cheap_shot'])
-  self.use(b,{'action':'skill','skill_id':'job:rogue:caltrops','x':3,'y':2,'rotation':0})
+  self.use(b,{'action':'skill','skill_id':'job:rogue:caltrops','x':4,'y':2,'rotation':0})
   with patch('backend.combat._attack_hits',return_value=(True,{'chance':100,'damage_bonus':0},1)):
    self.use(b,{'action':'skill','skill_id':'job:rogue:crippling_cut','target_id':t['id']})
    self.use(b,{'action':'skill','skill_id':'job:rogue:cheap_shot','target_id':t['id']})
@@ -111,7 +111,7 @@ class RogueTests(unittest.TestCase):
   self.assertEqual(t['statuses'][0]['layers'][-1]['source_id'],t['id'])
  def test_bleed_charged_once_at_main_finish_not_per_quick(self):
   b,a,t=self.fixture(['caltrops','crippling_cut']);conditions.add_stack(a,'bleed',2,t);conditions.add_stack(a,'bleed',2,t)
-  self.use(b,{'action':'skill','skill_id':'job:rogue:caltrops','x':3,'y':2,'rotation':0})
+  self.use(b,{'action':'skill','skill_id':'job:rogue:caltrops','x':4,'y':2,'rotation':0})
   with patch('backend.combat._attack_hits',return_value=(True,{'chance':100,'damage_bonus':0},1)):
    self.use(b,{'action':'skill','skill_id':'job:rogue:crippling_cut','target_id':t['id']})
   self.assertEqual(a['hp'],100)
@@ -136,3 +136,42 @@ class RogueTests(unittest.TestCase):
   with patch('backend.combat._attack_hits',return_value=(True,{'chance':100,'damage_bonus':0},1)):
    self.use(b,{'action':'skill','skill_id':'job:rogue:exploit_weakness','knife_skill_id':'job:rogue:throwing_knife','target_id':t['id']})
   self.assertEqual(t['hp'],60);self.assertTrue(a['acted']);self.assertEqual(set(a['ability_state']),{'job:rogue:exploit_weakness','job:rogue:throwing_knife'})
+
+ def test_placement_immediately_applies_stacks_to_occupants(self):
+  b,a,t=self.fixture(['caltrops']);t.update(x=4,y=2)
+  self.use(b,{'action':'skill','skill_id':'job:rogue:caltrops','x':4,'y':2,'rotation':0})
+  self.assertEqual(rogue.counts(t),{'bleed':1,'hobbled':1})
+  combat._apply_tile_entry(b,t);self.assertEqual(rogue.counts(t),{'bleed':1,'hobbled':1})
+  t['x']=5;combat._apply_tile_entry(b,t);self.assertEqual(rogue.counts(t),{'bleed':2,'hobbled':2})
+ def test_placement_respects_resistance_and_trap_expert(self):
+  for expert in (False,True):
+   b,a,t=self.fixture(['caltrops']);t.update(x=4,y=2)
+   if expert:t['passives']=[jobs.SKILLS['job:rogue:trap_expert']]
+   else:t['status_resistances']={'bleed':100,'hobbled':100}
+   self.use(b,{'action':'skill','skill_id':'job:rogue:caltrops','x':4,'y':2})
+   self.assertEqual(rogue.counts(t),{})
+ def test_placement_only_triggers_the_new_strip(self):
+  b,a,t=self.fixture(['caltrops']);t.update(x=4,y=2)
+  spaces.place_zone(b,t,{'zone':'ember','turns':2},[{'x':2,'y':2}]);hp=a['hp']
+  self.use(b,{'action':'skill','skill_id':'job:rogue:caltrops','x':4,'y':2})
+  self.assertEqual(a['hp'],hp);self.assertFalse(conditions.has(a,'burn'))
+ def test_http_request_schemas_preserve_knife_for_all_three_attacks(self):
+  from backend.battle_lab import CommandRequest
+  from backend.main import CombatCommandRequest
+  for request in (CommandRequest,CombatCommandRequest):
+   for key in ('basic','cheap_shot','exploit_weakness'):
+    b,a,t=self.fixture(['cheap_shot','exploit_weakness','throwing_knife']);a['x']=1
+    payload={'action':'attack' if key=='basic' else 'skill','target_id':t['id'],'knife_skill_id':'job:rogue:throwing_knife'}
+    if key!='basic':payload['skill_id']='job:rogue:'+key
+    command=request(**payload).model_dump(exclude_none=True)
+    self.assertEqual(command['knife_skill_id'],payload['knife_skill_id'])
+    with patch('backend.combat._attack_hits',return_value=(True,{'chance':100,'damage_bonus':0},1)):
+     self.use(b,command)
+    self.assertLess(t['hp'],100);self.assertTrue(a['acted']);self.assertIn('job:rogue:throwing_knife',a['ability_state'])
+ def test_http_request_preserves_vertical_strip(self):
+  from backend.battle_lab import CommandRequest
+  from backend.main import CombatCommandRequest
+  for request in (CommandRequest,CombatCommandRequest):
+   b,a,t=self.fixture(['caltrops']);t.update(x=4,y=3)
+   self.use(b,request(action='skill',skill_id='job:rogue:caltrops',x=4,y=2,rotation=1).model_dump(exclude_none=True))
+   self.assertEqual(b['zones'][0]['cells'],[{'x':4,'y':1},{'x':4,'y':2},{'x':4,'y':3}]);self.assertEqual(rogue.counts(t)['bleed'],1)

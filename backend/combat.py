@@ -1561,7 +1561,7 @@ def _zone_cells(battle, target, effect):
     return spaces.zone_cells(battle,target,effect['radius'],allowed)
 
 
-def _trigger_zones(battle, unit, event):
+def _trigger_zones(battle, unit, event, only_zone=None):
     def apply_status(owner,target,sid,stacking=False):
         if sid=='poison' and sid in target.get('racial_resistances',[]):return
         chance=conditions.status_chance(target,sid)
@@ -1580,7 +1580,7 @@ def _trigger_zones(battle, unit, event):
         battle['log'].append(f"{target['name']} takes {dealt} damage from {name}.")
     spaces.trigger_zones(battle,unit,event,_combat_active,
         lambda target,owner:target['id'] in {u['id'] for u in conditions.hostile_units(battle,owner,_living(battle))},
-        apply_status,damage)
+        apply_status,damage,only_zone)
 
 
 def _apply_zone_route(battle,unit,path):

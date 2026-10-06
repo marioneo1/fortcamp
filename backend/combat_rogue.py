@@ -96,7 +96,12 @@ def utility_command(battle,actor,skill,command):
     if not active(actor):return
     abilities.spend(actor,skill);freeze_walking(actor)
     if kind=='caltrops':
-        c.spaces.place_zone(battle,actor,{'zone':'caltrops','turns':2},cells)
+        zone=c.spaces.place_zone(battle,actor,{'zone':'caltrops','turns':2},cells)
+        occupied={(cell['x'],cell['y']) for cell in cells}
+        for occupant in battle['units'].values():
+            if (occupant['x'],occupant['y']) in occupied:
+                occupant['zone_location']=[occupant['x'],occupant['y']]
+                c._trigger_zones(battle,occupant,'placement',zone['id'])
         battle.setdefault('animation_events',[]).append({'type':'rogue_effect','effect':'caltrops','unit_id':actor['id'],'x':x,'y':y})
     else:
         start={'x':actor['x'],'y':actor['y']};actor.update(x=x,y=y,moved=True,exit_ready=False)

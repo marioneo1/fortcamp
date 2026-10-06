@@ -4,7 +4,7 @@ from . import combat_conditions as conditions
 from .combat_feedback import record as feedback
 
 ZONES = {
-    'caltrops':{'name':'Caltrops','relation':'everyone','events':['entry'],'entry_per_cell':True,'trap':True,'statuses':['bleed','hobbled'],'description':'Each tile entry attempts one Bleed and one Hobble stack for two target turns. Allies and push/pull count; Trap Expert avoids it. Overlapping strips do not multiply an entry.'},
+    'caltrops':{'name':'Caltrops','relation':'everyone','events':['entry','placement'],'entry_per_cell':True,'trap':True,'statuses':['bleed','hobbled'],'description':'Placement on an occupied tile and each tile entry attempt one Bleed and one Hobble stack for two target turns. Allies and push/pull count; Trap Expert avoids it. Overlapping strips do not multiply an entry.'},
     'ember': {'name': 'Ember Patch', 'relation': 'enemy', 'events': ['entry', 'start'],
               'status': 'burn', 'entry_damage':3, 'entry_per_cell':True,
               'description': 'Each burned tile entered along the committed path deals 3 damage and applies Burn. Re-entry counts again; overlapping patches do not stack. Burn also ticks at activation start. Allies are safe.'},
@@ -72,11 +72,12 @@ def cleanup_zones(battle, active):
                         and active(battle['units'][z['owner_id']])]
 
 
-def trigger_zones(battle, unit, event, active, hostile, apply_status, damage):
+def trigger_zones(battle, unit, event, active, hostile, apply_status, damage, only_zone=None):
     if not active(unit):
         return
     triggered = set()
     for zone in sorted(battle.get('zones', []), key=lambda z: z['id']):
+        if only_zone is not None and zone['id'] != only_zone:continue
         owner = battle['units'].get(zone['owner_id'])
         rule = ZONES[zone['kind']]
         if not owner or not active(owner) or event not in rule['events']:
@@ -95,7 +96,7 @@ def trigger_zones(battle, unit, event, active, hostile, apply_status, damage):
         # zones retain their activation cap; burning ground counts every entry.
         if zone['kind'] in triggered:
             continue
-        per_entry = event == 'entry' and rule.get('entry_per_cell')
+        per_entry = event in {'entry','placement'} and rule.get('entry_per_cell')
         if not per_entry and zone['kind'] in hits and hits[zone['kind']] == stamp:
             continue
         triggered.add(zone['kind'])
