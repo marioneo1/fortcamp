@@ -4,6 +4,7 @@ import {JOB_ICON_ART} from './ability-icon-manifest.js';
 import {impactTimeline} from './combat-impact.js';
 
 const META={
+ palm_exposure:['debuff','monk:rapid_palm',8],iron_reversal_evasion:['buff','monk:iron_reversal',10],monk_siphon:['buff','monk:breaking_combination',12],dash_parry:['buff','monk:sweeping_dash',10],
  iron_reversal:['buff','monk:iron_reversal',10],flowing_footwork:['buff','monk:flowing_footwork',12],open_guard:['debuff','monk:breaking_combination',8],
  brace_defense:['buff','martial:brace-defense',10],reckless_exposure:['debuff','martial:reckless-exposure',8],death_defiance:['buff','martial:too-angry-to-fall',9],
  stun:['debuff','fighter:bash',0],sleep:['debuff','bard:discord',1],ambush_sleep:['debuff','bard:discord',1],

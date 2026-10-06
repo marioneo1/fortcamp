@@ -1,5 +1,11 @@
 # Mission Refinement Phase
 
+## October 5: Monk buffs and selective boss resistances
+
+Implemented in dev: Rapid Palm builds up to 30% direct-damage exposure for three target turns; Crushing Fist rolls a 50% stun after successful combo advancement. Iron Reversal grants 25 evasion against the struck enemy until next Monk turn. Breaking Combination grants 3 HP per landed attack for the next three Monk turns, including punches/Dash victims. Dash grants brief 10% single-target physical parry; magic/AoE excluded. New statuses reuse existing skill artwork and contact feedback. Damage amplifiers add, hit healing does not multiply generic procs, and preview damage includes per-punch exposure.
+
+Boss unit inspection now shows selective innate status resistances, the separate one-turn control limit and temporary recovery lock. Shared chance rules cover abilities, weapon procs, collision stuns and zones; racial poison immunity remains. Chiefs can resist stun while remaining susceptible to poison/burn. Authored profiles support other boss weaknesses without a blanket resistance. 191 focused backend tests pass; frontend tests/build pass with the existing bundle warning. Tests cover caps, durations, enemy-specific evasion, hit healing, parry exclusions, stun/recovery and visible profiles. Final gameplay balance remains pending; start a fresh test battle to use updated snapshots. No production rollout.
+
 ## October 5: accepted Monk kit implemented in dev
 
 Replaced the six overlapping Monk skills with eight sequence/mobility choices; full three-active starter, five equipped slots, unlocks at 2/5/9/12/16 successful contracts. Added deterministic owner-clock stages, budgeted multi-hit damage/procs, source-clock Open Guard, Iron Reversal, Footwork, short enemy-crossing dash with committed hazard forecast and stage-aware AI. Retired-ID migration preserves earned progress/order and leaves existing battle snapshots intact. Fighter/Barbarian rules and production saves were preserved.

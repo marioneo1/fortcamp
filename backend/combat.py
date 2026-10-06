@@ -31,6 +31,10 @@ from . import combat_monk as monk
 
 
 STATUS_DEFINITIONS = {
+    'palm_exposure':{'name':'Exposed Guard','icon':'??','description':'Each landed Rapid Palm punch adds 10% incoming direct attack damage, up to 30%. Lasts three target turns, refreshed on hit. Adds to Open Guard; does not multiply it. Does not amplify damage over time or collisions.'},
+    'iron_reversal_evasion':{'name':'Reversal Footwork','icon':'?','description':'+25 evasion against the enemy struck by Iron Reversal until the next Monk turn. About 15 percentage points less melee accuracy for that enemy.'},
+    'monk_siphon':{'name':'Combat Rhythm','icon':'+','description':'Each landed attack restores up to 3 HP for the next three Monk turns. Each punch and each enemy crossed by Sweeping Dash counts. Misses and ongoing/collision damage do not heal.'},
+    'dash_parry':{'name':'Dash Parry','icon':'?','description':'10% chance to avoid a single-target physical melee or ranged attack, until next Monk turn. Magic and area attacks are unaffected.'},
     'iron_reversal':{'name':'Iron Reversal','icon':'◈','description':'The next direct attack deals 20% less damage. Covers a whole multi-hit technique; expires at the start of this Monk’s next turn.'},
     'flowing_footwork':{'name':'Flowing Footwork','icon':'↗','description':'+1 movement on the next personal turn and +10 evasion until that turn ends. Normal melee hit chance drops by about 6 percentage points; ranged by 10. Does not stack.'},
     'open_guard':{'name':'Open Guard','icon':'◇↓','description':'Direct attacks deal 25% more damage until the end of the applying Monk’s next turn. Damage over time, ground damage and collisions are unaffected. Does not stack.'},
@@ -1005,7 +1009,7 @@ def _attack_preview(battle: dict, attacker: dict, target: dict, rule: str, skill
     mark_accuracy=conditions.mark_bonus(attacker,target)
     accuracy+=mark_accuracy
     base = 90 if rule == "ballistic" else 100
-    target_evasion = int(target.get("evasion", 0)) + monk.evasion_bonus(target)
+    target_evasion = int(target.get("evasion", 0)) + monk.evasion_bonus(target) + monk.evasion_against(target,attacker)
     evasion_factor = 1.0 if rule == "ballistic" else .3 if rule == "ignore" else .6
     evasion_penalty = round(target_evasion * evasion_factor)
     if conditions.has(attacker, 'blind'):
@@ -1015,8 +1019,10 @@ def _attack_preview(battle: dict, attacker: dict, target: dict, rule: str, skill
     if conditions.has(attacker, 'berserk'):
         accuracy -= 10
     rhythm,guaranteed=monk.accuracy(attacker,skill)
+    raw_chance=100 if guaranteed else max(5,min(100,base+accuracy+rhythm-evasion_penalty+attacker.get('perk_modifiers',{}).get('accuracy',0)))
+    parry=0 if guaranteed else monk.parry_rate(target,attacker,rule,skill)
     return {
-        "chance": 100 if guaranteed else max(5, min(100, base + accuracy + rhythm - evasion_penalty + attacker.get('perk_modifiers',{}).get('accuracy',0))), "damage_bonus": damage,
+        "chance": round(raw_chance*(100-parry)/100), "accuracy_before_parry":raw_chance,"parry_rate":parry,"damage_bonus":damage,
         "guaranteed_hit":guaranteed,"rhythm_accuracy":rhythm,
         "target_evasion": target_evasion, "evasion_penalty": evasion_penalty,
         "mark_accuracy":mark_accuracy,
@@ -1035,6 +1041,7 @@ def _attack_hits(battle: dict, attacker: dict, target: dict, rule: str, skill=No
     if roll<=preview['chance'] and preview.get('mark_accuracy'):
         owner=battle['units'].get(attacker['id'],attacker)
         owner['mark_hit_activation']=deepcopy(owner.get('status_activation'))
+    preview["parried"]=bool(preview.get("parry_rate") and preview["chance"]<roll<=preview["accuracy_before_parry"])
     return roll <= preview["chance"], preview, roll
 
 
@@ -1080,7 +1087,7 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
     events=battle.setdefault('animation_events',[])
     begin=len(events)
     damage=_deal_damage(battle,attacker,target,bonus+preview['damage_bonus'],pierce,intent,ability=ability) if hit else 0
-    if not hit:feedback(battle,target,'miss')
+    if not hit:feedback(battle,target,'miss',parried=preview.get('parried',False))
     resolved=events[begin:];del events[begin:]
     style = (ability or {}).get('melee_style') or (attack_style(attacker, ability) if rule == 'melee' else None)
     surface=impact_surface(target)
@@ -1124,6 +1131,11 @@ def _strike_preview(battle,actor,target,rule,reach,skill=None):
                 'element':(skill or {}).get('element',actor.get('element'))}
         bonus=preview['damage_bonus']+(_ability_power_bonus(actor,skill,effect) if skill else 0)
         amount=_damage_before_barrier({'animation_events':[]},source,deepcopy(recipient),bonus,effect.get('armor_pierce',0))
+        if skill and skill['id'].endswith(':rapid_palm'):
+            stacks=next((s.get('stacks',0) for s in recipient.get('statuses',[]) if s['id']=='palm_exposure'),0)
+            guard=.25 if conditions.has(recipient,'open_guard') else 0
+            slices=[amount//3+(i<amount%3) for i in range(3)]
+            amount=sum(round(part*(1+guard+.1*min(3,stacks+i))/(1+guard+.1*stacks)) for i,part in enumerate(slices))
         preview['absorbed_damage']=min(amount,preview['barrier'])
         preview['damage_on_hit']=max(0,amount-preview['barrier'])
         preview['damage_note']='Direct hit only; collision, reactions and chance-based effects are separate.'
@@ -1257,7 +1269,7 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
     if solid and effect.get('collision_stun'):
         for victim in [target]+([bystander] if bystander and not obstacle else []):
             if not _combat_active(victim):continue
-            chance=50 if 'stun' in victim.get('racial_resistances',[]) else 100
+            chance=conditions.status_chance(victim,'stun')
             if random.Random(f"{battle.get('seed')}:collision-stun:{counter}:{victim['id']}").randint(1,100)<=chance and conditions.apply(victim,'stun',1,actor):
                 feedback(battle,victim,'status',status_id='stun')
                 battle['log'].append(f"{victim['name']} is stunned by the collision.")
@@ -1538,7 +1550,7 @@ def _zone_cells(battle, target, effect):
 def _trigger_zones(battle, unit, event):
     def apply_status(owner,target,sid):
         if sid=='poison' and sid in target.get('racial_resistances',[]):return
-        chance=50 if sid in target.get('racial_resistances',[]) else 100
+        chance=conditions.status_chance(target,sid)
         roll=random.Random(f"{battle.get('seed')}:zone:{sid}:{target['id']}:{target.get('status_activation')}").randint(1,100)
         if roll<=chance and conditions.apply(target,sid,1,owner):
             battle['log'].append(f"{target['name']} suffers {sid} from {owner['name']}'s zone.")
@@ -1804,10 +1816,7 @@ def _deal_damage(
         battle["proc_counter"] = counter + 1
         roll = random.Random(f"{battle.get('seed')}:proc:{counter}:{attacker.get('id')}:{target['id']}").randint(1, 100)
         proc_chance = int(proc["chance"])
-        if sid in target.get("racial_resistances", []):
-            proc_chance //= 2
-        if sid in target.get("racial_weaknesses", []):
-            proc_chance = min(95, proc_chance + 15)
+        proc_chance=conditions.status_chance(target,sid,proc_chance)
         if not immune and roll <= proc_chance:
             if conditions.apply(target, sid, int(proc['turns']), attacker):
                 battle["log"].append(f"{target['name']} suffers {sid}.")
@@ -1828,7 +1837,7 @@ def _deal_damage(
         target["defeated_round"] = battle.get("round", 1)
         target["defeat_weapon"] = attacker.get("weapon", "")
         target.pop('monk_combo',None)
-        conditions.remove(target,'iron_reversal','flowing_footwork')
+        conditions.remove(target,'iron_reversal','iron_reversal_evasion','flowing_footwork','monk_siphon','dash_parry')
         if target.get("carrying") in battle["units"]:
             carried = battle["units"][target["carrying"]]
             carried["carried_by"] = None
@@ -1863,6 +1872,7 @@ def _deal_damage(
         facts["times_defeated"]=facts.get("times_defeated",0)+1
         battle.setdefault("animation_events",[]).append({"type":"death_burst" if target["condition"]=='dead' else 'knockout',
             "unit_id":target["id"],"x":target["x"],"y":target["y"],"race":target.get("race","Human")})
+    monk.landed_attack(battle,attacker)
     return damage
 
 
@@ -2872,6 +2882,8 @@ def _perform_monk_attack(battle,actor,target,skill,effect):
     for event in events[before:]:
         event.update(attack_packet=parent)
         for cue in event.get('cues',[]):cue['offset']=83 if hits>1 else 185
+    guard_amp=.25 if conditions.has(target,'open_guard') else 0
+    initial_exposure=next((s.get('stacks',0) for s in target.get('statuses',[]) if s['id']=='palm_exposure'),0)
     budgets=[amount//hits+(i<amount%hits) for i in range(hits)]
     landed=0;total=0;last=parent
     for index,budget in enumerate(budgets):
@@ -2880,8 +2892,11 @@ def _perform_monk_attack(battle,actor,target,skill,effect):
         battle['attack_serial']+=1;last=battle['attack_serial'];begin=len(events)
         # Generic proc attempts belong to the first landed punch only.
         technique={**skill,'on_hit':actor.get('on_hit') if landed==0 else None}
-        damage=_deal_damage(battle,actor,target,ability=technique,resolved_damage=budget) if hit else 0
-        if not hit:feedback(battle,target,'miss')
+        exposure=next((s.get('stacks',0) for s in target.get('statuses',[]) if s['id']=='palm_exposure'),0)
+        slice_damage=round(budget*(1+guard_amp+.1*exposure)/(1+guard_amp+.1*initial_exposure)) if skill['id'].endswith(':rapid_palm') else budget
+        damage=_deal_damage(battle,actor,target,ability=technique,resolved_damage=slice_damage) if hit else 0
+        if not hit:feedback(battle,target,'miss',parried=preview.get('parried',False))
+        if hit and skill['id'].endswith(':rapid_palm'):monk.add_exposure(battle,actor,target,last)
         landed+=bool(hit);total+=damage
         contact=83 if hits>1 else 185
         event={'type':'melee_attack','attacker_id':actor['id'],'target_id':target['id'],'hit':hit,
@@ -2972,6 +2987,9 @@ def _resolve_ability(battle, actor, target, skill):
             actor.update(x=safe['x'],y=safe['y'],zone_location=[safe['x'],safe['y']]);points.append(safe)
         battle['animation_events'].insert(begin,{'type':'movement','unit_id':actor['id'],'points':points,'dash':True,'ground_route_id':route})
         conditions.remove(actor,'rally_power')
+        if _combat_active(actor):
+            monk._status(actor,'dash_parry',monk.clock(actor)+1,actor)
+            feedback(battle,actor,'status',status_id='dash_parry',ground_route_id=route,ground_step=len(points)-1)
         return {'dash_attack':True}
     def leap_attack(effect):
         start={'x':actor['x'],'y':actor['y']}
@@ -2995,7 +3013,7 @@ def _resolve_ability(battle, actor, target, skill):
             child=battle['attack_serial'];offset=round(((enemy['x']-actor['x'])**2+(enemy['y']-actor['y'])**2)**.5*400/3)
             hit_begin=len(battle['animation_events'])
             concealment.reveal(battle,enemy,'contact')
-            hit,preview,roll=_attack_hits(battle,actor,enemy,'melee')
+            hit,preview,roll=_attack_hits(battle,actor,enemy,'melee',skill)
             damage=_deal_damage(battle,actor,enemy,preview['damage_bonus']+_ability_power_bonus(actor,skill,effect),ability=skill) if hit else 0
             if not hit:feedback(battle,enemy,'miss')
             for event in battle['animation_events'][hit_begin:]:
@@ -3026,7 +3044,7 @@ def _resolve_ability(battle, actor, target, skill):
             battle['attack_serial']+=1;child=battle['attack_serial']
             offset=round(((enemy['x']-actor['x'])**2+(enemy['y']-actor['y'])**2)**.5*400/3)
             begin=len(battle['animation_events'])
-            hit,preview,roll=_attack_hits(battle,actor,enemy,'melee')
+            hit,preview,roll=_attack_hits(battle,actor,enemy,'melee',skill)
             damage=_deal_damage(battle,actor,enemy,preview['damage_bonus']+_ability_power_bonus(actor,skill,effect),ability=skill) if hit else 0
             if not hit:feedback(battle,enemy,'miss')
             for event in battle['animation_events'][begin:]:event.update(attack_packet=child,impact_origin_packet=packet,impact_offset=offset)
@@ -3085,9 +3103,7 @@ def _resolve_ability(battle, actor, target, skill):
             return
         sid=effect['status']
         if sid=='poison' and ('poison' in target.get('racial_resistances',[]) or target.get('race') in {'Undead','Revenant','Banshee','Golem','Automaton'}):return
-        chance=effect.get('chance',100)
-        if sid in target.get('racial_resistances',[]):chance//=2
-        if sid in target.get('racial_weaknesses',[]):chance=min(95,chance+15)
+        chance=conditions.status_chance(target,sid,effect.get('chance',100))
         counter=battle.get('proc_counter',0);battle['proc_counter']=counter+1
         roll=random.Random(f"{battle.get('seed')}:ability-status:{counter}:{actor['id']}:{target['id']}").randint(1,100)
         if roll<=chance and conditions.apply(target,sid,effect['turns'],actor):
@@ -3781,6 +3797,7 @@ def battle_view(battle: dict) -> dict:
                 passive['passive_availability']=ready
                 unit['statuses'].append({'id':'passive_readiness','source_id':passive['id'],
                     'name':passive['name'],'description':passive['description'],'skill_id':passive['id'],**ready})
+        unit['resistance_details']=conditions.resistance_view(unit)
         resistance=tactics.displacement_resistance(unit)
         if resistance:unit['statuses'].append({'id':'footing','resistance':resistance})
         if unit.get('reactions'):

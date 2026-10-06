@@ -1,5 +1,9 @@
 # Combat controls and targeting
 
+## October 5: Monk buffs and resistance inspection
+
+See MONK_REWORK_REVIEW.md for the updated kit: capped per-punch exposure, advancement-gated stun, enemy-specific reversal evasion, three-turn hit healing and brief physical parry. Effects reuse existing clocks, feedback and packed icons. Direct damage amplifiers add together; damage-over-time/collision/environmental sources are excluded. Unit inspection now separates individual status resistance, boss control-duration limits and temporary control recovery. Status chance for weapons, abilities, zones and collision stuns shares `combat_conditions.status_chance`; missing percentages do not imply universal boss resistance. Authored per-boss profiles override thematic defaults. Parry excludes magic and area attacks, with a distinct contact label. Fresh battle snapshots use the updated skills.
+
 ## October 5: Monk sequence presentation
 
 The acting card shows Neutral, Follow-up Ready or Finisher Ready, with a three-stage meter and remaining personal turns. Setup becomes usable on the next activation. Locked skill tooltips explain the required stage. Eight square icons share one packed art set; existing saved drag ordering and five-slot loadouts remain unchanged. Slotted Perfect Rhythm/Flowing Footwork remain in the skill bar. Temporary Iron Reversal, Open Guard and Footwork have explicit status tooltips. Punch damage, sound and defeat use authored contact offsets; enemy actions wait for packet playback. Dash previews the route, landing, visible crossed enemies and committed ground damage. No extra click or separate resource meter is introduced.

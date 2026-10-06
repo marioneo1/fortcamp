@@ -4,6 +4,10 @@ export function statusDetails(status,definitions={}){
   const details=[];
   if(status.id==='deployment')return {name:'Temporary deployment',icon:'◆',description:`Owned by ${status.owner_name}. ${status.policy==='automatic'?'Automatic targeting; shares owner output budget.':'Attack commands spend the owner action.'} No extra initiative turn, loot or prisoner reward.`,details:[status.ready?'Ready this owner activation':'Ready from the next owner activation',status.stationary?'Stationary device':'Uses its own movement budget']};
   if(status.id==='wild_form')return {name:status.name,icon:'◆',description:status.description,details:[`${status.turns} owner activations remaining · no HP refill`]};
+  if(status.id==='palm_exposure')return {...base,details:[`+${10*(status.stacks||1)}% direct attack damage taken ? ${status.turns} target turns remaining`,'Refreshes on each landed punch ? maximum 30%']};
+  if(status.id==='iron_reversal_evasion')return {...base,details:[`Against ${status.enemy_name||'the struck enemy'} only`,'Expires at next Monk turn start']};
+  if(status.id==='monk_siphon')return {...base,details:[`${Math.max(0,(status.turns||1)-1)} future Monk turns remaining`,'3 HP per landed hit ? does not overheal']};
+  if(status.id==='dash_parry')return {...base,details:['Expires at next Monk turn start','Excludes magic and area attacks']};
   if(['open_guard','flowing_footwork','iron_reversal'].includes(status.id))return {...base,details:[status.id==='iron_reversal'?'One incoming direct attack · expires at next personal turn start':`${status.turns} turn window remaining · expires at ${status.source_name||'owner'}’s turn end`,...(status.source_name?[`From ${status.source_name}`]:[])]};
   if(status.id==='barrier')details.push(`${status.amount} damage absorption remaining`);
   if(status.id==='mark')details.push(`Owner: ${status.source_name||'unknown'} · +${status.accuracy||10} accuracy on their first hit`);

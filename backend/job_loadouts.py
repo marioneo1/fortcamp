@@ -64,8 +64,8 @@ def monk_technique(key, name, description, power, hits=1, cooldown=1, reach=1, s
     return validate(skill)
 
 register('monk','Monk','Chain close-range techniques into a powerful finishing strike, using footwork and defensive forms to stay alive.',
-    monk_technique('rapid_palm','Rapid Palm','Three adjacent punches totaling 120% attack. Two landed punches guarantee Follow-up Ready; one has an 80% chance. Readiness lasts through your next two turns. Cooldown: 1 turn.',120,3,kind='opener'),
-    monk_technique('iron_reversal','Iron Reversal','Requires Follow-up Ready. Adjacent 100% strike; a hit prepares the finisher and reduces the next direct attack against you by 20%, until your next turn. Cooldown: 1 turn.',100,stage='follow_up',kind='follow_up'),
+    monk_technique('rapid_palm','Rapid Palm','Three adjacent punches totaling 120% attack. Each landed punch adds 10% target vulnerability (maximum 30%) for three target turns; hits refresh it. Two landed punches guarantee Follow-up Ready; one has an 80% chance. Readiness lasts through your next two turns. Cooldown: 1 turn.',120,3,kind='opener'),
+    monk_technique('iron_reversal','Iron Reversal','Requires Follow-up Ready. Adjacent 100% strike; a hit prepares the finisher and reduces the next direct attack against you by 20%, until your next turn, plus 25 evasion against the struck enemy for that window. Cooldown: 1 turn.',100,stage='follow_up',kind='follow_up'),
     monk_technique('heaven_piercing','Heaven-Piercing Strike','Requires Finisher Ready. Release a physical palm-force strike at 300% attack, up to three cells away with clear sight. Consumes readiness even on a miss. Cooldown: 3 turns.',300,cooldown=3,reach=3,stage='finisher',kind='finisher'))
 register('bard','Bard','Keep allies fighting and weaken an enemy approach.',
     active('rally','Steady Song','Remove Fear and Slow from an ally and give an 8 HP Barrier for one activation.',[{'type':'cleanse','statuses':['fear','slow']},{'type':'barrier','amount':8,'turns':1}],'ally',3,'line_of_effect',3),
@@ -163,12 +163,12 @@ add_unlocks('barbarian',[(12,passive('bloodthirst','Bloodthirst','A killing blow
 BARBARIAN_OLD_IDS = dict(zip(('shove','expose','anchored','hide','drive','stand'),
                            ('reckless_blow','skullbreaker','bloodfury','bloodied_strength','groundbreaker','too_angry_to_fall')))
 
-dash=active('sweeping_dash','Sweeping Dash','Dash through up to three cells to empty ground. Each crossed enemy takes one 50% attack attempt. Walls, closed gates and pits block the route; ground hazards still hurt. Does not advance your combo. Cooldown: 2 turns.',[{'type':'dash_attack','power_percent':50}],range=3,cooldown=2)
+dash=active('sweeping_dash','Sweeping Dash','Dash through up to three cells to empty ground. Each crossed enemy takes one 50% attack attempt. Walls, closed gates and pits block the route; ground hazards still hurt. Grants 10% parry against single-target physical melee/ranged attacks until your next turn; excludes magic/AoE. Does not advance your combo. Cooldown: 2 turns.',[{'type':'dash_attack','power_percent':50}],range=3,cooldown=2)
 dash['melee_style']='fist'
 add_unlocks('monk',[(2,passive('perfect_rhythm','Perfect Rhythm','Follow-ups gain 10 percentage points of accuracy. Your ready finisher cannot miss, but armor, Barrier and interception still apply.')),
-    (5,monk_technique('crushing_fist','Crushing Fist','Adjacent 150% strike. A hit has a 70% chance to grant Follow-up Ready. More immediate damage, less reliable setup. Cooldown: 1 turn.',150,kind='opener')),
+    (5,monk_technique('crushing_fist','Crushing Fist','Adjacent 150% strike. A hit has a 70% chance to grant Follow-up Ready. Successful advancement also rolls a 50% one-turn stun chance, reduced by resistance. More immediate damage, less reliable setup. Cooldown: 1 turn.',150,kind='opener')),
     (9,dash),
-    (12,monk_technique('breaking_combination','Breaking Combination','Requires Follow-up Ready. Two adjacent punches totaling 120% attack. Any hit prepares the finisher and opens the target guard: +25% direct attack damage from all allies until the end of your next turn. Does not amplify damage over time or collisions. Cooldown: 2 turns.',120,2,2,stage='follow_up',kind='follow_up')),
+    (12,monk_technique('breaking_combination','Breaking Combination','Requires Follow-up Ready. Two adjacent punches totaling 120% attack. Any hit prepares the finisher and opens the target guard: +25% direct attack damage from all allies until the end of your next turn. Does not amplify damage over time or collisions. Grants Combat Rhythm: each landed attack heals 3 HP for your next three turns, including individual punches and enemies crossed by Dash. Cooldown: 2 turns.',120,2,2,stage='follow_up',kind='follow_up')),
     (16,passive('flowing_footwork','Flowing Footwork','Advancing your combo grants +1 movement on your next turn and +10 evasion until that turn ends. Refreshes without stacking. Ten evasion points reduce normal melee hit chance by about 6 percentage points and ranged hit chance by 10.'))])
 
 MONK_OLD_IDS=dict(zip(('palm','brace','riposte','bind','returning','stance'),

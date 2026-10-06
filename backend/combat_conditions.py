@@ -6,6 +6,34 @@ from .combat_feedback import record as feedback
 CONTROL = {'stun', 'sleep', 'freeze', 'paralyze'}
 RECOVERY = CONTROL | {'bind'}
 
+STATUS_IDS = {'stun','sleep','freeze','paralyze','bind','poison','burn','bleed','blind','fear','slow','mute'}
+
+def innate_resistances(unit):
+    # Selective authored identities, never a blanket boss debuff resistance.
+    if 'status_resistances' in unit:return dict(unit['status_resistances'])
+    if not (unit.get('boss') or unit.get('kind')=='chieftain'):return {}
+    if unit.get('race') in {'Undead','Revenant','Banshee','Golem','Automaton'}:return {'stun':25,'poison':100}
+    if unit.get('kind')=='cartmaster':return {'bind':40,'slow':25}
+    if unit.get('attack_elevation_rule') in {'ignore','line_of_effect'}:return {'burn':50,'mute':25}
+    return {'stun':25}
+
+def resistance(unit,sid):
+    if sid=='poison' and (sid in unit.get('racial_resistances',[]) or unit.get('race') in {'Undead','Revenant','Banshee','Golem','Automaton'}):return 100
+    racial=50 if sid in unit.get('racial_resistances',[]) else 0
+    return max(racial,max(0,min(100,int(innate_resistances(unit).get(sid,0)))))
+
+def status_chance(unit,sid,base=100):
+    chance=base*(100-resistance(unit,sid))/100
+    if sid in unit.get('racial_weaknesses',[]) and resistance(unit,sid)<100:chance=min(95,chance+15)
+    return round(chance)
+
+def resistance_view(unit):
+    return {'statuses':{sid:resistance(unit,sid) for sid in sorted(STATUS_IDS) if resistance(unit,sid)},
+            'control_recovery':unit.get('control_immunity',0),
+            'control_duration_limit':1 if unit.get('boss') or unit.get('kind')=='chieftain' else None,
+            'control_lock_active':any(has(unit,sid) for sid in (RECOVERY if unit.get('status_version') else CONTROL)),
+            'recovery_affects':sorted(RECOVERY if unit.get('status_version') else CONTROL)}
+
 def has(unit, sid):
     return any(s.get('id') == sid for s in unit.get('statuses', []))
 

@@ -36,17 +36,17 @@ class MonkJobTests(unittest.TestCase):
     def test_multi_hit_shares_armor_bonus_and_barrier_budgets(self):
         b,a,t=self.fixture();t['armor']=6;conditions.barrier(t,10,2,t)
         result=self.cast(b,a,t,'rapid_palm',[True,True,True])
-        self.assertEqual(t['hp'],92);self.assertEqual(result['hits'],3)
+        self.assertEqual(t['hp'],90);self.assertEqual(result['hits'],3)
         self.assertFalse(conditions.has(t,'barrier'))
         feedback=[e for e in b['animation_events'] if e.get('kind')=='physical']
-        self.assertEqual([(e['amount'],e['absorbed']) for e in feedback],[(0,6),(2,4),(6,0)])
-        self.assertEqual(a['combat_record']['total_damage'],8)
+        self.assertEqual([(e['amount'],e['absorbed']) for e in feedback],[(0,6),(3,4),(7,0)])
+        self.assertEqual(a['combat_record']['total_damage'],10)
         b,a,t=self.fixture();a['perk_modifiers']['melee_damage']=6;t['armor']=6
-        self.cast(b,a,t,'rapid_palm',[True,True,True]);self.assertEqual(t['hp'],76)
+        self.cast(b,a,t,'rapid_palm',[True,True,True]);self.assertEqual(t['hp'],73)
 
     def test_partial_hits_have_only_their_allocated_damage(self):
         b,a,t=self.fixture();t['armor']=6
-        self.cast(b,a,t,'rapid_palm',[True,False,True]);self.assertEqual(t['hp'],88)
+        self.cast(b,a,t,'rapid_palm',[True,False,True]);self.assertEqual(t['hp'],87)
         self.assertEqual(monk.readiness(a)['stage'],'follow_up')
         b,a,t=self.fixture();t['armor']=100
         self.cast(b,a,t,'rapid_palm',[True,True,True]);self.assertEqual(t['hp'],99)
@@ -95,7 +95,7 @@ class MonkJobTests(unittest.TestCase):
 
     def test_iron_reversal_whole_technique_and_expiry(self):
         b,a,t=self.fixture();monk._status(t,'iron_reversal',monk.clock(t)+1,t)
-        self.cast(b,a,t,'rapid_palm',[True,True,True]);self.assertEqual(t['hp'],81)
+        self.cast(b,a,t,'rapid_palm',[True,True,True]);self.assertEqual(t['hp'],79)
         self.assertFalse(conditions.has(t,'iron_reversal'))
         b,a,t=self.fixture();monk._status(a,'iron_reversal',monk.clock(a)+1,a)
         monk.start_activation(b,a);self.assertFalse(conditions.has(a,'iron_reversal'))
@@ -200,6 +200,79 @@ class MonkJobTests(unittest.TestCase):
             self.assertTrue(combat._auto_monk_turn(b,a,[t]));self.assertEqual(monk.readiness(a)['stage'],'follow_up')
             self.turn(b,a);self.assertTrue(combat._auto_monk_turn(b,a,[t]));self.assertEqual(monk.readiness(a)['stage'],'finisher')
             self.turn(b,a);self.assertTrue(combat._auto_monk_turn(b,a,[t]));self.assertEqual(monk.readiness(a)['stage'],'neutral')
+
+
+    def test_exposure_caps_refreshes_and_adds_to_open_guard(self):
+        b,a,t=self.fixture()
+        self.cast(b,a,t,'rapid_palm',[True,True,True])
+        status=next(s for s in t['statuses'] if s['id']=='palm_exposure')
+        self.assertEqual(status['stacks'],3);self.assertEqual(status['turns'],3)
+        status['turns']=1;monk.add_exposure(b,a,t,1)
+        self.assertEqual(next(s for s in t['statuses'] if s['id']=='palm_exposure')['turns'],3)
+        monk._status(t,'open_guard',1,a)
+        self.assertEqual(monk.incoming(t,a,100),155)
+        self.assertEqual(monk.incoming(t,{'status_tick':True},100),100)
+        for turn in range(3):
+            t['status_activation']=[1,turn+10];conditions.finish_activation(t)
+        self.assertFalse(conditions.has(t,'palm_exposure'))
+
+    def test_reversal_evasion_only_affects_struck_enemy_and_expires(self):
+        b,a,t=self.fixture();a['monk_combo']={'stage':'follow_up','available_at':0,'expires_at':2}
+        self.cast(b,a,t,'iron_reversal',[True])
+        self.assertEqual(monk.evasion_against(a,t),25)
+        self.assertEqual(monk.evasion_against(a,{'id':'other'}),0)
+        self.assertEqual(combat._attack_preview(b,t,a,'melee')['chance'],85)
+        self.turn(b,a);self.assertEqual(monk.evasion_against(a,t),0)
+
+    def test_rhythm_heals_each_landed_punch_but_not_misses_or_collision(self):
+        b,a,t=self.fixture();a['hp']=50
+        monk._status(a,'monk_siphon',monk.clock(a)+3,a)
+        self.cast(b,a,t,'rapid_palm',[True,False,True]);self.assertEqual(a['hp'],56)
+        monk.landed_attack(b,dict(a,collision_attack=True));self.assertEqual(a['hp'],56)
+        for _ in range(3):self.turn(b,a);monk.cleanup(b,a)
+        self.assertFalse(conditions.has(a,'monk_siphon'))
+
+    def test_rhythm_dash_counts_each_enemy_and_no_overheal(self):
+        b,a,t=self.fixture();a['hp']=96
+        other=deepcopy(t);other.update(id='other',x=4,y=2);b['units']['other']=other
+        monk._status(a,'monk_siphon',3,a)
+        with patch('backend.combat._attack_hits',return_value=(True,{'chance':100,'damage_bonus':0},1)):
+            self.cast(b,a,combat._ground_target(5,2),'sweeping_dash')
+        self.assertEqual(a['hp'],100);self.assertTrue(conditions.has(a,'dash_parry'))
+        self.turn(b,a);self.assertFalse(conditions.has(a,'dash_parry'))
+
+    def test_parry_excludes_magic_elements_and_area_skills(self):
+        b,a,t=self.fixture();monk._status(a,'dash_parry',1,a)
+        self.assertEqual(combat._attack_preview(b,t,a,'melee')['chance'],90)
+        self.assertEqual(combat._attack_preview(b,t,a,'ballistic')['chance'],81)
+        self.assertEqual(monk.parry_rate(a,t,'ignore'),0)
+        self.assertEqual(monk.parry_rate(a,dict(t,element='fire'),'melee'),0)
+        self.assertEqual(monk.parry_rate(a,t,'melee',{'effects':[{'type':'area_attack'}]}),0)
+
+    def test_crushing_fist_stun_follows_advancement_and_respects_recovery(self):
+        b,a,t=self.fixture();skill=jobs.SKILLS['job:monk:crushing_fist']
+        with patch('backend.combat_monk.random.Random') as rng:
+            rng.return_value.randint.return_value=1
+            monk.complete_technique(b,a,t,skill,1,1)
+        self.assertTrue(conditions.has(t,'stun'))
+        conditions.remove(t,'stun');t['control_immunity']=1
+        with patch('backend.combat_monk.random.Random') as rng:
+            rng.return_value.randint.return_value=1
+            monk.complete_technique(b,a,t,skill,1,1)
+        self.assertFalse(conditions.has(t,'stun'))
+
+    def test_boss_resistances_are_selective_and_visible(self):
+        b,a,t=self.fixture();t.update(boss=True,race='Goblin',kind='chieftain')
+        self.assertEqual(conditions.status_chance(t,'stun'),75)
+        self.assertEqual(conditions.status_chance(t,'stun',50),38)
+        self.assertEqual(conditions.status_chance(t,'poison'),100)
+        self.assertEqual(conditions.status_chance(t,'burn'),100)
+        view=combat.battle_view(b);details=view['units'][t['id']]['resistance_details']
+        self.assertEqual(details['statuses'],{'stun':25});self.assertEqual(details['control_duration_limit'],1)
+        t.update(race='Automaton');self.assertEqual(conditions.status_chance(t,'poison'),0)
+        t.update(race='Human',status_resistances={'poison':70})
+        self.assertEqual(conditions.status_chance(t,'poison'),30)
+        self.assertEqual(conditions.status_chance(t,'stun'),100)
 
 
 if __name__=='__main__':unittest.main()

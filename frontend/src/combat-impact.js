@@ -87,6 +87,7 @@ export const feedbackStyles={
   status:{label:'Status',icon:'•',color:'#dfcbff'},
 };
 export function feedbackText(event,definitions={}){
+  if(event.kind==='miss'&&event.parried)return {label:'Parried',icon:'?',color:'#a8ded3',value:''};
   if(event.kind==='combo')return {label:event.stage==='finisher'?'Finisher Ready':'Follow-up Ready',icon:'◆',color:'#e9c97a',value:''};
   const style={...(feedbackStyles[event.kind]||feedbackStyles.physical)};
   if(event.kind==='physical'&&event.melee_style)style.label=({slash:'Slash',hack:'Chop',crush:'Crush',blunt:'Strike',fist:'Punch',stab:'Stab'})[event.melee_style]||style.label;

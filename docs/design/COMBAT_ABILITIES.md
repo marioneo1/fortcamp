@@ -1,5 +1,9 @@
 # Combat ability foundation
 
+## October 5: Monk buffs and resistance inspection
+
+See MONK_REWORK_REVIEW.md for the updated kit: capped per-punch exposure, advancement-gated stun, enemy-specific reversal evasion, three-turn hit healing and brief physical parry. Effects reuse existing clocks, feedback and packed icons. Direct damage amplifiers add together; damage-over-time/collision/environmental sources are excluded. Unit inspection now separates individual status resistance, boss control-duration limits and temporary control recovery. Status chance for weapons, abilities, zones and collision stuns shares `combat_conditions.status_chance`; missing percentages do not imply universal boss resistance. Authored per-boss profiles override thematic defaults. Parry excludes magic and area attacks, with a distinct contact label. Fresh battle snapshots use the updated skills.
+
 ## October 5: bounded Monk techniques
 
 An authored attack may specify `hits` (1?3), with total `power_percent` up to 300. Monk techniques add `combo_kind` and optional `combo_stage`; availability uses the same personal-turn clocks as cooldowns. `backend/combat_monk.py` owns sequence/readiness and temporary modifiers. One total damage/armor/additive budget is divided into separately rolled punches. A technique gets one generic on-hit eligibility and one counter reaction; contact packets retain each punch's timestamp. `resolved_damage` is an internal resolver argument, never a client-submitted damage value.

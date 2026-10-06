@@ -41,6 +41,37 @@ def accuracy(unit, skill):
     return (10, False) if skill.get('combo_stage') == 'follow_up' else (0, False)
 
 
+def evasion_against(unit, attacker):
+    return 25 if any(s['id']=='iron_reversal_evasion' and s.get('enemy_id')==attacker.get('id') for s in unit.get('statuses',[])) else 0
+
+
+def parry_rate(unit,attacker,rule,skill=None):
+    physical=rule in {'melee','ballistic'} and not (skill or {}).get('element',attacker.get('element'))
+    area=any(e.get('type') in {'area_attack','leap_attack','dash_attack'} or e.get('radius') for e in (skill or {}).get('effects',[]))
+    return 10 if physical and not area and conditions.has(unit,'dash_parry') else 0
+
+
+def landed_attack(battle,source):
+    if not direct_attack(source):return
+    actor=battle.get('units',{}).get(source.get('id'))
+    if not actor or not conditions.has(actor,'monk_siphon') or actor.get('alive') is False or actor.get('conscious') is False:return
+    amount=min(3,max(0,actor['max_hp']-actor['hp']))
+    if amount:
+        actor['hp']+=amount;feedback(battle,actor,'heal',amount)
+        battle['log'].append(f"{actor['name']} recovers {amount} HP from Combat Rhythm.")
+
+
+def add_exposure(battle,actor,target,packet):
+    if target.get('alive') is False or target.get('conscious') is False:return
+    previous=next((s for s in target.get('statuses',[]) if s['id']=='palm_exposure'),{})
+    stacks=min(3,previous.get('stacks',0)+1)
+    if conditions.apply(target,'palm_exposure',3,actor):
+        next(s for s in target['statuses'] if s['id']=='palm_exposure')['stacks']=stacks
+        feedback(battle,target,'status',status_id='palm_exposure',attack_packet=packet)
+    from . import combat_martial
+    combat_martial.flush(battle,target)
+
+
 def evasion_bonus(unit):
     return 10 if any(s['id'] == 'flowing_footwork' and clock(unit) <= s.get('expires_at', -1)
                      for s in unit.get('statuses', [])) else 0
@@ -58,8 +89,9 @@ def direct_attack(source):
 def incoming(target, source, amount):
     if not direct_attack(source):
         return amount
-    if conditions.has(target, 'open_guard'):
-        amount = max(1, round(amount * 1.25))
+    exposure=next((s.get('stacks',0) for s in target.get('statuses',[]) if s['id']=='palm_exposure'),0)
+    bonus=(.25 if conditions.has(target,'open_guard') else 0)+.1*exposure
+    if bonus:amount=max(1,round(amount*(1+bonus)))
     if conditions.has(target, 'iron_reversal'):
         conditions.remove(target, 'iron_reversal')
         amount = max(1, round(amount * .8))
@@ -68,7 +100,7 @@ def incoming(target, source, amount):
 
 def start_activation(battle, unit):
     # This is called by the existing activation stamp, including skipped turns.
-    conditions.remove(unit, 'iron_reversal')
+    conditions.remove(unit, 'iron_reversal','iron_reversal_evasion','dash_parry')
     cleanup(battle)
 
 
@@ -77,14 +109,14 @@ def cleanup(battle, ending_unit=None):
     for unit in battle.get('units', {}).values():
         if complete or unit.get('alive') is False or unit.get('conscious') is False or unit.get('extracted'):
             unit.pop('monk_combo', None)
-            conditions.remove(unit, 'iron_reversal', 'flowing_footwork')
+            conditions.remove(unit, 'iron_reversal', 'iron_reversal_evasion', 'flowing_footwork','monk_siphon','dash_parry')
         elif clock(unit) > unit.get('monk_combo', {}).get('expires_at', clock(unit)):
             unit.pop('monk_combo', None)
         if ending_unit is unit:
             if clock(unit) >= unit.get('monk_combo', {}).get('expires_at', clock(unit) + 1):
                 unit.pop('monk_combo', None)
             for status in list(unit.get('statuses', [])):
-                if status['id'] == 'flowing_footwork' and clock(unit) >= status['expires_at']:
+                if status['id'] in {'flowing_footwork','monk_siphon'} and clock(unit) >= status['expires_at']:
                     conditions.remove(unit, status['id'])
         for status in list(unit.get('statuses', [])):
             if status['id'] != 'open_guard':
@@ -126,9 +158,20 @@ def complete_technique(battle, actor, target, skill, hits, packet):
     if stage != previous and has_passive(actor, 'flowing_footwork'):
         _status(actor, 'flowing_footwork', now + 1, actor)
         feedback(battle, actor, 'status', status_id='flowing_footwork', attack_packet=packet)
+    if skill['id'].endswith(':crushing_fist') and target.get('alive',True) and target.get('conscious',True):
+        count=battle.get('monk_stun_counter',0);battle['monk_stun_counter']=count+1
+        chance=conditions.status_chance(target,'stun',50)
+        if random.Random(f"{battle.get('seed')}:monk-stun:{count}:{actor['id']}").randint(1,100)<=chance and conditions.apply(target,'stun',1,actor):
+            feedback(battle,target,'status',status_id='stun',attack_packet=packet)
     if skill['id'].endswith(':iron_reversal'):
         _status(actor, 'iron_reversal', now + 1, actor)
+        _status(actor,'iron_reversal_evasion',now+1,actor)
+        evasion=next(s for s in actor['statuses'] if s['id']=='iron_reversal_evasion')
+        evasion.update(enemy_id=target['id'],enemy_name=target.get('name','the struck enemy'))
         feedback(battle, actor, 'status', status_id='iron_reversal', attack_packet=packet)
+    if skill['id'].endswith(':breaking_combination'):
+        _status(actor,'monk_siphon',now+3,actor)
+        feedback(battle,actor,'status',status_id='monk_siphon',attack_packet=packet)
     if skill['id'].endswith(':breaking_combination') and target.get('conscious', True) and target.get('alive', True):
         _status(target, 'open_guard', now + 1, actor)
         from . import combat_martial
@@ -143,6 +186,6 @@ def view(unit, battle):
     if unit.get('job_id') == 'monk' or any(s.get('combo_kind') for s in unit.get('skills', [])):
         unit['combo'] = state
     for status in unit.get('statuses', []):
-        if status['id'] in {'iron_reversal', 'flowing_footwork', 'open_guard'}:
+        if status['id'] in {'iron_reversal','iron_reversal_evasion','flowing_footwork','open_guard','monk_siphon','dash_parry'}:
             owner = battle['units'].get(status.get('source_id'), unit)
             status['turns'] = max(0, status.get('expires_at', clock(owner)) - clock(owner) + 1)

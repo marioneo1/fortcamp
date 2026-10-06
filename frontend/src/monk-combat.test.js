@@ -1,12 +1,12 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import {existsSync} from 'node:fs';
-import {impactTimeline,impactArtwork} from './combat-impact.js';
+import {impactTimeline,impactArtwork,feedbackText} from './combat-impact.js';
 import {combatAudioSchedule} from './combat-audio.js';
 import {comboMarkup} from './martial-ui.js';
 import {skillIcon} from './ability-icons.js';
 import {statusVisual} from './combat-status-presentation.js';
-import {hotbarMarkup,areaForecastMarkup} from './combat-hotbar.js';
+import {hotbarMarkup,areaForecastMarkup,resistanceMarkup} from './combat-hotbar.js';
 
 test('Monk punches share authored contact markers with damage and audio',()=>{
  const events=[{type:'monk_technique',attack_packet:1,duration:740}];
@@ -46,4 +46,15 @@ test('All eight Monk icons and status artwork resolve to imported assets',()=>{
  for(const id of ['iron_reversal','flowing_footwork','open_guard'])assert.match(statusVisual({id}).image,/assets\/monk-v1\//);
  assert.deepEqual(impactArtwork({kind:'physical',monk_skill:'rapid_palm'}),['monk:palm_contact']);
  assert.deepEqual(impactArtwork({kind:'combo'}),[]);
+});
+
+test('Boss inspection separates named resistances, duration and temporary recovery',()=>{
+ const html=resistanceMarkup({boss:true,status_version:1,resistance_details:{statuses:{stun:25,poison:100},control_duration_limit:1,control_recovery:1}},String);
+ assert.match(html,/stun: 25% resistance/);assert.match(html,/poison: immune/);assert.match(html,/at most 1 turn/);assert.match(html,/Control recovery active/);
+ assert.match(html,/Unlisted debuffs have no innate resistance/);
+ assert.equal(resistanceMarkup({},String),'');
+});
+test('Monk parry feedback is distinct and new buffs have skill artwork',()=>{
+ assert.equal(feedbackText({kind:'miss',parried:true}).label,'Parried');
+ for(const id of ['palm_exposure','iron_reversal_evasion','monk_siphon','dash_parry'])assert.match(statusVisual({id}).image,/assets\/monk-v1\//);
 });
