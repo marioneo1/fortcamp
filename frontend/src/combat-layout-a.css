@@ -61,4 +61,10 @@
 .inspect-columns.no-effects{grid-template-columns:1fr}.inspect-columns.no-effects .inspect-effects{display:none}.combat-unit-inspect .no-effects .inspect-stat-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
 @media(max-width:680px){.combat-unit-inspect .no-effects .inspect-stat-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
 
-.battle-door-prompt{position:absolute;transform:translate(-50%,-100%);z-index:115;display:flex;align-items:center;gap:5px;padding:7px 10px;background:#252318;border:1px solid #d5b66a;border-radius:6px;color:#fff0c8;white-space:nowrap;box-shadow:0 3px 10px #0009;font-size:13px}.battle-door-prompt img{width:24px;height:24px;object-fit:contain}.battle-door-prompt:hover{background:#514329}
+
+/* Door controls stay on both sides of the opening, clear of unit centers. */
+.battle-door-control{position:absolute;transform:translate(-50%,-50%);z-index:115;width:22px;height:22px;min-width:0;min-height:0;padding:2px;display:grid;place-items:center;border:1px solid #d5b66a;border-radius:7px;background:#252318ed;box-shadow:0 2px 5px #0008;cursor:pointer}
+.battle-door-control img{width:100%;height:100%;object-fit:contain;pointer-events:none}
+.battle-door-control span{position:absolute;right:-2px;bottom:-2px;display:grid;place-items:center;width:11px;height:11px;border-radius:50%;background:#d5b66a;color:#211c13;font:bold 10px/1 sans-serif;pointer-events:none}
+.battle-door-control:hover,.battle-door-control:focus-visible{background:#514329;outline:2px solid #fff0c8;outline-offset:2px}
+.battle-door-control:disabled{opacity:.55;cursor:default}

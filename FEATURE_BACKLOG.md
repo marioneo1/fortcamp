@@ -983,3 +983,8 @@ Completed in dev: reduced initial Command Post navigation CPU from 238ms to 32ms
 with transient routing lookups. See docs/design/COMBAT_CONTROLS.md for benchmark
 and regression coverage. Network latency and any future process-exit diagnosis
 remain separate concerns; production unchanged.
+
+Completed in dev: permanent, small Open/Close doorway controls on both sides.
+Far clicks approach; adjacent clicks operate without crossing. Existing action
+costs and enemy-animation locks retained. General non-door object buttons and
+full map/structure audit remain deferred. See docs/design/COMBAT_CONTROLS.md.

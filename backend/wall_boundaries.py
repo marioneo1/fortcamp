@@ -48,3 +48,32 @@ def can_operate_gate(unit, gate):
         return True
     return any(cell == (gate['x']+dx, gate['y']+dy)
                for dx, dy in (SIDES[side] for side in gate['wall_edges']))
+
+
+def gate_controls(gate):
+    """Two small controls straddling the actual doorway, with approach cells.
+
+    Coordinates use cell centers (like units), not CSS percentages. Edge doors
+    use their physical boundary; older centered gates use the footprint edge.
+    """
+    x, y = int(gate['x']), int(gate['y'])
+    if gate.get('edge_wall') and gate.get('wall_edges'):
+        dx, dy = SIDES[gate['wall_edges'][0]]
+        cx, cy = x + dx * .5, y + dy * .5
+        cells = [(x, y), (x + dx, y + dy)]
+    else:
+        from .battle_maps import occupied_tiles
+        cells_covered = occupied_tiles(gate)
+        right = max(px for px, _ in cells_covered)
+        bottom = max(py for _, py in cells_covered)
+        cx, cy = (x + right) / 2, (y + bottom) / 2
+        if int(gate.get('rotation', 0)) % 180:
+            dx, dy = 1, 0
+            cells = [(x - 1, int(cy)), (right + 1, int(cy))]
+        else:
+            dx, dy = 0, 1
+            cells = [(int(cx), y - 1), (int(cx), bottom + 1)]
+    return [{'x': cx + sign * dx * .23 - dy * .23,
+             'y': cy + sign * dy * .23 + dx * .23,
+             'approach': {'x': ax, 'y': ay}}
+            for sign, (ax, ay) in zip((-1, 1), cells)]

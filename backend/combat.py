@@ -10,7 +10,7 @@ from .battle_maps import compile_battle_map, compile_generated_battle_map, occup
 from .content import ITEMS, RECRUIT_PROFILES, MISSION_TEMPLATES
 from .tactical_contracts import TACTICAL_CONTRACTS
 from .location_maps import MISSION_LOCATIONS
-from .wall_boundaries import crossed_walls, can_operate_gate
+from .wall_boundaries import crossed_walls, can_operate_gate, gate_controls
 from .portraits import choose_pool_portrait, portrait_pool_key
 from .races import race_gameplay, generated_genders
 from .perk_effects import modifiers
@@ -3448,6 +3448,35 @@ def _context_actions(battle: dict, unit: dict) -> list[dict]:
     return actions
 
 
+def _door_controls(battle, unit):
+    controls = []
+    available = bool(unit and unit.get('team') == 'player' and not unit.get('acted')
+                     and battle.get('status') == 'active')
+    for gate in battle.get('terrain', []):
+        if gate.get('kind') != 'gate' or gate.get('destroyed'):
+            continue
+        closing = gate.get('state') == 'opened'
+        blocked = closing and not gate.get('edge_wall') and any(
+            u.get('conscious', True) and not u.get('extracted') and not u.get('carried_by')
+            and (u['x'], u['y']) in occupied_tiles(gate) for u in battle['units'].values())
+        operation = 'Close' if closing else 'Open'
+        for side in gate_controls(gate):
+            destination = side['approach']
+            if not (0 <= destination['x'] < battle['width'] and 0 <= destination['y'] < battle['height']):
+                continue
+            adjacent = bool(unit and can_operate_gate(unit, gate))
+            reason = ('Someone is standing in the doorway.' if blocked else
+                      'Wait for your character?s turn.' if not available else '')
+            controls.append({**side, 'gate_id': gate['id'], 'operation': operation,
+                'label': f"{operation} {gate.get('name', 'Door')}",
+                'help': reason or (f'{operation} door. Uses your action.' if adjacent else
+                                  'Approach this side of the door. Opening or closing is a separate action.'),
+                'disabled': bool(reason),
+                'command': {'action': 'interact', 'target_id': gate['id']} if adjacent else
+                           {'action': 'navigate', **destination}})
+    return controls
+
+
 def battle_view(battle: dict) -> dict:
     # First sightings are persistent. Presentation must not start an activation,
     # but must keep a revealed enemy visible after it returns to cover.
@@ -3520,6 +3549,7 @@ def battle_view(battle: dict) -> dict:
             if status.get("id") == "ambush_sleep":
                 status["rounds"] = max(0, int(view.get("ambush_sleep_until_round", view["round"])) - view["round"])
     view["current_unit_id"] = current["id"] if current else None
+    view["door_controls"] = _door_controls(view, current)
     view['supply_uses_remaining'] = remaining_uses(view)
     view['supply_targets'] = [u['id'] for u in _living(view, 'player') if current
                              and _distance(current, u) <= 1 and _line_of_sight(view, current, u)]

@@ -148,3 +148,6 @@ visible abnormal exits.
 
 Initial house-navigation performance and temporary spatial lookups: see
 [Combat controls](design/COMBAT_CONTROLS.md), October 5 latency pass.
+
+Permanent two-sided doorway buttons: [Combat controls](design/COMBAT_CONTROLS.md),
+October 5 persistent doorway controls pass.

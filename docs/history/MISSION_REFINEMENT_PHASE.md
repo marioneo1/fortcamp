@@ -1558,3 +1558,29 @@ persistence checks, covering indexed/unindexed route equivalence,
 rotated/overlapping footprints, fresh searches after door/footprint mutations,
 absence of indexes from saved/public state, navigation API, approach movement,
 wall boundaries, committed ground hazards and combat tactics.
+
+## October 5: persistent doorway controls (dev)
+
+Every intact door now has a small painted-hand control on each approach side,
+always visible instead of requiring a hover or a navigation attempt. The label
+and plus/minus badge switch between Open and Close with the actual gate state.
+Controls are anchored to the doorway boundary (all four edge orientations) or
+the footprint of older centered gates. Off-map approach sides are omitted.
+Clicking while directly inside/outside operates the same door without stepping
+through it. From farther away the button approaches its selected side using
+existing navigation, leaving opening/closing as an explicit action. Closed-door
+routing can stop at the near side rather than pass through a closed door.
+
+Door operation still costs the character?s action. During an enemy activation,
+a spent action or animation playback the controls remain visible but unavailable.
+Occupied older centered gates explain why closure is blocked. Broken doors have
+no button. Each control has its own click handler, accessible action label and
+hover explanation; clicks do not bubble into movement/attack targeting. Existing
+context actions and navigation prompts in the API remain compatible.
+
+Validation: 25 backend tests (door geometry/operation, all edge directions,
+rotated legacy footprints, occupied gates, bounds, navigation API and routing),
+266 frontend tests, and Vite build pass. An isolated Chrome fixture using the
+actual Command Post battle UI rendered all six controls and confirmed a side
+button sends its corresponding approach command. Production and saves unchanged.
+Existing bundle-size warning remains. Network multiplayer latency was not tested.
