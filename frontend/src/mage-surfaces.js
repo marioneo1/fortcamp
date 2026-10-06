@@ -58,7 +58,7 @@ export function scorchedArtwork(zone,x,y,width,height,clip){
   const seed=surfaceSeed(`${c.x}:${c.y}:scorch`),px=(c.x-x)*100,py=(c.y-y)*100;
   const soot=image(`soot_${seed%4+1}`,px-28,py-28,156,'scorch-soot',seed%360);
   const ash=seed%3!==0?image(`ash_${(seed>>>4)%4+1}`,px+8,py+5,84,'scorch-ash',(seed>>>8)%360):'';
-  const fire=`<foreignObject x="${px-28}" y="${py-28}" width="156" height="156"><div xmlns="http://www.w3.org/1999/xhtml" class="scorch-flame scorch-main-flame" style="animation-duration:${1700+seed%500}ms;animation-delay:-${seed%2000}ms"></div></foreignObject>`;
+  const fire=`<foreignObject x="${px-28}" y="${py-28}" width="156" height="156"><div xmlns="http://www.w3.org/1999/xhtml" class="scorch-flame scorch-main-flame" style="animation-duration:${3200+seed%800}ms;animation-delay:-${seed%4000}ms"></div></foreignObject>`;
   artwork+=`<g data-scorch-cell="${c.x},${c.y}"><g class="scorch-ground">${soot}${ash}</g>${fire}</g>`;
  }
  return `<defs><filter id="${blur}" x="-10%" y="-10%" width="120%" height="120%"><feMorphology operator="erode" radius="8"/><feGaussianBlur stdDeviation="7"/></filter><mask id="${mask}" maskUnits="userSpaceOnUse" x="0" y="0" width="${width*100}" height="${height*100}" style="mask-type:alpha"><g filter="url(#${blur})">${rects}</g></mask></defs><g mask="url(#${mask})">${artwork}</g>`;

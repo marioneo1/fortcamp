@@ -8,6 +8,8 @@ import subprocess
 import time
 import sys
 import threading
+import shutil
+from datetime import datetime
 from urllib.request import urlopen
 from pathlib import Path
 from dotenv import dotenv_values
@@ -30,6 +32,8 @@ def profile_config(profile):
         raise SystemExit('This is the production copy. Use run_prod_windows.bat here; develop in fortcamp-dev.')
     env=os.environ.copy()
     public_config=dotenv_values(ROOT/'.env')
+    env['FORTCAMP_DEV_AUTO_RELOAD']=env.get('FORTCAMP_DEV_AUTO_RELOAD') or public_config.get('FORTCAMP_DEV_AUTO_RELOAD') or 'false'
+    env['PYTHONFAULTHANDLER']='1'
     save_profile='dev' if profile=='dev-discord' else profile
     is_release=profile in {'release','stable'}
     origin_key='FORTCAMP_RELEASE_WEB_ORIGIN' if is_release else 'FORTCAMP_DEV_WEB_ORIGIN'
@@ -56,13 +60,35 @@ def profile_config(profile):
         return env,ROOT,[8001,5174]
     return env,ROOT,[8001,5174]
 
+def launch_commands(profile,ports,env):
+    commands=[[str(ROOT/'.venv'/'Scripts'/'python.exe'),'-m','uvicorn','backend.main:app','--host','127.0.0.1','--port',str(ports[0])]]
+    if profile in ('dev','dev-discord'):
+        if env.get('FORTCAMP_DEV_AUTO_RELOAD','false').lower() in {'true','1','yes'}:
+            commands[0].extend(['--reload','--reload-dir',str(ROOT/'backend')])
+        script='dev' if env.get('FORTCAMP_DEV_AUTO_RELOAD','false').lower() in {'true','1','yes'} else 'preview'
+        commands.append(['cmd','/c','npm.cmd','--prefix','frontend','run',script,'--','--host','127.0.0.1','--port',str(ports[-1])])
+    return commands
+
+
 def relay_output(child, log, lock):
     """Keep child output visible while preserving it after the console closes."""
     for line in child.stdout:
         with lock:
-            log.write(line);log.flush()
+            log.write(f'[{datetime.now().isoformat(timespec="seconds")}] {line}');log.flush()
             try:sys.stdout.write(line);sys.stdout.flush()
             except (OSError, UnicodeError):pass
+
+
+def prepare_frontend(profile,env,cwd,log,lock):
+    if profile not in {'dev','dev-discord'} or env.get('FORTCAMP_DEV_AUTO_RELOAD','false').lower() in {'true','1','yes'}:return 0
+    print('Building current dev browser files for uninterrupted playtesting...',flush=True)
+    result=subprocess.run(['cmd','/c','npm.cmd','--prefix','frontend','run','build'],cwd=cwd,env=env,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,encoding='utf-8',errors='replace')
+    with lock:
+        for line in result.stdout.splitlines(keepends=True):
+            log.write(f'[{datetime.now().isoformat(timespec="seconds")}] {line}')
+            print(line,end='',flush=True)
+        log.flush()
+    return result.returncode
 
 
 def main():
@@ -81,19 +107,27 @@ def main():
     for port in ports:
         with socket.socket() as sock:
             if sock.connect_ex(('127.0.0.1',port))==0:raise SystemExit(f'Port {port} is already in use. Close the older Fortcamp runner first; it has not been killed.')
-    commands=[[str(ROOT/'.venv'/'Scripts'/'python.exe'),'-m','uvicorn','backend.main:app','--host','127.0.0.1','--port',str(ports[0])]]
-    if args.profile in ('dev','dev-discord'):
-        commands[0].append('--reload')
-        commands.append(['cmd','/c','npm.cmd','--prefix','frontend','run','dev','--','--port',str(ports[-1])])
+    commands=launch_commands(args.profile,ports,env)
     if args.profile=='dev-discord':
         print('Discord development: dev.fortcampgame.fyi -> port 5174, with real Discord login and DEV saves. Use your dev application credentials in fortcamp-dev .env; keep Cloudflare running.',flush=True)
     print(f'{args.profile.upper()}: http://127.0.0.1:{ports[-1]} | separate {args.profile} save | Ctrl+C to stop this session',flush=True)
+    if args.profile in {'dev','dev-discord'}:
+        reload_on=env.get('FORTCAMP_DEV_AUTO_RELOAD','false').lower() in {'true','1','yes'}
+        print('Automatic code reload: '+('ON - source edits can reset your play session.' if reload_on else 'OFF - restart this runner to load code changes; your browser will not auto-refresh for edits.'),flush=True)
     children=[];threads=[];exit_code=0
     log_dir=ROOT/'data'/'logs';log_dir.mkdir(parents=True,exist_ok=True)
     log_path=log_dir/f'{args.profile}-latest.log'
     print(f'Session log: {log_path}',flush=True)
+    if log_path.exists():
+        archive=log_dir/f'{args.profile}-{datetime.now().strftime("%Y%m%d-%H%M%S-%f")}.log'
+        shutil.copy2(log_path,archive)
     log=log_path.open('w',encoding='utf-8');lock=threading.Lock()
+    log.write(f'Session started {datetime.now().isoformat(timespec="seconds")} | profile={args.profile} | auto_reload={env.get("FORTCAMP_DEV_AUTO_RELOAD","false")}\n');log.flush()
     try:
+        build_code=prepare_frontend(args.profile,env,cwd,log,lock)
+        if build_code:
+            print(f'Dev browser build failed (exit {build_code}). See {log_path}.',flush=True)
+            raise SystemExit(build_code)
         for command in commands:
             child=subprocess.Popen(command,cwd=cwd,env=env,creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,encoding='utf-8',errors='replace',bufsize=1)
             children.append(child)

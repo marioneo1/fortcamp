@@ -68,3 +68,6 @@ Release preparation excludes dev-only launch/update shortcuts from the productio
 Release updates now include shared portrait framing defaults alongside portrait assets, exclude the obsolete macOS/Linux dev shortcut, and require clean tracked source while leaving unrelated untracked notes alone. Production launch continues to force debug and authentication bypass off; production credentials, player saves and uploads stay separate. The standalone portrait tagging tool remains separate from game runtime metadata.
 
 Validation: 142 frontend checks passed. Full backend run passed 355/356; the remaining special-Goblin portrait test depended on an optional uninstalled male art pool. Isolated that test with both special pools supplied explicitly; production fallback behavior remains unchanged.
+
+
+October 6 dev testing update: the normal dev launcher builds browser files and serves them without automatic refresh; restart it to load code changes. Debug tools, Discord/web authentication, ports and dev saves remain the same. Optional live-edit mode and preserved session logs: [Development runner](design/DEVELOPMENT_RUNNER.md).

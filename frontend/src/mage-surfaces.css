@@ -10,7 +10,7 @@
 .scorch-tone{fill:#231a13;opacity:.26}
 .scorch-soot{opacity:.72}.scorch-ash{opacity:.38}.scorch-embers{opacity:.65;animation:scorch-ember-glow 3.1s ease-in-out infinite alternate}
 .scorch-smoke{opacity:.11;animation:scorch-smoke-drift 4.5s ease-in-out infinite alternate;transform-box:fill-box;transform-origin:center}
-.scorch-flame{width:100%;height:100%;background:url('/assets/mage-scorched-v3/fire_strip.png') 0 0/1600% 100% no-repeat;opacity:.88;image-rendering:auto;animation:scorch-flame-frames 1.9s steps(1,end) infinite}
+.scorch-flame{width:100%;height:100%;background:url('/assets/mage-scorched-v3/fire_strip.png') 0 0/1600% 100% no-repeat;opacity:.88;image-rendering:auto;animation:scorch-flame-frames 3.6s steps(1,end) infinite}
 @keyframes scorch-flame-frames{0%{background-position:0.00000000% 0}6.25%{background-position:6.66666667% 0}12.5%{background-position:13.33333333% 0}18.75%{background-position:20.00000000% 0}25%{background-position:26.66666667% 0}31.25%{background-position:33.33333333% 0}37.5%{background-position:40.00000000% 0}43.75%{background-position:46.66666667% 0}50%{background-position:53.33333333% 0}56.25%{background-position:60.00000000% 0}62.5%{background-position:66.66666667% 0}68.75%{background-position:73.33333333% 0}75%{background-position:80.00000000% 0}81.25%{background-position:86.66666667% 0}87.5%{background-position:93.33333333% 0}93.75%{background-position:100.00000000% 0}100%{background-position:100% 0}}
 @keyframes scorch-ember-glow{to{opacity:.34}}
 @keyframes scorch-smoke-drift{to{opacity:.18;translate:3px -4px}}

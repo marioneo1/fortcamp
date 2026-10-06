@@ -1,5 +1,10 @@
 # Fortcamp feature backlog
 
+## October 6: Uninterrupted dev playtesting and calmer fire (implemented in dev)
+
+Normal dev launcher builds browser files then serves preview on 5174 with API proxy to 8001, retaining real login/bot/debug/dev saves. Removes Vite's reload client and backend automatic reloader from default playtesting. Optional FORTCAMP_DEV_AUTO_RELOAD=true restores live editing, with Python watches limited to backend. Latest logs are timestamped and previous sessions archived; failed builds stop startup. Scorched loops slowed to 3.2?4.0 seconds. Available log showed no backend crash/restart for reported browser refresh; dev reload/reconnect is plausible, exact original cause unproven. Pending: user confirmation during long play sessions and further flame-frame refinement if shape motion still feels excessive. Reference: docs/design/DEVELOPMENT_RUNNER.md and docs/art/SCORCHED_V3.md.
+
+
 ## October 6: Percentage DoTs and Scorched V3 (implemented in dev)
 
 Burn 2%, Poison 10%, Bleed 5% target maximum HP per stack; regular damage and one-stack decay at target turn end. Burn resistance reduces damage, never application. Fire entry adds Burn and triggers its full pool without decay; traps add Bleed without immediate damage. Ranger cashout/previews follow the new clock. Overlapping ground renders/triggers once; one sixteen-frame overhead fire per cell replaces mini fires. Meteor is another 50% larger, faces upper-left, and reveals new ground at landing. Fireball cooldown is three. Canonical rules/art: docs/design/COMBAT_DOTS.md and docs/art/SCORCHED_V3.md. Pending: percentage damage/boss balance, human animation review and split multi-source tick credit. No production deployment or save reset.
