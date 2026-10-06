@@ -1651,3 +1651,13 @@ card (390?105px). Browser save response was mocked; API transaction behavior is
 covered separately. Existing build-size warning remains. Production untouched;
 no runtime dependencies or extra art generation needed. Controls/loadouts/martial
 rules, backlog and index updated.
+
+
+Combat dock spacing follow-up: placed skills to the right of Traits on the same
+row as the character and commands; buffs span the entire row below. Responsive
+wrapping remains for smaller windows. Map passive readiness icons are 27px instead
+of 36px, with smaller count labels; other status icons remain unchanged. Verified
+18 relevant frontend tests, build and actual-renderer Chrome fixture: left-to-right
+order, buffs below every panel and 27px computed badge size. At 1440?1100 the
+fixture map viewport grew from 357px to 470px tall. Existing build warning remains;
+no gameplay, saves or production changes.

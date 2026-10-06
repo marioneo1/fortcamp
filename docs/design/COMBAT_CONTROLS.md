@@ -434,3 +434,11 @@ also show their readiness. Bloodthirst now heals 20% maximum HP per lethal kill.
 
 Open battle dialogs survive live rendering, including a swap in Arrange. Hotbar
 DOM nodes are keyed by skill ID so a swap moves the correct button/tooltip.
+
+
+Layout follow-up: desktop places the horizontal character card, Traits, skill bar
+and commands in one row, followed by a full-width buffs/effects row and action
+help. This recovers vertical room for the map. At narrower widths commands wrap
+below, and phone-sized views wrap skills as well. Only passive readiness badges
+on map tokens shrink from 36px to 27px (75%); tray/tooltip icons and ordinary
+buff/debuff sizes are unchanged. Unit hover/active scaling still applies normally.

@@ -2,6 +2,8 @@
 
 ## October 5: passive slots and combat skill arrangement (implemented in dev)
 
+Layout refinement: card ? Traits ? skills ? commands share the desktop row, buffs below all four. Passive readiness map badges are 75% of their previous size. Narrow screens wrap rather than squeeze controls.
+
 Slotted Job passives now appear alongside actives with automatic/passive tooltips. Drag-to-swap saves order without changing loadouts or spending actions; Arrange exposes every page together. Roster-character order persists in the authenticated player save; Lab testers remain local and isolated. Traits beside the horizontal acting card lists only innate/racial/equipment effects. Passive cooldown/once-use/reaction readiness has actual skill icons on map buffs, including cooldown counts and spent state. Open battle dialogs survive rerender/swap. Bloodthirst now heals 20% maximum HP per kill; three-turn cooldown and same-turn multi-kills remain. Details: docs/design/COMBAT_CONTROLS.md.
 
 ## October 5: Fighter additions and Barbarian Fury (implemented in dev)
