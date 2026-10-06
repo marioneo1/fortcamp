@@ -1,6 +1,6 @@
 # Rogue rework review
 
-October 5, 2026. **Design review only; not implemented.** User clarifications: multiple Quick Actions are allowed. Backflip and Caltrops are Quick Actions, including after the main attack. Preserve Fighter, Barbarian, Monk, five character slots, gear abilities outside those slots and existing saves.
+October 5, 2026. **Design review only; not implemented.** User clarifications: multiple Quick Actions are allowed. Backflip and Caltrops are Quick Actions. Latest user correction: the main attack MUST end the activation; Quick Actions are usable before it only. Preserve Fighter, Barbarian, Monk, five character slots, gear abilities outside those slots and existing saves.
 
 ## Inspected current implementation
 
@@ -22,7 +22,8 @@ Crippling Cut, Shadowstep, Caltrops and Backflip are Quick Actions. Cheap Shot a
 
 A Quick Action commits the prior provisional movement and locks normal walking for the rest of the activation. The main action also commits normal walking. Neither lock is a Root/Bind status: Shadowstep and Backflip must remain available after that lock. Actual immobilizing control, incapacitation, carrying restrictions and map legality still apply. Never implement this by returning zero from the entire mobility calculation and then accidentally prohibiting the escape skills.
 
-Rogue main attacks never automatically advance the turn, regardless of remaining Quick Action availability. Caltrops may be placed before or after the main attack. Keep the actor current for the post-attack window; the main attack remains spent. End Turn finishes the activation. Even if no usable Quick Actions remain, keep the actor current until the player presses End Turn. Do not add a fallback that auto-finishes after the main attack. Do not change other Jobs' automatic finish. Rogue auto-battle explicitly issues End Turn after its bounded plan; this does not make a manual main attack auto-finish. Example: move ? Crippling Cut ? Exploit Weakness ? Backflip ? End Turn; or Shadowstep ? Cheap Shot ? Backflip ? End Turn. An unspent main action still allows the existing end-turn Guard; an already spent main action never gives a free Guard.
+Rogue main attacks immediately finish the activation, preserving current combat flow. Quick Actions can be chained only before the main attack. There is no post-main window or post-attack Backflip. Example: move ? Crippling Cut ? Exploit Weakness (activation ends); or Shadowstep ? Cheap Shot (activation ends). Multiple Quick Actions can chain before commitment: Shadowstep ? Crippling Cut ? Backflip ? a legal ranged Knife attack. The main action remains limited to one. End Turn without spending the main action retains the existing Guard behavior. Do not change other Jobs' automatic finish.
+
 
 Quick Actions do not increment cooldown/status clocks, expire ground zones, trigger a second summon phase, or tick Bleed again just because another command was sent. Exactly one finish-activation pass runs when the actor actually ends. The enemy waits for each action's playback; the player cannot race a follow-up through unfinished impact/forced movement. Queued follow-ups must be revalidated against the resolved position and living targets. Orders, hotbar rearrangement and cancelling previews spend nothing.
 
@@ -35,7 +36,7 @@ Quick Actions do not increment cooldown/status clocks, expire ground zones, trig
 | Exploit Weakness | 100% + 50 percentage points per qualifying negative stack, capped at 400% base attack. Preview lists the counted statuses and stacks. | Main / 2 |
 | Shadowstep | Choose a visible enemy within three Manhattan cells, then choose a legal adjacent destination and confirm. No damage or automatic attack. Lock ordinary walking after commitment. | Quick / 3 |
 | Caltrops | A centered horizontal/vertical 1?3 strip, all three cells legal, placement center within three cells with clear line of effect. Each actual entry attempts one Bleed and one Hobbled stack. Lasts until the start of the Rogue's second subsequent activation. | Quick / 4 |
-| Backflip | Choose a legal cardinal landing one, two or three cells away; reuse leap wall/sight/elevation/carrying checks. No attack. Can be used after the main action; locks ordinary walking. | Quick / 2 |
+| Backflip | Choose a legal cardinal landing one, two or three cells away; reuse leap wall/sight/elevation/carrying checks. No attack. Use before the main action; locks ordinary walking. | Quick / 2 |
 | Trap Expert | The Rogue does not trigger tagged traps, including Caltrops, while this passive is equipped. Does not negate fire, poison zones, pits or arbitrary terrain hazards. | Slotted passive |
 | Throwing Knife Technique | Arm a thrown delivery for basic Attack, equipped Cheap Shot or equipped Exploit Weakness. Hit a visible target beyond normal melee reach, within three cells, with a clear projectile path. No extra damage multiplier or separate attack. | Modifier; uses the chosen main attack / 3 |
 
@@ -71,18 +72,18 @@ Shadowstep: enemy selection shows legal cardinal adjacent landings; choosing one
 
 ## AI, visuals, migration and implementation order
 
-AI should choose opportunities rather than a fixed rotation: compare current positional/Exploit forecasts, consider Shadowstep landings, use Cut when it improves the following burst, lay strips on likely approaches, and Backflip after attacking if a safer legal landing exists. Existing hidden personality weights aggression/risk. Use a bounded plan of the equipped cooldown-ready Quick Actions plus one main action, mark each spent once, then end. Do not implement recursive action selection that retries an impossible teleport forever or scans a large action tree each render.
+AI should choose opportunities rather than a fixed rotation: compare current positional/Exploit forecasts, consider Shadowstep landings, use Cut when it improves the following burst, lay strips on likely approaches, and use Backflip before attacking or guarding if a safer legal landing exists. Existing hidden personality weights aggression/risk. Use a bounded plan of the equipped cooldown-ready Quick Actions plus one main action, mark each spent once, then end. Do not implement recursive action selection that retries an impossible teleport forever or scans a large action tree each render.
 
 Use one coherent packed Rogue icon/effect atlas when implementing: eight square ability icons plus thrown knife, cut contact, strip tile, shadow departure/arrival and Backflip trail. Keep light melee flesh/hard-contact sound families, landing/teleport/trap contact timing and enemy serialization. No images or audio are generated in this review.
 
-1. Add quick/main state, normal-walk lock and post-main window, including AI and animation locks; test move ? quick ? main ? escape.
+1. Add quick/main state and normal-walk lock, including AI and animation locks; test move ? multiple quick actions ? main (automatic finish).
 2. Implement position/debuff counting and cheap/cut/Exploit forecasts with migrated five-slot loadouts.
 3. Add chosen-destination Shadowstep, Backflip and Knife delivery; validate cancellation, blocked edges and hidden targets.
 4. Add stack-aware Caltrops, per-cell forced routes, Trap Expert, attribution and readable stack feedback; test Fighter/Monk interactions.
 5. Import packed art, test all eight in Battle Lab, inspect real UI/playback, compare equal-tier martial kits and tune.
 
-Map old skill IDs deliberately, preserve earned practice/learned skills/order and leave active battle snapshots intact. No production changes or save rewrite in this review. Tests must cover one main plus several distinct Quick Actions, no second main attack, no free post-main Guard, mobility after ordinary-lock versus true immobilization, clocks/bleed ticking only once, cancellation, cardinal geometry/virtual ties, debuff counts, stacks/expiry/cleanses/resists, trap route deduplication, ground hazards, proc budgets, AI termination and serialized defeat/escape playback.
+Map old skill IDs deliberately, preserve earned practice/learned skills/order and leave active battle snapshots intact. No production changes or save rewrite in this review. Tests must cover several distinct Quick Actions before one main, immediate end after main, no post-main Quick Action or Guard, mobility after ordinary-lock versus true immobilization, clocks/bleed ticking only once, cancellation, cardinal geometry/virtual ties, debuff counts, stacks/expiry/cleanses/resists, trap route deduplication, ground hazards, proc budgets, AI termination and serialized defeat/escape playback.
 
 ## Changes from the brief
 
-Keep multiple Quick Actions per user clarification and classify Backflip and Caltrops as Quick. Keep the activation open after every Rogue main attack until explicit End Turn, including when all Quick Actions are unavailable. Keep Hobbled stack count without exponential movement reduction. Retain Bleed's existing exertion timing while extending stack contributions. Treat Knife as a delivery modifier with an explicit compatible main-attack list. Cheap Shot and Exploit remain alternatives, not additive skills in one attack. No global Rogue damage cap, extra resource meter, formal combo, blanket trap immunity to non-trap hazards or overall combat rewrite.
+Keep multiple Quick Actions per user clarification and classify Backflip and Caltrops as Quick. The main attack immediately ends the activation; no Quick Action is allowed afterward. Keep Hobbled stack count without exponential movement reduction. Retain Bleed's existing exertion timing while extending stack contributions. Treat Knife as a delivery modifier with an explicit compatible main-attack list. Cheap Shot and Exploit remain alternatives, not additive skills in one attack. No global Rogue damage cap, extra resource meter, formal combo, blanket trap immunity to non-trap hazards or overall combat rewrite.

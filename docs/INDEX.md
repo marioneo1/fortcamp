@@ -1,6 +1,6 @@
 # Fortcamp documentation map
 
-Pending Rogue: [Rogue rework review](design/ROGUE_REWORK_REVIEW.md) inspects current actions, stacks and hazards; recommends eight skills, multiple Quick Actions, post-attack escape and trap/position forecasts. Proposal only.
+Pending Rogue: [Rogue rework review](design/ROGUE_REWORK_REVIEW.md) inspects current actions, stacks and hazards; recommends eight skills, multiple Quick Actions before an activation-ending main attack, plus trap/position forecasts. Proposal only.
 
 Implemented Monk: [Monk rework](design/MONK_REWORK_REVIEW.md) documents eight skills, full starter combo, technique budgets, readiness, AI and migration. [Monk art](art/MONK_V1.md) records the packed assets and import workflow. Numerical balance remains provisional. Map status columns use 3px gaps; see [Status presentation](design/COMBAT_STATUS_PRESENTATION.md).
 
