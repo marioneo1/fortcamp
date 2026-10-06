@@ -8,3 +8,5 @@ export function nextCombatMode(action,nextMode,currentMode){
 export function approachDescription(preview){
   return preview?.move_to?`Move ${preview.movement_cost} movement point${preview.movement_cost===1?'':'s'} first · `:'';
 }
+
+export function selectedSkillCommand(command,actor){return command.action==='skill'&&!command.skill_id&&actor?.special?{...command,skill_id:actor.special.id}:command}

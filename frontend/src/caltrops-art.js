@@ -1,0 +1,5 @@
+// Opaque steel trap artwork: fixed silhouettes stay readable over painted terrain.
+export function caltropsArtwork(cells,x,y,clip){
+ const id=`${clip}-steel`,piece=(cx,cy,angle)=>`<g transform="translate(${cx} ${cy}) rotate(${angle})"><ellipse cy="7" rx="13" ry="5" fill="#070b0d" opacity=".7"/><path d="M0 -16 L5 -2 L17 7 L3 6 L-11 14 L-6 1 L-16 -7 L-2 -4 Z" fill="url(#${id})" stroke="#172129" stroke-width="1.5" stroke-linejoin="round"/><path d="M0 -16 L0 2 L17 7 M0 2 L-11 14 M0 2 L-16 -7" fill="none" stroke="#dbe4d9" stroke-width="1.15"/><circle r="3" cy="2" fill="#9aaca8" stroke="#eceddc" stroke-width=".7"/></g>`;
+ return `<defs><linearGradient id="${id}" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#edf0da"/><stop offset=".38" stop-color="#a9b6b2"/><stop offset=".6" stop-color="#4e6570"/><stop offset="1" stop-color="#c7c5a5"/></linearGradient></defs>`+cells.map(c=>`<g class="caltrop-cluster" style="transform-origin:${(c.x-x)*100+50}px ${(c.y-y)*100+50}px">${piece((c.x-x)*100+38,(c.y-y)*100+43,-18)}${piece((c.x-x)*100+64,(c.y-y)*100+53,26)}${piece((c.x-x)*100+43,(c.y-y)*100+65,8)}</g>`).join('');
+}

@@ -121,7 +121,7 @@ import {mountJobLoadout} from './job-loadout-ui.js';
 import {battleSupplyPanel} from './battle-support-ui.js';
 import {authenticateWeb,activitySessionKey,mountWebAccountControls} from './web-login.js';
 import './web-login.css';
-import {attackCommand,nextCombatMode,approachDescription} from './combat-targeting.js';
+import {attackCommand,nextCombatMode,approachDescription,selectedSkillCommand} from './combat-targeting.js';
 import {mountReservation} from './mission-reservation-ui.js';
 import {renderCampEconomy} from './camp-economy-ui.js';
 import {rosterPage} from './roster-tools.js';
@@ -965,7 +965,7 @@ function renderBattle(b){
     dialog.onclick=event=>{if(event.target===dialog){const r=dialog.getBoundingClientRect();if(event.clientX<r.left||event.clientX>r.right||event.clientY<r.top||event.clientY>r.bottom)dialog.close()}};
   });
   bindDoorControls($('.battlefield'),b,command=>sendCombat(command));
-  mountRoguePlacement({view:b,mode:selectedCombatAction,field:$('.battlefield'),host:$('.battle-action-preview'),send:sendCombat,cancel:()=>{selectedCombatAction='move';renderBattle(b)},escape:esc,blocked:()=>combatRequestPending||combatPlaybackBlocked()});
+  mountRoguePlacement({view:b,mode:selectedCombatAction,field:$('.battlefield'),host:$('.battle-action-preview'),send:sendCombat,cancel:()=>{selectedCombatAction='move';renderBattle(b)},escape:esc,refreshPreview:()=>renderBattle(b),blocked:()=>combatRequestPending||combatPlaybackBlocked()});
   bindLabToolbar();
   combatEffects.mount($('.battlefield'));
   $$('[data-battle-zoom]').forEach(button=>button.onclick=()=>{changeBattleZoom(b,button.dataset.battleZoom);renderBattle(b)});
@@ -1042,7 +1042,7 @@ document.addEventListener('keydown',event=>{
 async function sendCombat(command,nextMode=null,queuedMovement=false){
   if(combatPlaybackBlocked())return;
   $$('.battle-utility-dialog[open]').forEach(d=>d.close());
-  if(command.action==='skill'&&activeBattleView?.units?.[activeBattleView.current_unit_id]?.special)command={...command,skill_id:activeBattleView.units[activeBattleView.current_unit_id].special.id};
+  command=selectedSkillCommand(command,activeBattleView?.units?.[activeBattleView.current_unit_id]);
   const movementContext=`${activeBattleMissionId}:${activeBattleView?.current_unit_id}:${activeBattleView?.round}`;
   const requestMissionId=activeBattleMissionId;
   let acknowledgedPosition=null;

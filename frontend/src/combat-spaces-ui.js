@@ -1,3 +1,4 @@
+import {caltropsArtwork} from './caltrops-art.js';
 export function zoneOverlay(zones,escape){
   return (zones||[]).filter(z=>z.cells?.length).map((zone,index)=>{
     const x=Math.min(...zone.cells.map(c=>c.x)),y=Math.min(...zone.cells.map(c=>c.y));
@@ -21,7 +22,7 @@ export function zoneOverlay(zones,escape){
       const px=(c.x-x)*100,py=(c.y-y)*100;
       artwork+=image(pieces[i%pieces.length],px+12,py+15,76,76,`zone-accent accent-${zone.kind}`,i*.37);
     }
-    if(zone.kind==='caltrops')artwork=zone.cells.map(c=>`<image href="/assets/rogue-v1/caltrop_tile.png" x="${(c.x-x)*100+10}" y="${(c.y-y)*100+10}" width="80" height="80" preserveAspectRatio="xMidYMid meet"/>`).join('');
+    if(zone.kind==='caltrops')artwork=caltropsArtwork(zone.cells,x,y,clip);
     const description=`${zone.name} | ${zone.owner_name} | ${zone.remaining} owner activations | ${zone.description}`;
     return `<div class="battle-zone painted-zone zone-${escape(zone.kind)}" style="grid-column:${x+1};grid-row:${y+1};grid-column-end:span ${w};grid-row-end:span ${h}" title="${escape(description)}" aria-label="${escape(description)}"><svg viewBox="0 0 ${w*100} ${h*100}" preserveAspectRatio="none" aria-hidden="true"><defs><clipPath id="${clip}">${rects}</clipPath></defs><g clip-path="url(#${clip})">${artwork}<path d="${boundary}" class="zone-boundary"/></g></svg></div>`;
   }).join('');

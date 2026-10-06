@@ -129,3 +129,10 @@ class RogueTests(unittest.TestCase):
  def test_auto_shadow_chooses_position_then_finishes_once(self):
   b,a,t=self.fixture(['shadowstep','cheap_shot']);t['x']=5
   self.assertTrue(combat._auto_rogue_turn(b,a,[t]));self.assertEqual(a['quick_actions_used'],1);self.assertTrue(a['acted']);self.assertEqual(b['turn_index'],1)
+
+ def test_knife_exploit_resolves_the_selected_main_attack(self):
+  b,a,t=self.fixture(['exploit_weakness','throwing_knife']);a['x']=1
+  conditions.add_stack(t,'bleed',2,a);conditions.add_stack(t,'hobbled',2,a)
+  with patch('backend.combat._attack_hits',return_value=(True,{'chance':100,'damage_bonus':0},1)):
+   self.use(b,{'action':'skill','skill_id':'job:rogue:exploit_weakness','knife_skill_id':'job:rogue:throwing_knife','target_id':t['id']})
+  self.assertEqual(t['hp'],60);self.assertTrue(a['acted']);self.assertEqual(set(a['ability_state']),{'job:rogue:exploit_weakness','job:rogue:throwing_knife'})

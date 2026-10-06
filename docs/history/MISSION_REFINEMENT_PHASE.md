@@ -1,5 +1,15 @@
 # Mission Refinement Phase
 
+## October 6: Rogue confirmation and trap visibility fixes (implemented in dev)
+
+Rogue attack selection and Confirm/Cancel now appear in the centre of the visible map viewport. R rotation stays in the bottom action-preview area. A selected Caltrops strip stays fixed while confirming; pointer motion only moves the unconfirmed hover preview. Invalid placement cannot commit; cancelling is free. Knife attack selection refreshes the selected attack forecast.
+
+Fixed Throwing Knife + Exploit Weakness: the command sender now preserves an explicit skill ID instead of replacing it with the selected Knife utility. The underlying selected main attack and Knife cooldown resolve together; the main attack still ends activation. Multiple Quick Actions remain allowed before it.
+
+Caltrops now use three small opaque steel spike silhouettes per tile, with a subtle glow and scale pulse, above terrain and props. Combat feedback and interaction controls keep their own foreground layers. Reduced motion disables the pulse. Prior atlas imagery is retained; it is no longer the persistent trap visual.
+
+Validation: 24 Rogue backend tests, all 291 frontend tests and frontend build pass (existing bundle-size warning). Actual Chrome UI fixture checks centred prompts, rotation/cancellation, and the confirmed Exploit/Knife command IDs. Screenshot review covers the confirmation panel and trap layer. No production deployment or player-save changes.
+
 ## October 5: Rogue review, including multiple Quick Actions
 
 Reviewed current Rogue definitions, skill costs/automatic finish, reversible movement, Bleed/Hobbled refresh rules, per-cell zones, forced routes, prepared traps, leaps, targeting, deployment and loadout migration. Canonical proposal: docs/design/ROGUE_REWORK_REVIEW.md (via docs/INDEX.md). User clarified that multiple Quick Actions are allowed, Caltrops is Quick too, and Backflip is Quick. Latest user correction: Rogue main attacks MUST auto-end the activation; Quick Actions can chain before the main attack only. No post-attack escape window. Recommend a separate normal-walk lock while retaining one main action. Knife changes delivery; Cheap Shot/Exploit remain separate attacks. Stack Caltrop Bleed/Hobbled applications, preserve shared route deduplication and readable forecasts. No Rogue gameplay code, save changes, new art/audio or production changes in this review. Implementation and balance testing remain pending.

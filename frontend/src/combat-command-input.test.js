@@ -3,6 +3,7 @@ import assert from 'node:assert/strict';
 import {readFileSync} from 'node:fs';
 import vm from 'node:vm';
 import {createLatestMovement} from './latest-movement.js';
+import {selectedSkillCommand} from './combat-targeting.js';
 import {createNavigationInput} from './navigation-input.js';
 
 // Exercise the actual UI request handler with a deliberately delayed connection.
@@ -11,7 +12,7 @@ const handler=main.slice(main.indexOf('async function sendCombat('),main.indexOf
 function harness(){
   const requests=[],renders=[];
   const battle=(x=0,unit='hero')=>({status:'active',current_unit_id:unit,round:1,units:{hero:{x,y:0}},x});
-  const context={activeBattleMissionId:'lab',activeBattleView:battle(),combatRequestPending:false,inFlightCombatAction:null,
+  const context={selectedSkillCommand,activeBattleMissionId:'lab',activeBattleView:battle(),combatRequestPending:false,inFlightCombatAction:null,
     navigationInput:createNavigationInput(),latestMovement:createLatestMovement(),combatPlaybackBlocked:()=>false,movementSubmitTimer:null,setTimeout,clearTimeout,updatePlaybackControls:()=>{},
     $$:()=>[],$:selector=>selector==='#mission-modal'?{classList:{contains:()=>false}}:null,
     CSS:{escape:s=>s},previewMovement:()=>null,battleEndpoint:()=>'/command',

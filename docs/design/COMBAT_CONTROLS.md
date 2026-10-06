@@ -453,4 +453,15 @@ buff/debuff sizes are unchanged. Unit hover/active scaling still applies normall
 
 ## Rogue targeting (October 5, implemented in dev)
 
-Quick Actions are labelled in the hotbar/tooltips. Shadowstep: choose enemy, choose highlighted adjacent landing, Confirm. Backflip: choose legal cardinal landing, Confirm. Caltrops: preview a 1x3 strip, R rotates, Confirm places; release an outside-map drag to clear placement. C cancels without cost. Invalid cells are red. Knife: choose Basic Attack/Cheap Shot/Exploit (only equipped compatible skills), choose enemy beyond melee range, Confirm. Placement controls replace text in the existing action-preview area. Forecasts explain positional power and negative-stack totals; map Bleed/Hobble badges show stack count and hover text explains independent expiry. Main attacks end the activation; chain Quick Actions first. Animation playback still blocks all confirmed combat inputs until contact/movement/collapse resolves.
+Quick Actions are labelled in the hotbar/tooltips. Shadowstep: choose enemy, choose highlighted adjacent landing, Confirm. Backflip: choose legal cardinal landing, Confirm. Caltrops: preview a 1x3 strip, R rotates, Confirm places; release an outside-map drag to clear placement. C cancels without cost. Invalid cells are red. Knife: choose Basic Attack/Cheap Shot/Exploit (only equipped compatible skills), choose enemy beyond melee range, Confirm. Attack selection and Confirm/Cancel appear centred on the visible map. Rotation and targeting instructions remain in the action-preview area. Forecasts explain positional power and negative-stack totals; map Bleed/Hobble badges show stack count and hover text explains independent expiry. Main attacks end the activation; chain Quick Actions first. Animation playback still blocks all confirmed combat inputs until contact/movement/collapse resolves.
+
+
+## October 6: Rogue confirmation and trap visibility fixes (implemented in dev)
+
+Rogue attack selection and Confirm/Cancel now appear in the centre of the visible map viewport. R rotation stays in the bottom action-preview area. A selected Caltrops strip stays fixed while confirming; pointer motion only moves the unconfirmed hover preview. Invalid placement cannot commit; cancelling is free. Knife attack selection refreshes the selected attack forecast.
+
+Fixed Throwing Knife + Exploit Weakness: the command sender now preserves an explicit skill ID instead of replacing it with the selected Knife utility. The underlying selected main attack and Knife cooldown resolve together; the main attack still ends activation. Multiple Quick Actions remain allowed before it.
+
+Caltrops now use three small opaque steel spike silhouettes per tile, with a subtle glow and scale pulse, above terrain and props. Combat feedback and interaction controls keep their own foreground layers. Reduced motion disables the pulse. Prior atlas imagery is retained; it is no longer the persistent trap visual.
+
+Validation: 24 Rogue backend tests, all 291 frontend tests and frontend build pass (existing bundle-size warning). Actual Chrome UI fixture checks centred prompts, rotation/cancellation, and the confirmed Exploit/Knife command IDs. Screenshot review covers the confirmation panel and trap layer. No production deployment or player-save changes.
