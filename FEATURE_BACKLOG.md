@@ -1,5 +1,9 @@
 # Fortcamp feature backlog
 
+## October 5: Rogue review, including multiple Quick Actions
+
+Reviewed current Rogue definitions, skill costs/automatic finish, reversible movement, Bleed/Hobbled refresh rules, per-cell zones, forced routes, prepared traps, leaps, targeting, deployment and loadout migration. Canonical proposal: docs/design/ROGUE_REWORK_REVIEW.md (via docs/INDEX.md). User clarified that multiple Quick Actions are allowed; Backflip must work after burst. Recommend separate normal-walk lock and an explicit post-main escape window, while retaining one main action. Knife changes delivery; Cheap Shot/Exploit remain separate attacks. Stack Caltrop Bleed/Hobbled applications, preserve shared route deduplication and readable forecasts. No Rogue gameplay code, save changes, new art/audio or production changes in this review. Implementation and balance testing remain pending.
+
 ## October 5: Monk buffs and selective boss resistances
 
 Implemented in dev: Rapid Palm builds up to 30% direct-damage exposure for three target turns; Crushing Fist rolls a 50% stun after successful combo advancement. Iron Reversal grants 25 evasion against the struck enemy until next Monk turn. Breaking Combination grants 3 HP per landed attack for the next three Monk turns, including punches/Dash victims. Dash grants brief 10% single-target physical parry; magic/AoE excluded. New statuses reuse existing skill artwork and contact feedback. Damage amplifiers add, hit healing does not multiply generic procs, and preview damage includes per-punch exposure.

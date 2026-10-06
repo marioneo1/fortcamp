@@ -1,5 +1,7 @@
 # Fortcamp documentation map
 
+Pending Rogue: [Rogue rework review](design/ROGUE_REWORK_REVIEW.md) inspects current actions, stacks and hazards; recommends eight skills, multiple Quick Actions, post-attack escape and trap/position forecasts. Proposal only.
+
 Implemented Monk: [Monk rework](design/MONK_REWORK_REVIEW.md) documents eight skills, full starter combo, technique budgets, readiness, AI and migration. [Monk art](art/MONK_V1.md) records the packed assets and import workflow. Numerical balance remains provisional. Map status columns use 3px gaps; see [Status presentation](design/COMBAT_STATUS_PRESENTATION.md).
 
 Current skill-bar layout and saved order: [Combat controls](design/COMBAT_CONTROLS.md) covers slotted passives, drag swaps, Arrange, innate/equipment Traits, horizontal acting card and passive readiness buffs. Bloodthirst healing is now 20% max HP per kill.
