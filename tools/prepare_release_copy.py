@@ -146,7 +146,7 @@ def build_copy(args,target,data,production_env):
     # Keep frontend tools and tests independent of the development installation too.
     subprocess.run(['npm.cmd','--prefix','frontend','ci'],cwd=target,check=True)
     shutil.copytree(ROOT/'frontend'/'dist',target/'frontend'/'dist')
-    shutil.copytree(ROOT/'frontend'/'public'/'assets',target/'frontend'/'public'/'assets')
+    shutil.copytree(ROOT/'frontend'/'public'/'assets',target/'frontend'/'public'/'assets',dirs_exist_ok=True)
     for name in ('portrait_pools','champion_portraits'):
         source=ROOT/'data'/name
         if source.exists():shutil.copytree(source,target/'data'/name)
