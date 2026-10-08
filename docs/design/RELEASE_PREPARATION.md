@@ -13,3 +13,5 @@ Validation includes release-profile/initialization tests, combat Job tests, fron
 Release builder correction: asset copying overlays the committed public asset directories rather than failing when Git already supplied the destination. A failed preparation restores the previous production checkout; live saves are reset only after preparation and isolated validation succeed.
 
 Dependency check: patched transitive source-map-js from 1.2.1 to 1.2.2 for GHSA-68fv-2mgg-jv7q. npm reports zero vulnerabilities after the lockfile update; all 379 frontend tests pass.
+
+Final checkout audit also excludes performance QA, preview servers and portrait-authoring launchers/tools, alongside browser QA and source test files. Production keeps its runtime and tunnel/setup launchers.

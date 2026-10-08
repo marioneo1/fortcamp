@@ -15,6 +15,8 @@ ROOT=Path(__file__).resolve().parents[1]
 DEV_ONLY_LAUNCHERS = (
     'run_dev_windows.bat', 'run_dev_discord_windows.bat',
     'stop_dev_windows.bat', 'update_prod_windows.bat', 'run_dev_mac_linux.sh',
+    'run_champion_portrait_manager_windows.bat', 'run_portrait_pool_importer_windows.bat',
+    'fix_champion_batch_crops_windows.bat',
 )
 
 
@@ -26,7 +28,7 @@ def configure_release_launchers(target):
     dirty = subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=no'], cwd=target, text=True)
     if dirty.strip():
         raise ValueError('Commit or restore source changes before filtering release shortcuts')
-    patterns = '/*\n' + ''.join(f'!/{name}\n' for name in DEV_ONLY_LAUNCHERS) + '!/tests/\n!/temp/\n!/questions/\n!/question/\n!/gpt-changes-and-updates/\n!/linkapi-changes-and-updates/\n!/frontend/src/*.test.js\n!/tools/*_browser_qa.mjs\n!/tools/build_*_preview.py\n'
+    patterns = '/*\n' + ''.join(f'!/{name}\n' for name in DEV_ONLY_LAUNCHERS) + '!/tests/\n!/temp/\n!/questions/\n!/question/\n!/gpt-changes-and-updates/\n!/linkapi-changes-and-updates/\n!/frontend/src/*.test.js\n!/tools/*qa*\n!/tools/build_*_preview.py\n!/tools/serve_*_preview.*\n!/tools/preview_*.py\n!/tools/champion_portrait_manager.py\n!/tools/portrait_pool_importer.py\n'
     subprocess.run(['git', 'sparse-checkout', 'set', '--no-cone', '--stdin'], cwd=target,
                    input=patterns, text=True, check=True)
 
