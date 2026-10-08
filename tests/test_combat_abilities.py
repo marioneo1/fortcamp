@@ -142,13 +142,13 @@ class AbilityFoundationTests(unittest.TestCase):
         self.assertIn('paused',b['auto_pause_reason'])
         self.assertIsNone(b.get('outcome'))
 
-    def test_capture_tools_cannot_use_damaging_ability(self):
+    def test_capture_tools_allow_lethal_unarmed_techniques(self):
         b,a,t=self.fixture('captor')
-        skill=abilities.snapshot([{'id':'bad','name':'Bad','range':1,'elevation_rule':'melee'}],4)[0]
-        a['skills']=[skill];before=deepcopy(b)
-        with self.assertRaises(ValueError):self.command(b,a,t,skill)
-        self.assertEqual(a['ability_state'],before['units']['player']['ability_state'])
-        self.assertEqual(t['hp'],before['units'][t['id']]['hp'])
+        skill=abilities.snapshot([{'id':'punch','name':'Punch','range':1,'elevation_rule':'melee'}],4)[0]
+        a['skills']=[skill];before=t['hp']
+        with patch('backend.combat._attack_hits',return_value=(True,{'chance':100,'damage_bonus':0},1)):
+            self.command(b,a,t,skill)
+        self.assertLess(t['hp'],before)
 
     def test_validation_rejects_unknown_conditions_bad_costs_and_numbers(self):
         _,a,_=self.fixture()

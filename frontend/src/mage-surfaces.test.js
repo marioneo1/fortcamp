@@ -5,6 +5,7 @@ import {frozenMarkup,frozenTransitionPlan,scorchedArtwork,surfaceSeed,scorchedRe
 const frozen={id:'test',alive:true,statuses:[{id:'freeze',elemental_freeze:true}]};
 test('Frozen overlays the portrait surface, leaves identity untouched and chooses stable art',()=>{
  const before=structuredClone(frozen),markup=frozenMarkup(frozen);assert.match(markup,/ice-surface/);assert.match(markup,/mage-frozen-v2\/frozen_/);assert.equal(markup,frozenMarkup(frozen));assert.deepEqual(frozen,before);assert.equal(frozenMarkup({...frozen,alive:false}),'');assert.equal(frozenMarkup({...frozen,statuses:[{id:'freeze'}]}),'');
+ assert.equal(frozenMarkup({id:'test',alive:true,statuses:[]}),'');
 });
 test('Freeze onset and shatter follow real contact; poison expiry melts instead',()=>{
  const normal={id:'test',statuses:[]},view=u=>({units:{test:u}});
@@ -34,4 +35,16 @@ test('Overlapping Scorch regions render each cell only once',async()=>{
  const {mergeScorchedZones,zoneOverlay}=await import('./combat-spaces-ui.js');
  const zones=[{id:'a',kind:'scorched',cells:[{x:1,y:1},{x:2,y:1}],remaining:1},{id:'b',kind:'scorched',cells:[{x:2,y:1},{x:3,y:1}],remaining:2}];
  const before=structuredClone(zones),merged=mergeScorchedZones(zones);assert.equal(merged.length,1);assert.equal(merged[0].cells.length,3);assert.deepEqual(zones,before);assert.equal((zoneOverlay(zones,String).match(/scorch-main-flame/g)||[]).length,3);
+});
+
+test('solo round-trip boss Freeze still grows ice and thaws after its skipped turn',()=>{
+ const normal={id:'boss',alive:true,statuses:[]},ice={id:'freeze',elemental_freeze:true,turns:1};
+ const timeline=[{start:0,duration:790,event:{type:'mage_cast'}},{start:240,duration:900,event:{type:'combat_feedback',unit_id:'boss',kind:'status',status_id:'freeze',statuses_snapshot:[ice]}}];
+ assert.deepEqual(frozenTransitionPlan({units:{boss:normal}},{units:{boss:normal}},timeline),[{id:'boss',mode:'freeze',delay:240},{id:'boss',mode:'thaw',delay:790}]);
+});
+test('transient Freeze shatters at direct contact and a resisted Freeze never creates ice',()=>{
+ const view={units:{boss:{id:'boss',alive:true,statuses:[]}}};
+ const apply={start:200,event:{type:'combat_feedback',unit_id:'boss',kind:'status',status_id:'freeze',statuses_snapshot:[{id:'freeze',elemental_freeze:true}]}};
+ assert.deepEqual(frozenTransitionPlan(view,view,[apply,{start:600,event:{type:'combat_feedback',unit_id:'boss',kind:'physical',amount:8}}]),[{id:'boss',mode:'freeze',delay:200},{id:'boss',mode:'break',delay:600}]);
+ assert.deepEqual(frozenTransitionPlan(view,view,[{start:200,event:{type:'combat_feedback',unit_id:'boss',kind:'resisted',status_id:'freeze'}}]),[]);
 });

@@ -1,5 +1,10 @@
 # Summons and Engineer devices
 
+Current Engineer rules: [Engineer rework](ENGINEER_REWORK_REVIEW.md), October 7.
+Its new Job machines use active slots and construction, independent firing cycles,
+mounting and hazards. The shared-budget prototype below still describes legacy gear
+deployments, not the current Engineer Job. Summoner: [Summoner review](SUMMONER_REWORK_REVIEW.md).
+
 Engine dependency implemented in dev, October 4, 2026. JOB_LOADOUTS.md now covers
 opt-in Engineer/Summoner skill grants; full starter creation remains pending.
 No existing gear, vendor or drop pool has been

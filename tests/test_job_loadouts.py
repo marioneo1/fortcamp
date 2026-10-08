@@ -17,11 +17,11 @@ class JobLoadoutTests(unittest.TestCase):
                 state=self.state();before=deepcopy(state['characters'][0]);inventory=deepcopy(state['inventory'])
                 jobs.update(state,'player',definition['starter_skills'],job)
                 char=state['characters'][0];actives,passives,mods=jobs.snapshot(char)
-                self.assertEqual((len(actives),len(passives)),(3,0) if job in {'monk','rogue','ranger','mage'} else (2,1))
+                self.assertEqual((len(actives),len(passives)),(3,0) if job in {'monk','rogue','ranger','mage','cleric','druid','summoner','engineer'} else (2,1))
                 self.assertEqual(char['equipment'],before['equipment']);self.assertEqual(state['inventory'],inventory)
                 self.assertEqual(char['perks'],before['perks']);self.assertEqual(char['traits'],before['traits'])
                 unit=combat._player_unit(state,char,2,2)
-                self.assertEqual(len([s for s in unit['skills'] if s.get('source_kind')=='character']),3 if job in {'monk','rogue','ranger','mage'} else 2)
+                self.assertEqual(len([s for s in unit['skills'] if s.get('source_kind')=='character']),len(actives))
                 self.assertEqual(unit['passives'],passives)
 
     def test_legacy_and_champions_do_not_silently_gain_a_job(self):
@@ -60,18 +60,20 @@ class JobLoadoutTests(unittest.TestCase):
 
     def test_passive_removal_changes_real_combat_stats(self):
         state=self.state();char=state['characters'][0];base=combat._player_unit(state,char,2,2)
-        jobs.update(state,'player',jobs.JOBS['summoner']['starter_skills'],'summoner')
-        self.assertEqual(combat._player_unit(state,char,2,2)['evasion'],base['evasion']+5)
+        jobs.update(state,'player',jobs.JOBS['rogue']['starter_skills'],'rogue')
+        char['learned_skills'].append('job:rogue:trap_expert')
+        jobs.update(state,'player',['job:rogue:trap_expert'])
+        self.assertTrue(any(p['id']=='job:rogue:trap_expert' for p in combat._player_unit(state,char,2,2)['passives']))
         jobs.update(state,'player',[])
         self.assertEqual(combat._player_unit(state,char,2,2)['evasion'],base['evasion'])
 
     def test_auto_deploys_and_does_not_redeploy_while_capacity_full(self):
         b,a,t=fixtures.AbilityFoundationTests().fixture('mage')
-        a['skills']=[deepcopy(jobs.SKILLS[jobs.JOBS['summoner']['starter_skills'][1]])]
-        self.assertTrue(combat._auto_support(b,a))
-        self.assertEqual(len([u for u in b['units'].values() if u.get('temporary')]),2)
+        a['skills']=[deepcopy(jobs.SKILLS['job:summoner:wisp_swarm'])]
+        self.assertTrue(combat.summoner.auto(b,a,[t]))
+        self.assertEqual(len([u for u in b['units'].values() if u.get('temporary')]),3)
         a['acted']=False;a['ability_activation']+=3
-        self.assertFalse(combat._auto_support(b,a))
+        self.assertFalse(combat.summoner.auto(b,a,[t]))
 
     def test_catalog_copies_cannot_mutate_definitions(self):
         catalog=public_content()['job_loadouts'];catalog['jobs']['mage']['starter_skills'].clear()

@@ -7,6 +7,16 @@ from tests import test_combat_abilities as fixtures
 
 
 class MartialJobTests(unittest.TestCase):
+    def test_fury_spenders_have_no_cooldown_but_still_need_fury_and_main_action(self):
+        for key,cost in [('skullbreaker',2),('groundbreaker',4)]:
+            b,a,t=self.fixture();skill=deepcopy(jobs.SKILLS['job:barbarian:'+key])
+            abilities.validate(skill);self.assertEqual(skill['cost']['cooldown'],0)
+            a['fury']=cost;abilities.spend(a,skill);a['fury']-=cost
+            self.assertEqual(abilities.availability(a,skill)['cooldown_remaining'],0)
+            self.assertFalse(abilities.availability(a,skill)['available'])
+            a['fury']=cost;self.assertTrue(abilities.availability(a,skill)['available'])
+            a['acted']=True;self.assertFalse(abilities.availability(a,skill)['available'])
+
     def fixture(self, passive_names=()):
         battle, actor, target=fixtures.AbilityFoundationTests().fixture('fighter')
         actor.update(attack=20,armor=0,gear_rules={},perk_modifiers={},element=None,on_hit=None,

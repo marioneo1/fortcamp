@@ -249,7 +249,7 @@ class MonkJobTests(unittest.TestCase):
         self.assertEqual(monk.parry_rate(a,dict(t,element='fire'),'melee'),0)
         self.assertEqual(monk.parry_rate(a,t,'melee',{'effects':[{'type':'area_attack'}]}),0)
 
-    def test_crushing_fist_stun_follows_advancement_and_respects_recovery(self):
+    def test_crushing_fist_stun_can_reapply_without_recovery(self):
         b,a,t=self.fixture();skill=jobs.SKILLS['job:monk:crushing_fist']
         with patch('backend.combat_monk.random.Random') as rng:
             rng.return_value.randint.return_value=1
@@ -259,7 +259,7 @@ class MonkJobTests(unittest.TestCase):
         with patch('backend.combat_monk.random.Random') as rng:
             rng.return_value.randint.return_value=1
             monk.complete_technique(b,a,t,skill,1,1)
-        self.assertFalse(conditions.has(t,'stun'))
+        self.assertTrue(conditions.has(t,'stun'))
 
     def test_boss_resistances_are_selective_and_visible(self):
         b,a,t=self.fixture();t.update(boss=True,race='Goblin',kind='chieftain')

@@ -37,28 +37,11 @@ Existing characters are not re-equipped or silently assigned a Job. Internal
 legacy callers remain compatible; the public creation API requires a known Job
 and defaults to Fighter when omitted.
 
-## Capture — implemented
+## Capture - implemented, revised October 7
 
-A capture weapon replaces the weapon's lethal basic attack with **Subdue [A]**. There is one action button; the client sends `subdue`, and the server rejects `attack` for capture weapons. Attack previews are absent. Ordinary weapons cannot choose Subdue. Each attempt consumes a main action, but not the once-per-battle technique use. You can try again on another activation while the battle continues.
+Capture equipment now provides separate lethal **Attack [A]** and **Subdue [N]**. Subdue damages a separate Resolve pool, never HP; at zero Resolve successful contact attempts capture. Armor is replaced by INT/AGI Resolve mitigation, and wounds no longer determine capture chance. Captor adds isolation, drag and Hold techniques. Hold deals 0.75x Resolve damage per tick and repeatedly attempts capture when ready. Captured enemies are unconscious/carryable and automatically recovered at map completion.
 
-A landed attempt deals modest nonlethal restraint damage, whether or not the target is captured. Misses deal no damage. Damage respects armor, Guard and Barrier and stops at 1 HP; it cannot bypass the capture check by knocking a boss out through damage alone. A successful capture leaves the target unconscious and alive. Actual squeeze damage counts in the service record; the capture-only transition adds no fabricated damage or kill credit. No damaging enchantment/on-hit proc or blood/death animation is applied. Recovering the captive still follows normal carrying, extraction, battlefield recovery and prison rules. Capture is not recruitment; boss allegiance agreements still gate using a powerful prisoner as a permanent crewmate.
-
-The preview shows contact chance, capture chance and actual HP damage on contact, including a proposed move into range. One roll selects capture, landed-but-escaped, or miss; capture chance cannot exceed contact chance. Capture uses wounds before this attempt, so the squeeze improves the next attempt rather than secretly changing the displayed chance. Polling and repositioning do not roll capture. Attacking with a capture weapon cannot damage walls or gates. Separately selected offensive gear techniques and thrown payloads remain damaging actions; auto battle uses capture rather than those techniques when carrying a capture weapon.
-
-Current balance:
-
-- Restraint power = `2 + floor(base capture points / 12) + floor(2 * ln(1 + balanced rating / 8))`. A fresh frayed net usually has 2-3 power before armor, while ordinary starter weapons hit harder. Logarithmic stat scaling keeps strong capturers focused on control/capture rather than raw damage. Damage stops at 1 HP.
-
-- Effective capture rating = lowest of STR/DEX/INT + 35% of the difference between their average and lowest stat. Gear and proficiency attribute bonuses apply. One huge STR stat is much less effective than balanced training.
-- Stat contribution = `16 × ln(1 + rating / 8)` percentage points. This gives diminishing returns without discarding further improvement.
-- Missing HP adds up to 36 points. Stun, Sleep, ambush Sleep or Freeze adds 10; Bind or Paralyze adds 6. Control bonuses do not stack.
-- Half the target's evasion and 60% of its armor reduce the chance. Guard reduces it by another 8 points. Bosses have a 20-point resistance penalty.
-- Normal targets currently range from 2–95%; bosses from 2–60%. These are capture bounds, not changes to critical-success probabilities.
-- Ballistic capture tools use existing uphill/downhill accuracy modifiers. Magic binding tools explicitly use line of effect and are blocked by Mute; they do not silently inherit physical projectile elevation bonuses. Blind and Fear reduce capture chance.
-- An ambush attempt uses the sleeping-target bonus, then wakes the whole camp even if the attempt fails.
-- Captor perk adds 3 points. Padded Capture Gloves add 3 equipment points and carrying STR; they never enable capture with an ordinary weapon. Strongest equipment capture bonus applies, capped at 6.
-
-Wounding or controlling a boss before attempting capture is the intended team strategy. An undamaged boss facing a frayed starter net is deliberately difficult. Exact probabilities are shown in the battle; subjective pacing still needs friend-trial feedback.
+[Captor and Resolve](CAPTOR_REWORK_REVIEW.md) is the canonical source for current formulas, probability, eight skills, migration, AI limits and timing. It supersedes the previous HP-based Subdue/capture formula. Equipment quality/range and progression below remain in effect.
 
 ## Equipment progression — implemented
 

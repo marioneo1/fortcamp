@@ -9,7 +9,15 @@ export const MARTIAL_ICON_ART=Object.fromEntries([
  ['barbarian','too_angry_to_fall','too-angry-to-fall'],['barbarian','bloodthirst','bloodthirst'],['barbarian','unstoppable','unstoppable']
 ].map(([job,key,file])=>[`job:${job}:${key}`,`/assets/martial-jobs-v1/${file}.png`]));
 export function skillCategory(skill){
+  if(skill.engineer_kind)return ['sentry_turret','heavy_emplacement'].includes(skill.engineer_kind)?'summon':['dynamite','scuttle_protocol'].includes(skill.engineer_kind)?'damage':skill.engineer_kind==='proximity_charge'?'control':'self';
+  if(skill.summoner_kind==='orders')return 'control';
+  if(skill.summoner_kind)return ['bound_companion','wisp_swarm'].includes(skill.summoner_kind)?'summon':skill.summoner_kind==='life_pact'?'heal':skill.summoner_kind==='transposition'?'control':skill.summoner_kind==='overload'?'ally':'damage';
   const effects=skill.effects||[],has=type=>effects.some(e=>e.type===type);
+  if(skill.druid_kind)return skill.druid_kind==='bramble_wall'?'control':skill.druid_kind==='rejuvenation'?'heal':skill.druid_kind==='living_armor'?'ally':'self';
+  if(skill.cleric_kind)return ['mend','heal','sanctuary','rest'].includes(skill.cleric_kind)?'heal':skill.cleric_kind==='smite'?'self':'control';
+  if(skill.bard_kind==='jeering_verse')return 'control';
+  if(skill.bard_kind==='cue_the_strike')return 'ally';
+  if(['accelerando','quickening_chorus','war_anthem','song_of_peace','maestro','battle_musician'].includes(skill.bard_kind))return 'self';
   if(skill.mage_kind)return skill.mage_kind==='enchant_weapon'?'ally':['flash_freeze','singularity','typhoon'].includes(skill.mage_kind)?'control':skill.mage_kind==='fireball'?'dot':'damage';
   if(['poison_attack','pestilence_shot','rupturing_blow'].includes(skill.ranger_kind))return 'dot';
   if(skill.ranger_kind==='rapid_fire')return 'self';
@@ -31,6 +39,13 @@ export function skillCategory(skill){
 }
 export const FIGHTER_ICON_ART={'job:fighter:cover':'chain-snare','job:fighter:pull':'earthbreaker','job:fighter:rally':'hold-together'};
 export function skillIcon(skill){
+  if(/^job:captor:(subduing_blow|bola|hook_and_drag|abduct|restraining_hold|blitz|restraint|clean_capture)$/.test(skill.id))return `/assets/captor-v1/${skill.id.split(':').at(-1)}.png`;
+  if(skill.engineer_kind)return `/assets/engineer-v2/${skill.engineer_kind}.png`;
+  if(skill.id==='innate:summoner:orders')return '/assets/summoner-v1/bound_companion.png';
+  if(/^job:summoner:(transposition|bound_companion|wisp_swarm|spirit_projection|sacrifice|overload|life_pact|rapid_conjuration)$/.test(skill.id))return `/assets/summoner-v1/${skill.id.split(':').at(-1)}.png`;
+  if(/^job:druid:(prowler|bulwark|rat|rejuvenation|bramble_wall|living_armor|natures_persistence|wild_instinct)$/.test(skill.id))return `/assets/druid-v1/${skill.form_return?'humanoid':skill.id.split(':').at(-1)}.png`;
+  if(/^job:cleric:(mend|heal|sanctuary|rest|smite|exorcist|holy_light|battle_priest)$/.test(skill.id))return `/assets/cleric-v1/${skill.id.split(':').at(-1)}.png`;
+  if(/^job:bard:(jeering_verse|cue_the_strike|battle_musician|accelerando|quickening_chorus|war_anthem|song_of_peace|maestro)$/.test(skill.id))return `/assets/bard-v1/${skill.id.split(':').at(-1).replaceAll('_','-')}.png`;
   if(/^job:mage:(chain_lightning|flash_freeze|singularity|meteor|fireball|enchant_weapon|typhoon|debuffer)$/.test(skill.id))return `/assets/mage-v1/${skill.id.split(':').at(-1)}.png`;
   if(/^job:ranger:(mark_quarry|longshot|multi_shot|rapid_fire|poison_attack|pestilence_shot|rupturing_blow|sharpshooter)$/.test(skill.id))return `/assets/ranger-v1/${skill.id.split(':').at(-1)}.png`;
   if(/^job:rogue:(cheap_shot|crippling_cut|exploit_weakness|shadowstep|caltrops|backflip|trap_expert|throwing_knife)$/.test(skill.id))return `/assets/rogue-v1/${skill.id.split(':').at(-1)}.png`;

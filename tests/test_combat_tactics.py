@@ -36,19 +36,18 @@ class TacticalFoundationTests(unittest.TestCase):
         self.assertEqual(restored,before)
         conditions.finish_activation(a);self.assertFalse(conditions.has(a,'barrier'))
 
-    def test_bind_is_conscious_control_with_recovery_protection(self):
+    def test_bind_is_conscious_and_control_can_refresh(self):
         b,a,t=self.fixture();t['status_activation']=[1,1]
         self.assertTrue(conditions.apply(t,'bind',3,a))
-        self.assertFalse(conditions.apply(t,'bind',3,a))
-        self.assertFalse(conditions.apply(t,'stun',2,a))
+        self.assertTrue(conditions.apply(t,'bind',3,a))
         t['status_activation']=[2,1];conditions.start_activation(b,t)
         self.assertFalse(t.get('forced_skip',False));self.assertTrue(t['conscious'])
         conditions.finish_activation(t)
         before=deepcopy(t);conditions.finish_activation(t);self.assertEqual(t,before)
         for round in (3,4):
             t['status_activation']=[round,1];conditions.start_activation(b,t);conditions.finish_activation(t)
-        self.assertFalse(conditions.apply(t,'bind',2,a))
-        self.assertEqual(t['control_immunity'],2)
+        self.assertTrue(conditions.apply(t,'bind',2,a))
+        self.assertNotIn('control_immunity',t)
 
     def test_mark_is_owned_single_target_and_first_successful_hit_only(self):
         b,a,t=self.fixture();a['status_activation']=[1,0]

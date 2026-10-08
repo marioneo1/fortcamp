@@ -23,4 +23,19 @@ body .battle-playing .battlefield[class] :is(.battle-token,.battle-terrain,.batt
 .battlefield[class].target-art-magic .battle-token.valid-target,.battlefield[class].target-art-magic .battle-terrain.attack-target{cursor:url('/assets/combat-controls-v2/magic_cursor.png?v=20261005-target-v3') 7 7,crosshair!important}
 .battlefield[class].target-art-chain_hook .battle-token.valid-target,.battlefield[class].target-art-chain_hook .battle-terrain.attack-target{cursor:url('/assets/combat-controls-v2/chain_hook_cursor.png?v=20261005-target-v3') 7 7,crosshair!important}
 .battlefield[class].target-art-pointer .battle-token.valid-target,.battlefield[class].target-art-pointer .battle-terrain.attack-target{cursor:url('/assets/combat-controls-v2/pointer_cursor.png?v=20261005-target-v3') 4 4,crosshair!important}
+
+/* Occupied ground targets use the actor weapon cursor, independent of unit-target rules. */
+.battlefield[class].ground-targeting.attack-kind-attack .battle-token.spell-ground-target,.battlefield[class].ground-targeting.attack-kind-attack .battle-token.spell-ground-target *{cursor:url('/assets/combat-controls-v2/attack_cursor.png?v=20261005-target-v3') 9 9,crosshair!important}
+.battlefield[class].ground-targeting.attack-kind-subdue .battle-token.spell-ground-target,.battlefield[class].ground-targeting.attack-kind-subdue .battle-token.spell-ground-target *{cursor:url('/assets/combat-controls-v2/subdue_cursor.png?v=20261005-target-v3') 23 18,crosshair!important}
+.battlefield[class].ground-targeting.attack-kind-ranged .battle-token.spell-ground-target,.battlefield[class].ground-targeting.attack-kind-ranged .battle-token.spell-ground-target *{cursor:url('/assets/combat-controls-v2/ranged_cursor.png?v=20261005-target-v3') 7 7,crosshair!important}
+.battlefield[class].ground-targeting.attack-kind-magic .battle-token.spell-ground-target,.battlefield[class].ground-targeting.attack-kind-magic .battle-token.spell-ground-target *{cursor:url('/assets/combat-controls-v2/magic_cursor.png?v=20261005-target-v3') 7 7,crosshair!important}
+/* Painted navigation never falls back to native browser hands or arrows. */
+.battlefield[class],.battlefield[class] *{cursor:url('/assets/combat-controls-v2/pointer_cursor.png') 4 4,pointer}
+.battlefield[class].mode-move .battle-cell:not(.reachable){cursor:url('/assets/combat-controls-v2/unavailable_cursor.png') 16 16,not-allowed}
+.battlefield[class] .battle-terrain,.battlefield[class] .battle-object{cursor:url('/assets/combat-controls-v2/pointer_cursor.png') 4 4,pointer}
+.battlefield[class] .battle-object,.battlefield[class] .tile-action-menu button{cursor:url('/assets/combat-navigation-v1/interact_cursor.png') 12 12,pointer}
+.battlefield[class] .battle-door-control.is-closed,.battlefield[class] .battle-door-control.is-closed *{cursor:url('/assets/combat-navigation-v1/door_open_cursor.png') 20 20,pointer!important}
+.battlefield[class] .battle-door-control.is-open,.battlefield[class] .battle-door-control.is-open *{cursor:url('/assets/combat-navigation-v1/door_close_cursor.png') 20 20,pointer!important}
+.battlefield[class] .battle-door-control:disabled,.battlefield[class] .battle-door-control:disabled *{cursor:url('/assets/combat-controls-v2/unavailable_cursor.png') 16 16,not-allowed!important}
+.battle-viewport.is-panning[class][class],.battle-viewport.is-panning[class][class] *{cursor:url('/assets/combat-navigation-v1/pan_cursor.png') 20 20,move!important}
 body .battle-playing .battlefield[class][class] *{cursor:none!important}

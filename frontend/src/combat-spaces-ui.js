@@ -25,7 +25,17 @@ export function zoneOverlay(zones,escape){
     const accents={ember:['flame_lick','ember_motes'],binding:['binding_tether'],sanctuary:['restoration_wisp'],thorns:['thorn_growth']};
     const pieces=accents[zone.kind]||accents.binding;
     let artwork=image(bases[zone.kind]||'binding_ring',0,0,w*100,h*100,`zone-base ${zone.kind==='binding'?'zone-orbit':''}`);
-    for(const [i,c] of zone.cells.entries()){
+    if(zone.kind==='bard_song'){
+      const notes={accelerando:['♪','♫'],quickening_chorus:['♬','♪'],war_anthem:['♫','♩'],song_of_peace:['♩','♪']}[zone.song]||['♪','♫'];
+      const noteArt=zone.cells.map((c,i)=>{
+        const px=(c.x-x)*100+50,py=(c.y-y)*100+52;
+        return `<text x="${px}" y="${py}" class="bard-performance-note note-${i%2}" style="animation-delay:-${(i%4)*.55}s">${notes[i%notes.length]}</text>`;
+      }).join('');
+      artwork=`<rect class="bard-performance-wash" x="0" y="0" width="${w*100}" height="${h*100}"/>${noteArt}`;
+    }
+    // Bard Songs have their own readable performance-space treatment. Do not
+    // fall back to the purple binding-tether artwork used by binding zones.
+    if(zone.kind!=='bard_song')for(const [i,c] of zone.cells.entries()){
       const px=(c.x-x)*100,py=(c.y-y)*100;
       artwork+=image(pieces[i%pieces.length],px+12,py+15,76,76,`zone-accent accent-${zone.kind}`,i*.37);
     }
@@ -33,7 +43,7 @@ export function zoneOverlay(zones,escape){
       artwork=zone.cells.map(c=>{const px=(c.x-x)*100,py=(c.y-y)*100;return `<rect x="${px+3}" y="${py+3}" width="94" height="94" rx="6" class="mage-telegraph-cell"/>`}).join('');
       artwork+=`<text x="${w*50}" y="${h*50}" class="mage-telegraph-label">${zone.kind==='meteor_armed'?'METEOR INCOMING':'FREEZE ARMED'}</text>`;
     }
-    if(zone.kind==='scorched')artwork=scorchedArtwork(zone,x,y,w,h,clip);
+    if(['scorched','fire_wall'].includes(zone.kind))artwork=scorchedArtwork(zone,x,y,w,h,clip);
     if(zone.kind==='caltrops')artwork=caltropsArtwork(zone.cells,x,y,clip);
     const description=`${zone.name} | ${zone.owner_name} | ${zone.remaining} owner activations | ${zone.description}`;
     return `<div class="battle-zone painted-zone zone-${escape(zone.kind)}" style="grid-column:${x+1};grid-row:${y+1};grid-column-end:span ${w};grid-row-end:span ${h}" title="${escape(description)}" aria-label="${escape(description)}"><svg viewBox="0 0 ${w*100} ${h*100}" preserveAspectRatio="none" aria-hidden="true"><defs><clipPath id="${clip}">${rects}</clipPath></defs><g clip-path="url(#${clip})">${artwork}<path d="${boundary}" class="zone-boundary"/></g></svg></div>`;

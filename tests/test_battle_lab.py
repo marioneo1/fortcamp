@@ -136,7 +136,7 @@ class BattleLabTests(unittest.TestCase):
 
     def test_job_progress_loadouts_and_mixed_party_are_isolated(self):
         from backend.job_loadouts import JOBS
-        later = JOBS['summoner']['unlocks'][-1]['skill_id']
+        later = next(u['skill_id'] for u in JOBS['summoner']['unlocks'] if u['contracts']==9)
         testers = [lab.JobTester(job_id='summoner', practice=9, skill_ids=[later]),
                    lab.JobTester(job_id='captor', practice=2)]
         state, party = lab.job_test_party(testers)

@@ -1,12 +1,21 @@
+import {emitCaptorEffect} from './captor-ui.js';
+import {emitEngineerEffect} from './engineer-ui.js';
 // Alpha-sprite effects follow resolved packets; no second combat simulation.
-export const MARTIAL_EFFECTS={brace:'protection',second_wind:'restoration',victory_strike:'force',
+import {emitDruidForm} from './druid-effects.js';
+import {emitSummonerEffect} from './summoner-effects.js';
+export const MARTIAL_EFFECTS={cleric_heal:'restoration',cleric_smite:'force',cleric_light:'force',brace:'protection',second_wind:'restoration',victory_strike:'force',
  reckless_blow:'force',skullbreaker:'force',death_defiance:'force',bloodthirst:'restoration',unstoppable:'protection'};
 export function martialAuraMarkup(unit){
  if(unit.alive===false||unit.conscious===false)return '';
  const ids=new Set((unit.statuses||[]).map(s=>s.id));
+ if(ids.has('summon_overload'))return '<span class="summoner-overload-aura" aria-hidden="true"></span>';
  return `${ids.has('brace_defense')?'<span class="martial-aura brace-aura" aria-hidden="true"><img src="/assets/martial-jobs-v1/protection-3.png" alt=""></span>':''}${ids.has('death_defiance')?'<span class="martial-aura defiance-aura" aria-hidden="true"><img src="/assets/martial-jobs-v1/force-3.png" alt=""></span>':''}`;
 }
 export function emitMartialEffect(field,event,battle,delay){
+ if(emitCaptorEffect(field,event,battle,delay))return;
+ if(emitEngineerEffect(field,event,battle,delay))return;
+ if(emitSummonerEffect(field,event,battle,delay))return;
+ if(emitDruidForm(field,event,battle,delay))return;
  const family=MARTIAL_EFFECTS[event.skill];if(!family)return;
  setTimeout(()=>{
   if(!field.isConnected||document.hidden)return;

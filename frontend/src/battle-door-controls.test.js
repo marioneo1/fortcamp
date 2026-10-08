@@ -27,3 +27,8 @@ test('disabled controls remain visible and never send commands',()=>{
  bindDoorControls({querySelectorAll:()=>[button]},disabled,()=>sent=true);
  button.onclick({stopPropagation(){}});assert.equal(sent,false);
 });
+
+test('open and close controls use distinct painted icons rather than browser-style hands',()=>{
+ assert.match(doorControlsMarkup(battle,escape),/combat-navigation-v1\/door_open.png/);
+ assert.match(doorControlsMarkup({...battle,door_controls:battle.door_controls.map(c=>({...c,operation:'Close'}))},escape),/combat-navigation-v1\/door_close.png/);
+});

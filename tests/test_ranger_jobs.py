@@ -90,7 +90,7 @@ class RangerTests(unittest.TestCase):
    if mark:conditions.mark(b,a,t,3,0);t['statuses'][-1]['quarry']=True
    with self.hit():self.use(b,'poison_attack',t)
    self.assertEqual(t['hp'],470);s=next(s for s in t['statuses'] if s['id']=='poison');self.assertEqual(len(s['layers']),count)
-   self.assertTrue(conditions.has(a,'poison_imbue'));self.assertEqual(ranger.dot_potential(t),50*count*(count+1)/2)
+   self.assertTrue(conditions.has(a,'poison_imbue'));self.assertEqual(ranger.dot_potential(t),50*count)
  def test_imbue_multi_and_miss_preservation(self):
   b,a,t=self.fixture(['multi_shot']);a['statuses']=[{'id':'poison_imbue'}]
   with patch('backend.combat_ranger.roll',return_value=3),self.hit():self.use(b,'multi_shot',t)
@@ -105,12 +105,12 @@ class RangerTests(unittest.TestCase):
  def test_poison_immune_and_legacy_conversion(self):
   b,a,t=self.fixture();t['race']='Automaton';ranger.poison(b,a,t,4);self.assertFalse(conditions.has(t,'poison'))
   t['race']='Human';t['statuses']=[{'id':'poison','turns':2,'source_id':a['id'],'source_name':a['name'],'tick_damage':7}];ranger.poison(b,a,t,1)
-  combat._tick_gear_statuses(b,t);self.assertEqual(t['hp'],400);conditions.finish_activation(t);self.assertEqual(t['statuses'][0]['stacks'],1)
-  t['status_activation']=[20,1];combat._tick_gear_statuses(b,t);self.assertEqual(t['hp'],350);conditions.finish_activation(t);self.assertFalse(conditions.has(t,'poison'))
+  combat._tick_gear_statuses(b,t);self.assertEqual(t['hp'],450);conditions.finish_activation(t);self.assertEqual(t['statuses'][0]['stacks'],1)
+  t['status_activation']=[20,1];combat._tick_gear_statuses(b,t);self.assertEqual(t['hp'],400);conditions.finish_activation(t);self.assertFalse(conditions.has(t,'poison'))
  def test_stacks_decay_one_per_turn_not_independent_duration(self):
   b,a,t=self.fixture();ranger.poison(b,a,t,2)
-  combat._tick_gear_statuses(b,t);self.assertEqual(t['hp'],400);conditions.finish_activation(t);self.assertEqual(t['statuses'][0]['stacks'],1)
-  t['status_activation']=[20,1];ranger.poison(b,a,t,1);combat._tick_gear_statuses(b,t);self.assertEqual(t['hp'],300);conditions.finish_activation(t);self.assertEqual(t['statuses'][0]['stacks'],1)
+  combat._tick_gear_statuses(b,t);self.assertEqual(t['hp'],450);conditions.finish_activation(t);self.assertEqual(t['statuses'][0]['stacks'],1)
+  t['status_activation']=[20,1];ranger.poison(b,a,t,1);combat._tick_gear_statuses(b,t);self.assertEqual(t['hp'],400);conditions.finish_activation(t);self.assertEqual(t['statuses'][0]['stacks'],1)
  def test_pestilence_all_damage_and_attack(self):
   b,a,t=self.fixture(['pestilence_shot'])
   with self.hit():self.use(b,'pestilence_shot',t)
@@ -122,9 +122,9 @@ class RangerTests(unittest.TestCase):
  def test_rupture_real_remaining_duration_allies(self):
   b,a,t=self.fixture(['rupturing_blow']);ally={**a,'id':'ally'}
   ranger.poison(b,ally,t,2);conditions.add_stack(t,'bleed',3,ally)
-  potential=ranger.dot_potential(t);self.assertEqual(potential,175)
+  potential=ranger.dot_potential(t);self.assertEqual(potential,125)
   with self.hit():self.use(b,'rupturing_blow',t)
-  self.assertEqual(t['hp'],382);self.assertFalse(conditions.has(t,'bleed'));self.assertFalse(conditions.has(t,'poison'))
+  self.assertEqual(t['hp'],408);self.assertFalse(conditions.has(t,'bleed'));self.assertFalse(conditions.has(t,'poison'))
  def test_rupture_miss_preserves_dots(self):
   b,a,t=self.fixture(['rupturing_blow']);ranger.poison(b,a,t,1)
   with patch('backend.combat._attack_hits',return_value=(False,{'chance':90,'damage_bonus':0},100)):self.use(b,'rupturing_blow',t)
@@ -175,9 +175,9 @@ class RangerTests(unittest.TestCase):
   self.assertEqual(t['hp'],470);self.assertTrue(ranger.steady(a))
  def test_pestilence_amplifies_poison_ticks_and_cashout(self):
   b,a,t=self.fixture(['rupturing_blow']);ranger.poison(b,a,t,2);conditions.apply(t,'pestilence',3,a)
-  combat._tick_gear_statuses(b,t);self.assertEqual(t['hp'],375)
+  combat._tick_gear_statuses(b,t);self.assertEqual(t['hp'],438)
   with self.hit():self.use(b,'rupturing_blow',t)
-  self.assertEqual(t['hp'],243) # 125 DoT + 38 direct + 94 remaining-stack cashout.
+  self.assertEqual(t['hp'],338) # 62 DoT + 38 direct + 62 remaining-duration cashout.
  def test_view_is_pure_and_random_rolls_not_previewed(self):
   b,a,t=self.fixture(['mark_quarry','rapid_fire','multi_shot','poison_attack']);before=deepcopy(b)
   for _ in range(3):combat.battle_view(b)

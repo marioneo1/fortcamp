@@ -1,16 +1,25 @@
+import {mountCaptor,resetCaptor,animateResolvePlayback} from './captor-ui.js';
+import './captor.css';
+import {mountEngineer,resetEngineerPlacement,engineerHazardsMarkup,animateEngineerHazards} from './engineer-ui.js';
+import './engineer.css';
+import {bindMovementHazards} from './combat-hazard-preview.js';
+import {mountSummoner,resetSummonerPlacement} from './summoner-ui.js';
+import './summoner.css';
 import {warmMageBattle,prepareMagePlayback} from './mage-assets.js';
 import {emitMageEffect,mageStatusMarkup,chooseEnchant} from './mage-effects.js';
 import './mage-effects.css';
+import {animateStatusPlayback} from './combat-status-playback.js';
 import {animateFrozenTransitions,animateScorchedTransitions} from './mage-surfaces.js';
 import './mage-surfaces.css';
 import {emitRangerEffect} from './ranger-effects.js';
 import {isTurret,turretMarkup,emitTurretAttack} from './turret-art.js';
 import './turret-art.css';
-import {roguePreviewView,mountRoguePlacement} from './rogue-ui.js';
+import {roguePreviewView,mountRoguePlacement,resetRoguePlacement} from './rogue-ui.js';
 import {emitRogueEffect} from './rogue-effects.js';
 import './rogue-effects.css';
 import {bindSkillSwaps,swapSkillSlots} from './combat-skill-order.js';
 import {traitsMarkup} from './combat-traits.js';
+import {emitDruidLash} from './druid-effects.js';
 import {emitMartialEffect,martialAuraMarkup} from './martial-effects.js';
 import {furyMarkup,comboMarkup} from './martial-ui.js';
 import {emitMonkTechnique,monkAuraMarkup} from './monk-effects.js';
@@ -43,7 +52,7 @@ import {prisonWorkspaceMarkup,rememberPrisonReply,bindPrisonCards,prisonerConfir
 import {victoryMarkup} from './battle-victory-ui.js';
 import {attributeHelp,attributeTotalHelp,mountHoverHelp} from './roster-help.js';
 import {sizeBattleMap,bindMapWheel,bindMapPan} from './battle-camera.js';
-import {hotbarMarkup,hotbarSkills,unitInspectMarkup,bindUnitInspect,bindSpellTargets,bindStatusTray} from './combat-hotbar.js';
+import {hotbarMarkup,hotbarSkills,unitInspectMarkup,bindUnitInspect,bindSpellTargets,bindStatusTray,openUnitInspector,openEffectInspector} from './combat-hotbar.js';
 import './combat-hotbar.css';
 import './combat-layout-a.css';
 import {emitFighterEffect} from './fighter-effects.js';
@@ -58,7 +67,7 @@ import {createCombatEffects} from './combat-effects.js';
 import './combat-effects.css';
 import {impactTimeline,createImpactFeedback,protectionMarkup} from './combat-impact.js';
 import {COMBAT_MOTION,recoilFrames,weaponAttackFrames,weaponHitFrames,collisionFrames,collisionRecipientFrames,collapseFrames,collapsePlacement} from './combat-animation.js';
-import {composeMotion,poseFrames,walkingFrames,playbackDuration,needsPlaybackLock,createPlaybackGate} from './combat-playback.js';
+import {composeMotion,poseFrames,walkingFrames,playbackDuration,needsPlaybackLock,createPlaybackGate,departureGhostPlans} from './combat-playback.js';
 const combatPlayback=createPlaybackGate();
 const combatPlaybackKey=()=>`${activeBattleMissionId}:${activeBattleView?.encounter_id}:${activeBattleView?.seed}`;
 const combatPlaybackBlocked=()=>combatPlayback.blocked(combatPlaybackKey())||(combatRequestPending&&inFlightCombatAction!=='move');
@@ -165,7 +174,7 @@ function updateBattleCamera(b){
   const viewport=document.querySelector('#battle-viewport');
   const update=()=>sizeBattleMap(viewport,{width:b.width,height:b.height,fit:battleFit,zoom:battleZoom});
   update();
-  if(viewport)bindMapPan(viewport);
+  if(viewport)bindMapPan(viewport,cancelCombatTargeting,(id,event,status)=>status?openEffectInspector(b,id,status.id,status.owner,esc,event):openUnitInspector(b,id,esc,event));
   if(viewport)bindMapWheel(viewport,{width:b.width,height:b.height,onZoom:zoom=>{
     battleFit=false;battleZoom=zoom;
     const reset=document.querySelector('[data-battle-zoom=reset]');if(reset)reset.textContent=`${Math.round(zoom*100)}%`;
@@ -176,7 +185,7 @@ function updateBattleCamera(b){
   if(viewport)battleResizeObserver.observe(viewport);
 }
 window.addEventListener('resize',()=>{if(activeBattleView)updateBattleCamera(activeBattleView)});
-let activeBattleMissionId = null, activeBattleView = null, selectedCombatAction = 'move', contextMenuOpen = false, tileActionMenu = null, retreatAllArmed = false, battleZoom = DEFAULT_BATTLE_ZOOM, battlePan = {left:0,top:0}, combatRequestPending = false;
+let activeBattleMissionId = null, activeBattleView = null, selectedCombatAction = 'move', contextMenuOpen = false, tileActionMenu = null, retreatAllArmed = false, battleZoom = DEFAULT_BATTLE_ZOOM, battlePan = {left:0,top:0}, combatRequestPending = false, bardCueAllyId = null, bardCueActorId = null, bardCueSkillId = null;
 let selectedPreparation = {mode:'defense',id:null};
 const rankBoardOpen={};
 const rosterCollectionOpen={champions:false,celestials:false,prisoners:false};
@@ -233,7 +242,7 @@ function openLabBattle(data){
   battleZoom=DEFAULT_BATTLE_ZOOM;battleFit=true;battlePan={left:0,top:0};
   $('#mission-modal').classList.remove('hidden');renderBattle(data.battle);
 }
-function labToolbar(b){if(!activeBattleLabSessionId)return '';return `<div class="battle-lab-toolbar"><div><b>BATTLE LAB - ${b.material_showcase?'MATERIAL TEST':esc(activeLabMetadata.mission.rank)+' Rank'} - ${esc(activeLabMetadata.mission.name)}</b><small>${esc(activeLabMetadata.mission.source)} - ${esc(activeLabMetadata.variant.label)} - ${esc(title(activeLabMetadata.variant.outcome))} - Seed: ${esc(activeLabMetadata.seed)}${b.location_id||b.material_showcase?` - ${esc(title(b.template_id||b.location_id))} - Variant ${b.map_variation} - ${b.width} x ${b.height}`:''}</small>${b.material_showcase?`<details class="lab-pieces"><summary>Pieces in this layout (${b.material_showcase.pieces.length}/16)</summary><small>${b.material_showcase.pieces.map(p=>esc(title(p))).join(' ? ')}</small><small>${esc(b.material_showcase.notes)}</small></details>`:''}${b.status==='complete'?`<small class="lab-complete">Test finished: ${esc(title(b.outcome||'complete'))}. No save changes.</small>`:''}</div><button data-lab-restart>Restart Same Test</button><button data-lab-return>Choose Another Map</button></div>`}
+function labToolbar(b){if(!activeBattleLabSessionId)return '';return `<div class="battle-lab-toolbar"><div><b>BATTLE LAB - ${b.material_showcase?'MATERIAL TEST':esc(activeLabMetadata.mission.rank)+' Rank'} - ${esc(activeLabMetadata.mission.name)}</b><small>${esc(activeLabMetadata.mission.source)} - ${esc(activeLabMetadata.variant.label)} - ${esc(title(activeLabMetadata.variant.outcome))} - Seed: ${esc(activeLabMetadata.seed)}${b.location_id||b.material_showcase?` - ${esc(title(b.template_id||b.location_id))} - Variant ${b.map_variation} - ${b.width} x ${b.height}`:''}</small>${b.material_showcase?`<details class="lab-pieces"><summary>Pieces in this layout (${b.material_showcase.pieces.length}/16)</summary><small>${b.material_showcase.pieces.map(p=>esc(title(p))).join(' / ')}</small><small>${esc(b.material_showcase.notes)}</small></details>`:''}${b.status==='complete'?`<small class="lab-complete">Test finished: ${esc(title(b.outcome||'complete'))}. No save changes.</small>`:''}</div><button data-lab-restart>Restart Same Test</button><button data-lab-return>Choose Another Map</button></div>`}
 function bindLabToolbar(){
   const restart=$('[data-lab-restart]');if(restart)restart.onclick=()=>{if(combatRequestPending){toast('Wait for the current action to finish');return}battleLab.restart()};
   const back=$('[data-lab-return]');if(back)back.onclick=()=>{if(combatRequestPending){toast('Wait for the current action to finish');return}latestMovement.clear();activeBattleView=null;$('#mission-modal').classList.add('hidden');syncMusic();battleLab.open()};
@@ -252,21 +261,47 @@ window.addEventListener('pointerdown',()=>ensureAudio(),{once:true});
 const sfxFiles={ui_click:'ui_click.wav',ui_confirm:'ui_confirm.wav',ui_cancel:'ui_cancel.wav',melee_swing:'melee_swing.wav',melee_hit_light:'melee_hit_light.wav',melee_hit_heavy:'melee_hit_heavy.wav',subdue_hit:'subdue_hit.wav',unit_death:'unit_death.wav',unit_unconscious:'unit_unconscious.wav',guard:'guard.wav',mission_success:'mission_success_v3.wav',mission_failure:'mission_failure_v3.wav',mission_critical_success:'mission_critical_success_v3.wav',mission_critical_failure:'mission_critical_failure_v3.wav'};
 for(const name of ['step_earth','step_stone','step_water','bow_release','arrow_hit','magic_cast','magic_hit','attack_miss','shield_block','throw_release','throw_hit','structure_hit','structure_break','cage_open','pickup','payload_drop','extraction','objective_interact'])sfxFiles[name]=`${name}.wav`;
 for(const name of ['mage_lightning','mage_freeze','mage_gravity','mage_fireball','mage_typhoon'])sfxFiles[name]=`${name}.wav`;
+for(const name of ['bard_jeering_verse','bard_cue_strike','bard_accelerando','bard_quickening_chorus','bard_war_anthem','bard_song_of_peace'])sfxFiles[name]=`${name}.wav`;
 const unavailableSfx=new Set();
+const decodedSfx=new Map(),decodingSfx=new Map();
 for(const name of ['burn_tick','poison_tick','barrier_absorb','collision_hit'])sfxFiles[name]=`${name}.wav`;
 sfxFiles.collision_hit='body_collision.wav';
+for(const name of ['captor_bola','captor_drag','captor_hold','captor_blitz','engineer_assembly','engineer_overclock','engineer_explosion','engineer_mine','engineer_bolt_explosion','engineer_rapid_assembly'])sfxFiles[name]=`${name}.wav`;
+for(const name of ['summoner_conjure','summoner_transposition','summoner_projection','summoner_sacrifice','summoner_overload','summoner_life_pact'])sfxFiles[name]=`${name}.wav`;
+for(const name of ['druid_prowler','druid_bulwark','druid_rat','druid_growth','druid_vine_lash'])sfxFiles[name]=`${name}.wav`;
 for(const name of ['rogue_shadowstep','rogue_backflip','rogue_caltrops','rogue_knife_throw'])sfxFiles[name]=`${name}.wav`;
 for(const name of ['earthbreaker_launch','earthbreaker_land','earthbreaker_crater','body_into_body','body_into_wall'])sfxFiles[name]=`${name}.wav`;
 for(const style of ['slash','hack','crush','blunt','fist','stab'])for(const phase of ['swing','hit'])sfxFiles[`melee_${style}_${phase}`]=`melee_${style}_${phase}.wav`;
 for(const style of ['slash','hack','crush','blunt','fist','stab'])sfxFiles[`melee_${style}_flesh`]=`melee_${style}_flesh.wav`;
 for(const phase of ['cast','cinch','slip'])sfxFiles[`capture_net_${phase}`]=`capture_net_${phase}.wav`;
+async function playBufferedSfx(name,volume){
+  const ctx=ensureAudio();
+  if(!ctx||audioMixer.volume(audioCategory(name),volume)===0)return;
+  try{
+    let buffer=decodedSfx.get(name);
+    if(!buffer){
+      let loading=decodingSfx.get(name);
+      if(!loading){
+        loading=fetch(`/assets/sfx/${sfxFiles[name]}?v=20261006-bard-audio`).then(response=>{
+          if(!response.ok)throw new Error(`SFX ${response.status}`);
+          return response.arrayBuffer();
+        }).then(data=>ctx.decodeAudioData(data));
+        decodingSfx.set(name,loading);
+      }
+      buffer=await loading;decodedSfx.set(name,buffer);decodingSfx.delete(name);
+    }
+    if(ctx.state==='suspended')await ctx.resume();
+    const source=ctx.createBufferSource(),gain=ctx.createGain();
+    gain.gain.value=audioMixer.volume(audioCategory(name),volume);source.buffer=buffer;source.connect(gain);gain.connect(ctx.destination);source.start();
+  }catch{decodingSfx.delete(name)}
+}
 function playSfx(name,volume=.5,delay=0,fallback=null){
   const run=()=>{
     if(!sfxFiles[name]||unavailableSfx.has(name)){fallback?.();return}
     if(audioMixer.volume(audioCategory(name),volume)===0)return;
     const audio=new Audio(`/assets/sfx/${sfxFiles[name]}?v=${name==='earthbreaker_land'?'20261005-landing-dry-v3':'20260930-actions-v1'}`);audio.preload='auto';
     const release=audioMixer.track(audio,audioCategory(name),volume);
-    audio.play().catch(error=>{release();if(error.name!=='NotAllowedError'){unavailableSfx.add(name);fallback?.()}});
+    audio.play().catch(error=>{release();if(error.name==='NotAllowedError')playBufferedSfx(name,volume);else{unavailableSfx.add(name);fallback?.()}});
   };
   if(delay>0)setTimeout(run,delay);else run();
 }
@@ -640,18 +675,23 @@ function mapAssetLayout(item){const footprint=Array.isArray(item.footprint)?item
 function terrainVariant(mapId,material,x,y){const choices={grass:[0,0,0,0,0,1,1,2],dirt:[0,0,0,0,0,0,1],mud:[0,0,0,1],stone:[0,0,0,0,1],water:[0,0,0,1],timber:[0]}[material]||[0],patchX=Math.floor(x/2),patchY=Math.floor(y/2),key=`${mapId||'map'}:${material}:${patchX}:${patchY}`;let hash=2166136261;for(let i=0;i<key.length;i++){hash^=key.charCodeAt(i);hash=Math.imul(hash,16777619)}return choices[(hash>>>0)%choices.length]}
 function combatActionArt(name){return `<span class="combat-action-art action-${name}" aria-hidden="true"></span>`}
 function battleToken(unit,current,battle,stunDelay=0){
+  if(unit.mounted_machine)return '';
   if(unit.lost_in_pit||(unit.temporary&&unit.condition==='dismissed'))return '';
-  const face=isTurret(unit)?turretMarkup(unit):unit.portrait?framedImage(portraitSrc(unit.portrait),unit.portrait_frame,esc):`<span>${initials(unit.name)}</span>`;
+  const face=isTurret(unit)?turretMarkup(unit,battle):unit.portrait?framedImage(portraitSrc(unit.portrait),unit.portrait_frame,esc):`<span>${initials(unit.name)}</span>`;
   const boss=unit.boss||unit.kind==='chieftain';
   const height=battle.elevation?.find(tile=>tile.x===unit.x&&tile.y===unit.y)?.height||0,preview=battle.attack_previews?.[unit.id]?.[selectedCombatAction];
   const accuracy=preview?.support?` · Ability available${preview.heal?` · restores up to ${preview.heal} HP`:''}`:preview?.setup_only?' · Effect available · see ability conditions':preview?` · ${preview.chance}% ${preview.capture?'capture chance':'accuracy'}${preview.damage_bonus?` · +${preview.damage_bonus} height damage`:''}`:'';
   const statuses=mapStatusMarkup(unit,battle.status_definitions,esc);
   const condition=unit.condition||(!unit.alive?'dead':'active'),bodyLabel=isTurret(unit)?'':condition==='unconscious'?'UNCONSCIOUS':condition==='dead'?'CORPSE':'';
   const throwTarget=(battle.throw_profile?.target_ids||[]).includes(unit.id);
-  const support=selectedCombatAction==='skill'&&battle.units?.[battle.current_unit_id]?.special?.target==='ally';
-  const targeting=unit.alive&&unit.conscious!==false&&!unit.extracted&&!unit.carried_by&&['attack','subdue','skill','throw'].includes(selectedCombatAction)&&(support?unit.team==='player':unit.team==='enemy'),validTarget=selectedCombatAction==='throw'?throwTarget:!!preview;
+  const special=battle.units?.[battle.current_unit_id]?.special;
+  const cue=selectedCombatAction==='skill'&&special?.bard_kind==='cue_the_strike';
+  const song=selectedCombatAction==='skill'&&['accelerando','quickening_chorus','war_anthem','song_of_peace'].includes(special?.bard_kind);
+  const support=selectedCombatAction==='skill'&&special?.target==='ally'&&!cue;
+  const cueSelectingAlly=cue&&!bardCueAllyId;
+  const targeting=unit.alive&&unit.conscious!==false&&!unit.extracted&&!unit.carried_by&&['attack','subdue','skill','throw'].includes(selectedCombatAction)&&(song?unit.id===battle.current_unit_id:(cue?(cueSelectingAlly?unit.team==='player':unit.team==='enemy'):(support?unit.team==='player':unit.team==='enemy'))),validTarget=selectedCombatAction==='throw'?throwTarget:song?unit.id===battle.current_unit_id:cue?(cueSelectingAlly?unit.team==='player':unit.team==='enemy'):!!preview;
   const occupiedAbove=condition!=='active'&&Object.values(battle.units||{}).some(other=>other.id!==unit.id&&other.x===unit.x&&other.y===unit.y&&other.alive&&other.conscious!==false&&!other.extracted&&!other.carried_by);
-  return `<button class="battle-token ${isTurret(unit)?'turret-prop':''} ${unit.team} ${current?'current':''} ${boss?'boss':''} ${throwTarget?'throw-target':''} ${targeting?(validTarget?'valid-target':'invalid-target'):''} ${unit.extracted?'extracted':''} ${unit.carried_by?'carried':''} ${occupiedAbove?'body-under-unit':''} ${condition}" data-battle-unit="${unit.id}" style="grid-column:${unit.x+1};grid-row:${unit.y+1}" title="${esc(unit.name)} · ${unit.hp}/${unit.max_hp} HP · ${title(condition)} · elevation ${height}${boss?' · BOSS':''}${targeting?validTarget?' · valid target':' · out of range or line of sight':''}${throwTarget?` · ${battle.throw_profile.damage} throw damage`:''}${accuracy}${tacticalPreviewText(preview)?` | ${esc(tacticalPreviewText(preview))}`:''}">${boss?'<strong class="boss-label">BOSS</strong>':''}${height?`<strong class="height-badge">▲${height}</strong>`:''}${face}${protectionMarkup(unit)}${martialAuraMarkup(unit)}${monkAuraMarkup(unit)}${stunMarkup(unit,stunDelay)}${mageStatusMarkup(unit)}${condition==='active'?`<i><b>${unit.hp}</b><small>HP</small></i>`:''}${furyMarkup(unit,{compact:true})}${bodyLabel?`<em class="body-label">${condition==='dead'?'† CORPSE':'ZZZ · UNCONSCIOUS'}</em>`:''}${statuses}</button>`;
+  return `<button class="battle-token ${isTurret(unit)?'turret-prop':''} ${unit.team} ${current?'current':''} ${boss?'boss':''} ${throwTarget?'throw-target':''} ${targeting?(validTarget?'valid-target':'invalid-target'):''} ${unit.extracted?'extracted':''} ${unit.carried_by?'carried':''} ${occupiedAbove?'body-under-unit':''} ${condition}" data-battle-unit="${unit.id}" style="grid-column:${unit.x+1};grid-row:${unit.y+1}" title="${esc(unit.name)} · ${unit.hp}/${unit.max_hp} HP · ${title(condition)} · elevation ${height}${boss?' · BOSS':''}${targeting?validTarget?' · valid target':' · out of range or line of sight':''}${throwTarget?` · ${battle.throw_profile.damage} throw damage`:''}${accuracy}${tacticalPreviewText(preview)?` | ${esc(tacticalPreviewText(preview))}`:''}">${boss?'<strong class="boss-label">BOSS</strong>':''}${height?`<strong class="height-badge">▲${height}</strong>`:''}${face}${protectionMarkup(unit)}${martialAuraMarkup(unit)}${monkAuraMarkup(unit)}${stunMarkup(unit,stunDelay)}${mageStatusMarkup(unit)}${condition==='active'?`<i><b>${unit.hp}</b><small>HP</small></i>`:''}${furyMarkup(unit,{compact:true})}${unit.team==='enemy'&&!unit.temporary&&(unit.resolve<unit.max_resolve||battle.units?.[battle.current_unit_id]?.job_id==='captor'||selectedCombatAction==='subdue')?`<div class="captor-resolve"><meter min="0" max="${unit.max_resolve}" value="${unit.resolve}"></meter><small>${unit.capture_ready?'CAPTURE READY':`${unit.resolve} RES`}</small></div>`:''}${bodyLabel?`<em class="body-label">${condition==='dead'?'† CORPSE':'ZZZ · UNCONSCIOUS'}</em>`:''}${statuses}</button>`;
 }
 
 function tileActionsForBattle(b,x,y){
@@ -665,8 +705,8 @@ function tileActionsForBattle(b,x,y){
   if(livingEnemy){
     const previews=b.attack_previews?.[livingEnemy.id]||{};
     if(previews.attack)actions.push({label:`${previews.attack.move_to?"Move & "+(previews.attack.capture?"Capture":"Attack"):(previews.attack.capture?"Capture":"Attack")} ${livingEnemy.name}`,detail:`${approachDescription(previews.attack)}${previews.attack.chance}% ${previews.attack.capture?'capture chance':'accuracy'}`,command:attackCommand('attack',livingEnemy.id,previews.attack),icon:'⚔'});
-    if(previews.subdue&&!previews.attack)actions.push({label:`${previews.subdue.move_to?"Move & Subdue":"Subdue"} ${livingEnemy.name}`,detail:`${approachDescription(previews.subdue)}${previews.subdue.chance}% capture chance`,command:attackCommand('subdue',livingEnemy.id,previews.subdue),icon:'◇'});
-    if(previews.skill&&current.special)actions.push({label:`${current.special.name}: ${livingEnemy.name}`,detail:`${approachDescription(previews.skill)}${previews.skill.chance}% accuracy`,command:attackCommand('skill',livingEnemy.id,previews.skill),icon:'✦'});
+    if(previews.subdue)actions.push({label:`${previews.subdue.move_to?"Move & Subdue":"Subdue"} ${livingEnemy.name}`,detail:`${approachDescription(previews.subdue)}${previews.subdue.resolve_damage} Resolve · ${previews.subdue.capture_chance}% capture when ready`,command:attackCommand('subdue',livingEnemy.id,previews.subdue),icon:'◇'});
+    if(previews.skill&&current.special)actions.push({label:`${current.special.name}: ${livingEnemy.name}`,detail:`${approachDescription(previews.skill)}${previews.skill.chance}% accuracy`,command:{...attackCommand('skill',livingEnemy.id,previews.skill),...(current.special.bard_kind==='cue_the_strike'&&bardCueAllyId?{ally_id:bardCueAllyId}: {})},icon:'✦'});
     if((b.throw_profile?.target_ids||[]).includes(livingEnemy.id))actions.push({label:`Throw ${b.throw_profile.payload_name}`,detail:`${b.throw_profile.damage} impact damage`,command:{action:'throw',target_id:livingEnemy.id},icon:'➶'});
   }
   const terrain=b.terrain?.find(t=>t.x===x&&t.y===y&&t.destructible&&!t.destroyed);
@@ -706,6 +746,7 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       if(to&&Math.hypot(from.x-to.x,from.y-to.y)>.02)animationEvents.unshift({type:'movement',unit_id:actingId,preview_settle:true,duration:220,points:[from,{x:to.x,y:to.y}]});
     }
     const timeline=impactTimeline(animationEvents),ghosts=new Map(),offsets=new Map();
+    animateEngineerHazards(previous,battle,timeline,field);
     if(needsPlaybackLock(animationEvents,battle)){
       combatPlayback.hold(combatPlaybackKey(),playbackDuration(timeline));latestMovement.clear();updatePlaybackControls();
     }
@@ -715,18 +756,29 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       const token=field.querySelector(`[data-battle-unit="${CSS.escape(event.unit_id)}"]`);
       if(token)offsets.set(event.unit_id,restartWalking(token,movingPositions.get(event.unit_id)));
     }
-    for(const {event} of timeline.filter(r=>['death_burst','knockout'].includes(r.event.type))){
-      const before=previous.units?.[event.unit_id],finalToken=field.querySelector(`[data-battle-unit="${CSS.escape(event.unit_id)}"]`);
-      if(!before||!finalToken)continue;
-      const holder=document.createElement('div');holder.innerHTML=battleToken({...before,x:event.x,y:event.y,alive:true,conscious:true,condition:'active'},false,previous);
+    for(const {event,before,start,duration} of departureGhostPlans(previous,battle,timeline)){
+      const finalToken=field.querySelector(`[data-battle-unit="${CSS.escape(event.unit_id)}"]`);
+      const holder=document.createElement('div');holder.innerHTML=battleToken({...before,x:event.x??before.x,y:event.y??before.y,alive:true,conscious:true,extracted:false,condition:'active'},false,previous);
       const ghost=holder.firstElementChild;if(!ghost)continue;
-      ghost.dataset.battleUnit=`transition-${event.unit_id}`;ghost.style.pointerEvents='none';ghost.style.zIndex='23';field.append(ghost);finalToken.style.visibility='hidden';
+      ghost.dataset.battleUnit=`transition-${event.unit_id}`;ghost.style.pointerEvents='none';ghost.style.zIndex='23';field.append(ghost);if(finalToken)finalToken.style.visibility='hidden';
       // Measure the final corpse pose, not its inherited CSS transition halfway through.
-      const bodyTransition=finalToken.style.transition;finalToken.style.transition='none';
-      ghosts.set(event.unit_id,{ghost,finalToken,bodyTransition,placement:{...collapsePlacement(ghost.getBoundingClientRect(),finalToken.getBoundingClientRect()),scale:parseFloat(getComputedStyle(finalToken).width)/parseFloat(getComputedStyle(ghost).width)}});
+      const bodyTransition=finalToken?.style.transition;if(finalToken)finalToken.style.transition='none';
+      ghosts.set(event.unit_id,{ghost,finalToken,bodyTransition,placement:{...collapsePlacement(ghost.getBoundingClientRect(),(finalToken||ghost).getBoundingClientRect()),scale:finalToken?parseFloat(getComputedStyle(finalToken).width)/parseFloat(getComputedStyle(ghost).width):1}});
+      if(event.type==='martial_effect')setTimeout(()=>{
+        if(!ghost.isConnected)return;
+        ghost.animate([{opacity:1},{opacity:0,transform:'scale(.35)'}],{duration:Math.max(180,duration-180),fill:'forwards'}).finished.then(()=>ghost.remove(),()=>ghost.remove());
+      },start+180);
     }
     const tokenFor=id=>ghosts.get(id)?.ghost||field.querySelector(`[data-battle-unit="${CSS.escape(id)}"]`);
-    animateFrozenTransitions(previous,battle,timeline,tokenFor);
+    const cancelPose=id=>{
+      const token=tokenFor(id);
+      if(!token||(!token.classList.contains('is-attacking')&&!token.classList.contains('is-hit')))return;
+      for(const animation of token.getAnimations())animation.cancel();
+    };
+    animateStatusPlayback(previous,battle,timeline,tokenFor,esc);
+    animateResolvePlayback(previous,battle,timeline,tokenFor);
+    const iceDuration=animateFrozenTransitions(previous,battle,timeline,tokenFor);
+    if(iceDuration>playbackDuration(timeline)){combatPlayback.hold(combatPlaybackKey(),iceDuration);updatePlaybackControls()}
     animateScorchedTransitions(previous,timeline,field);
     const motions=new Map();
     const queueMotion=(token,frames,options,className,onFinish=()=>{})=>{
@@ -750,6 +802,22 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
         return;
       }
       if(['ground_impact','fighter_rally','chain_attack'].includes(event.type)){emitFighterEffect(field,event,battle,delay,animationEvents);return}
+      if(event.type==='druid_lash'){emitDruidLash(field,event,battle,delay);return}
+      if(event.type==='martial_effect'&&['captor_subduing_blow','captor_bola','captor_hook_and_drag'].includes(event.skill)){
+        const actor=battle.units?.[event.unit_id],token=tokenFor(event.unit_id),to=event.to;
+        if(actor&&token&&to)queueMotion(token,poseFrames(weaponAttackFrames('blunt',Math.sign(to.x-event.x)*cellWidth*.15,Math.sign(to.y-event.y)*cellHeight*.15,actor.id===battle.current_unit_id?1.15:1),event,actor,cellWidth,cellHeight),{duration:475,delay},'is-attacking');
+      }
+      if(event.type==='martial_effect'&&event.skill==='engineer_dynamite_throw'){
+        const actor=battle.units?.[event.unit_id],token=tokenFor(event.unit_id),side=event.x<event.from.x?-1:1;
+        if(actor&&token){const scale=actor.id===battle.current_unit_id?1.15:1;
+          queueMotion(token,poseFrames([
+            {transform:`scale(${scale}) rotate(0deg)`,offset:0},
+            {transform:`translate(${-side*6}px,2px) scale(${scale*.97}) rotate(${-side*14}deg)`,offset:.25},
+            {transform:`translate(${side*7}px,-3px) scale(${scale*1.04}) rotate(${side*12}deg)`,offset:.4},
+            {transform:`scale(${scale}) rotate(0deg)`,offset:1}
+          ],event.from,actor,cellWidth,cellHeight),{duration:450,delay},'is-attacking');
+        }
+      }
       if(event.type==='martial_effect'){emitMartialEffect(field,event,battle,delay);return}
       if(event.type==='monk_technique'){emitMonkTechnique(field,event,battle,delay);return}
       if(['rogue_knife','rogue_effect'].includes(event.type)){const move=timeline.find(t=>t.event.type==='movement'&&t.event.unit_id===event.unit_id);emitRogueEffect(field,event,battle,event.from&&move&&event.type==='rogue_effect'?move.start:delay);return}
@@ -760,7 +828,7 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
         const {ghost,finalToken,placement,bodyTransition}=transition;
         const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
         const dying=ghost.animate(reduced?[{opacity:1},{opacity:0}]:collapseFrames(event.type==='knockout',placement),{duration:plannedDuration,delay,fill:'both',easing:'linear'});
-        const finish=()=>{ghost.remove();finalToken.style.visibility='';finalToken.style.transition=bodyTransition};dying.onfinish=finish;dying.oncancel=finish;
+        const finish=()=>{ghost.remove();if(finalToken){finalToken.style.visibility='';finalToken.style.transition=bodyTransition}};dying.onfinish=finish;dying.oncancel=finish;
         return;
       }
       if(event.type==='mage_cast'){emitMageEffect(field,event,battle,delay);return}
@@ -788,6 +856,7 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
         const attacker=battle.units?.[event.attacker_id],target=battle.units?.[event.target_id]||battle.terrain?.find(t=>t.id===event.target_id)||event.to;
         const attackerToken=tokenFor(event.attacker_id),targetToken=tokenFor(event.target_id);
         if(!attacker||!target||!attackerToken)return;
+        cancelPose(event.attacker_id);cancelPose(event.target_id);
         const from=event.from||attacker,to=event.to||target;
         const dx=Math.sign(to.x-from.x)*cellWidth*.42,dy=Math.sign(to.y-from.y)*cellHeight*.42;
         const attackerScale=attacker.id===battle.current_unit_id?1.15:1,targetScale=target.id===battle.current_unit_id?1.15:1;
@@ -899,6 +968,13 @@ function warmWeaponArt(battle){
   }
   for(const style of ['slash','hack','crush','stab'])for(const phase of ['contact','fade'])paths.add(`/assets/flesh-contact-v1/${style}_${phase}.png`);
   if(Object.values(battle.units||{}).some(u=>u.skills?.some(s=>s.rogue_kind)))for(const name of ['knife','shadow_depart','shadow_arrive','caltrop_tile','landing_dust'])paths.add(`/assets/rogue-v1/${name}.png`);
+  if(Object.values(battle.units||{}).some(u=>u.skills?.some(s=>s.druid_kind))){
+    for(const name of ['transform','restoration','vine_lash','bramble_idle','bramble_ready','bramble_lash','bramble_settle','portrait_prowler','portrait_bulwark','portrait_rat'])paths.add(`/assets/druid-v1/${name}.png`);
+    for(const name of ['druid_bramble','druid_bramble_broken'])paths.add(`/assets/combat-terrain/props/${name}.png`);
+  }
+  if(Object.values(battle.units||{}).some(u=>u.skills?.some(s=>s.engineer_kind)))for(const name of ['heavy_idle','heavy_fire','heavy_recoil','heavy_destroyed','sentry_idle','sentry_fire','sentry_recoil','sentry_destroyed','mine','dynamite','bolt','explosion','man_the_guns','overclock','scuttle_protocol','rapid_assembly','sentry_turret','heavy_emplacement','proximity_charge'])paths.add(`/assets/engineer-v1/${name}.png`);
+  if(Object.values(battle.units||{}).some(u=>u.skills?.some(s=>s.engineer_kind)))for(const name of ['sentry_turret','heavy_emplacement','dynamite','rapid_assembly','man_the_guns','overclock','scuttle_protocol','proximity_charge','sentry_unfinished','heavy_unfinished','explosive_bolt','cross_blast'])paths.add(`/assets/engineer-v2/${name}.png`);
+  if(Object.values(battle.units||{}).some(u=>u.skills?.some(s=>s.summoner_kind)))for(const name of ['portrait_fire','portrait_earth','portrait_grass','portrait_wisp','transposition','bound_companion','wisp_swarm','spirit_projection','sacrifice','overload','life_pact','rapid_conjuration','conjure','projectile','explosion','nature_burst'])paths.add(`/assets/summoner-v1/${name}.png`);
   for(const path of paths)if(!warmedWeaponArt.has(path)){const image=new Image();warmedWeaponArt.set(path,image);image.src=path;image.decode?.().catch(()=>{});}
 }
 function renderBattle(b){
@@ -908,13 +984,29 @@ function renderBattle(b){
   const previousBattle=activeBattleView;
   const previousViewport=$('#battle-viewport');
   if(previousViewport)battlePan={left:previousViewport.scrollLeft,top:previousViewport.scrollTop};
-  b=selectBattleSkill(b,selectedGearSkills.get(`${b.seed}:${b.current_unit_id}`));
+  const battleSkillKey=`${b.seed}:${b.current_unit_id}`;
+  // Cue targeting owns a transient client-side selection. Re-assert the
+  // remembered skill before deriving `current.special`, since a fresh server
+  // snapshot may not carry the previous client-only selection.
+  if(bardCueActorId!=null && String(bardCueActorId)===String(b.current_unit_id) && bardCueSkillId)
+    selectedGearSkills.set(battleSkillKey,bardCueSkillId);
+  b=selectBattleSkill(b,selectedGearSkills.get(battleSkillKey));
   b=roguePreviewView(b,selectedCombatAction);
+  if(b.presentation_zones?.length)b={...b,zones:[...(b.zones||[]),...b.presentation_zones]};
   activeDecisionMission=null;activeBattleView=b;syncMusic();
   const current=b.units[b.current_unit_id];
   if(current)current.combat_skill_order=savedSkillOrder(current);
+  // Keep Cue's two-click performer selection across the redraw that follows
+  // selecting the ally.  Do not derive this from `current.special`: the
+  // server view may omit the transient selection while the client is still
+  // targeting.  Clear it only when the acting unit or selected skill changes.
+  const rememberedSkillId=selectedGearSkills.get(`${b.seed}:${b.current_unit_id}`);
+  const selectedCueSkill=current?.skills?.find(skill=>skill.id===rememberedSkillId && skill.bard_kind==='cue_the_strike')
+    || (current?.special?.bard_kind==='cue_the_strike' ? current.special : null);
+  if(bardCueAllyId && (String(bardCueActorId)!==String(current?.id) || (selectedCueSkill && bardCueSkillId!==selectedCueSkill.id))) {
+    bardCueAllyId=null; bardCueActorId=null; bardCueSkillId=null;
+  }
   if(['interact','carry'].includes(selectedCombatAction))selectedCombatAction='move';
-  if(current?.capture_weapon&&selectedCombatAction==='attack')selectedCombatAction='subdue';
   if(!current?.capture_weapon&&selectedCombatAction==='subdue')selectedCombatAction='move';
   if(current&&!current.special&&selectedCombatAction==='skill')selectedCombatAction='move';
   if(!b.throw_profile&&selectedCombatAction==='throw')selectedCombatAction='move';
@@ -922,6 +1014,7 @@ function renderBattle(b){
   const movementUsed=(b.movement_tree||[]).find(p=>p.x===current?.x&&p.y===current?.y)?.cost||0;
   const movementBudget=b.movement_allowance??current?.move??0;
   const contextActions=b.context_actions||[],terrainTargets=new Set(b.terrain_targets||[]);
+  const displayZones=[...(b.zones||[]),...(b.presentation_zones||[])];
   const throwTargets=new Set(b.throw_profile?.target_ids||[]);
   if(!contextActions.length)contextMenuOpen=false;
   const pathSteps=new Map((b.movement_path||[]).map((p,index)=>[`${p.x},${p.y}`,p.cost??index+1])),origin=b.movement_origin?`${b.movement_origin.x},${b.movement_origin.y}`:'',extraction=new Set((b.extraction?.tiles||[]).map(p=>`${p.x},${p.y}`)),enemyExtraction=new Set((b.enemy_extraction?.tiles||[]).map(p=>`${p.x},${p.y}`)),voidTiles=new Set((b.void_tiles||[]).map(p=>`${p.x},${p.y}`));
@@ -930,10 +1023,10 @@ function renderBattle(b){
   const tileActions=tileActionMenu?tileActionsForBattle(b,tileActionMenu.x,tileActionMenu.y):[];
   if(tileActionMenu&&!tileActions.length)tileActionMenu=null;
   const materialAt=(x,y)=>ground.get(`${x},${y}`)||'grass';
-  let cells='';for(let y=0;y<b.height;y++)for(let x=0;x<b.width;x++){const key=`${x},${y}`,step=pathSteps.get(key),exit=extraction.has(key),enemyExit=enemyExtraction.has(key),holdingExit=exit&&current?.x===x&&current?.y===y&&!current?.exit_ready,voidTile=voidTiles.has(key),flyableVoid=voidTile&&reachable.has(key),material=materialAt(x,y),materialInfo=groundMaterials[material]||{name:title(material),movement_cost:1,description:''},edges=[['n',x,y-1],['e',x+1,y],['s',x,y+1],['w',x-1,y]].filter(([,nx,ny])=>nx<0||ny<0||nx>=b.width||ny>=b.height||materialAt(nx,ny)!==material).map(([side])=>`edge-${side}`).join(' '),variant=terrainVariant(b.map_id,material,x,y);const contextualTitle=voidTile?(flyableVoid?'Fly across void':'Impassable void'):(exit||enemyExit)?`Exit · ${holdingExit?'hold until next activation':esc(exit?b.extraction.name:b.enemy_extraction.name)}`:reachable.has(key)?'Move here':'';cells+=`<button class="battle-cell ground-${material} tile-variant-${variant} ${edges} ${voidTile?'void-tile':''} ${reachable.has(key)?'reachable':''} ${step?'movement-path':''} ${key===origin?'movement-origin':''} ${exit?'extraction-tile':''} ${enemyExit?'enemy-extraction-tile':''}" data-battle-cell="${x},${y}" style="grid-column:${x+1};grid-row:${y+1};--gx:${x};--gy:${y};${environmentGroundStyle(groundArt.get(key))}" title="${esc(zoneCellHelp(b.zones,x,y))}${esc(materialInfo.name)} · ${materialInfo.movement_cost||1} movement${materialInfo.description?` · ${esc(materialInfo.description)}`:''}${contextualTitle?` · ${contextualTitle}`:''}" ${voidTile&&!flyableVoid?'disabled':''}>${key===origin?'<span class="movement-start-label">START</span>':''}${voidTile?`<span class="void-marker">${flyableVoid?'FLY':'VOID'}</span>`:step?`<span>${step}</span>`:(exit||enemyExit&&b.battle_won)?`<span class="exit-marker">${holdingExit?'HOLD':'EXIT'}</span>`:''}</button>`}
+  let cells='';for(let y=0;y<b.height;y++)for(let x=0;x<b.width;x++){const key=`${x},${y}`,step=pathSteps.get(key),exit=extraction.has(key),enemyExit=enemyExtraction.has(key),holdingExit=exit&&current?.x===x&&current?.y===y&&!current?.exit_ready,voidTile=voidTiles.has(key),flyableVoid=voidTile&&reachable.has(key),material=materialAt(x,y),materialInfo=groundMaterials[material]||{name:title(material),movement_cost:1,description:''},edges=[['n',x,y-1],['e',x+1,y],['s',x,y+1],['w',x-1,y]].filter(([,nx,ny])=>nx<0||ny<0||nx>=b.width||ny>=b.height||materialAt(nx,ny)!==material).map(([side])=>`edge-${side}`).join(' '),variant=terrainVariant(b.map_id,material,x,y);const contextualTitle=voidTile?(flyableVoid?'Fly across void':'Impassable void'):(exit||enemyExit)?`Exit · ${holdingExit?'hold until next activation':esc(exit?b.extraction.name:b.enemy_extraction.name)}`:reachable.has(key)?'Move here':'';cells+=`<button class="battle-cell ground-${material} tile-variant-${variant} ${edges} ${voidTile?'void-tile':''} ${reachable.has(key)?'reachable':''} ${step?'movement-path':''} ${key===origin?'movement-origin':''} ${exit?'extraction-tile':''} ${enemyExit?'enemy-extraction-tile':''}" data-battle-cell="${x},${y}" style="grid-column:${x+1};grid-row:${y+1};--gx:${x};--gy:${y};${environmentGroundStyle(groundArt.get(key))}" title="${esc(zoneCellHelp(displayZones,x,y))}${esc(materialInfo.name)} · ${materialInfo.movement_cost||1} movement${materialInfo.description?` · ${esc(materialInfo.description)}`:''}${contextualTitle?` · ${contextualTitle}`:''}" ${voidTile&&!flyableVoid?'disabled':''}>${key===origin?'<span class="movement-start-label">START</span>':''}${voidTile?`<span class="void-marker">${flyableVoid?'FLY':'VOID'}</span>`:step?`<span>${step}</span>`:''}${(exit||enemyExit&&b.battle_won)?`<span class="exit-marker" aria-label="${holdingExit?'Hold here until next activation to withdraw':'Retreat point'}"><img src="/assets/combat-navigation-v1/retreat.png" alt="">${holdingExit?'HOLD':'EXIT'}</span>`:''}</button>`}
   const elevations=(b.elevation||[]).map(tile=>`<div class="battle-elevation ${tile.impassable?'impassable':''}" style="grid-column:${tile.x+1};grid-row:${tile.y+1};--height:${tile.height}" title="${title(tile.kind||'elevation')} · height ${tile.height}${tile.impassable?' · impassable':''}"><span>▲${tile.height}</span></div>`).join('');
   const decorations=[...(b.decorations||[]),...structuralConnectors(b.terrain||[],buildingGeometry)].map(item=>{const layout=mapAssetLayout(item);return `<div class="battle-decoration has-prop-art ${item.ground_edging?'ground-edging':''} ${item.parent_id?'wall-connector':''} ${item.wall_cap?'wall-cap':''} ${layout.className}" style="${layout.style};${paintedPropStyle(layout.sprite||item.sprite)}" title="${esc(item.name||title(item.sprite))}"></div>`}).join('');
-  const terrain=(b.terrain||[]).map(t=>{const destructible=t.destructible&&!t.destroyed,target=terrainTargets.has(t.id),boundaryHint=t.edge_wall&&!t.destroyed&&t.blocking?' ? Interior floor is walkable; this wall blocks crossing its edge':'',details=destructible?` · ${t.hp}/${t.max_hp} HP · Armor ${t.armor||0}${target?' · in attack range':''}`:t.kind==='shallow_water'?' · costs 2 movement · extinguishes Burn':t.kind==='pit'?' · impassable without flight':t.destroyed?` · spent or destroyed · costs ${t.destroyed_movement_cost||1} movement`:'',originalKind=t.original_kind||t.kind,sprite=t.destroyed?paintedDestroyedTerrainSprite(t):(paintedTerrainSprite(t)),layout=mapAssetLayout({...t,sprite});return `<div class="battle-terrain ${t.kind} ${t.state||''} ${sprite?'has-prop-art':''} ${layout.className} ${['palisade','watchtower','wagon','tent','barricade','platform'].includes(originalKind)?'prop-structure':''} ${destructible?'destructible':''} ${t.destroyed?'destroyed':''} ${target?'attack-target':''}" ${destructible?`data-battle-terrain="${esc(t.id)}"`:''} style="${layout.style};${paintedPropStyle(layout.sprite||sprite)}" title="${esc(t.name||title(t.kind))}${details}${boundaryHint}">${destructible?`<span class="terrain-hp">${t.hp}/${t.max_hp}</span>`:t.kind==='pit'?'<span class="terrain-mark">↧</span>':''}</div>`}).join('');
+  const terrain=(b.terrain||[]).map(t=>{const destructible=t.destructible&&!t.destroyed,target=terrainTargets.has(t.id),boundaryHint=t.edge_wall&&!t.destroyed&&t.blocking?' ? Interior floor is walkable; this wall blocks crossing its edge':'',details=destructible?` · ${t.hp}/${t.max_hp} HP · Armor ${t.armor||0}${target?' · in attack range':''}`:t.kind==='shallow_water'?' · costs 2 movement · extinguishes Burn':t.kind==='pit'?' · impassable without flight':t.destroyed?` · spent or destroyed · costs ${t.destroyed_movement_cost||1} movement`:'',originalKind=t.original_kind||t.kind,sprite=t.destroyed?paintedDestroyedTerrainSprite(t):(paintedTerrainSprite(t)),layout=mapAssetLayout({...t,sprite});return `<div class="battle-terrain ${t.kind} ${t.state||''} ${sprite?'has-prop-art':''} ${layout.className} ${['palisade','watchtower','wagon','tent','barricade','platform'].includes(originalKind)?'prop-structure':''} ${destructible?'destructible':''} ${t.destroyed?'destroyed':''} ${t.bramble_fading?'bramble-fading':''} ${target?'attack-target':''}" ${destructible?`data-battle-terrain="${esc(t.id)}"`:''} style="${layout.style};${paintedPropStyle(layout.sprite||sprite)}" title="${esc(t.name||title(t.kind))}${details}${boundaryHint}">${destructible?`<span class="terrain-hp">${t.hp}/${t.max_hp}</span>`:t.kind==='pit'?'<span class="terrain-mark">↧</span>':''}</div>`}).join('');
   const objects=Object.values(b.objects||{}).map(o=>{const sprite=paintedObjectSprite(o),layout=mapAssetLayout({...o,sprite});return `<button class="battle-object ${o.state} ${o.portable?'portable':''} ${sprite?'has-prop-art':''} ${layout.className} ${sprite.startsWith('structure:')?'prop-structure':''}" data-battle-object="${o.id}" style="${layout.style};${paintedPropStyle(layout.sprite||sprite)}" title="${esc(o.name)} · ${title(o.state)}${o.portable?` · weight ${o.weight}`:''}"><span>${o.icon||(o.id==='alarm_horn'?'📯':'🔒')}</span></button>`}).join('');
   const stunDelays=stunOnsets(b.animation_events||[]);
   const units=Object.values(b.units).map(u=>battleToken(u,u.id===b.current_unit_id,b,stunDelays.get(u.id)||0)).join('');
@@ -950,21 +1043,29 @@ function renderBattle(b){
   const victoryPrompt=autoPause+victoryMarkup(b,{expanded:expandedVictory.has(b.seed),escape:esc})+(b.mercenary_notice&&!seenMercenaryNotices.has(b.mercenary_notice.id)?`<div class="mercenary-notice-overlay"><section role="alertdialog" aria-label="Mercenary encounter"><div class="eyebrow">ON THE BATTLEFIELD</div><h2>${esc(b.mercenary_notice.title)}</h2><p>${esc(b.mercenary_notice.text)}</p><button data-dismiss-mercenary class="primary">Continue</button></section></div>`:'');
   const usedMaterials=[...new Set((b.ground_tiles||[]).map(tile=>tile.material))].map(material=>{const info=groundMaterials[material]||{name:title(material),description:''};return `<span title="${esc(info.description||'')}"><i class="ground-swatch ground-${material}"></i>${esc(info.name)}</span>`}).join('');
   const mapLegend=`<div class="battle-map-legend"><b>Terrain</b><div>${usedMaterials}<span title="Higher terrain affects movement and physical accuracy"><i class="legend-height">▲</i>Elevation</span><span title="Guild extraction region"><i class="legend-exit">↙</i>Exit</span></div></div>`;
-  const actionHelp={move:`Position uses ${movementUsed}/${movementBudget} movement from START. Reposition within the green area before acting; movement does not refill when you click. Path numbers show the cost from START.${throwProfile?` Carrying ${throwProfile.payload_name} applies a ${current?.carried_payload_penalty||0}-point movement penalty from STR versus weight.`:''} Shallow water and rubble cost 2. Uphill movement costs 2 per level and a single step can climb at most 2 levels.`,attack:'Hover a target to preview your approach. Click a reachable target outside weapon range, then choose Move & Attack to commit. After attacking, controls return to Move. Walls and gates can also be attacked.',subdue:'Attempt a live capture with a dedicated capture weapon. Uses balanced STR, DEX and INT. Each attempt costs an action: landed attempts deal modest nonlethal damage, stopping at 1 HP. A successful capture makes the target unconscious. Misses deal no damage. Wounds and control effects help; bosses resist. Hover for the chance and approach. Returns to Move after use.',throw:throwProfile?`Throw ${throwProfile.payload_name} at an enemy. STR ${throwProfile.strength} against weight ${throwProfile.weight} gives range ${throwProfile.range} and ${throwProfile.damage} base impact before armor. The payload lands beside the target.`:'Pick up a portable object or carry an unconscious body before throwing.',skill:`${special?.description||'No combat skill is equipped.'} ${special?.quick_action?'Quick Action: commits movement and locks normal walking; your main action remains.':'This commits movement and ends the activation.'}`,context:'Show actions available from the current tile, including objectives, portable objects, bodies, carried units, and extraction handoff.',carry:'Select an adjacent unconscious unit or corpse. The movement penalty is calculated from the carrier’s STR and the target’s weight.',drop:'Put the carried payload into the first safe adjacent tile.',extract_body:'After holding an EXIT for one activation, hand the carried body or prisoner over for free. The carrier may then leave or continue fighting.',interact:'Use an adjacent objective or pick up a portable battlefield object.',guard:'End this activation in a defensive stance. The next direct hit deals 25% less damage. Guard is consumed by that hit.',end_turn:'End this activation. If you have not used your action, automatically Guard against the next hit for 25% less damage.',leave:`Leave through ${b.extraction?.name||'the exit'}. End one activation on an EXIT tile first; Leave becomes available on that character’s next activation.`,retreat_all:'Order every guild fighter to path toward the nearest exit, hold there for one turn, and then leave automatically. Before securing the required objective this concedes the mission; afterward it preserves the victory.'};
+  const actionHelp={move:`Position uses ${movementUsed}/${movementBudget} movement from START. Reposition within the green area before acting; movement does not refill when you click. Path numbers show the cost from START.${throwProfile?` Carrying ${throwProfile.payload_name} applies a ${current?.carried_payload_penalty||0}-point movement penalty from STR versus weight.`:''} Shallow water and rubble cost 2. Uphill movement costs 2 per level and a single step can climb at most 2 levels.`,attack:'Hover a target to preview your approach. Click a reachable target outside weapon range, then choose Move & Attack to commit. After attacking, controls return to Move. Walls and gates can also be attacked.',subdue:'Reduce Resolve without hurting HP; at zero Resolve, each landed attempt can capture. Captured enemies become unconscious and carryable.',throw:throwProfile?`Throw ${throwProfile.payload_name} at an enemy. STR ${throwProfile.strength} against weight ${throwProfile.weight} gives range ${throwProfile.range} and ${throwProfile.damage} base impact before armor. The payload lands beside the target.`:'Pick up a portable object or carry an unconscious body before throwing.',skill:`${special?.description||'No combat skill is equipped.'} ${special?.engineer_kind?special.engineer_kind==='rapid_assembly'?'Quick preparation: movement and your main action remain.':special.quick_action?'Quick Action: your main action remains.':'Main action.':special?.free_action?'Free command: does not commit movement or spend an action.':special?.quick_action?'Quick Action: commits movement and locks normal walking; your main action remains.':'This commits movement and ends the activation.'}`,context:'Show actions available from the current tile, including objectives, portable objects, bodies, carried units, and extraction handoff.',carry:'Select an adjacent unconscious unit or corpse. The movement penalty is calculated from the carrier’s STR and the target’s weight.',drop:'Put the carried payload into the first safe adjacent tile.',extract_body:'After holding an EXIT for one activation, hand the carried body or prisoner over for free. The carrier may then leave or continue fighting.',interact:'Use an adjacent objective or pick up a portable battlefield object.',guard:'End this activation in a defensive stance. The next direct hit deals 25% less damage. Guard is consumed by that hit.',end_turn:'End this activation. If you have not used your action, automatically Guard against the next hit for 25% less damage.',leave:`Leave through ${b.extraction?.name||'the exit'}. End one activation on an EXIT tile first; Leave becomes available on that character’s next activation.`,retreat_all:'Order every guild fighter to path toward the nearest exit, hold there for one turn, and then leave automatically. Before securing the required objective this concedes the mission; afterward it preserves the victory.'};
+  if(current?.mounted_machine){actionHelp.move='You are operating this machine. Use Attack to fire, or Exit Emplacement to choose an adjacent exit. Overclock prevents exiting until the machine breaks.';actionHelp.attack=`Fire the occupied machine at a visible enemy. ${b.engineer?.shots_remaining??1} shot(s) remaining this activation. Heavy splash can also hit nearby allies.`;}
+  else if(current?.construction)actionHelp.move='Construction locks walking. End Turn or Guard to continue working; select a turret build skill to cancel. Displacement cancels construction.';
   if(current?.gear_rules?.guard_heal)actionHelp.guard+=` Equipped gear also restores up to ${current.gear_rules.guard_heal} HP.`;
-  if(current?.capture_weapon)actionHelp.attack=actionHelp.subdue;
   if(current?.gear_rules?.water_walk||current?.gear_rules?.rubble_walk)actionHelp.move+=` Equipped gear lowers ${[current.gear_rules.water_walk?'shallow water':null,current.gear_rules.rubble_walk?'rubble':null].filter(Boolean).join(' and ')} terrain cost to 1. Climbing still costs extra.`;
   if(current?.skills?.length>1)actionHelp.skill+=current.ability_version?' Each ability has its own cooldown or uses.':' All equipped techniques share one use per battle.';
+  if(special?.engineer_kind||special?.summoner_kind)actionHelp.skill=special.description;
   const navigationPrompt=doorControlsMarkup(b,esc);
   const movingPositions=captureMovingPositions($('.battlefield'));
-  patchLiveHTML($('#mission-detail'),`${labToolbar(b)}<div class="battle-header layout-a-header"><div><div class="eyebrow">TACTICAL BATTLE · ROUND ${b.round}</div><h2>${esc(b.name)}</h2></div><div class="turn-order"><b>Turn order</b><div>${turnOrder}</div></div><div class="battle-objectives"><b>Objectives</b><ul>${objectives}</ul></div></div><div class="battle-layout layout-a"><div class="battle-map-stage"><nav class="battle-field-toolbar" aria-label="Battle tools"><small>Wheel to zoom · right-drag to pan</small><button data-battle-fit aria-label="Fit map" title="Fit entire map">⌖</button><button data-battle-popup="supplies">Supplies</button><button data-battle-popup="history">History</button><button data-battle-popup="options">Battle options</button></nav><div class="battle-viewport" id="battle-viewport"><div class="battlefield terrain-style-custom-painted theme-${b.theme||'wilds'} attack-kind-${basicAttackArt(current)} target-art-${targetingArt(current,selectedCombatAction==='skill'?special:null)} mode-${selectedCombatAction==='attack'&&current?.capture_weapon?'subdue':selectedCombatAction} ${selectedCombatAction==='skill'&&current?.special?.target==='ally'?'support-targeting':''} ${selectedCombatAction==='skill'&&b.ground_skill_previews?.[special?.id]?'ground-targeting':''} ${selectedCombatAction==='skill'&&special?.id==='job:fighter:cover'?'chain-targeting':''} ${contextMenuOpen?'context-open':''}" style="--battle-w:${b.width};--battle-h:${b.height};--battle-scale-width:${battleZoom*100}%;--battle-scale-min:${Math.round(b.width*72*battleZoom)}px">${cells}${navigationPrompt}${zoneOverlay(b.zones,esc)}${elevations}${decorations}${terrain}${objects}${units}${bodyMarkers}${tileMenu}</div></div>${victoryPrompt}<div class="battle-command-dock"><div class="dock-actor">${currentActor}<button class="battle-traits-button" data-battle-popup="passives"><span>Traits</span><small>Innate &amp; equipment</small></button></div>${hotbarMarkup(current,combatSkillPage,selectedCombatAction==='skill'?special?.id:null,esc)}${contextPanel}<section class="battle-primary-panel"><div class="eyebrow">COMMANDS</div><div class="combat-actions ${!current?'combat-locked':''}"><button data-combat-mode="move" data-description="${esc(actionHelp.move)}" title="${esc(actionHelp.move)}" class="${selectedCombatAction==='move'?'active':''}">${combatActionArt('move')}<span><kbd>M</kbd> Move</span></button><button data-combat-mode="${current?.capture_weapon?'subdue':'attack'}" data-description="${esc(current?.capture_weapon?actionHelp.subdue:actionHelp.attack)}" title="${esc(current?.capture_weapon?actionHelp.subdue:actionHelp.attack)}" class="${selectedCombatAction===(current?.capture_weapon?'subdue':'attack')?'active':''}" ${current?.acted?'disabled':''}>${combatActionArt(basicAttackArt(current))}<span><kbd>A</kbd> ${current?.capture_weapon?'Subdue':'Attack'}</span></button><button data-combat-mode="throw" data-description="${esc(actionHelp.throw)}" title="${esc(actionHelp.throw)}" class="${selectedCombatAction==='throw'?'active':''}" ${throwProfile&&!current?.acted?'':'disabled'}>${combatActionArt('throw')}<span><kbd>T</kbd> Throw</span></button><button data-combat-action="guard" data-description="${esc(actionHelp.guard)}" title="${esc(actionHelp.guard)}" ${current?.acted?'disabled':''}>${combatActionArt('guard')}<span><kbd>G</kbd> Guard</span></button><button data-context-toggle data-description="${esc(actionHelp.context)}" title="${esc(actionHelp.context)}" class="${contextMenuOpen?'active':''}" ${contextActions.length?'':'disabled'}>${combatActionArt('interact')}<span><kbd>I</kbd> Actions <span class="action-count">${contextActions.length}</span></span></button><button data-combat-action="end_turn" data-description="${esc(actionHelp.end_turn)}" title="${esc(actionHelp.end_turn)}">${combatActionArt('end-turn')}<span><kbd>Space</kbd> End Turn</span></button></div></section>${statusTrayMarkup(current,b.status_definitions,esc)}<section class="battle-action-preview"><div class="eyebrow">ACTION PREVIEW</div><div id="combat-action-help" class="combat-action-help">${esc(actionHelp[selectedCombatAction]||actionHelp.move)}</div></section></div></div></div><dialog id="battle-popup-supplies" class="battle-utility-dialog"><header><h3>Battle supplies</h3><button data-close-battle-popup aria-label="Close">×</button></header>${battleSupplyPanel(b,esc)}</dialog><dialog id="battle-popup-passives" class="battle-utility-dialog"><header><h3>Innate &amp; equipment traits</h3><button data-close-battle-popup aria-label="Close">×</button></header>${traitsMarkup(current,esc)}</dialog><dialog id="battle-popup-skill-order" class="battle-utility-dialog skill-order-dialog"><header><h3>Arrange skills</h3><button data-close-battle-popup aria-label="Close">×</button></header><p>Drag a skill onto another to swap places. Changes save automatically and cost no action.</p>${hotbarMarkup(current,0,null,esc,true)}</dialog><dialog id="battle-popup-history" class="battle-utility-dialog"><header><h3>Battle history</h3><button data-close-battle-popup aria-label="Close">×</button></header><details class="battle-history" open><summary>Battle history</summary><div class="battle-log">${(b.log||[]).slice().reverse().map(line=>`<p>${esc(line)}</p>`).join('')}</div></details></dialog><dialog id="battle-popup-options" class="battle-utility-dialog"><header><h3>Battle options</h3><button data-close-battle-popup aria-label="Close">×</button></header><details class="battle-tools"><summary>Map & battle options</summary>${mapLegend}${current&&!current.player_avatar?`<p class="loyalty-note" title="Checked once per activation. Personality decides behavior.">${current.loyalty??100} loyalty - ${100-(current.loyalty??100)}% independent-turn chance</p>`:''}${b.concealment_help?`<small class="combat-hotkey-note">${esc(b.concealment_help)}</small>`:''}${b.concealment_warning?`<p class="combat-action-help">${esc(b.concealment_warning)}</p>`:''}<small class="combat-hotkey-note">Keyboard: M Move · A ${current?.capture_weapon?'Subdue':'Attack'} · T Throw · 1-9 / 0 Skills · I Actions · G Guard · Space End Turn</small>${b.deployment_resources?`<p class="combat-action-help">Components: ${b.deployment_resources.components} | Summon capacity: ${b.deployment_resources.capacity_used}/${b.deployment_resources.capacity} | Automatic output: ${b.deployment_resources.automatic_spent}/${b.deployment_resources.automatic_budget}<small>${esc(b.entity_rules)}</small></p>`:""}</details><div class="auto-controls"><select id="battle-tactic"><option value="balanced">Balanced</option><option value="objective">Seek Objectives</option><option value="defensive">Defensive</option></select><button id="auto-step">Auto One Turn</button><button id="auto-resolve">Auto Resolve Battle</button></div><div class="combat-actions battle-exit-actions"><button data-combat-action="leave" data-description="${esc(actionHelp.leave)}" title="${esc(actionHelp.leave)}" class="leave-map" ${b.can_extract?'':'disabled'}>${combatActionArt('exit')}<span>Leave Map</span></button><button data-combat-action="retreat_all" data-description="${esc(actionHelp.retreat_all)}" title="${esc(actionHelp.retreat_all)}" class="retreat-all ${retreatAllArmed?'armed':''}">${combatActionArt('exit')}<span><kbd>R</kbd> ${retreatAllArmed?'Confirm Retreat All':'Retreat All'}</span></button></div></dialog>`);
+  patchLiveHTML($('#mission-detail'),`${labToolbar(b)}<div class="battle-header layout-a-header"><div><div class="eyebrow">TACTICAL BATTLE · ROUND ${b.round}</div><h2>${esc(b.name)}</h2></div><div class="turn-order"><b>Turn order</b><div>${turnOrder}</div></div><div class="battle-objectives"><b>Objectives</b><ul>${objectives}</ul></div></div><div class="battle-layout layout-a"><div class="battle-map-stage"><nav class="battle-field-toolbar" aria-label="Battle tools"><small>Wheel to zoom · right-drag to pan</small><button data-battle-fit aria-label="Fit map" title="Fit entire map">⌖</button><button data-battle-popup="supplies">Supplies</button><button data-battle-popup="history">History</button><button data-battle-popup="options">Battle options</button></nav><div class="battle-viewport" id="battle-viewport"><div class="battlefield terrain-style-custom-painted theme-${b.theme||'wilds'} attack-kind-${basicAttackArt(current)} target-art-${targetingArt(current,selectedCombatAction==='skill'?special:null)} mode-${selectedCombatAction} ${selectedCombatAction==='skill'&&current?.special?.target==='ally'?'support-targeting':''} ${selectedCombatAction==='skill'&&b.ground_skill_previews?.[special?.id]?'ground-targeting':''} ${selectedCombatAction==='skill'&&special?.id==='job:fighter:cover'?'chain-targeting':''} ${contextMenuOpen?'context-open':''}" style="--battle-w:${b.width};--battle-h:${b.height};--battle-scale-width:${battleZoom*100}%;--battle-scale-min:${Math.round(b.width*72*battleZoom)}px">${cells}${navigationPrompt}${zoneOverlay(b.zones,esc)}${elevations}${decorations}${terrain}${objects}${units}${bodyMarkers}${tileMenu}</div></div>${victoryPrompt}<div class="battle-command-dock"><div class="dock-actor">${currentActor}<button class="battle-traits-button" data-battle-popup="passives"><span>Traits</span><small>Innate &amp; equipment</small></button></div>${hotbarMarkup(current,combatSkillPage,selectedCombatAction==='skill'?special?.id:null,esc)}${contextPanel}<section class="battle-primary-panel"><div class="eyebrow">COMMANDS</div><div class="combat-actions ${!current?'combat-locked':''}"><button data-combat-mode="move" data-description="${esc(actionHelp.move)}" title="${esc(actionHelp.move)}" class="${selectedCombatAction==='move'?'active':''}">${combatActionArt('move')}<span><kbd>M</kbd> Move</span></button><button data-combat-mode="attack" data-description="${esc(actionHelp.attack)}" title="${esc(actionHelp.attack)}" class="${selectedCombatAction==='attack'?'active':''}" ${current?.acted?'disabled':''}>${combatActionArt(basicAttackArt(current))}<span><kbd>A</kbd> Attack</span></button>${b.can_subdue?`<button data-combat-mode="subdue" data-description="${esc(actionHelp.subdue)}" title="${esc(actionHelp.subdue)}" class="${selectedCombatAction==='subdue'?'active':''}" ${current?.acted?'disabled':''}>${combatActionArt('subdue')}<span><kbd>N</kbd> Subdue</span></button>`:''}<button data-combat-mode="throw" data-description="${esc(actionHelp.throw)}" title="${esc(actionHelp.throw)}" class="${selectedCombatAction==='throw'?'active':''}" ${throwProfile&&!current?.acted?'':'disabled'}>${combatActionArt('throw')}<span><kbd>T</kbd> Throw</span></button><button data-combat-action="guard" data-description="${esc(actionHelp.guard)}" title="${esc(actionHelp.guard)}" ${current?.acted?'disabled':''}>${combatActionArt('guard')}<span><kbd>G</kbd> Guard</span></button><button data-context-toggle data-description="${esc(actionHelp.context)}" title="${esc(actionHelp.context)}" class="${contextMenuOpen?'active':''}" ${contextActions.length?'':'disabled'}>${combatActionArt('interact')}<span><kbd>I</kbd> Actions <span class="action-count">${contextActions.length}</span></span></button><button data-combat-action="end_turn" data-description="${esc(actionHelp.end_turn)}" title="${esc(actionHelp.end_turn)}">${combatActionArt('end-turn')}<span><kbd>Space</kbd> End Turn</span></button></div></section>${statusTrayMarkup(current,b.status_definitions,esc)}<section class="battle-action-preview"><div class="eyebrow">ACTION PREVIEW</div><div id="combat-action-help" class="combat-action-help">${esc(actionHelp[selectedCombatAction]||actionHelp.move)}</div></section></div></div></div><dialog id="battle-popup-supplies" class="battle-utility-dialog"><header><h3>Battle supplies</h3><button data-close-battle-popup aria-label="Close">×</button></header>${battleSupplyPanel(b,esc)}</dialog><dialog id="battle-popup-passives" class="battle-utility-dialog"><header><h3>Innate &amp; equipment traits</h3><button data-close-battle-popup aria-label="Close">×</button></header>${traitsMarkup(current,esc)}</dialog><dialog id="battle-popup-skill-order" class="battle-utility-dialog skill-order-dialog"><header><h3>Arrange skills</h3><button data-close-battle-popup aria-label="Close">×</button></header><p>Drag a skill onto another to swap places. Changes save automatically and cost no action.</p>${hotbarMarkup(current,0,null,esc,true)}</dialog><dialog id="battle-popup-history" class="battle-utility-dialog"><header><h3>Battle history</h3><button data-close-battle-popup aria-label="Close">×</button></header><details class="battle-history" open><summary>Battle history</summary><div class="battle-log">${(b.log||[]).slice().reverse().map(line=>`<p>${esc(line)}</p>`).join('')}</div></details></dialog><dialog id="battle-popup-options" class="battle-utility-dialog"><header><h3>Battle options</h3><button data-close-battle-popup aria-label="Close">×</button></header><details class="battle-tools"><summary>Map & battle options</summary>${mapLegend}${current&&!current.player_avatar?`<p class="loyalty-note" title="Checked once per activation. Personality decides behavior.">${current.loyalty??100} loyalty - ${100-(current.loyalty??100)}% independent-turn chance</p>`:''}${b.concealment_help?`<small class="combat-hotkey-note">${esc(b.concealment_help)}</small>`:''}${b.concealment_warning?`<p class="combat-action-help">${esc(b.concealment_warning)}</p>`:''}<small class="combat-hotkey-note">Keyboard: M Move · A Attack · T Throw · 1-9 / 0 Skills · I Actions · G Guard · Space End Turn</small>${b.deployment_resources?`<p class="combat-action-help">Components: ${b.deployment_resources.components} | Summon capacity: ${b.deployment_resources.capacity_used}/${b.deployment_resources.capacity} | Automatic output: ${b.deployment_resources.automatic_spent}/${b.deployment_resources.automatic_budget}<small>${esc(b.entity_rules)}</small></p>`:""}</details><div class="auto-controls"><select id="battle-tactic"><option value="balanced">Balanced</option><option value="objective">Seek Objectives</option><option value="defensive">Defensive</option></select><button id="auto-step">Auto One Turn</button><button id="auto-resolve">Auto Resolve Battle</button></div><div class="combat-actions battle-exit-actions"><button data-combat-action="leave" data-description="${esc(actionHelp.leave)}" title="${esc(actionHelp.leave)}" class="leave-map" ${b.can_extract?'':'disabled'}>${combatActionArt('exit')}<span>Leave Map</span></button><button data-combat-action="retreat_all" data-description="${esc(actionHelp.retreat_all)}" title="${esc(actionHelp.retreat_all)}" class="retreat-all ${retreatAllArmed?'armed':''}">${combatActionArt('exit')}<span><kbd>R</kbd> ${retreatAllArmed?'Confirm Retreat All':'Retreat All'}</span></button></div></dialog>`);
   const dismissMerc=$('[data-dismiss-mercenary]');if(dismissMerc)dismissMerc.onclick=()=>{seenMercenaryNotices.add(b.mercenary_notice.id);renderBattle(b)};
-  $$('[data-combat-mode]').forEach(btn=>btn.onclick=()=>{retreatAllArmed=false;contextMenuOpen=false;tileActionMenu=null;selectedCombatAction=btn.dataset.combatMode;renderBattle(b)});
+  $$('[data-combat-mode]').forEach(btn=>btn.onclick=()=>{if(btn.dataset.combatMode==='move'&&current?.bard_song)return;retreatAllArmed=false;contextMenuOpen=false;tileActionMenu=null;selectedCombatAction=btn.dataset.combatMode;renderBattle(b)});
+  const moveControl=$('[data-combat-mode="move"]');
+  if(moveControl&&current?.bard_song){moveControl.disabled=true;moveControl.title='Movement is unavailable while performing a Song';moveControl.dataset.description=moveControl.title}
   $$('[data-supply]').forEach(button=>button.onclick=()=>sendCombat({action:'use_item',item_id:button.dataset.supply,target_id:button.dataset.supplyTarget}));
   const technique=$('#battle-gear-skill');if(technique)technique.onchange=()=>{selectedGearSkills.set(`${b.seed}:${b.current_unit_id}`,technique.value);selectedCombatAction='skill';tileActionMenu=null;renderBattle(b)};
   $$('[data-hotbar-skill]').forEach(button=>button.onclick=()=>{
     if(button.getAttribute('aria-disabled')==='true')return;
+    if(button.dataset.hotbarStopSong==='true'){
+      bardCueAllyId=null; bardCueActorId=null; bardCueSkillId=null; sendCombat({action:'stop_song'});return;
+    }
     selectedGearSkills.set(`${b.seed}:${b.current_unit_id}`,button.dataset.hotbarSkill);
+    bardCueAllyId=null; bardCueActorId=null; bardCueSkillId=null;
     selectedCombatAction='skill';tileActionMenu=null;contextMenuOpen=false;renderBattle(b);
   });
   $$('[data-hotbar-page]').forEach(button=>button.onclick=()=>{combatSkillPage=Number(button.dataset.hotbarPage);renderBattle(b)});
@@ -994,7 +1095,40 @@ function renderBattle(b){
   $$('.combat-actions button').forEach(btn=>{btn.onmouseenter=()=>{$('#combat-action-help').textContent=btn.dataset.description||''};btn.onfocus=btn.onmouseenter;btn.onblur=()=>{$('#combat-action-help').textContent=actionHelp[selectedCombatAction]||actionHelp.move};btn.onmouseleave=()=>{$('#combat-action-help').textContent=retreatAllArmed?'Warning: Retreat All automatically withdraws the entire party and cannot be cancelled once confirmed.':actionHelp[selectedCombatAction]||actionHelp.move}});
   $$('[data-combat-action]').forEach(btn=>btn.onclick=()=>{const action=btn.dataset.combatAction;if(action==='continue_pursuit')expandedVictory.delete(b.seed);if(action==='retreat_all'){if(!retreatAllArmed){retreatAllArmed=true;contextMenuOpen=false;renderBattle(b);$('#combat-action-help').textContent='Warning: Retreat All automatically withdraws the entire party and cannot be cancelled once confirmed. Click again or press R again to confirm.';return}retreatAllArmed=false}else{retreatAllArmed=false;contextMenuOpen=false}sendCombat({action})});
   $$('[data-battle-cell]').forEach(cell=>cell.onclick=()=>{const [x,y]=cell.dataset.battleCell.split(',').map(Number),actions=tileActionsForBattle(b,x,y),ambiguous=actions.length>1||Object.values(b.units||{}).some(unit=>unit.x===x&&unit.y===y&&unit.conscious===false&&!unit.extracted&&!unit.carried_by);retreatAllArmed=false;contextMenuOpen=false;if(ambiguous){tileActionMenu={x,y};renderBattle(b);return}tileActionMenu=null;if(actions.length===1){sendCombat(actions[0].command,actions[0].nextMode);return}if(selectedCombatAction==='move'&&!Object.values(b.units||{}).some(u=>u.x===x&&u.y===y&&u.conscious!==false&&!u.extracted&&!u.carried_by)){sendCombat({action:'navigate',x,y});return}renderBattle(b)});
-  $$('[data-battle-unit]').forEach(token=>token.onclick=e=>{e.stopPropagation();const target=b.units[token.dataset.battleUnit];if((target.team==='enemy'||(selectedCombatAction==='skill'&&current?.special?.target==='ally'&&target.team==='player'))&&target.conscious!==false&&['attack','skill','subdue'].includes(selectedCombatAction)&&b.attack_previews?.[target.id]?.[selectedCombatAction]){tileActionMenu=null;retreatAllArmed=false;const preview=b.attack_previews[target.id][selectedCombatAction];if(preview.move_to){tileActionMenu={x:target.x,y:target.y};renderBattle(b);return}sendCombat(attackCommand(selectedCombatAction,target.id,preview));return}if(target.team==='enemy'&&target.conscious!==false&&selectedCombatAction==='throw'&&throwTargets.has(target.id)){tileActionMenu=null;retreatAllArmed=false;sendCombat({action:'throw',target_id:target.id});return}const actions=tileActionsForBattle(b,target.x,target.y);if(actions.length){contextMenuOpen=false;tileActionMenu={x:target.x,y:target.y};renderBattle(b);return}tileActionMenu=null;if(contextMenuOpen){const entry=contextActions.find(item=>item.command?.target_id===target.id);if(entry){contextMenuOpen=false;sendCombat(entry.command)}}});
+  $$('[data-battle-unit]').forEach(token=>token.onclick=e=>{
+    e.stopPropagation();
+    const target=b.units[token.dataset.battleUnit];
+    const rememberedSkillId=selectedGearSkills.get(`${b.seed}:${b.current_unit_id}`);
+    const cueSkill=current?.special?.bard_kind==='cue_the_strike' ? current.special :
+      current?.skills?.find(skill=>skill.id===rememberedSkillId&&skill.bard_kind==='cue_the_strike');
+    const cue=!!cueSkill&&selectedCombatAction==='skill';
+    const song=current?.special?.bard_kind&&['accelerando','quickening_chorus','war_anthem','song_of_peace'].includes(current.special.bard_kind)&&selectedCombatAction==='skill';
+    if(song&&target.id===current.id){tileActionMenu=null;retreatAllArmed=false;sendCombat({action:'skill',skill_id:current.special.id,target_id:current.id});return}
+    if(cue&&!bardCueAllyId&&target.team==='player'&&target.id!==current.id&&target.conscious!==false&&target.alive){
+      bardCueAllyId=target.id; bardCueActorId=current.id; bardCueSkillId=cueSkill.id;
+      tileActionMenu=null; renderBattle(b); return;
+    }
+    if(cue&&bardCueAllyId===target.id)return;
+    // Use the remembered ally directly instead of routing Cue through the
+    // Bard's ordinary attack preview. This keeps the ally selection stable
+    // across the redraw between the two clicks.
+    if(bardCueAllyId&&cue&&target.team==='enemy'&&target.conscious!==false&&target.alive){
+      tileActionMenu=null;retreatAllArmed=false;
+      sendCombat({action:'skill',skill_id:cueSkill.id,ally_id:bardCueAllyId,target_id:target.id});
+      return;
+    }
+    if((target.team==='enemy'||(selectedCombatAction==='skill'&&current?.special?.target==='ally'&&target.team==='player'))&&target.conscious!==false&&['attack','skill','subdue'].includes(selectedCombatAction)&&b.attack_previews?.[target.id]?.[selectedCombatAction]){
+      tileActionMenu=null;retreatAllArmed=false;
+      const preview=b.attack_previews[target.id][selectedCombatAction];
+      if(preview.move_to){tileActionMenu={x:target.x,y:target.y};renderBattle(b);return}
+      sendCombat({...attackCommand(selectedCombatAction,target.id,preview),...(cue?{ally_id:bardCueAllyId}:{})});return;
+    }
+    if(target.team==='enemy'&&target.conscious!==false&&selectedCombatAction==='throw'&&throwTargets.has(target.id)){tileActionMenu=null;retreatAllArmed=false;sendCombat({action:'throw',target_id:target.id});return}
+    const actions=tileActionsForBattle(b,target.x,target.y);
+    if(actions.length){contextMenuOpen=false;tileActionMenu={x:target.x,y:target.y};renderBattle(b);return}
+    tileActionMenu=null;
+    if(contextMenuOpen){const entry=contextActions.find(item=>item.command?.target_id===target.id);if(entry){contextMenuOpen=false;sendCombat(entry.command)}}
+  });
   $$('[data-battle-object]').forEach(object=>object.onclick=e=>{e.stopPropagation();const target=b.objects?.[object.dataset.battleObject],tile=target?`${target.x},${target.y}`:'';if(selectedCombatAction==='move'&&target&&!target.blocking&&reachable.has(tile)){tileActionMenu=null;retreatAllArmed=false;sendCombat({action:'move',x:target.x,y:target.y});return}if(contextMenuOpen){const entry=contextActions.find(item=>item.command?.target_id===object.dataset.battleObject);if(entry){contextMenuOpen=false;tileActionMenu=null;retreatAllArmed=false;sendCombat(entry.command);return}}const actions=target?tileActionsForBattle(b,target.x,target.y):[];tileActionMenu=actions.length?{x:target.x,y:target.y}:null;renderBattle(b)});
   $$('[data-battle-terrain]').forEach(tile=>tile.onclick=e=>{e.stopPropagation();if(selectedCombatAction==='attack'&&terrainTargets.has(tile.dataset.battleTerrain)){contextMenuOpen=false;tileActionMenu=null;retreatAllArmed=false;const preview=b.terrain_attack_previews?.[tile.dataset.battleTerrain];if(preview?.move_to){const target=b.terrain.find(t=>t.id===tile.dataset.battleTerrain);tileActionMenu={x:target.x,y:target.y};renderBattle(b);return}sendCombat(attackCommand('attack',tile.dataset.battleTerrain,preview));return}const target=b.terrain?.find(entry=>entry.id===tile.dataset.battleTerrain);if(selectedCombatAction==='move'&&!contextMenuOpen&&target?.edge_wall&&reachable.has(`${target.x},${target.y}`)&&!Object.values(b.units||{}).some(u=>u.x===target.x&&u.y===target.y&&u.conscious===false&&!u.extracted&&!u.carried_by)){tileActionMenu=null;sendCombat({action:'move',x:target.x,y:target.y});return}const actions=target?tileActionsForBattle(b,target.x,target.y):[];tileActionMenu=actions.length?{x:target.x,y:target.y}:null;renderBattle(b)});
   $('#auto-step').onclick=()=>{retreatAllArmed=false;sendCombatAuto(false)};$('#auto-resolve').onclick=()=>{retreatAllArmed=false;sendCombatAuto(true)};
@@ -1025,6 +1159,11 @@ function renderBattle(b){
   bindUnitInspect($('.battlefield'),b,esc,()=>selectedCombatAction);
   bindStatusTray($('.battle-command-dock'),b,esc);
   bindSpellTargets($('.battlefield'),b,selectedCombatAction,command=>sendCombat(command));
+  bindMovementHazards($('.battlefield'),b,()=>selectedCombatAction,esc,combatPlaybackBlocked);
+  mountSummoner({view:b,mode:selectedCombatAction,field:$('.battlefield'),send:sendCombat,cancel:cancelCombatTargeting,escape:esc,blocked:()=>combatRequestPending||combatPlaybackBlocked()});
+  mountEngineer({view:b,mode:selectedCombatAction,field:$('.battlefield'),send:sendCombat,cancel:cancelCombatTargeting,escape:esc,blocked:()=>combatRequestPending||combatPlaybackBlocked()});
+  mountCaptor(b,selectedCombatAction,$('#mission-modal'),sendCombat,cancelCombatTargeting,esc,()=>combatRequestPending||combatPlaybackBlocked());
+  $('.battlefield')?.insertAdjacentHTML('beforeend',engineerHazardsMarkup(b));
   updatePlaybackControls();
   if(needsPlaybackLock(b.animation_events||[],b)){
     combatPlayback.hold(combatPlaybackKey(),playbackDuration(impactTimeline(b.animation_events))+40);updatePlaybackControls();
@@ -1032,6 +1171,19 @@ function renderBattle(b){
   if(b.preview_movement_points)animateBattleMovement(previousBattle,b,260,movingPositions);
   else requestAnimationFrame(()=>{if(activeBattleView===b)animateBattleMovement(previousBattle,b,260,movingPositions)});
 }
+function cancelCombatTargeting(){
+  if(!activeBattleView||combatPlaybackBlocked())return;
+  resetRoguePlacement();
+  resetSummonerPlacement();
+  resetEngineerPlacement();
+  resetCaptor();
+  document.querySelector('.mage-element-prompt')?.remove();
+  selectedCombatAction='move';tileActionMenu=null;contextMenuOpen=false;retreatAllArmed=false;
+  renderBattle(activeBattleView);
+}
+document.addEventListener('contextmenu',event=>{
+  if(event.target.closest?.('.rogue-map-prompt')){event.preventDefault();cancelCombatTargeting()}
+});
 document.addEventListener('keydown',event=>{
   const tag=event.target?.tagName?.toLowerCase();
   if(event.repeat||event.ctrlKey||event.metaKey||event.altKey||['input','textarea','select'].includes(tag)||event.target?.isContentEditable)return;
@@ -1040,7 +1192,7 @@ document.addEventListener('keydown',event=>{
   const key=event.code==='Space'?'space':event.key.toLowerCase();
   if(/^[0-9]$/.test(key)){const skill=$(`[data-hotbar-key="${key}"]`);if(skill&&!skill.disabled){event.preventDefault();skill.click()}return}
   if(key==='s'){const skill=$('[data-hotbar-skill][aria-disabled="false"]:not(:disabled)');if(skill){event.preventDefault();skill.click()}return}
-  if((key==='c'||key==='escape')&&selectedCombatAction==='skill'){event.preventDefault();selectedCombatAction='move';tileActionMenu=null;contextMenuOpen=false;retreatAllArmed=false;renderBattle(activeBattleView);return}
+  if((key==='c'||key==='escape')&&selectedCombatAction==='skill'){event.preventDefault();cancelCombatTargeting();return}
   if(key==='escape'&&retreatAllArmed){event.preventDefault();retreatAllArmed=false;renderBattle(activeBattleView);return}
   if(!activeBattleView.current_unit_id&&key!=='r')return;
   if(['c','d','p','x'].includes(key)){
@@ -1048,7 +1200,7 @@ document.addEventListener('keydown',event=>{
     if(contextual){event.preventDefault();contextual.click()}else if(activeBattleView.context_actions?.some(entry=>(entry.hotkey||'').toLowerCase()===key)){contextMenuOpen=true;renderBattle(activeBattleView)}
     return;
   }
-  const hotkeys={m:'[data-combat-mode="move"]',a:'[data-combat-mode="attack"], [data-combat-mode="subdue"]',n:'[data-combat-mode="subdue"]',t:'[data-combat-mode="throw"]',s:'[data-combat-mode="skill"]',i:'[data-context-toggle]',g:'[data-combat-action="guard"]',space:'[data-combat-action="end_turn"]',r:'[data-combat-action="retreat_all"]'};
+  const hotkeys={m:'[data-combat-mode="move"]',a:'[data-combat-mode="attack"]',n:'[data-combat-mode="subdue"]',t:'[data-combat-mode="throw"]',s:'[data-combat-mode="skill"]',i:'[data-context-toggle]',g:'[data-combat-action="guard"]',space:'[data-combat-action="end_turn"]',r:'[data-combat-action="retreat_all"]'};
   const button=hotkeys[key]?$(hotkeys[key]):null;
   if(!button||button.disabled)return;
   event.preventDefault();button.click();
@@ -1058,6 +1210,12 @@ async function sendCombat(command,nextMode=null,queuedMovement=false){
   $$('.battle-utility-dialog[open]').forEach(d=>d.close());
   command=selectedSkillCommand(command,activeBattleView?.units?.[activeBattleView.current_unit_id]);
   const mageActor=activeBattleView?.units?.[activeBattleView.current_unit_id];
+  // Cue is a two-target command. Preserve the client-side performer choice
+  // even when a tile-action path or a redraw produced the command object.
+  const commandSkill=mageActor?.skills?.find(skill=>skill.id===command.skill_id) || mageActor?.special;
+  if(command.action==='skill' && !command.ally_id && bardCueAllyId
+      && commandSkill?.bard_kind==='cue_the_strike')
+    command={...command,ally_id:bardCueAllyId};
   const mageSkill=command.action==='skill'?mageActor?.skills?.find(s=>s.id===command.skill_id):null;
   if(mageSkill?.mage_kind==='enchant_weapon'&&!command.element){chooseEnchant({view:activeBattleView,command,send:sendCombat,escape:esc,blocked:()=>combatRequestPending||combatPlaybackBlocked(),cancel:()=>{selectedCombatAction='move';renderBattle(activeBattleView)}});return}
   const movementContext=`${activeBattleMissionId}:${activeBattleView?.current_unit_id}:${activeBattleView?.round}`;
@@ -1121,6 +1279,7 @@ async function sendCombat(command,nextMode=null,queuedMovement=false){
       }
     }
     tileActionMenu=null;
+    if(command.action==='skill'&&command.ally_id){bardCueAllyId=null; bardCueActorId=null; bardCueSkillId=null;}
     selectedCombatAction=nextCombatMode(command.action,nextMode,selectedCombatAction);
     if(data.result?.scene_continuation){activeBattleView=null;await refreshDynamic(true);await openDecision(data.result.mission_id);return}if(data.result?.mercenary_interlude){await resumeMercenaryContract(data.result);return}
     if(data.result){syncMissionMutation({...activeMissions.find(m=>m.id===activeBattleMissionId),id:activeBattleMissionId,status:'completed',result:data.result});const soundDuration=playBattleSounds(data.battle);activeBattleView=null;retreatAllArmed=false;playOutcomeSound(data.result.outcome,soundDuration);showResult(data.result);await refreshDynamic(true);return}

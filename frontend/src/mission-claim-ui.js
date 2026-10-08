@@ -41,7 +41,7 @@ export function mountMissionPlanner(root,m,characters,{esc,title,portrait,metric
     const ownAssigned=primary.some(slot=>characters.some(c=>c.id===draft[slot.key]&&!c.temporary_mercenary));
     get('[data-hire-mercenaries]').disabled=!ownAssigned||!onHire;
     const fee=selection().mercenary_ids.reduce((sum,id)=>sum+(hired.get(id)?.mercenary_fee||0),0);
-    get('[data-hire-info]').textContent=fee?`${selection().mercenary_ids.length} hired ? ${fee} gold on departure ? mission check penalty`:ownAssigned?'Fill a missing slot with a temporary hired sword.':'Assign a crew member to open your hiring board.';
+    get('[data-hire-info]').textContent=fee?`${selection().mercenary_ids.length} hired; ${fee} gold on departure; mission check penalty`:ownAssigned?'Fill a missing slot with a temporary hired sword.':'Assign a crew member to open your hiring board.';
     get('[data-planner-count]').textContent=`${selection().party_ids.length}/${m.party_size} assigned${guards.length?` · ${selection().bodyguard_ids.length}/${guards.length} bodyguards`:''}`;
     root.querySelectorAll('[data-planner-slot]').forEach(btn=>btn.onclick=()=>{active=btn.dataset.plannerSlot;page=0;renderSlots();renderCandidates()});
     root.querySelectorAll('[data-planner-remove]').forEach(btn=>btn.onclick=()=>{delete draft[btn.dataset.plannerRemove];active=btn.dataset.plannerRemove;renderSlots();renderCandidates();onChange()});

@@ -17,7 +17,6 @@ from .races import race_gameplay, generated_genders
 from .perk_effects import modifiers
 from .equipment_rules import collect_rules,equipped_skills
 from .combat_pacing import enemy_budget
-from .capture_weapons import capture_power
 from .combat_supplies import sync_supplies, remaining_uses
 from . import combat_conditions as conditions
 from . import concealment
@@ -25,6 +24,9 @@ from . import combat_abilities as abilities
 from . import combat_tactics as tactics
 from . import combat_spaces as spaces
 from . import combat_entities as entities
+from . import combat_summoner as summoner
+from . import combat_engineer as engineer
+from . import combat_captor as captor
 from . import combat_martial as martial
 from .combat_feedback import record as feedback
 from .combat_melee import weapon_style, attack_style, capture_style, armor_material, impact_surface
@@ -32,14 +34,28 @@ from . import combat_monk as monk
 from . import combat_ranger as ranger
 from . import combat_mage as mage
 from . import combat_rogue as rogue
+from . import combat_bard as bard
+from . import combat_cleric as cleric
+from . import combat_druid as druid
 
 
 STATUS_DEFINITIONS = {
+    'druid_rejuvenation':{'name':'Rejuvenation','icon':'+','description':'Restores 10% maximum HP at each of the next three turn starts.'},
+    'living_armor':{'name':'Living Armor','icon':'+','description':'Take 25% less damage from all sources and heal at turn start. Nature’s Persistence improves duration, healing and retaliation.'},
+    'cleric_rest':{'name':'Resting','icon':'Z','description':'Takes 75% more damage from all sources. Completed resting turns heal 10% maximum HP and recover healing charges. Direct HP damage, movement, another skill or control ends Rest.'},
+    'cleric_smite':{'name':'Smite','icon':'+','description':'Weapon hits add separate INT-based holy magical damage for three turns: the casting turn and your next two.'},
+    'cleric_regeneration':{'name':'Personal Regeneration','icon':'+','description':'Heals at the start of each of your next three turns.'},
     'wet':{'name':'Wet','icon':'~','description':'Lightning deals enhanced damage without consuming Wet. Fireball consumes Wet to create Blister.'},
     'blister':{'name':'Blister','icon':'-10','description':'Outgoing damage reduced by 10%; accuracy reduced by 10 percentage points.'},
     'weapon_enchant':{'name':'Weapon Enchantment','icon':'E','description':'Fire adds Burn per weapon hit; Frost rolls 20% Freeze; Lightning rolls 25% Paralysis against Wet, once successfully per target. Inspect the chosen element below.'},
     'channeling':{'name':'Channeling Meteor','icon':'M','description':'Meteor lands next activation and consumes it. Control, silence, displacement or defeat interrupts. Ordinary damage does not.'},
     'pestilence':{'name':'Pestilence','icon':'-25%','description':'Attack reduced by 25%; all incoming damage increased by 25%, including party attacks, damage over time and collisions. Adds to other direct-damage vulnerabilities.'},
+    'bard_accelerando':{'name':'Accelerando','icon':'♪','description':'While settled inside the active performance, Channeling abilities resolve immediately with normal actions and cooldowns. Ends immediately on leaving or ending the Song.'},
+    'bard_quickening':{'name':'Quickening Chorus','icon':'♫','description':'Recover one extra cooldown tick at the start of each turn. The performing Bard does not benefit. Lingers through your next turn; staying inside refreshes it.'},
+    'bard_war_anthem':{'name':'War Anthem','icon':'⚑','description':'Deal 20% more direct damage, excluding damage over time. Lingers through your next turn; staying inside refreshes it.'},
+    'bard_song_peace':{'name':'Song of Peace','icon':'♩','description':'While inside, no basic attacks or damaging skills; movement and non-attack utility remain legal. Attacks initiated outside remain legal. NO LINGER. Ends when the Bard begins their second following turn.'},
+    'bard_jeering':{'name':'Jeering Verse','icon':'!','description':'Must deliberately target the Bard when possible. Lasts two target activations.'},
+    'bard_jeer_vulnerable':{'name':'Provoked Exposure','icon':'×','description':'Takes 20% more direct incoming damage while bound to Jeering Verse; damage over time is unchanged.'},
     'poison_imbue':{'name':'Poison Imbue','icon':'P','description':'Your next successfully damaging attack applies one Poison stack per damaging hit. Misses and fully absorbed hits do not spend it.'},
     'sharpshooter':{'name':'Sharpshooter','icon':'+2','description':'+10% damage and +2 basic/technique range while remaining on this tile. Committed and forced movement end it.'},
     'palm_exposure':{'name':'Exposed Guard','icon':'??','description':'Each landed Rapid Palm punch adds 10% incoming direct attack damage, up to 30%. Lasts three target turns, refreshed on hit. Adds to Open Guard; does not multiply it. Does not amplify damage over time or collisions.'},
@@ -56,17 +72,22 @@ STATUS_DEFINITIONS = {
     "rally_power":{"name":"Hold Together: Attack","icon":"+25%","description":"Deal 25% more direct damage with the next attack, including every target of an area attack. A miss spends it. Does not boost damage over time, collision damage or counterattacks. Does not stack."},
     "armor_fracture": {"name":"Armor Fracture", "icon":"◇↓", "description":"Armor is reduced by 30%, rounded up, for the listed activations. Does not stack."},
     "hobbled": {"name":"Hobbled", "icon":"⛓", "description":"Movement is halved, rounded down, with a minimum of 1. Lasts for the listed activations."},
+    "disarm":{"name":"Disarmed","icon":"⛓","description":"Cannot initiate normal weapon attacks or weapon techniques; movement, healing and spells remain available."},
+    "captor_blitz":{"name":"Blitz","icon":"➤","description":"+3 movement and +25 evasion; lasts two Captor turns, then begins a two-turn cooldown."},
+    "captor_held":{"name":"Restrained","icon":"⛓","description":"Cannot move or act while held; each Captor tick reduces Resolve and may capture. Another adjacent unit or disabled/displaced Captor breaks the hold."},
+    "captor_holding":{"name":"Maintaining Hold","icon":"⛓","description":"Committed to restraint; each completed activation deals 75% Resolve damage and attempts capture at zero Resolve. Release Hold is free."},
+    "captor_abducted":{"name":"Captor's Attention","icon":"➤","description":"May deliberately target only the Captor; movement, defense and self-support remain available."},
     "lifeline_ready":{"name":"Survival safeguard","icon":"✧","description":"Equipped gear can prevent one lethal defeat this battle, leaving this unit at 1 HP. Does not prevent a nonlethal capture."},
     "lifeline_spent":{"name":"Safeguard spent","icon":"◇","description":"This unit's once-per-battle survival safeguard has been used. The next lethal hit can defeat them."},
     "stun": {"name": "Stun", "icon": "✦", "description": "Cannot act during the next activation."},
     "sleep": {"name": "Sleep", "icon": "Zz", "description": "Cannot act. Taking direct damage wakes the unit."},
     "ambush_sleep": {"name": "Sleeping camp", "icon": "Zz", "description": "Cannot move or act for the opening three rounds. Attacking any enemy wakes the whole camp, even if the attack misses."},
-    "poison": {"name": "Poison", "icon": "☠", "description": "At turn end, takes 10% max HP per Poison stack, then loses one stack. Armor does not reduce it."},
+    "poison": {"name": "Poison", "icon": "☠", "description": "At turn end, takes 10% max HP damage, then loses one duration stack. More Poison extends duration, not damage. Armor does not reduce it."},
     "bleed": {"name": "Bleed", "icon": "◆", "description": "At turn end, takes 5% max HP per Bleed stack, then loses one stack. Moving and Caltrops placement do not trigger damage."},
     "charm": {"name": "Charm", "icon": "♥", "description": "Treats the charmer's faction as friendly and former allies as hostile."},
     "confuse": {"name": "Confuse", "icon": "?", "description": "Offensive actions may redirect to another valid nearby target."},
     "berserk": {"name": "Berserk", "icon": "‼", "description": "Must attack if possible and treats every nearby unit as hostile."},
-    "freeze": {"name": "Freeze", "icon": "❄", "description": "Mage ice prevents actions. Direct HP damage breaks elemental ice after the full hit, grants Wet and starts control recovery. Older weapon Freeze only prevents movement and increases direct damage by 25%."},
+    "freeze": {"name": "Freeze", "icon": "❄", "description": "Mage ice prevents actions. Direct HP damage breaks elemental ice after the full hit, grants Wet. Older weapon Freeze only prevents movement and increases direct damage by 25%."},
     "burn": {"name": "Burn", "icon": "♨", "description": "At turn end, takes 2% max HP (minimum 1) per Burn stack, then loses one stack. Flame entry adds a stack and triggers current Burn without consuming it. Burn resistance reduces damage after modifiers. Suppresses Regeneration."},
     "blind": {"name": "Blind", "icon": "◉", "description": "Attack accuracy loses 35 percentage points for ranged/magic attacks and 15 for melee."},
     "bind": {"name": "Bind", "icon": "⌁", "description": "Cannot move until the bind is broken, removed, or expires."},
@@ -166,6 +187,9 @@ def _ensure_battle_schema(battle: dict) -> None:
     special_rules = {"precision_shot": "ballistic", "arc_bolt": "ignore"}
     modern=any(u.get('ability_version') for u in battle.get('units',{}).values())
     for unit in battle.get("units", {}).values():
+        cleric.adapt(unit)
+        captor.normalize(unit)
+        unit.setdefault("druid_settled_position",[unit["x"],unit["y"]])
         if modern:unit.setdefault('status_version',1)
         # Existing saves cannot retain the obsolete blunt/unarmed Subdue permission.
         if unit.get('team') == 'player' and 'capture_weapon' not in unit:
@@ -173,13 +197,14 @@ def _ensure_battle_schema(battle: dict) -> None:
             if unit.get('weapon') == "Watchman's Cudgel": weapon = ITEMS['watchmans_cudgel']
             profile = deepcopy(weapon.get('capture_weapon'))
             unit.update(capture_weapon=profile, nonlethal_capable=bool(profile), knockout_finisher=weapon.get('knockout_finisher',0))
+            unit.pop('capture_attack_version',None)
             if profile:
-                unit.update(attack=capture_power(unit), attack_range=profile['range'], attack_elevation_rule=profile['elevation_rule'])
                 unit['skills'] = [skill for skill in unit.get('skills',[]) if not skill.get('nonlethal') and skill.get('id') not in {'precision_shot','arc_bolt'}]
                 unit['special'] = unit['skills'][0] if unit['skills'] else None
             else:
                 for skill in unit.get('skills',[]): skill['nonlethal'] = False
                 if unit.get('special'): unit['special']['nonlethal'] = False
+        captor.normalize(unit)
         unit.setdefault("statuses", [])
         unit.setdefault("conscious", bool(unit.get("alive", True)))
         unit.setdefault("condition", "active" if unit.get("alive", True) else "dead")
@@ -335,7 +360,7 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
         basic_special = None
         special = None
         granted_skill = None
-    attack_range = int(weapon.get("attack_range", attack_range))
+    attack_range = 1 if capture_weapon else int(weapon.get("attack_range", attack_range))
     vit = _effective_attribute(state, character, "vit")
     agi = _effective_attribute(state, character, "agi")
     scaling_value = _effective_attribute(state, character, scaling)
@@ -377,15 +402,24 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
         "job_description": JOBS.get(character.get('job_id'),{}).get('description',''),
         "martial_version":1, "fury":0, "fury_cap":5 if character.get('job_id')=='barbarian' else 0,
         "perk_modifiers":perks,
+        "stat_sources":{
+            'Attack':f"5 base + {scaling_value}//2 {scaling.upper()} + {int(weapon.get('power',0))} weapon power + {combat_training} combat training" if not capture_weapon else 'Lethal unarmed attack: 5 + STR // 2. Subdue uses separate capture-tool Resolve power.',
+            'Armor':f"max(0, {vit}//3 VIT + {int(racial['armor_bonus'])} racial) + {perks.get('armor',0)} perks/equipment + {job_modifiers.get('armor',0)} Job",
+            'Health':f"max(8, round((24 + {vit} VIT × 4) × {racial['hp_multiplier']} racial) + {racial['hp_bonus']} racial) + {perks.get('hp',0)} perks/equipment",
+            'Initiative':f"10 base + {agi} AGI + {int(racial['initiative_bonus'])} racial + {perks.get('initiative',0)} perks/equipment",
+            'Evasion':f"{int(racial['evasion'])} racial + {perks.get('evasion',0)} perks/equipment + {job_modifiers.get('evasion',0)} Job",
+        },
         "racial_resistances": sorted(set(racial["resistances"])|set(rules['resistances'])), "racial_weaknesses": list(racial["weaknesses"]),
         "gear_rules":rules,
         "race": race, "race_summary": racial["summary"],
-        "strength": strength, "intelligence": _effective_attribute(state, character, 'int'), "weight": _race_weight(character.get("race", "human")),
-        "attack": capture_power({"capture_weapon":capture_weapon,"capture_attributes":{key:_effective_attribute(state, character, key) for key in ("str","dex","int")}}) if capture_weapon else 5 + scaling_value // 2 + int(weapon.get("power", 0)) + combat_training,
+        "strength": strength, "agility": agi, "intelligence": _effective_attribute(state, character, 'int'), "weight": _race_weight(character.get("race", "human")),
+        "attack": 5 + strength//2 if capture_weapon else 5 + scaling_value // 2 + int(weapon.get("power", 0)) + combat_training,
         "capture_weapon": capture_weapon,
+        "capture_attack_version":1 if capture_weapon else 0,
+        "melee_style":"fist" if capture_weapon else weapon_style(weapon),
         "capture_attributes": {key:_effective_attribute(state, character, key) for key in ("str", "dex", "int")},
         "knockout_finisher": int(weapon.get("knockout_finisher", 0)),
-        "attack_elevation_rule": capture_weapon["elevation_rule"] if capture_weapon else "ballistic" if ranged else "ignore" if magical else "melee",
+        "attack_elevation_rule": "melee" if capture_weapon else "ballistic" if ranged else "ignore" if magical else "melee",
         "nonlethal_capable": bool(capture_weapon),
         "weapon": weapon.get("name", "Unarmed"), "scaling": scaling,
         "weapon_type": weapon_type, "melee_style": weapon_style({**weapon,'weapon_type':weapon_type}),
@@ -922,12 +956,20 @@ def _blocked(
 
 
 def _movement_limit(unit: dict) -> int:
+    if unit.get('captor_hold') or unit.get('captor_held_by'):return 0
+    if unit.get('mounted_machine') or unit.get('construction') or unit.get('engineer_interrupted'):return 0
+    if unit.get('summoner_movement_locked'):return 0
+    if bard.locked(unit):return 0
     if unit.get('stationary'):return 0
     if conditions.has(unit, 'freeze') or conditions.has(unit, 'bind') or conditions.has(unit,'pit_trapped') or unit.get('paralyzed_move'):
         return 0
     penalty = int(unit.get("carried_payload_penalty", 2 if unit.get("carrying") else 0))
-    movement=max(1, int(unit["move"]) + monk.movement_bonus(unit) - penalty - (2 if conditions.has(unit, 'slow') else 0))
-    return max(1,movement//2) if conditions.has(unit,'hobbled') else movement
+    movement=max(1, int(unit["move"]) + (3 if captor.status(unit,'captor_blitz') else 0) + monk.movement_bonus(unit) - penalty - (2 if conditions.has(unit, 'slow') else 0))
+    if unit.get('cleric_smite_movement') == unit.get('ability_activation',0):movement=min(movement,1)
+    movement=max(1,movement//2) if conditions.has(unit,'hobbled') else movement
+    hobble=captor.status(unit,'hobbled')
+    if hobble and hobble.get('movement_cap'):movement=min(movement,hobble['movement_cap'])
+    return min(movement,unit.get('druid_move_remaining',movement))
 
 
 def _carry_penalty(unit: dict, weight: int) -> int:
@@ -1020,7 +1062,8 @@ def _attack_preview(battle: dict, attacker: dict, target: dict, rule: str, skill
     mark_accuracy=conditions.mark_bonus(attacker,target)
     accuracy+=mark_accuracy
     base = (skill or {}).get("ranger_accuracy",90 if rule == "ballistic" else 100)
-    target_evasion = int(target.get("evasion", 0)) + monk.evasion_bonus(target) + monk.evasion_against(target,attacker)
+    target_evasion = (25 if captor.status(target,'captor_blitz') else 0) + int(target.get("evasion", 0)) + monk.evasion_bonus(target) + monk.evasion_against(target,attacker)
+    if druid.form(target)=='rat' and druid.is_area(skill):target_evasion=0
     evasion_factor = 1.0 if rule == "ballistic" else .3 if rule == "ignore" else .6
     evasion_penalty = round(target_evasion * evasion_factor)
     if conditions.has(attacker, 'blind'):
@@ -1033,6 +1076,7 @@ def _attack_preview(battle: dict, attacker: dict, target: dict, rule: str, skill
     if conditions.has(attacker,'blister'):base-=10
     guaranteed=guaranteed or ranger.marked(attacker,target)
     raw_chance=100 if guaranteed else max(5,min(100,base+accuracy+rhythm-evasion_penalty+attacker.get('perk_modifiers',{}).get('accuracy',0)))
+    raw_chance=druid.accuracy(target,skill,guaranteed,raw_chance)
     parry=0 if guaranteed else monk.parry_rate(target,attacker,rule,skill)
     return {
         "chance": round(raw_chance*(100-parry)/100), "accuracy_before_parry":raw_chance,"parry_rate":parry,"damage_bonus":damage,
@@ -1090,6 +1134,9 @@ def _react_after_attack(battle,attacker,target,hit,rule):
 
 def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal',ability=None,reaction=False,defer_reaction=False):
     original=target
+    if attacker.get('engineer_interrupted') and not reaction:return target,False,0,{'chance':0,'damage_bonus':0},100
+    target=engineer.route_target(battle,attacker,target,{**attacker,**({'engineer_area':True} if any(e.get('type') in {'area_attack','leap_attack','dash_attack'} for e in (ability or {}).get('effects',[])) else {})})
+    cleric.stop_rest(attacker)
     if not reaction and intent=='lethal' and not (ability or {}).get('skip_intercept'):
         target=_interceptor(battle,attacker,target,int((ability or {}).get('range',attacker.get('attack_range',1))))
         if target is not original:
@@ -1126,6 +1173,10 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
     if reaction:
         feedback(battle,attacker,'counter',attack_packet=packet,before_contact=True)
     if not reaction and intent=='lethal':conditions.remove(battle['units'].get(attacker['id'],attacker),'rally_power')
+    if hit and intent=='lethal':
+        cleric.weapon_hit(battle,attacker,target,ability,packet)
+        cleric.exorcist(battle,attacker,target,packet)
+        druid.landed(battle,attacker,target,packet,damage)
     if hit and damage>0 and not (ability or {}).get('ranger_attack') and conditions.has(attacker,'poison_imbue'):
         ranger.poison(battle,attacker,target,1,packet)
         conditions.remove(battle['units'].get(attacker['id'],attacker),'poison_imbue')
@@ -1136,6 +1187,7 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
 def _strike_preview(battle,actor,target,rule,reach,skill=None):
     if skill and skill.get('mage_kind'):return mage.preview(battle,actor,target,skill)
     if skill and skill.get('ranger_kind'):return ranger.preview(battle,actor,target,skill)
+    target=engineer.route_target(battle,actor,target,{**actor,**({'engineer_area':True} if skill and any(e.get('type') in {'area_attack','leap_attack','dash_attack'} for e in skill.get('effects',[])) else {})})
     direct = not skill or any(e['type']=='attack' for e in skill.get('effects',[]))
     recipient=_interceptor(battle,actor,target,reach) if direct else target
     if skill and skill.get('rogue_kind') in {'cheap_shot','exploit_weakness'}:
@@ -1160,15 +1212,22 @@ def _strike_preview(battle,actor,target,rule,reach,skill=None):
         source={**actor,'attack':(skill or {}).get('attack',actor['attack']),'attack_elevation_rule':rule,
                 'element':(skill or {}).get('element',actor.get('element'))}
         bonus=preview['damage_bonus']+(_ability_power_bonus(actor,skill,effect) if skill else 0)
-        amount=_damage_before_barrier({'animation_events':[]},source,deepcopy(recipient),bonus,effect.get('armor_pierce',0))
+        damage_probe=deepcopy(recipient)
+        amount=_damage_before_barrier({'animation_events':[]},source,damage_probe,bonus,effect.get('armor_pierce',0))
         if skill and skill['id'].endswith(':rapid_palm'):
             stacks=next((s.get('stacks',0) for s in recipient.get('statuses',[]) if s['id']=='palm_exposure'),0)
             guard=.25 if conditions.has(recipient,'open_guard') else 0
             slices=[amount//3+(i<amount%3) for i in range(3)]
             amount=sum(round(part*(1+guard+.1*min(3,stacks+i))/(1+guard+.1*stacks)) for i,part in enumerate(slices))
+        if conditions.has(actor,'cleric_smite') and rule in {'melee','ballistic','ignore'}:
+            holy={**actor,'attack':max(1,actor.get('intelligence',4)),'attack_elevation_rule':'ignore','element':'holy','on_hit':None}
+            amount+=_damage_before_barrier({'animation_events':[]},holy,damage_probe)
         preview['absorbed_damage']=min(amount,preview['barrier'])
         preview['damage_on_hit']=max(0,amount-preview['barrier'])
         preview['damage_note']='Direct hit only; collision, reactions and chance-based effects are separate.'
+        if druid.form(recipient)=='rat' and preview['damage_on_hit']>0:
+            preview['damage_on_hit']=recipient['hp']
+            preview['damage_note']='Any HP damage is lethal in Rat Form.'
         if effect.get('hits',1)>1:
             preview.update(hit_count=effect['hits'],damage_note='Total if all punches land; each punch rolls accuracy. Armor and equipment bonuses have one technique budget.')
         for displacement in preview['tactics']:
@@ -1215,7 +1274,7 @@ def _displacement_preview(battle,actor,target,effect):
         path.append({'x':nx,'y':ny});x,y=nx,ny
         if pit:break
     return {'path':path,'destination':{'x':x,'y':y},'blocked':blocked,'pit':pit,
-        'resistance':tactics.displacement_resistance(target),'collision_damage':effect.get('collision_damage',0) if blocked else 0,
+        'resistance':0 if effect.get('ignore_resistance') else tactics.displacement_resistance(target),'collision_damage':effect.get('collision_damage',0) if blocked else 0,
         'solid_collision':bool(obstacle or bystander) and not pit,'collision_cell':collision_cell,
         'collision_target_id':bystander['id'] if bystander else None}
 
@@ -1224,14 +1283,17 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
     preview=_displacement_preview(battle,actor,target,effect)
     event_begin=len(battle.setdefault('animation_events',[]))
     counter=battle.get('displacement_counter',0);battle['displacement_counter']=counter+1
-    if random.Random(f"{battle.get('seed')}:displace:{counter}:{actor['id']}:{target['id']}").randint(1,100)<=preview['resistance']:
+    if random.Random(f"{battle.get('seed')}:displace:{counter}:{actor['id']}:{target['id']}").randint(1,100)<=(0 if effect.get('ignore_resistance') else preview['resistance']):
         battle['log'].append(f"{target['name']} resists the forced movement.")
         feedback(battle,target,'resisted',**({'attack_packet':attack_packet} if attack_packet is not None else {}))
         return
     # Settle any provisional route before changing position. Committing at the
     # forced endpoint would charge that tile before replaying the traversed route.
     _commit_player_movement(battle,target)
+    if target.get('captor_hold'):captor.release(battle,target)
+    if target.get('captor_held_by'):captor.release(battle,battle['units'][target['captor_held_by']])
     start=(target['x'],target['y']);path=[];bystander=None;was_active=_combat_active(target)
+    if preview['path']:cleric.stop_rest(target)
     for point in preview['path']:
         hidden=next((u for u in battle['units'].values() if u['id']!=target['id'] and _combat_active(u) and (u['x'],u['y'])==(point['x'],point['y'])),None)
         if hidden:
@@ -1248,7 +1310,7 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
         movement_event=battle['animation_events'][-1]
         battle['log'].append(f"{target['name']} is {'pushed' if effect['mode']=='push' else 'pulled'} {len(path)} cell{'s' if len(path)!=1 else ''}.")
         if was_active:_apply_zone_route(battle,target,path)
-        if was_active and not _combat_active(target):
+        if was_active and (not _combat_active(target) or target.get('engineer_interrupted')):
             reached=path.index((target['x'],target['y']))+1
             path=path[:reached]
             movement_event['points']=[{'x':start[0],'y':start[1]}]+[{'x':x,'y':y} for x,y in path]
@@ -1428,6 +1490,8 @@ def _commit_player_movement(battle: dict, unit: dict) -> None:
     unit.pop("movement_origin", None)
     unit.pop("movement_path", None)
     _apply_tile_entry(battle, unit)
+    bard.refresh(battle, unit)
+
 
 
 def _attack_position(battle, unit, target, attack_range, reachable, parents, range_shape='diamond'):
@@ -1468,29 +1532,10 @@ def _dash_routes(battle,actor,reach=3):
 
 
 def _dash_ground_damage(battle,actor,path):
-    probe=deepcopy(actor);total=0
-    for x,y in path:
-        kinds=set()
-        for zone in battle.get('zones',[]):
-            owner=battle['units'].get(zone['owner_id']);rule=spaces.ZONES[zone['kind']]
-            trigger_key='fire_ground' if zone['kind'] in {'ember','scorched'} else zone['kind']
-            if not owner or not _combat_active(owner) or trigger_key in kinds or not rule.get('entry_per_cell'):continue
-            if rule['relation']!='everyone' and (actor['id'] in {u['id'] for u in conditions.hostile_units(battle,owner,_living(battle))})!=(rule['relation']=='enemy'):continue
-            if {'x':x,'y':y} not in zone['cells']:continue
-            kinds.add(trigger_key)
-            amount=rule.get('entry_damage',0)+rule.get('damage',0)
-            if zone['kind'] in {'ember','scorched'}:
-                for _ in range(2 if zone.get('burn_debuffer') else 1):conditions.add_stack(probe,'burn',1,owner)
-                status=next((s for s in probe['statuses'] if s['id']=='burn'),None)
-                if not status:continue
-                amount=dots.base_damage(probe,'burn',dots.count(status))
-                source={'id':status['layers'][0].get('source_id'),'attack':amount,'status_tick':True,'percent_dot':'burn','damage_kind':'burn','weapon':rule['name']}
-            else:
-                if not amount:continue
-                source={'attack':amount,'status_tick':True,'weapon':rule['name']}
-            raw=_damage_before_barrier({'units':battle['units'],'animation_events':[]},source,probe,armor_pierce=probe.get('armor',0))
-            damage,_=conditions.absorb(probe,raw);total+=damage
-    return total
+    from .combat_hazard_preview import forecast
+    warning=forecast(battle,actor,path,_combat_active,_damage_before_barrier,_living)
+    return warning['damage'] if warning else 0
+
 
 
 def _leap_skill(skill):
@@ -1552,6 +1597,8 @@ def _apply_attack_approach(battle, unit, target, attack_range, command,range_sha
     destination = command.get('move_to')
     if destination is None:
         return
+    if bard.locked(unit):
+        raise ValueError('A performing Bard is planted in place')
     if not isinstance(destination, dict):
         raise ValueError('Choose a valid approach tile')
     x, y = int(destination.get('x', -1)), int(destination.get('y', -1))
@@ -1563,6 +1610,7 @@ def _apply_attack_approach(battle, unit, target, attack_range, command,range_sha
     desired = (x, y)
     origin = unit.get('movement_origin') or {'x': unit['x'], 'y': unit['y']}
     points = [{'x': unit['x'], 'y': unit['y']}]
+    cleric.stop_rest(unit)
     route = _scout_path(battle, unit, _reposition_route(battle, unit, desired, costs))
     if route:
         x, y = route[-1]
@@ -1610,6 +1658,7 @@ def _trigger_zones(battle, unit, event, only_zone=None):
     def damage(owner,target,amount,name):
         source={'id':owner['id'],'name':owner['name'],'attack':amount,'weapon':name,'status_tick':True,
                 'damage_kind':'burn' if name in {spaces.ZONES['ember']['name'],spaces.ZONES['scorched']['name']} else 'thorns'}
+        if name==spaces.ZONES['fire_wall']['name']:source.update(damage_kind='fire',element='fire')
         dealt=_deal_damage(battle,source,target,armor_pierce=target.get('armor',0))
         battle['log'].append(f"{target['name']} takes {dealt} damage from {name}.")
     spaces.trigger_zones(battle,unit,event,_combat_active,
@@ -1619,7 +1668,7 @@ def _trigger_zones(battle, unit, event, only_zone=None):
 
 def _apply_zone_route(battle,unit,path):
     """Consequences run only after a real route commits, never during preview."""
-    if not battle.get('zones'):return
+    if not battle.get('zones') and not battle.get('engineer_hazards') and not any(u.get('captor_hold') for u in battle['units'].values()):return
     destination=(unit['x'],unit['y'])
     events=battle.setdefault('animation_events',[])
     route_event=next((e for e in reversed(events) if e.get('type')=='movement'
@@ -1632,11 +1681,13 @@ def _apply_zone_route(battle,unit,path):
         unit.update(x=x,y=y,zone_location=[x,y])
         before=len(events)
         _trigger_zones(battle,unit,'entry')
+        engineer.entry(battle,unit)
+        captor.cleanup(battle)
         if route_event is not None:
             for event in events[before:]:
                 if event.get('type')=='combat_feedback':
                     event.update(ground_route_id=route_event['ground_route_id'],ground_step=step)
-        if not _combat_active(unit):
+        if not _combat_active(unit) or unit.get('engineer_interrupted'):
             if route_event is not None:route_event['points']=route_event['points'][:step+1]
             return
     unit['x'],unit['y']=destination
@@ -1645,6 +1696,7 @@ def _apply_zone_route(battle,unit,path):
 def _apply_tile_entry(battle: dict, unit: dict) -> None:
     """Resolve immediate effects from the tile where a committed move ends."""
     ranger.committed_move(unit)
+    engineer.entry(battle,unit)
     if battle.get('zones'):
         position=[unit['x'],unit['y']]
         old=unit.get('zone_location')
@@ -1658,13 +1710,15 @@ def _apply_tile_entry(battle: dict, unit: dict) -> None:
         if len(remaining) != len(statuses):
             unit["statuses"] = remaining
             battle["log"].append(f"{unit['name']} stamps out the flames in the shallow water.")
+    druid.settle(battle,unit)
+    captor.cleanup(battle)
     if unit.get("team") != "enemy" or rogue.trap_expert(unit):
         return
     for tile in tiles:
         if tile.get("destroyed") or not tile.get("prepared_trap"):
             continue
         damage = int(tile.get("trap_damage", 0))
-        unit["hp"] = max(0, int(unit.get("hp", 0)) - damage)
+        unit["hp"] = max(0, int(unit.get("hp", 0)) - (unit["hp"] if damage and druid.form(unit)=="rat" else damage))
         tile["destroyed"] = True
         trap_name = tile.get("name", "prepared trap")
         if tile.get("trap_effect") == "snare":
@@ -1725,6 +1779,12 @@ def _current_unit(battle: dict, activate: bool = True) -> dict | None:
                     unit['zone_location']=[unit['x'],unit['y']]
                     _trigger_zones(battle,unit,'start')
                 conditions.start_activation(battle, unit)
+                cleric.start(battle, unit)
+                druid.start(battle, unit)
+                summoner.start(battle,unit)
+                engineer.start(battle,unit)
+                captor.start(battle,unit)
+                bard.refresh(battle, unit)
                 if unit.get("team")=="player":
                     facts=unit.setdefault("combat_record",{})
                     facts["combat_turns"]=facts.get("combat_turns",0)+1
@@ -1803,6 +1863,10 @@ def _damage_before_barrier(battle,attacker,target,bonus=0,armor_pierce=0,intent=
         if 'magic' in target.get('racial_resistances',[]):reduction+=20
         if 'magic' in target.get('racial_weaknesses',[]):reduction-=20
         damage=max(1,round(damage*(1-min(60,reduction)/100)))
+    if not attacker.get('status_tick') and any(s.get('id')=='bard_war_anthem' for s in attacker.get('statuses', [])):
+        damage=max(1,round(damage*1.2))
+    if not attacker.get('status_tick') and any(s.get('id')=='bard_jeer_vulnerable' for s in target.get('statuses', [])):
+        damage=max(1,round(damage*1.2))
     element = attacker.get("element")
     if element and intent != "nonlethal":
         affinity = {"fire": "burn", "ice": "freeze", "holy": "radiant"}.get(element, element)
@@ -1823,8 +1887,12 @@ def _damage_before_barrier(battle,attacker,target,bonus=0,armor_pierce=0,intent=
     if attacker.get('mage_spell') and mage.specialized(attacker):damage=max(1,round(damage*.5))
     owner=battle.get('units',{}).get(attacker.get('id'),attacker)
     if conditions.has(owner,'blister'):damage=max(1,round(damage*.9))
-    damage=monk.incoming(target,attacker,martial.incoming_damage(target,damage))
+    damage=druid.outgoing(attacker,damage)
+    damage=summoner.incoming(target,attacker,damage)
+    damage=druid.incoming(target,attacker,cleric.incoming(target,monk.incoming(target,attacker,martial.incoming_damage(target,damage))))
     if attacker.get('percent_dot')=='burn':damage=damage*(100-conditions.resistance(target,'burn'))/100
+    if druid.form(attacker)=='rat' and not attacker.get('status_tick') and not attacker.get('druid_wall_attack'):
+        return 1
     return max(0,round(damage))
 
 
@@ -1832,6 +1900,7 @@ def _deal_damage(
     battle: dict, attacker: dict, target: dict, bonus: int = 0, armor_pierce: int = 0,
     intent: str = "lethal", ability: dict | None = None, resolved_damage: int | None = None,
 ) -> int:
+    target=engineer.route_target(battle,attacker,target,{**attacker,**({'engineer_area':True} if any(e.get('type') in {'area_attack','leap_attack','dash_attack'} for e in (ability or {}).get('effects',[])) else {})})
     source_unit=battle.get('units',{}).get(attacker.get('id'))
     if not attacker.get('status_tick') and source_unit and not _combat_active(source_unit):return 0
     if not attacker.get("status_tick"):
@@ -1844,6 +1913,8 @@ def _deal_damage(
                     "on_hit": ability.get("on_hit", attacker.get("on_hit")),"weapon":ability.get('source_name',attacker.get('weapon',''))}
     damage = _damage_before_barrier(battle,attacker,target,bonus,armor_pierce,intent) if resolved_damage is None else max(0,resolved_damage)
     if (ability or {}).get('ranger_crit'):damage*=2
+    if druid.form(attacker)=='rat' and not attacker.get('status_tick') and not attacker.get('druid_wall_attack'):
+        damage=1
     element = attacker.get('element')
     absorbed=0
     if not attacker.get('capture_only') and not attacker.get('environmental_fall'):
@@ -1853,18 +1924,20 @@ def _deal_damage(
             _record_sound(battle,'barrier_absorb',offset=0 if attacker.get('status_tick') else 185)
     elemental_ice=any(s.get('elemental_freeze') for s in target.get('statuses',[]) if s['id']=='freeze')
     previous_hp = int(target["hp"])
-    if intent == 'lethal' and not attacker.get('status_tick') and damage >= previous_hp and attacker.get('knockout_finisher'):
+    rat_lethal=druid.form(target)=="rat" and damage>0 and not attacker.get('capture_only')
+    if rat_lethal:damage=max(damage,previous_hp);intent="lethal"
+    if intent == 'lethal' and not attacker.get('status_tick') and not rat_lethal and damage >= previous_hp and attacker.get('knockout_finisher'):
         counter = int(battle.get('finisher_counter', 0))
         battle['finisher_counter'] = counter + 1
         roll = random.Random(f"{battle.get('seed')}:finisher:{counter}:{attacker.get('id')}:{target['id']}").randint(1,100)
         if roll <= attacker['knockout_finisher']:
             intent = 'nonlethal'
             battle['log'].append(f"{attacker['weapon']} leaves {target['name']} unconscious instead of killing them.")
-    if attacker.get('nonlethal_floor'):
+    if attacker.get('nonlethal_floor') and not rat_lethal:
         damage=min(damage,max(0,previous_hp-1))
     target["hp"] = max(0, previous_hp - damage)
-    martial.survive(battle,target,intent)
-    if target['hp']==0 and intent!='nonlethal' and not attacker.get('environmental_fall') and target.get('gear_rules',{}).get('lifeline') and not target.get('lifeline_used'):
+    if not rat_lethal:martial.survive(battle,target,intent)
+    if target['hp']==0 and not rat_lethal and intent!='nonlethal' and not attacker.get('environmental_fall') and target.get('gear_rules',{}).get('lifeline') and not target.get('lifeline_used'):
         target['hp']=1;target['lifeline_used']=True
         target['statuses']=[s for s in target.get('statuses',[]) if s.get('id')!='lifeline_ready']+[{'id':'lifeline_spent'}]
         battle['log'].append(f"{target['name']}'s survival safeguard leaves them at 1 HP. It is spent for this battle.")
@@ -1882,10 +1955,15 @@ def _deal_damage(
         if not immune and roll <= proc_chance:
             if conditions.apply(target, sid, int(proc['turns']), attacker):
                 battle["log"].append(f"{target['name']} suffers {sid}.")
+    if not attacker.get('status_tick') and damage>0:cleric.stop_rest(target)
+    if damage>0 or absorbed>0:druid.retaliate(battle,attacker,target)
     if target["hp"] <= 0:
         target["conscious"] = False
         target["guarding"] = False
-        if target.get('temporary'):
+        if target.get('engineer_machine'):
+            target.update(alive=False,extracted=False,condition='dead',machine_died_round=battle.get('round',1))
+            battle['log'].append(f"{target['name']} is destroyed.")
+        elif target.get('temporary'):
             target.update(alive=False,extracted=True,condition='dismissed')
             battle['log'].append(f"{target['name']} is destroyed. It leaves no prisoner or loot.")
         elif intent == "nonlethal":
@@ -1899,6 +1977,10 @@ def _deal_damage(
         target["defeated_round"] = battle.get("round", 1)
         target["defeat_weapon"] = attacker.get("weapon", "")
         target.pop('monk_combo',None)
+        # A Bard cannot continue performing after being defeated. Refreshing
+        # here immediately removes its Song-owned buffs and performance zone,
+        # rather than waiting for the next activation.
+        bard.refresh(battle, target)
         conditions.remove(target,'iron_reversal','iron_reversal_evasion','flowing_footwork','monk_siphon','dash_parry')
         if target.get("carrying") in battle["units"]:
             carried = battle["units"][target["carrying"]]
@@ -1912,7 +1994,7 @@ def _deal_damage(
             target.pop("carried_payload_penalty", None)
     if elemental_ice and not attacker.get('status_tick') and damage>0:conditions.remove(target,'freeze')
     mage.check_channel(battle,target)
-    if not attacker.get('status_tick') and (damage>0 or absorbed>0):mage.enchant_hit(battle,attacker,target,ability)
+    if not attacker.get('status_tick') and not attacker.get('cleric_component') and (damage>0 or absorbed>0):mage.enchant_hit(battle,attacker,target,ability)
     martial.after_damage(battle,attacker,target,previous_hp,ability)
     martial.try_unstoppable(target)
     martial.flush(battle,target)
@@ -1927,6 +2009,7 @@ def _deal_damage(
         if previous_hp>0 and target.get("condition") in {"dead","unconscious"}:
             key="kills" if target["condition"]=="dead" else "subdues"
             facts[key]=facts.get(key,0)+1
+    captor.cleanup(battle)
     if not attacker.get('capture_only'):
         kind=attacker.get('damage_kind') or ('fall' if attacker.get('environmental_fall') or attacker.get('weapon')=='a fall' else element or ('magic' if attacker.get('attack_elevation_rule') in {'line_of_effect','ignore'} else 'physical'))
         feedback(battle,target,kind,max(0,previous_hp-int(target['hp'])),absorbed=absorbed,
@@ -1937,70 +2020,19 @@ def _deal_damage(
         facts["times_defeated"]=facts.get("times_defeated",0)+1
         battle.setdefault("animation_events",[]).append({"type":"death_burst" if target["condition"]=='dead' else 'knockout',
             "unit_id":target["id"],"x":target["x"],"y":target["y"],"race":target.get("race","Human")})
-    monk.landed_attack(battle,attacker)
+    if not attacker.get('cleric_component'):monk.landed_attack(battle,attacker)
     return damage
 
 
 def _capture_attempt(battle: dict, actor: dict, target: dict) -> None:
-    if not _combat_active(actor):return
-    if target.get('temporary'):raise ValueError('Temporary deployments cannot become prisoners')
-    if not actor.get('capture_weapon'):
-        raise ValueError('Equip a capture weapon to attempt Subdue')
-    if not _combat_active(target) or not _can_attack(battle, actor, target):
-        raise ValueError('Choose an active target within capture range')
-    concealment.reveal(battle, actor)
-    preview = _capture_preview(battle, actor, target)
-    counter = int(battle.get('roll_counter', 0))
-    battle['roll_counter'] = counter + 1
-    roll = random.Random(f"{battle.get('seed')}:{counter}:{actor['id']}:{target['id']}").randint(1,100)
-    # The first attempt wakes the camp even when it fails; preview includes the initial sleep advantage.
-    _wake_ambush(battle, target)
-    success = roll <= preview['chance']
-    landed = roll <= preview.get('hit_chance',100)
-    events=battle.setdefault('animation_events',[]);begin=len(events)
-    if landed:
-        _deal_damage(battle, _capture_damage_source(actor), target, intent='nonlethal')
-    if success:
-        restrained = {**actor, 'attack': target['max_hp']*100 + target.get('armor',0),
-                      'status_tick': True, 'capture_only': True, 'element': None, 'on_hit': None}
-        _deal_damage(battle, restrained, target, intent='nonlethal')
-    battle['log'].append(f"{actor['name']} attempts to capture {target['name']}: {'successful' if success else 'failed'} ({roll} vs {preview['chance']}% capture chance).")
-    net = capture_style(actor) == 'net'
-    if not success:feedback(battle,target,'capture_failed' if landed else 'miss')
-    resolved=events[begin:];del events[begin:]
-    if net:
-        actor['physical_action'] = actor['attack_elevation_rule'] in {'melee','ballistic'}
-        events.append({'type':'net_cast','attacker_id':actor['id'],'target_id':target['id'],
-                       'from':{'x':actor['x'],'y':actor['y']},'to':{'x':target['x'],'y':target['y']},'hit':landed,'captured':success})
-    else:
-        _record_melee_animation(battle, actor, target, landed, actor['attack_elevation_rule'])
-    battle['attack_serial']=battle.get('attack_serial',0)+1
-    events.extend(resolved)
-    for event in events[begin:]:event['attack_packet']=battle['attack_serial']
-
-
-def _capture_damage_source(actor):
-    return {**actor,'attack':capture_power(actor),'nonlethal_floor':True,
-            'capture_only':False,'element':None,'on_hit':None,'damage_kind':'restraint',
-            'perk_modifiers':{},'gear_rules':{},'knockout_finisher':0}
+    if not actor.get('capture_weapon'):raise ValueError('Equip a capture weapon to attempt Subdue')
+    profile=actor['capture_weapon']
+    if target.get('temporary') or not _combat_active(target) or not _can_attack(battle,{**actor,'attack_elevation_rule':profile['elevation_rule']},target,profile['range']):raise ValueError('Choose an active capturable target in Subdue range')
+    captor.strike(battle,actor,target)
 
 
 def _capture_preview(battle: dict, actor: dict, target: dict) -> dict:
-    from .capture_weapons import capture_preview
-    result = capture_preview(actor, target)
-    accuracy, _ = _elevation_attack_modifier(battle, actor, target, actor['attack_elevation_rule'])
-    if conditions.has(actor, 'blind'): accuracy -= 35 if actor['attack_elevation_rule'] != 'melee' else 15
-    if conditions.has(actor, 'fear'): accuracy -= 15
-    result['chance'] = max(2, min(60 if target.get('boss') or target.get('kind') == 'chieftain' else 95, result['chance']+accuracy))
-    hit_chance=_attack_preview(battle,actor,target,actor['attack_elevation_rule'])['chance']
-    result['chance']=min(result['chance'],hit_chance)
-    recipient=deepcopy(target)
-    damage=_damage_before_barrier({'animation_events':[]},_capture_damage_source(actor),recipient,intent='nonlethal')
-    barrier=max((s.get('amount',0) for s in target.get('statuses',[]) if s['id']=='barrier'),default=0)
-    result.update(hit_chance=hit_chance,damage_on_hit=min(max(0,target['hp']-1),max(0,damage-barrier)),
-                  absorbed_damage=min(damage,barrier),
-                  damage_note='Nonlethal: damage stops at 1 HP. Capture chance uses current wounds; this hit helps the next attempt.')
-    return result
+    return captor.preview(battle,actor,target)
 
 
 def _tick_dot_status(battle,unit,sid):
@@ -2218,8 +2250,20 @@ def _check_frontier_watch_end(battle: dict) -> None:
 
 
 def _check_end(battle: dict) -> None:
+    _check_end_rules(battle)
+    if battle.get('status')=='complete':
+        recovered=set(battle.get('auto_captured_ids',[]))
+        recovered.update(u['id'] for u in battle['units'].values() if u.get('captured') and u.get('team')=='enemy' and u.get('condition')=='unconscious' and not u.get('temporary') and not u.get('fled') and not u.get('lost_in_pit'))
+        battle['auto_captured_ids']=sorted(recovered)
+
+
+def _check_end_rules(battle: dict) -> None:
     entities.cleanup(battle,_combat_active)
+    summoner.cleanup(battle)
+    captor.cleanup(battle)
+    engineer.cleanup(battle)
     spaces.cleanup_zones(battle,_combat_active)
+    druid.cleanup(battle)
     if battle.get('mercenary_interlude') or battle.get("encounter_id", "").startswith("contract:"):
         _check_contract_end(battle)
     elif battle.get("encounter_id") == "goblin_captive_cart":
@@ -2252,6 +2296,9 @@ def _finish_turn(battle: dict) -> None:
     if unit:
         _tick_gear_statuses(battle, unit)
         _finish_entities(battle,unit)
+        captor.finish(battle,unit)
+        cleric.finish(battle,unit)
+        druid.finish(unit)
         conditions.finish_activation(unit)
         monk.cleanup(battle,unit)
         ranger.finish(unit)
@@ -2438,6 +2485,8 @@ def _pursuit_goals(battle, unit, target):
 
 
 def _move_toward(battle: dict, unit: dict, target: dict) -> None:
+    if bard.locked(unit):
+        return
     start = (unit["x"], unit["y"])
     path, costs, gates = _route_with_gates(battle,unit,_pursuit_goals(battle,unit,target))
     # Stop beside the first closed gate; the next activation can operate it.
@@ -2453,6 +2502,7 @@ def _move_toward(battle: dict, unit: dict, target: dict) -> None:
                 carried=battle['units'][unit['carrying']];carried['x'],carried['y']=x,y
             _apply_zone_route(battle,unit,reachable_path)
             _apply_tile_entry(battle,unit)
+            bard.refresh(battle, unit)
 
 
 def _move_to_nearest_tile(battle: dict, unit: dict, destinations: list[dict]) -> None:
@@ -2604,7 +2654,7 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
         battle["log"].append(f"{unit['name']} is still asleep.")
         _finish_turn(battle)
         return
-    if unit.get('forced_skip'):
+    if unit.get('forced_skip') or unit.get('captor_held_by'):
         battle['log'].append(f"{unit['name']} cannot act this turn.")
         _finish_turn(battle)
         return
@@ -2627,6 +2677,28 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
     else:
         targets = _living(battle,'player') + [u for u in _living(battle,'enemy') if u.get('mercenary_hostile_all') and u['id']!=unit['id']]
     targets = conditions.hostile_units(battle, unit, _living(battle))
+    forced_target = bard.forced_target(battle, unit)
+    if forced_target:
+        # Jeering Verse is a hard deliberate-target restriction. Keep the
+        # Bard as the sole target even for AI-controlled spells and attacks;
+        # area effects may still splash other units around that target.
+        targets = [forced_target]
+    if cleric.auto(battle,unit,targets):
+        _finish_turn(battle);return
+    if druid.auto(battle,unit,targets):
+        _finish_turn(battle);return
+    if captor.auto(battle,unit,targets):
+        _finish_turn(battle);return
+    if engineer.auto(battle,unit,targets):
+        _finish_turn(battle);return
+    if summoner.auto(battle,unit,targets):
+        _finish_turn(battle);return
+    if not bard.can_attack(unit) or conditions.has(unit,'disarm') and unit.get('attack_elevation_rule') in {'melee','ballistic'}:
+        _guard(battle, unit)
+        unit['acted'] = True
+        battle['log'].append(f"{unit['name']} cannot attack inside Song of Peace.")
+        _finish_turn(battle)
+        return
     if targets and not (unit.get('bush_ambusher') and concealment.unseen(unit) and not battle.get('ambush_sprung')) and _auto_rogue_turn(battle,unit,targets):return
     if targets and mage.auto(battle,unit,targets):
         _finish_turn(battle);return
@@ -2653,10 +2725,23 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
     snared = int(unit.get("snared_until_round", 0)) >= int(battle.get("round", 1))
     if not _can_attack(battle, unit, target) and not snared:
         _move_toward(battle, unit, target)
+        # A walking approach may enter Song of Peace. Re-check at the
+        # attack boundary so the unit can finish its movement but cannot
+        # initiate a new attack from inside the zone.
+        if not bard.can_attack(unit):
+            _guard(battle, unit)
+            unit['acted'] = True
+            battle['log'].append(f"{unit['name']} cannot attack inside Song of Peace.")
+            _finish_turn(battle)
+            return
         if unit.get('ambush_plan') != 'strike' or not _can_attack(battle, unit, target):
             target = min(targets, key=lambda candidate: (_distance(unit, candidate), candidate["hp"]))
     if _can_attack(battle, unit, target):
-        target = conditions.confused_target(battle, unit, target, lambda u: _can_attack(battle, unit, u))
+        # Jeering Verse overrides confusion and every other target chooser:
+        # the Bard remains the only deliberate target. Area attacks may still
+        # splash other units around the Bard when the ability permits it.
+        if not forced_target:
+            target = conditions.confused_target(battle, unit, target, lambda u: _can_attack(battle, unit, u))
         if unit.get('capture_weapon'):
             _capture_attempt(battle, unit, target)
         else:
@@ -2772,6 +2857,7 @@ def _support_eligible(battle, actor, target, effect):
         return False
     return ((effect.get('deployment') and target['id']==actor['id'] and entities.available(battle,actor,effect['deployment']))
             or (effect.get('form_change') and target['id']==actor['id'] and not actor.get('capture_weapon') and not actor.get('carrying') and not actor.get('carrying_object'))
+            or (effect.get('song_setup') and target['id']==actor['id'])
             or effect.get('zone_setup')
             or (effect.get('heal', 0) > 0 and target['hp'] < target['max_hp'])
             or (effect.get('barrier',0)>max((s.get('amount',0) for s in target.get('statuses',[]) if s['id']=='barrier'),default=0))
@@ -2810,6 +2896,7 @@ def _support_effect(skill, actor):
         effect['barrier']=max((e['amount'] for e in skill['effects'] if e['type']=='barrier'),default=0)
         effect['form_change']=any(e['type']=='form' for e in skill['effects'])
         effect['zone_setup']=any(e['type']=='zone' for e in skill['effects'])
+        effect['song_setup']=any(e['type']=='bard_song' for e in skill['effects'])
         effect['area_cleanse']=_rally_skill(skill)
         effect['area_cleanse_radius']=max((e.get('radius',0) for e in skill['effects'] if e['type']=='cleanse'),default=0)
         effect['deployment']=next((e['entity'] for e in skill['effects'] if e['type']=='deploy'),None)
@@ -2837,11 +2924,16 @@ def _deployment_positions(battle,owner,kind):
 def _start_entities(battle,owner):
     if not entities.owned(battle,owner):return
     def start(unit):
+        summoner.start(battle,unit)
+        spaces.expire_zones(battle,unit)
         conditions.start_activation(battle,unit)
         unit['zone_location']=[unit['x'],unit['y']]
         _trigger_zones(battle,unit,'start')
     entities.start_owner(battle,owner,start)
     entities.cleanup(battle,_combat_active)
+    summoner.cleanup(battle)
+    captor.cleanup(battle)
+    engineer.cleanup(battle)
 
 
 def _entity_targets(battle,entity):
@@ -2861,7 +2953,9 @@ def _entity_attack(battle,owner,entity,target,power):
 
 
 def _finish_entities(battle,owner):
-    crew=entities.owned(battle,owner)
+    summoner.finish(battle,owner)
+    engineer.finish(battle,owner)
+    crew=[u for u in entities.owned(battle,owner) if not u.get('summoner_creature') and not u.get('engineer_machine')]
     if not crew:return
     stamp=owner.get('ability_stamp')
     if owner.get('entities_finished_stamp')==stamp:return
@@ -2989,10 +3083,39 @@ def _resolve_ability(battle, actor, target, skill):
     if not abilities.availability(actor,skill)['available']:
         raise ValueError(abilities.availability(actor,skill)['reason'])
     abilities.validate(skill)
+    if skill.get('summoner_kind'):raise ValueError('Summoner skills require their placement/target confirmation')
+    if not skill.get('cleric_kind'):cleric.stop_rest(actor)
+    if skill.get('cleric_kind'):return cleric.execute(battle,actor,target,skill)
+    if skill.get('druid_kind'):return druid.execute(battle,actor,target,skill)
     if skill.get('mage_kind'):return mage.execute(battle,actor,target,skill,skill.get('element_choice'))
     if skill.get('ranger_kind'):return ranger.execute(battle,actor,target,skill)
-    if actor.get('capture_weapon') and any(e['type'] in {'attack','leap_attack','area_attack','dash_attack'} for e in skill['effects']):
-        raise ValueError('Capture weapons cannot perform damaging techniques')
+    if skill.get('bard_kind'):
+        _commit_player_movement(battle, actor)
+        if skill['bard_kind'] in bard.SONGS:
+            bard.begin_song(battle, actor, skill['bard_kind'])
+            battle.setdefault('animation_events', []).append({'type':'bard_song','unit_id':actor['id'],'song':skill['bard_kind']})
+            abilities.spend(actor, skill);actor['acted'] = True
+            return {'song':skill['bard_kind']}
+        if skill['bard_kind'] == 'jeering_verse':
+            bard.apply_jeering(battle, actor, target)
+            abilities.spend(actor, skill);actor['acted'] = True
+            battle.setdefault('animation_events', []).append({'type':'bard_song','unit_id':actor['id'],'song':'jeering_verse'})
+            feedback(battle, target, 'status', status_id='bard_jeering')
+            return {'control':True}
+        if skill['bard_kind'] == 'cue_the_strike':
+            ally_id=skill.get('bard_ally_id')
+            units=battle.get('units',{})
+            # Browser JSON can preserve an authored numeric ID as a number
+            # while the battle index uses its string form. Resolve both forms
+            # so a valid selected performer is never treated as missing.
+            ally=units.get(ally_id)
+            if ally is None and ally_id is not None:
+                ally=next((candidate for candidate in units.values()
+                           if str(candidate.get('id')) == str(ally_id)), None)
+            bard.cue_strike(battle, actor, ally, target)
+            battle.setdefault('animation_events', []).append({'type':'bard_song','unit_id':actor['id'],'song':'cue_strike'})
+            abilities.spend(actor, skill);actor['acted'] = False
+            return {'command':True}
     if skill.get('self_only') and target['id']!=actor['id']:raise ValueError('Target yourself with this ability')
     for effect in skill['effects']:
         if effect['type']=='deploy':
@@ -3006,7 +3129,9 @@ def _resolve_ability(battle, actor, target, skill):
             raise ValueError('No legal ground for this zone')
     _commit_player_movement(battle, actor)
     if skill.get('rogue_kind') in {'cheap_shot','exploit_weakness'}:skill=rogue.attack_skill(battle,actor,_interceptor(battle,actor,target,skill['range']),skill,skill.get('rogue_thrown',False))
-    if not _combat_active(actor):return {'interrupted':True}
+    if not _combat_active(actor) or actor.get('engineer_interrupted'):
+        actor['acted']=True
+        return {'interrupted':True}
     last_damage=None;attack_packet=None
     if skill['id']=='job:barbarian:reckless_blow':
         conditions.apply(actor,'reckless_exposure',1,actor)
@@ -3068,7 +3193,9 @@ def _resolve_ability(battle, actor, target, skill):
         actor.update(x=target['x'],y=target['y'],exit_ready=False,moved=True)
         battle.setdefault('animation_events',[]).append({'type':'movement','unit_id':actor['id'],'points':[start,{'x':actor['x'],'y':actor['y']}],'leap':True})
         _apply_tile_entry(battle,actor)
-        if not _combat_active(actor):return {'interrupted':True}
+        if not _combat_active(actor) or actor.get('engineer_interrupted'):
+            actor['acted']=True
+            return {'interrupted':True}
         cells=_area_cells(battle,actor,effect['radius'])
         victims=sorted([(max(abs(u['x']-actor['x']),abs(u['y']-actor['y'])),u['id']) for u in battle['units'].values()
             if u['team']!=actor['team'] and _combat_active(u) and {'x':u['x'],'y':u['y']} in cells])
@@ -3076,6 +3203,7 @@ def _resolve_ability(battle, actor, target, skill):
         battle['attack_serial']=battle.get('attack_serial',0)+1
         packet=battle['attack_serial'];begin=len(battle['animation_events'])
         battle['animation_events'].append({'type':'ground_impact','unit_id':actor['id'],'x':actor['x'],'y':actor['y'],'radius':effect['radius'],'attack_packet':packet})
+        engineer.area_hit(battle,actor,cells,packet)
         impacts=[]
         for ring,uid in victims:
             enemy=battle['units'][uid]
@@ -3106,6 +3234,7 @@ def _resolve_ability(battle, actor, target, skill):
         packet=battle['attack_serial'];attack_packet=packet
         battle.setdefault('animation_events',[]).append({'type':'ground_impact','unit_id':actor['id'],
             'x':actor['x'],'y':actor['y'],'radius':1,'attack_packet':packet,'effect_art':'groundbreaker'})
+        engineer.area_hit(battle,actor,engineer.area_cells(battle,actor,1),packet)
         _record_sound(battle,'barbarian_groundbreaker',offset=0)
         battle['animation_events'][-1]['attack_packet']=packet
         victims=[u for u in list(battle['units'].values()) if u['id']!=actor['id'] and _combat_active(u)
@@ -3295,6 +3424,11 @@ def _auto_monk_turn(battle,unit,targets,tactic='balanced'):
 
 
 def _auto_support(battle, unit):
+    if unit.get('job_id') == 'bard' or any(s.get('bard_kind') for s in unit.get('skills', [])):
+        songs=[s for s in unit.get('skills', []) if s.get('bard_kind') in bard.SONGS and abilities.availability(unit,s)['available']]
+        if not bard.active_song(unit) and songs:
+            chosen=next((s for s in songs if s.get('bard_kind')=='war_anthem'), songs[0])
+            _resolve_ability(battle,unit,unit,chosen);_finish_turn(battle);return True
     for skill in unit.get('skills', []):
         if not abilities.availability(unit,skill)['available'] or skill.get('target') != 'ally' or (conditions.has(unit, 'mute') and skill['elevation_rule'] == 'line_of_effect'):
             continue
@@ -3353,6 +3487,9 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
     if not unit.get('forced_skip') and _pit_exits(battle,unit):
         _climb_out(battle,unit,_pit_exits(battle,unit)[0]);_finish_turn(battle);return
     enemies = _visible_enemies(battle)
+    forced=bard.forced_target(battle, unit)
+    if forced:
+        enemies=[forced]
     if enemies and _auto_open_gate(battle, unit, min(enemies, key=lambda u: _distance(unit, u))):
         return
     if battle.get('ambush_sleep_until_round'):
@@ -3367,6 +3504,14 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
         _guard(battle, unit)
         _finish_turn(battle)
         return
+    if druid.auto(battle,unit,enemies):
+        _finish_turn(battle);return
+    if captor.auto(battle,unit,enemies):
+        _finish_turn(battle);return
+    if engineer.auto(battle,unit,enemies):
+        _finish_turn(battle);return
+    if summoner.auto(battle,unit,enemies):
+        _finish_turn(battle);return
     if _auto_support(battle, unit):
         return
     if _auto_commanded_entity(battle,unit,tactic):
@@ -3426,7 +3571,7 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
         _finish_turn(battle);return
     if not pursuing_objective and _auto_monk_turn(battle,unit,targets,tactic):return
     available_skills=[s for s in (unit.get('skills') or ([unit['special']] if unit.get('special') else []))
-                      if not s.get('quick_action') and s.get('rogue_kind') not in rogue.UTILITY and abilities.availability(unit,s)['available'] and s.get('target') != 'ally' and not _leap_skill(s) and not _dash_skill(s) and not (conditions.has(unit, 'mute') and s['elevation_rule'] in {'ignore', 'line_of_effect'})]
+                      if not s.get('summoner_kind') and not s.get('druid_kind') and not s.get('quick_action') and s.get('rogue_kind') not in rogue.UTILITY and abilities.availability(unit,s)['available'] and s.get('target') != 'ally' and not _leap_skill(s) and not _dash_skill(s) and not (conditions.has(unit, 'mute') and s['elevation_rule'] in {'ignore', 'line_of_effect'})]
     if conditions.has(unit, 'mute') and unit['attack_elevation_rule'] in {'ignore','line_of_effect'} and not available_skills:
         _guard(battle, unit)
         unit['acted'] = True
@@ -3718,6 +3863,7 @@ def _damage_terrain(battle: dict, unit: dict, target_id: str) -> None:
         battle.setdefault('animation_events',[]).append({'type':'magic_projectile',
             'attacker_id':unit['id'],'target_id':tile['id'],'target_kind':'terrain','hit':True,
             'from':{'x':unit['x'],'y':unit['y']},'to':contact,'attack_packet':packet})
+    if tile.get('bramble_group'):druid.damage_wall(battle,tile,unit,packet)
     release = "bow_release" if rule == "ballistic" else "melee_swing" if rule == "melee" else "magic_cast"
     battle.setdefault("animation_events", []).append({
         "type": "sound", "duration": 490, 'attack_packet':packet,'attack_event':True,
@@ -3732,6 +3878,7 @@ def _context_actions(battle: dict, unit: dict) -> list[dict]:
     actions: list[dict] = []
     if not unit.get("acted"):
         for entity in entities.owned(battle,unit):
+            if entity.get('summoner_creature') or entity.get('engineer_machine'):continue
             if not entities.can_command(battle,unit,entity):continue
             actions.append({'id':f"dismiss:{entity['id']}",'label':f"Dismiss {entity['name']}",'target':entity['name'],
                 'description':'Remove this deployment. Releases capacity, but never refunds Components or refreshes an ability.',
@@ -3791,7 +3938,7 @@ def _context_actions(battle: dict, unit: dict) -> list[dict]:
                     "cost": "Free action", "hotkey": "P", "command": {"action": "pickup_object", "target_id": obj["id"]},
                 })
         for target in ([] if unit.get("carrying") or unit.get("carrying_object") else battle["units"].values()):
-            if target.get("conscious", True) or target.get("condition") not in {"unconscious", "dead"}:
+            if target.get('temporary') or target.get('engineer_machine') or target.get("conscious", True) or target.get("condition") not in {"unconscious", "dead"}:
                 continue
             if target.get("carried_by") or target.get("extracted") or target.get('lost_in_pit') or _distance(unit, target) > 1:
                 continue
@@ -3861,6 +4008,7 @@ def battle_view(battle: dict) -> dict:
     view = deepcopy(battle)
     _ensure_battle_schema(view)
     view['zones']=spaces.presentation(view)+mage.presentation(view)
+    view['presentation_zones']=bard.presentation(view)
     for unit in view['units'].values():
         ranger.sync(unit)
         unit['skills']=[ranger.skill_for(unit,skill) for skill in unit.get('skills',[])]
@@ -3871,6 +4019,11 @@ def battle_view(battle: dict) -> dict:
             rule=spaces.FORMS[unit['form']['id']]
             unit['statuses'].append({'id':'wild_form','name':rule['name'],'description':rule['description'],
                 'turns':max(0,unit['form']['expires_at']-unit.get('ability_activation',0))})
+            if unit['form'].get('persistent'):
+                unit['statuses'][-1].pop('turns',None)
+                unit['statuses'][-1]['form_id']=unit['form']['id']
+                if unit['form']['id']=='rat':unit['evasion']=90
+                unit['statuses'][-1]['description']={'prowler':'Movement +2; damage dealt +25% with Wild Instinct, otherwise +20%; damage taken +20%. Hits amplify global Bleed. No nature spellcasting.', 'bulwark':'Movement 1; direct damage taken -25%; damage dealt +50% with Wild Instinct, otherwise +25%. Hits may push one cell. No nature spellcasting.', 'rat':'Aimed attacks have 10% hit chance. AoE and guaranteed hits bypass evasion. ANY received HP damage kills you. No nature spellcasting.'}[unit['form']['id']]
     hidden = {uid for uid, unit in view['units'].items() if concealment.unseen(unit)}
     hidden_names = [view['units'][uid]['name'] for uid in hidden]
     view['log'] = [line for line in view.get('log', []) if not any(name in line for name in hidden_names)]
@@ -3887,6 +4040,7 @@ def battle_view(battle: dict) -> dict:
                                 if event.get('unit_id') not in hidden and event.get('target_id') not in hidden
                                 and not event.get('concealed')]
     view['concealment_help'] = concealment.HELP if concealment.cover_cells(view) else None
+    view['engineer_hazards']=[h for h in view.get('engineer_hazards',[]) if h['kind']=='dynamite' or h.get('team')=='player' or h.get('revealed')]
     view.pop('searched_bushes', None)
     view.pop('ambush_enemy_indices', None)
     view.pop('ambush_lane', None)
@@ -3899,6 +4053,10 @@ def battle_view(battle: dict) -> dict:
         for field in ('portrait','portrait_full','portrait_thumbnail'):
             if unit.get(field):unit[field] = version_pool_url(unit[field])
         unit['portrait_frame'] = resolve_frame(unit)
+        druid.presentation(unit)
+        summoner.presentation(view,unit)
+        engineer.presentation(view,unit)
+        captor.presentation(view,unit)
     # Keep the existing object ID and alarm rules compatible with saved battles.
     if 'alarm_horn' in view.get('objects', {}):
         view['objects']['alarm_horn']['name'] = 'Alarm Bell'
@@ -3906,12 +4064,15 @@ def battle_view(battle: dict) -> dict:
         if objective.get('id') == 'alarm':
             objective['name'] = 'Disable the alarm bell'
     current = _current_unit(view, activate=False)
-    if current and (entities.owned(view,current) or any(e['type']=='deploy' for s in current.get('skills',[]) for e in s.get('effects',[]))):
+    if current and current.get('job_id')=='engineer':view['engineer']=engineer.view(view,current)
+    if current and (current.get('job_id')=='summoner' or any(s.get('summoner_kind') for s in current.get('skills',[]))):
+        view['summoner']=summoner.view(view,current)
+    if current and 'summoner' not in view and 'engineer' not in view and (entities.owned(view,current) or any(e['type']=='deploy' for s in current.get('skills',[]) for e in s.get('effects',[]))):
         view['deployment_resources']={'components':current.get('components',3),'capacity_used':entities.usage(view,current),
             'capacity':current.get('summon_capacity',2),'automatic_budget':entities.budget(current),
             'automatic_spent':current.get('entity_budget_spent',0)}
     for unit in view['units'].values():
-        if unit.get('temporary'):
+        if unit.get('temporary') and not unit.get('summoner_creature') and not unit.get('engineer_machine'):
             owner=view['units'].get(unit['owner_id'],{})
             unit['statuses'].append({'id':'deployment','owner_name':owner.get('name','Owner'),
                 'policy':unit['policy'],'ready':unit['deployed_at']<owner.get('ability_activation',0),
@@ -3929,7 +4090,10 @@ def battle_view(battle: dict) -> dict:
                     'name':passive['name'],'description':passive['description'],'skill_id':passive['id'],**ready})
         unit['resistance_details']=conditions.resistance_view(unit)
         resistance=tactics.displacement_resistance(unit)
-        if resistance:unit['statuses'].append({'id':'footing','resistance':resistance})
+        profile=unit['resistance_details']
+        if resistance or profile['statuses'] or profile['control_duration_limit']:
+            unit['statuses'].append({'id':'innate_resistance','statuses':profile['statuses'],
+                                    'knockback':resistance,'control_duration_limit':profile['control_duration_limit']})
         if unit.get('reactions'):
             unit['statuses'].append({'id':'reaction','ready':bool(tactics.reaction_available(unit)),
                 'reactions':[r['name'] for r in unit['reactions']]})
@@ -3939,6 +4103,7 @@ def battle_view(battle: dict) -> dict:
                 status["rounds"] = max(0, int(view.get("ambush_sleep_until_round", view["round"])) - view["round"])
     view["current_unit_id"] = current["id"] if current else None
     view['rogue_previews']=rogue.previews(view,view['units'][view['current_unit_id']]) if view.get('current_unit_id') in view['units'] and view.get('status')=='active' else {}
+    if view.get('current_unit_id') in view['units'] and view.get('status')=='active':view['rogue_previews'].update(druid.previews(view,view['units'][view['current_unit_id']]))
     view["door_controls"] = _door_controls(view, current)
     view['supply_uses_remaining'] = remaining_uses(view)
     view['supply_targets'] = [u['id'] for u in _living(view, 'player') if current
@@ -3958,6 +4123,13 @@ def battle_view(battle: dict) -> dict:
                        if (nx,ny) in reachable and _can_step(battle,x,y,nx,ny,current)]}
             for (x, y), parent in parents.items()
         ]
+        if view.get('zones') or view.get('engineer_hazards'):
+            from .combat_hazard_preview import forecast as hazard_forecast
+            for node in view['movement_tree']:
+                warning = hazard_forecast(view, current, _movement_path(parents, reachable, (node['x'], node['y'])),
+                                          _combat_active, _damage_before_barrier, _living)
+                if warning:
+                    node['hazard_forecast'] = warning
         origin = current.get("movement_origin") or {"x": current["x"], "y": current["y"]}
         view["movement_origin"] = {"x": int(origin["x"]), "y": int(origin["y"])}
         view["movement_allowance"] = _movement_limit(current)
@@ -3985,21 +4157,21 @@ def battle_view(battle: dict) -> dict:
         view["carry_targets"] = [
             target["id"] for target in view["units"].values()
             if not target.get("conscious", True) and target.get("condition") in {"unconscious", "dead"}
-            and not target.get('lost_in_pit')
+            and not target.get('lost_in_pit') and not target.get('temporary') and not target.get('engineer_machine')
             and not target.get("carried_by") and not target.get("extracted") and _distance(current, target) == 1
         ]
         view["attack_previews"] = {}
         skill = current.get('special')
         options = {
-            'attack': (current['attack_range'], current['attack_elevation_rule'], not current.get('capture_weapon') and not current.get('acted') and not (conditions.has(current, 'mute') and current['attack_elevation_rule'] in {'ignore','line_of_effect'})),
-            'subdue': (current['attack_range'], current['attack_elevation_rule'], not current.get('acted') and current.get('capture_weapon') and not (conditions.has(current,'mute') and current['attack_elevation_rule']=='line_of_effect')),
+            'attack': (current['attack_range'], current['attack_elevation_rule'], not current.get('acted') and not current.get('captor_hold') and not current.get('captor_held_by') and not conditions.has(current,'disarm') and not (conditions.has(current, 'mute') and current['attack_elevation_rule'] in {'ignore','line_of_effect'})),
+            'subdue': ((current.get('capture_weapon') or {}).get('range',1), (current.get('capture_weapon') or {}).get('elevation_rule','melee'), not current.get('acted') and not current.get('captor_hold') and not conditions.has(current,'disarm') and current.get('capture_weapon') and not (conditions.has(current,'mute') and current['attack_elevation_rule']=='line_of_effect')),
             'skill': (skill['range'], skill['elevation_rule'], skill.get('target') != 'ally' and abilities.availability(current,skill)['available'] and not (conditions.has(current, 'mute') and skill['elevation_rule'] in {'ignore', 'line_of_effect'})) if skill else (0, 'melee', False),
         }
         for target in _living(view, 'enemy'):
             previews = {}
             for action, (reach, rule, available) in options.items():
                 actor, approach = (ranger.position(view,current,target,skill if action=='skill' else None,reachable,parents) if ranger.steady(current) and action in {'attack','skill'} and (action=='attack' or (skill or {}).get('ranger_kind')) else _attack_position(view,current,target,reach,reachable,parents)) if available else (None,None)
-                forecast=(_capture_preview(view,actor,target) if current.get('capture_weapon') and action in {'attack','subdue'} else _strike_preview(view,actor,target,rule,reach,skill if action=='skill' else None)) if actor else None
+                forecast=(_capture_preview(view,actor,target) if current.get('capture_weapon') and action=='subdue' else _strike_preview(view,actor,target,rule,reach,skill if action=='skill' else None)) if actor else None
                 previews[action]={**forecast,**(approach or {})} if forecast else None
             view['attack_previews'][target['id']] = previews
         view['skill_previews']={}
@@ -4009,6 +4181,39 @@ def battle_view(battle: dict) -> dict:
         if mage_view is not view:mage_view.update(_mage_preview_cells={},_mage_preview_paths={})
         for choice in current.get('skills',[]):
             entries={}
+            if choice.get('captor_kind'):
+                entries=captor.previews(view,current,choice,reachable,parents)
+                view['skill_previews'][choice['id']]=entries
+                if choice['id']==(skill or {}).get('id'):
+                    for row in view['attack_previews'].values():row['skill']=None
+                    for target_id,row in entries.items():view['attack_previews'].setdefault(target_id,{})['skill']=row
+                continue
+            if choice.get('engineer_kind'):
+                ground,entries=engineer.previews(view,current,choice)
+                if ground or choice['engineer_kind'] in {'dynamite','proximity_charge'} or choice['engineer_kind']=='man_the_guns' and current.get('mounted_machine'):view['ground_skill_previews'][choice['id']]=ground
+                view['skill_previews'][choice['id']]=entries
+                if choice['id']==(skill or {}).get('id'):
+                    for row in view['attack_previews'].values():row['skill']=None
+                    for target_id,row in entries.items():view['attack_previews'].setdefault(target_id,{})['skill']=row
+                continue
+            if choice.get('summoner_kind'):
+                view['skill_previews'][choice['id']]=summoner.previews(view,current,choice)
+                continue
+            if choice.get('druid_kind'):
+                entries=druid.view_previews(view,current,choice,reachable,parents)
+                view['skill_previews'][choice['id']]=entries
+                for target_id in entries:view['attack_previews'].setdefault(target_id,{})
+                if choice['id']==(skill or {}).get('id'):
+                    for target_id,row in entries.items():view['attack_previews'].setdefault(target_id,{})['skill']=row
+                continue
+            if choice.get('cleric_kind'):
+                ground,entries=cleric.view_previews(view,current,choice,reachable,parents)
+                if ground:view['ground_skill_previews'][choice['id']]=ground
+                view['skill_previews'][choice['id']]=entries
+                for target_id,row in entries.items():
+                    view['attack_previews'].setdefault(target_id,{})
+                    if choice['id']==(skill or {}).get('id'):view['attack_previews'][target_id]['skill']=row
+                continue
             if choice.get('mage_kind'):
                 ground,entries=mage.view_previews(mage_view,current,choice,reachable,parents)
                 if choice['mage_kind'] in mage.GROUND:view['ground_skill_previews'][choice['id']]=ground
@@ -4078,8 +4283,15 @@ def battle_view(battle: dict) -> dict:
                     allowed = abilities.availability(current,choice)['available'] and not (conditions.has(current, 'mute') and choice['elevation_rule'] == 'line_of_effect')
                     effect = _support_effect(choice, current)
                     actor,approach=_support_position(view,current,target,effect,reachable,parents) if allowed else (None,None)
+                    song_effect = next((e for e in choice.get('effects',[]) if e.get('type') == 'bard_song'), None)
+                    preview_zones = ([{'cells':bard.performance_cells(view,current),
+                                       'kind':'bard_song','song':choice.get('bard_kind'),'name':choice.get('name','Song'),
+                                       'owner_id':current['id'],'owner_name':current.get('name','Bard'),
+                                       'remaining':'','description':'Performance space'}] if song_effect else
+                                    [{'cells':_area_cells(view,current,effect['area_cleanse_radius']),'kind':'rally'}] if _rally_skill(choice) else
+                                    [{'cells':_zone_cells(view,target,e),'kind':e['zone']} for e in choice.get('effects',[]) if e['type']=='zone'])
                     entries[target['id']] = {'chance': 100, 'support': True, 'heal': effect.get('heal', 0), **(approach or {}),
-                        'zones':([{'cells':_area_cells(view,current,effect['area_cleanse_radius']),'kind':'rally'}] if _rally_skill(choice) else [{'cells':_zone_cells(view,target,e),'kind':e['zone']} for e in choice.get('effects',[]) if e['type']=='zone'])} if actor else None
+                        'zones':preview_zones} if actor else None
                     if actor and effect.get('area_attack'):
                         cells=_area_cells(view,actor,1)
                         forecasts={}
@@ -4107,7 +4319,7 @@ def battle_view(battle: dict) -> dict:
             view['skill_previews'][choice['id']]=entries
         view['terrain_attack_previews'] = {}
         for tile in view.get('terrain', []):
-            if current.get('capture_weapon') or not tile.get('destructible') or tile.get('destroyed') or current.get('acted') or (conditions.has(current, 'mute') and current['attack_elevation_rule'] == 'ignore'):
+            if not tile.get('destructible') or tile.get('destroyed') or current.get('acted') or (conditions.has(current, 'mute') and current['attack_elevation_rule'] == 'ignore'):
                 continue
             actor, approach = _attack_position(view, current, tile, current['attack_range'], reachable, parents)
             if actor:
@@ -4141,6 +4353,8 @@ def battle_view(battle: dict) -> dict:
         monk.view(unit,view)
         unit['effective_move']=_movement_limit(unit)
         if monk.evasion_bonus(unit):unit['evasion_base']=unit['evasion'];unit['evasion']+=monk.evasion_bonus(unit)
+        from .combat_inspection import explanations
+        unit['stat_explanations']=explanations(unit)
     return view
 
 
@@ -4254,6 +4468,7 @@ def _apply_preparation_command(battle: dict, command: dict) -> dict:
 
 def _position_player(battle, unit, destination):
     if unit.get('rogue_walk_locked'):raise ValueError('Normal walking is locked; use a mobility Quick Action or your main action')
+    if bard.locked(unit):raise ValueError('A performing Bard is planted in place')
     if unit.get("acted"):
         raise ValueError("This unit already committed its action")
     x, y = int(destination.get("x", -1)), int(destination.get("y", -1))
@@ -4262,6 +4477,7 @@ def _position_player(battle, unit, destination):
     reachable, parents = _movement_tree(battle, unit)
     if (x, y) not in reachable:
         raise ValueError("That tile is outside this unit's movement range")
+    cleric.stop_rest(unit)
     route = _scout_path(battle, unit, _reposition_route(battle, unit, (x, y), reachable))
     if route:
         x, y = route[-1]
@@ -4328,8 +4544,64 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             # Discovery interrupts the combined action; the player must reconsider.
             return battle_view(battle)
     if action=='navigate':return _player_navigation(battle,unit,command)
+    if action == 'stop_song':
+        if not bard.active_song(unit):
+            raise ValueError('This Bard is not performing a Song')
+        bard.stop_song(battle, unit)
+        unit['acted'] = True
+        _finish_turn(battle)
+        concealment.refresh(battle);_check_end(battle);_advance_to_player(battle)
+        battle['action_count'] += 1
+        return battle_view(battle)
     selected_skill=next((s for s in unit.get('skills',[]) if s['id']==command.get('skill_id',(unit.get('special') or {}).get('id'))),None) if action=='skill' else None
     selected_skill=ranger.skill_for(unit,selected_skill)
+    if selected_skill and action == 'skill' and bard.attack_skill(selected_skill) and not bard.can_attack(unit):
+        raise ValueError('Song of Peace prevents attacks from inside its radius')
+    if unit.get('engineer_disrupted')==unit.get('ability_activation',0) and (action in {'attack','subdue'} or selected_skill and bard.attack_skill(selected_skill)):
+        raise ValueError('Mine disruption prevents offensive actions this activation')
+    if action=='release_hold':
+        captor.release(battle,unit);battle['action_count']+=1;return battle_view(battle)
+    if conditions.has(unit,'disarm') and action in {'attack','subdue'}:raise ValueError('Disarm prevents weapon attacks')
+    if unit.get('captor_held_by'):raise ValueError('Restrained: wait for release or interference')
+    if unit.get('captor_hold') and action not in {'guard','end_turn'} and not (selected_skill and selected_skill.get('captor_kind')=='restraining_hold'):raise ValueError('Release Hold before acting')
+    if selected_skill and selected_skill.get('captor_kind'):
+        if captor.command(battle,unit,selected_skill,command):_finish_turn(battle)
+        concealment.refresh(battle);_check_end(battle);_advance_to_player(battle);battle['action_count']+=1
+        return battle_view(battle)
+    if selected_skill and selected_skill.get('engineer_kind'):
+        if engineer.command(battle,unit,selected_skill,command):_finish_turn(battle)
+        concealment.refresh(battle);_check_end(battle);_advance_to_player(battle);battle['action_count']+=1
+        return battle_view(battle)
+    if unit.get('mounted_machine') and action=='attack':
+        if engineer.manual_attack(battle,unit,command):_finish_turn(battle)
+        concealment.refresh(battle);_check_end(battle);_advance_to_player(battle);battle['action_count']+=1
+        return battle_view(battle)
+    if unit.get('construction') and action not in {'guard','end_turn'}:raise ValueError('Finish or cancel construction before acting')
+    if unit.get('mounted_machine') and action in {'move','skill','subdue','throw'}:raise ValueError('Exit the emplacement first')
+    if selected_skill and selected_skill.get('bard_kind') == 'cue_the_strike':
+        selected_skill = deepcopy(selected_skill)
+        selected_skill['bard_ally_id'] = str(command.get('ally_id', ''))
+    if selected_skill and selected_skill.get('bard_kind') in bard.SONGS and command.get('stop_song'):
+        if not bard.active_song(unit):raise ValueError('This Bard is not performing a Song')
+        bard.stop_song(battle, unit);unit['acted']=True;_finish_turn(battle)
+        concealment.refresh(battle);_check_end(battle);_advance_to_player(battle);battle['action_count']+=1
+        return battle_view(battle)
+    if action=='summon_order':
+        summoner.order(battle,unit,command)
+        battle['action_count']+=1
+        return battle_view(battle)
+    if selected_skill and selected_skill.get('summoner_kind'):
+        if summoner.command(battle,unit,selected_skill,command):_finish_turn(battle)
+        concealment.refresh(battle);_check_end(battle);_advance_to_player(battle);battle['action_count']+=1
+        return battle_view(battle)
+    if selected_skill and selected_skill.get('cleric_kind'):
+        if cleric.command(battle,unit,selected_skill,command):_finish_turn(battle)
+        concealment.refresh(battle);_check_end(battle);_advance_to_player(battle);battle['action_count']+=1
+        return battle_view(battle)
+    if selected_skill and selected_skill.get('druid_kind'):
+        if druid.command(battle,unit,selected_skill,command):_finish_turn(battle)
+        concealment.refresh(battle);_check_end(battle);_advance_to_player(battle);battle['action_count']+=1
+        return battle_view(battle)
     if selected_skill and selected_skill.get('mage_kind'):
         if mage.command(battle,unit,selected_skill,command):_finish_turn(battle)
         concealment.refresh(battle);_check_end(battle);_advance_to_player(battle);battle['action_count']+=1
@@ -4352,6 +4624,23 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         return battle_view(battle)
     if action in {'summon_move','summon_attack','operate_turret','dismiss_summon'}:
         _entity_command(battle,unit,command)
+    elif selected_skill and selected_skill.get('bard_kind'):
+        abilities.validate(selected_skill)
+        availability=abilities.availability(unit,selected_skill)
+        if not availability['available']:raise ValueError(availability['reason'])
+        if selected_skill.get('bard_kind') in bard.SONGS:
+            target=unit
+        else:
+            target_id=command.get('target_id')
+            target=battle['units'].get(target_id)
+            if target is None and target_id is not None:
+                target=next((candidate for candidate in battle['units'].values()
+                             if str(candidate.get('id')) == str(target_id)), None)
+            if not target or not _combat_active(target) or target['team']!='enemy' or concealment.unseen(target):
+                raise ValueError('Choose a visible living enemy')
+            if selected_skill.get('bard_kind')=='jeering_verse' and _distance(unit,target)>selected_skill['range']:
+                raise ValueError('Target is outside Jeering Verse range')
+        _resolve_ability(battle,unit,target,selected_skill)
     elif selected_skill and selected_skill.get('ability_version'):
         abilities.validate(selected_skill)
         availability=abilities.availability(unit,selected_skill)
@@ -4394,12 +4683,14 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         else:
             if not target or not _combat_active(target) or target['team']!='enemy' or concealment.unseen(target):
                 raise ValueError('Choose a visible living enemy')
-            if unit.get('capture_weapon') and any(e['type'] in {'attack','leap_attack','area_attack'} for e in selected_skill['effects']):
-                raise ValueError('Capture weapons cannot perform damaging techniques')
             if _apply_attack_approach(battle,unit,target,selected_skill['range'],command,selected_skill.get('range_shape','diamond')):return battle_view(battle)
             if not _can_attack(battle,unit,target,selected_skill['range'],selected_skill.get('range_shape','diamond')):raise ValueError('Target is outside technique range')
             target=conditions.confused_target(battle,unit,target,lambda u:_can_attack(battle,unit,u,selected_skill['range'],selected_skill.get('range_shape','diamond')))
         unit['special']=selected_skill
+        if (command.get('move_to') is not None and bard.attack_skill(selected_skill)
+                and not bard.can_attack(unit)
+                and not any(effect.get('type') in {'leap_attack', 'dash_attack'} for effect in selected_skill.get('effects', []))):
+            raise ValueError('Song of Peace prevents attacks from inside its radius')
         _resolve_ability(battle,unit,target,selected_skill)
     elif action == "move":
         _position_player(battle, unit, command)
@@ -4424,6 +4715,8 @@ def apply_player_command(battle: dict, command: dict) -> dict:
     elif action in {"attack", "skill", "subdue"}:
         if unit.get("acted"):
             raise ValueError("This unit already used its action")
+        if not bard.can_attack(unit) and action in {'attack','skill','subdue'}:
+            raise ValueError('Song of Peace prevents attacks from inside its radius')
         if action=='skill' and command.get('skill_id'):
             choice=next((s for s in unit.get('skills',[]) if s['id']==command['skill_id']),None)
             if not choice:raise ValueError('That skill is not granted by the equipped gear')
@@ -4434,8 +4727,6 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             if tile.get("id") == target_id and tile.get("destructible") and not tile.get("destroyed")
         ), None)
         if terrain_target:
-            if unit.get("capture_weapon"):
-                raise ValueError("Capture weapons cannot damage structures")
             if action != "attack":
                 raise ValueError("Only a standard attack can target this terrain")
             if conditions.has(unit, 'mute') and unit['attack_elevation_rule'] == 'ignore':
@@ -4451,13 +4742,14 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             target = battle["units"].get(target_id)
             if not target or not _combat_active(target) or target["team"] != "enemy" or concealment.unseen(target):
                 raise ValueError("Choose a living enemy or destructible terrain target")
-            if action == "attack" and unit.get("capture_weapon"):
-                raise ValueError("Capture weapons can only use Subdue instead of Attack")
+            forced=bard.forced_target(battle, unit)
+            if forced and target['id'] != forced['id']:
+                raise ValueError('Jeering Verse forces this enemy to target the Bard')
             if action == "subdue" and not unit.get("capture_weapon"):
                 raise ValueError("Equip a capture weapon to attempt Subdue")
             if action == "skill" and not unit.get("special"):
                 raise ValueError("This unit has no equipped combat skill")
-            attack_range = int(unit["special"]["range"] if action == "skill" else unit["attack_range"])
+            attack_range = int(unit["special"]["range"] if action == "skill" else (unit.get("capture_weapon") or {}).get("range",1) if action=="subdue" else unit["attack_range"])
             if action == "skill" and unit.get("special_used"):
                 raise ValueError("This unit's special skill has already been used")
             if _apply_attack_approach(battle, unit, target, attack_range, command):
@@ -4465,11 +4757,16 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             if not _can_attack(battle, unit, target, attack_range):
                 raise ValueError("Target is outside attack range")
             _commit_player_movement(battle, unit)
-            rule = unit["special"]["elevation_rule"] if action == "skill" else unit["attack_elevation_rule"]
+            if unit.get('engineer_interrupted'):
+                unit['acted']=True;_finish_turn(battle);_advance_to_player(battle);battle['action_count']+=1
+                return battle_view(battle)
+            if not bard.can_attack(unit):
+                raise ValueError('Song of Peace prevents attacks from inside its radius')
+            rule = unit["special"]["elevation_rule"] if action == "skill" else (unit.get("capture_weapon") or {}).get("elevation_rule","melee") if action=="subdue" else unit["attack_elevation_rule"]
             if conditions.has(unit, 'mute') and rule in {'ignore', 'line_of_effect'}:
                 raise ValueError('Mute prevents this spell')
             target = conditions.confused_target(battle, unit, target, lambda u: _can_attack(battle, unit, u, attack_range))
-            if unit.get('capture_weapon') and action != 'skill':
+            if unit.get('capture_weapon') and action == 'subdue':
                 _capture_attempt(battle, unit, target)
             else:
                 bonus = int(unit["special"].get("damage_bonus", 3)) if action == "skill" else -1 if action == "subdue" else 0

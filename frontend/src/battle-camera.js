@@ -19,19 +19,21 @@ export function bindMapWheel(viewport,{width,height,onZoom}){
     viewport.scrollTop+=after.top+fy*after.height-event.clientY;
   };
 }
-export function bindMapPan(viewport){
+export function bindMapPan(viewport,onCancel=()=>{},onInspect=()=>{}){
   let drag=null;
   viewport.oncontextmenu=e=>e.preventDefault();
   viewport.onpointerdown=e=>{
     if(e.button!==2)return;
-    e.preventDefault();drag={id:e.pointerId,x:e.clientX,y:e.clientY,left:viewport.scrollLeft,top:viewport.scrollTop};
+    const badge=e.target?.closest?.('[data-unit-status]');
+    e.preventDefault();drag={id:e.pointerId,x:e.clientX,y:e.clientY,left:viewport.scrollLeft,top:viewport.scrollTop,moved:false,unit:e.target?.closest?.('[data-battle-unit]')?.dataset.battleUnit,status:badge?{id:badge.dataset.unitStatus,owner:badge.dataset.statusOwner}:null};
     viewport.setPointerCapture(e.pointerId);viewport.classList.add('is-panning');
   };
   viewport.onpointermove=e=>{
     if(!drag||drag.id!==e.pointerId)return;
+    if(Math.hypot(e.clientX-drag.x,e.clientY-drag.y)>5)drag.moved=true;
     viewport.scrollLeft=drag.left+drag.x-e.clientX;viewport.scrollTop=drag.top+drag.y-e.clientY;
   };
-  const stop=e=>{if(!drag||drag.id!==e.pointerId)return;drag=null;viewport.classList.remove('is-panning');if(viewport.hasPointerCapture(e.pointerId))viewport.releasePointerCapture(e.pointerId)};
+  const stop=e=>{if(!drag||drag.id!==e.pointerId)return;const cancel=e.type==='pointerup'&&!drag.moved,unit=drag.unit,status=drag.status;drag=null;viewport.classList.remove('is-panning');if(viewport.hasPointerCapture(e.pointerId))viewport.releasePointerCapture(e.pointerId);if(cancel){if(unit)onInspect(unit,e,status);else onCancel()}};
   viewport.onpointerup=stop;viewport.onpointercancel=stop;viewport.onlostpointercapture=()=>{drag=null;viewport.classList.remove('is-panning')};
 }
 export function sizeBattleMap(viewport,{width,height,fit,zoom}){

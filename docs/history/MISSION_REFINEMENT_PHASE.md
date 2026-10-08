@@ -1,5 +1,9 @@
 # Mission Refinement Phase
 
+## October 7, 2026 - Captor / Resolve
+
+Completed the base Captor kit and separate capture Resolve layer in dev. Hold wears down Resolve at 0.75x per tick, attempts capture at zero, and never damages HP. Independent Attack/Subdue, unconscious recovery, paired Abduct, interruption/persistence and generated packed art/four foley clips are documented in docs/design/CAPTOR_REWORK_REVIEW.md and docs/art/CAPTOR_V1.md. Focused backend/frontend tests, isolated browser fixture and frontend build validated; numerical balance and personality AI remain open.
+
 ## October 6: Ranger Marksman and Poison rework (implemented in dev)
 
 Eight Ranger skills now share the existing five-slot Job system: Mark Quarry, Longshot, Multi-Shot, Rapid Fire, Poison Attack, Pestilence Shot, Rupturing Blow and Sharpshooter. Mark is an owner-specific main-action setup; marked arrows cannot miss. Longshot uses distance power and a separate 20% double-damage critical roll. Rapid Fire is a target-selected Quick Action with a legal equipped-attack pool and Basic Attack fallback; the chosen attack's cooldown is not spent, walking is committed/locked and the main action remains.
@@ -1776,3 +1780,301 @@ Validation: 14 runner/profile checks, all 318 frontend tests and production buil
 Reproduced the reported stuck Connecting screen on actual live dev port 5174 in Chrome: versioned mage-effects.css imported createHotContext from /@vite/client, but the steady adapter did not export it. This prevented the whole module graph from evaluating before initialization. Added an inert context with the expected accept/dispose/prune/event methods, retaining CSS helpers and no socket/reload logic. Earlier small plain-CSS server fixture did not cover this versioned CSS interface; regression checks now do. Map/Mage preview server now uses the actual steady adapter rather than the stock Vite client.
 
 Validation: all 320 frontend tests pass. Real source startup against live API port 8001 reached the expected environment sign-in guard instead of Connecting, with no JavaScript exceptions. Real Chrome Mage fixtures also passed under the corrected adapter, including loaded Meteor in flight, impact-gated Scorch, five effects, controls and cleanup. Running user services were not stopped; restart is required because middleware retained the previous client source in memory. No production, auth, save or environment edits. Canonical diagnostics: docs/design/DEVELOPMENT_RUNNER.md.
+
+
+### October 6 ? AoE targeting and status playback refinement
+
+Right-click cancels targeting and returns to Move while dragging continues to pan; Rogue/Mage prompts cancel without commands. Ground target cursors accept occupied cells using the ground preview. Friendly-fire chips use red text plus You/Ally labels. Independent backend status snapshots drive map badge/hover updates at shared impact contacts, with final decay reconciliation at playback completion. No dev runner, production, credentials or save changes.
+
+Validation: 324 frontend tests, 71 focused backend tests (Mage, percentage DoTs, impact and snapshot independence), and frontend production build pass. Real Chrome fixture passes Mage startup/effects, valid occupied-target magic cursor, cost-free right-click cancellation (map/enchant prompt), right-drag preserving skill selection, red You forecasts, and contact-timed Burn badges; no browser exceptions.
+
+
+### October 6 ? Movement warnings and navigation art
+
+Added read-only movement-tree hazard forecasts via the existing zone eligibility and damage/barrier rules. Hovering Move destinations shows immediate HP cost, status stacks/chances and delayed trap damage wording, with hazardous path cells outlined. No hover requests or source-state mutation. A dense 47-destination fire-zone fixture measured approximately 20 ms per complete battle view versus 9 ms without hazards, before the clear-path fast rejection was added.
+
+Generated one matching six-cell painted navigation atlas (open/close doors, retreat, compass pan, interaction, hazard), normalized sprites/cursors and removed neighbouring-cell spill in the import bounds. Door controls and exit markers use this set; blocked ground and props retain custom cursors. Dev/prod services and saves remain isolated. Validation: 327 frontend tests, 105 focused backend tests, production build, and real Chrome Mage/navigation fixture checks pass. Chrome checks cover hazard text and outlines, custom door/blocked/prop cursors, retreat markers, targeting cancellation, status timing and Mage effects.
+
+
+### October 6 ? Transient boss Frozen portrait fix
+
+Replaced before/after-only ice detection with intermediate snapshot replay; moved elemental ice metadata ahead of feedback capture. One-turn boss Freeze grows portrait ice and thaws even when it expires in the same response. Direct-hit shatter remains contact-timed; stale transition callbacks cannot restore ice from older phases. Playback locks through the final ice transition. Removed the disconnected recent-freeze timer/cache; gameplay resistance and one-turn duration remain unchanged.
+
+Validation: 329 frontend tests and 58 focused backend tests pass; frontend production build passes. Real Chrome fixture verifies solo-Mage boss Freeze and thaw within one response, no lingering ice, and input held until completion, alongside existing Mage/navigation checks. Screenshot: staging-ui/mage-v1/boss-freeze.png. No production or save changes.
+## October 6, 2026 - Bard battlefield conductor
+
+Implemented Bard in dev with Jeering Verse, Cue the Strike, Battle Musician,
+Accelerando, Quickening Chorus, War Anthem, Song of Peace and Maestro. Songs use
+the existing status/activation clock, acquire only at stationary positions inside a
+two-cell performance radius, linger unless marked NO LINGER, and lock the Bard in
+place. Jeering Verse is non-resistable and filters deliberate AI targeting; Cue the
+Strike selects an ally then a legal enemy and performs a Basic Attack without
+consuming that ally's next activation. Song of Peace checks attacker origin, while
+Maestro switches Songs as a normal action. Added painted icon crops and six short
+lute-based ElevenLabs cues through the existing animation audio path. Frontend now
+supports two-stage Cue targeting and Stop Playing. Accelerando Meteor no longer
+leaves a phantom delayed event. Validation includes Bard/job regressions, backend
+compile checks and the frontend production build. Numeric balance, advanced AI song
+planning and multi-Bard composition remain open. No production rollout or save reset.
+
+
+### October 7, 2026 - Bard behavior and usability review
+
+User confirmed Song of Peace must automatically end after two Bard activations and
+never linger. Kept that timing. War Anthem and Quickening now persist through the
+recipient's next turn after stop/switch/source defeat, with no duplicate stacks.
+Fixed an extra-turn expiry and temporary-only Quickening discount: extra cooldown
+recovery now persists and ticks once at activation start. Accelerando Meteor's
+instant branch now returns its resolved result instead of throwing after impact.
+Shared clear-sight performance cells align active overlays and previews. Descriptions
+explain actual one-cell diagonal range, direct-damage scope, costs, linger and expiry;
+Stop Playing hides restart cooldowns. Forecast labels exclude non-recipients.
+
+Validation: 104 focused backend tests, 334 frontend tests and frontend build pass.
+Isolated Chrome fixture verifies all four Songs' nine-cell previews, dedicated notes,
+no binding artwork, and Stop Playing. Wall filtering, cooldown persistence, pass-through
+movement without acquisition, no-linger removal, normal lingering expiry and instant
+Meteor have behavioral regression tests. Numeric balance and deeper multi-Bard
+encounter playtesting remain open. Personality-aware Bard AI is explicitly deferred
+in FEATURE_BACKLOG.md and docs/design/BARD_REWORK_REVIEW.md. No production, saves,
+credentials, live services or external image helper changes.
+
+
+### October 7 - Contain disposable browser QA profiles
+
+Verified all nine user-listed drive-root directories were Chrome QA profiles with
+no running browser using them. Recursive deletion was rejected by automatic review;
+used reversible native PowerShell moves into data/browser-qa/archived-profiles.
+Verified all nine source paths are absent and destinations present. Future profile
+location data/browser-qa/profile is documented in AGENTS.md, runner docs and handoff.
+No game saves, normal browser profiles or production data changed.
+
+## October 7, 2026 ? Cleric restoration / Battle Priest
+
+Implemented the eight-skill Cleric kit on existing activation, charge, zone and damage systems. Mend uses INT capped at 15% recipient maximum HP; Sanctuary uses max(5, floor(INT/2)); Heal remains 30%. Continuous Rest recovers charges on 1/2/3-turn intervals, with +75% all-source vulnerability and interruption rules. Battle Priest transforms healing into self-only cooldowns. Smite uses a separate holy magical component with contact-linked feedback. Added matching native-generated icons and isolated browser checks. No production deployment or save clearing.
+
+Validation: 241 backend checks passed across Cleric, Mage, Bard, Monk, Rogue, Ranger, approach, DoT, starters and abilities, including Guard forecast and AI target tests. All 336 frontend tests passed; Vite build passed with its existing large-chunk advisory. Browser checks passed icon loading, area previews, Rest/Regeneration, self-healing, zone rendering and holy impact cleanup; screenshots inspected. Personality-aware AI and dedicated audio remain deferred.
+
+### Cleric / Barbarian follow-up balance
+
+Holy Light now affects only its centre and four cardinal neighbors (cast reach unchanged). Smite lasts three turns including its casting turn. Heal restores 40% target maximum HP, including Battle Priest self-Heal. Battle Priest reduces all resolved incoming damage by 15% before Rest vulnerability, with existing rounding/minimum damage rules. Skullbreaker and Groundbreaker retain 2/4 Fury and main actions but no cooldowns; the validator now accepts a positive Fury cost as an ability limit. In-game descriptions and canonical Cleric/martial references updated. Regression checks include exact cross geometry, Smite expiration, physical/DoT reduction, 40% healing and resource/action-gated zero-cooldown Fury skills.
+
+### October 7, 2026 — Druid adaptive forms and living terrain
+
+Implemented the eight-choice Druid kit using existing activation/loadout/profile,
+status, damage, terrain and displacement systems. Quick forms persist until
+changed, share HP, permit one change per activation and commit legal prior travel
+without retroactively lowering its budget. Prowler amplifies global Bleed;
+Bulwark mitigates direct damage and pushes; Rat receives only 1% ordinary aimed
+hit chance but dies from any actual HP damage. Added regeneration, living armor,
+specialization passives and a rotatable three-cell Bramble Wall with one HP pool,
+settled-movement reactions and normal terrain attack/pathfinding support.
+
+Two native-generated image packs supply eight square skill icons, humanoid-return
+icon, three animal portraits, wall frames/wreckage, transformation/restoration
+effects and a lash. No walking animal sprites or external LinkAPI helper used.
+Five ElevenLabs accents were generated and installed, reusing successful retained
+sources after an upstream failure; sources and reports remain in staging.
+Lash contact damage/Bind/sound and form/growth audio share playback packets.
+Animal portraits never alter saved identity or reuse a manual humanoid crop.
+
+Validation: 363 backend tests passed across Druid, spaces, abilities, martial,
+Cleric, approach, starters, Bard, Mage, Monk, Rogue, Ranger, DoTs, feedback and
+hazard previews; all 341 frontend tests passed. Browser QA passed placement and
+confirmation payloads, three animal portraits, return controls, spell restriction,
+wall/lash/growth rendering and cleanup; screenshots inspected. Vite build passed
+with the existing large-chunk advisory. QA profiles stayed under data/browser-qa;
+only this pass's preview/browser processes were stopped. No live saves or
+production changed. Personality-aware AI, uncapped-Bleed encounter balance and
+human sound listening review remain open.
+
+### Druid regression follow-up — skill naming, support targets and balance
+
+Corrected the presentation check that equated an absent form with absent Druid
+metadata, incorrectly renaming unrelated skills Humanoid Form. Return labels now
+require the actual persistent animal form and matching skill. All starting Jobs
+are covered for unchanged names/descriptions and read-only view generation.
+Druid support previews seed self/allies independently of the initial selected
+skill; frontend selection merges target IDs instead of only enemy entries.
+Browser checks successfully select/send Rejuvenation to an ally and Living Armor
+to self. Rat's direct damage and forecasts are fixed at 1 before Barrier
+absorption; Bramble lasts four caster activations. Rat target-priority planning
+is explicitly deferred to the later AI pass. No production or save reset.
+
+Validation: 366 backend and 342 frontend tests passed; isolated browser checks
+and Vite build passed, retaining the existing large-chunk advisory.
+
+
+### October 7, 2026 - Druid and unit inspection polish
+
+Rat ordinary aimed evasion is 90%, with its prior fixed 1 damage and lethal vulnerability unchanged. Bramble remains fade one battlefield round after destruction and are removed the next; repeated cleanup does not reset them. Form changes show SELF on the Druid. Removed blanket control overlap/recovery immunity while retaining selective resistance and boss duration caps. All resistance information shares an Innate resistances buff. Added draggable right-click ally/enemy inspection, live snapshot refresh, stat help and truthful flat armor/Armor Fracture calculations; preserved right-drag pan and empty-ground cancel. New snapshots retain stat source ingredients; old snapshots remain readable without invented source history.
+
+Validation: 418 backend combat/Job regressions, 345 frontend tests, browser Druid placement/form/support regressions plus right-click inspector/drag/stat-tooltip checks, and frontend build. No production changes or live save edits.
+
+### October 7, 2026 - Hover card and Poison correction
+
+Replaced expanding unit hover prose with a fixed horizontal tactical summary, compact effect rows and independent effect/overview scrolling; retained full details in right-click inspection and added an explicit hint. Pointer crossing into the card works without closing it. Fixed corrupted Rogue multiplier/separator text and related status/action labels. Poison stacks now represent duration: one 10%-max-HP base tick per target turn, then one stack removed. Rupturing Blow uses linear remaining Poison damage while Bleed remains triangular. Existing pools retain their counts; no migration or source-image changes.
+
+Validation: 420 backend combat/Job tests, 347 frontend tests, frontend build, and browser checks for fixed hover dimensions with fourteen effects, independent scrolling, pointer transfer/dismissal, and existing Druid/right-click inspector interactions all pass. Production and live saves untouched.
+
+
+### October 7, 2026 - Full-width Unit details and independent effect window
+
+Reviewed question/nice detail.png and ugly details.png. Replaced the persistent inspector's growing effects side column with full-width stats followed by bounded, scrollable effect cards, plus collapsible traits/passives. Audited summaries for damage scopes, source ownership and stack/clock meanings without changing mechanics. Individual map badge hover remains detailed. Right-clicking an effect opens one reusable draggable effect window while preserving Unit details; it closes independently and refreshes with battle state. Preserved stat help, effect scroll and trait expansion across redraws.
+
+Validation: all 351 frontend tests and build passed, as did isolated browser checks for the fourteen-effect layout, scrolling, badge explanations, singleton replacement, independent drag/close, narrow viewport and Druid interactions. Screenshots: staging-ui/druid-v1/details-crowded.png and effect-pinned.png. Existing bundle-size advisory remains. No production deployment, live API calls or save changes.
+
+
+### October 7, 2026 - Inspector performance follow-up
+
+Investigated reported repeated map/History/general loading delay. Verified the active runner remains Vite source mode with automatic reload disabled; no loader or runner switch occurred in the inspector pass. Chrome reused the repeated image within a document despite existing no-store headers, so cache policy was left unchanged. Removed unnecessary replacement of unchanged Unit/Effect inspector DOM on battle redraw. Isolated browser checks verify retained nodes, changed effects, separate windows and no API call from History. Local small-fixture median redraw improved from about 5.6ms to 2.5ms; History from about 9ms to 4ms. A heavier 576-cell, 74-token, 2,000-log fixture measured about 58ms render and 32ms History. Timings are local diagnostic samples; the broader live-session regression remains unconfirmed and is not claimed fixed. All 351 frontend tests and build pass. User runner, live saves and production were untouched.
+
+
+### October 7, 2026 - Hover-card scheduling polish
+
+Addressed hover stutter by coalescing pointer bursts into one update per animation frame, caching unchanged content and measured dimensions, removing repeated JSON status serialization, and avoiding token geometry reads when pointer coordinates are available. Applied frame scheduling/dimension caching to dock status hover too. Cancel pending display on exit/rebind; preserve the existing crossing grace and scrolling/right-click behavior. Actual playback status snapshots, target/action changes and viewport resizing still invalidate the relevant cached presentation. No loader, server command or combat-timeline changes.
+
+Validation: all 353 frontend tests, frontend build and isolated browser checks passed. A 100-event mouse burst over unchanged content produced zero geometry reads/content mutations. Browser coverage includes cancelled early exit, retained DOM across control redraw, updated status snapshots, full effect hover, scrolling and independent singleton inspection. One concurrent frontend test run had a web-proxy worker failure; its standalone rerun and the subsequent complete suite both passed. Production and live saves untouched.
+
+
+### October 7, 2026 - Cross-unit hover and square commands
+
+Extended hover caching from the current card to a bounded 48-entry reusable DOM cache. Added 90ms unit-switch intent in Move mode, with immediate first card, same-unit updates, keyboard focus, action forecasts and right-click inspection. Hide previous unit content while waiting; cancel pending hover when opening a pinned inspector. Actual card content survives equivalent status/control redraws; changed snapshots regenerate as needed. Standardized all six commands on 88px square tiles with 72px glyphs, gold/dark skill-style framing and readable hotkey labels, preserving desktop 3x2 placement.
+
+Validation: 356 frontend tests and build pass (existing bundle-size advisory remains). Isolated Chrome hover and details checks pass: three-unit rapid sweep shows only the settled unit, return reuses nodes, exits cancel pending work, physical right-click opens immediately and prevents delayed reopening, command dimensions/rows match, and 100 unchanged pointer moves cause zero layout reads/content mutations. Reviewed the actual desktop screenshot. Delay feel remains a live playtest question. No startup/loading, gameplay timeline, live saves or production changes.
+
+
+### October 7, 2026 - Plain hover stats and bounded effect summary
+
+Followed user feedback: removed calculation markup and focusable stat help from the cursor-following card, preserving pinned Unit details calculations. Shared identity/stat rendering avoids duplicate hover/detail templates. Removed the 90ms switch timer and its intent machinery; restored next-frame scheduling for every unit switch. Hover shows up to three effect rows and '+N more effects - Right-click for all', without scrolling the effect column. Pinned details retain all effects and scroll behavior; individual badge details remain intact.
+
+All 356 frontend tests and build pass. Isolated browser checks verify no stat help/focus targets in hover, working pinned calculations, fourteen statuses summarized as three plus eleven more without scroll, frame-only three-unit sweeps, retained cached DOM, early-exit cancellation, right-click inspection, full effect lists and small-screen pinned layout. Reviewed hover screenshot. No live runner restart, saves, production, server command or combat timeline changes. Live stutter resolution still needs user observation.
+
+
+### October 7, 2026 - Profile hover positioning and pointer interception
+
+Profiled actual pointer sweeps, then isolated card movement from content switches. Changed unit/dock-status hover from left/top positioning to translate3d with layout/paint containment. Kept display stable during next-frame unit switches. Transient cards are now pointer-transparent and dismiss immediately when leaving their source; removed obsolete interactive-hover crossing handlers. Pinned windows, stat calculation help and map/dock badge inspection remain unchanged.
+
+Validation: all 356 frontend tests, build and isolated hover/details checks pass. New browser performance tool compares identical 90-frame card movements: 89 layout passes for left/top versus zero with transform (local sample). Actual three-unit sweep still has changing-content layouts; measured 59 in one local sample. No claim of complete live stutter resolution. No server command, combat animation timeline, runner restart, save or production changes.
+
+### October 7, 2026 - Autonomous Summoner kit
+
+Replaced the new Summoner loadout with eight skills: Bound Companion, Wisp Swarm,
+Transposition, Spirit Projection, Sacrifice, Overload, Life Pact and Rapid
+Conjuration. Extended existing temporary-unit ownership and owner-linked clocks;
+legacy deployments retain their policies. Fire, Earth, Grass and Wisp creatures
+have autonomous movement, attacks and signature behavior, beginning after the
+owner's next activation. Persistent one/group orders are innate. Placement and
+Reclaim use centered confirmation controls, with keyboard/right-click cancellation.
+Companion/swarm cooldowns begin only when their whole group is gone. Old skill IDs
+migrate while preserving practice and loadout order.
+
+Added one packed art atlas (four portraits, eight icons, four effects) and six
+ElevenLabs cues. Normal movement/contact playback and fire surfaces are reused.
+Projection bolts originate at individual contributors with separate hit packets;
+forecasts account for their positions and shared Barrier depletion. Sacrifice
+explosions overlap and affect allies. Transposition explicitly ends normal walking
+without consuming the main action. Grass Offering is a predictable nonlethal
+max-HP cost; Nature Burst uses a simple owner-centered defensive heuristic.
+
+Validation: 20 Summoner backend regressions, 360 frontend tests, browser placement,
+commands, Reclaim, swap, Projection and Sacrifice preview/playback checks pass.
+The full backend suite also passes: 912 tests.
+Existing hover/details browser regressions and the frontend build also pass.
+Reviewed placement and sacrifice screenshots. The normal build-size advisory
+remains. Generated audio passes technical checks; human listening and live combat
+balance still need review. Personality-aware caster AI and advanced creature
+coordination remain in FEATURE_BACKLOG.md. No live saves, runner configuration,
+production deployment or user-data reset changed in this pass.
+
+### October 7, 2026 - Grass companion, order tile and summon death playback
+
+Buffed newly conjured Grass Companions to full owner maximum HP and INT; their
+melee attacks use inherited INT through normal defenses instead of a fixed
+one-damage override. Life Offering retains its predictable 25% max-HP cost and
+therefore heals more from the larger HP pool. Other companion profiles are stable.
+
+Moved Summon Orders from the map toolbar into a numbered, reorderable innate
+skill tile with the existing centered popup. The tile is presentation-only and
+does not consume one of the five equipped skills or an action; unavailable when
+no owned summons exist. Persistence of its order uses the existing skill-order API.
+
+Fixed premature disappearances caused by final server cleanup marking summons
+dismissed before enemy animation playback. Create temporary visible bodies even
+when final map markup omits the unit, then fade/collapse at its actual departure
+event. Preserve all previous movements and attacks. Also handle a summon conjured
+and killed in one response, plus Reclaim, Sacrifice and expiry. No gameplay state
+is restored by these presentation bodies.
+
+Validation: 68 backend checks covering Summoner, entities, loadouts, starting Jobs
+and Battle Lab pass. Browser checks cover the order tile/popup and a four-enemy
+sequence where a Wisp remains visible until the last attack, plus birth-and-death
+in one response. Reviewed the pending-death screenshot. All 364 frontend tests
+and the frontend build pass;
+the existing bundle-size advisory remains. No live saves or production changes.
+
+### October 7, 2026 - Bound Companion Protect Ally command
+
+Added innate Protect Ally to the Summon Orders popup for Bound Companions. The
+player can select their Summoner or another living ally; the companion seeks
+positions within two cells. Grass directs Life Offering and Nature Burst toward
+that ally. Earth/Fire prioritize enemies currently able to attack the ally, then
+nearby threats, without intercepting attacks. Fire avoids placing its wall on the
+protected ally. Follow is labeled Follow Summoner throughout current controls.
+
+All-summons Protect changes only the Bound Companion, preserving Wisp orders;
+individual Wisps do not offer it. Invalid targets reject atomically. An unavailable
+protected ally falls back to the Summoner, and Clear Order restores autonomous
+owner-healing behavior. Existing action costs, HP costs and ability cooldowns
+are unchanged. Future personality/coordination work remains deferred.
+
+Validation: 71 backend tests and 365 frontend tests pass, plus frontend build.
+Backend scenarios cover healing self/other, group scope, invalid targets, fallback,
+clearing, threat priority, routing and ally-centered pushes. Isolated browser QA
+checks target-list selection of the Summoner, confirmation payloads, enemy rejection,
+Wisp-only hiding, Follow naming and existing summon placement/departure playback.
+No live saves, runner settings or production changes.
+
+The centered command popup also offers an ally target list so covered portraits
+remain selectable. The action help correctly identifies Orders as a free command
+that neither commits movement nor ends the activation.
+# October 7, 2026 — Engineer machinery rework
+
+Implemented eight active Job skills: Sentry Turret, Heavy Emplacement, Man the
+Guns, Overclock, Scuttle Protocol, Proximity Charge, Dynamite and Rapid Assembly.
+Construction/active slots replace the Engineer Job's old Components/output budget;
+legacy gear deployments remain intact. Added confirmed placement, occupied-machine
+portraits, separate automatic/manual firing, collision-aware emergency launch,
+interrupting mines, known-hazard warnings and idempotent old-skill migration.
+
+Built-in imagegen created one packed 16-cell wood/iron machine/prop/icon atlas;
+ready/fire/recoil/wreck frames for both machines share anchors and operator seats.
+ElevenLabs generated four short machinery clips. Prompts/originals/import details
+are retained in docs/art/ENGINEER_V1.md and staging folders; listening review remains
+open. Advanced personality/placement/mine/mount AI and Heavy splash-risk scoring
+remain deferred. See docs/design/ENGINEER_REWORK_REVIEW.md for exact timing/choices.
+
+Validation: 385 relevant backend tests; 370 frontend tests; frontend build; isolated
+Engineer placement/mount/hazard browser checks and Summoner browser regression pass.
+Browser QA caught and fixed a browser-only projectile-preload reference error;
+new browser-Image regression covers startup. A broad backend discovery process
+terminated with native exit -1073741819 in map-variant reachability after faulthandler
+diagnostics; no full-suite success is claimed. No live saves or production modified.
+
+## October 7 — Engineer construction and placement usability refinement
+
+Unfinished turrets immediately block and occupy their tile, with full finished HP/armor and no firing/mounting; damage persists on completion, and destruction frees the slot/cancels work. Removed machinery carry actions. Wrecks fade next round/disappear the following round, with visual defeat held until the actual attack. Removed mines likewise remain until their explosion event.
+
+Engineer combat skills now reuse direct self/unit/AoE targeting; Scuttle works on owned unmounted machinery too, with ejection only for an operator. Mine trigger footprints cannot touch enemies at placement; damaging AoEs detonate mines. Turret and Summoner windows drag, remember position and use E/C keycaps; combat help is one concise sentence with extended definitions retained.
+
+Generated/reviewed one packed v2 atlas for eight Engineer ability icons, unfinished machines, explosive arrow and cross blast. Generated a dedicated ElevenLabs explosive-bolt impact anchored to bolt contact. No live saves or production changes. Fresh Bard song/full-turn probes create no additional units. Found and fixed SELF labels inheriting portrait clipping, dimensions and background, which produced a blank circle during self-targeting; all four Bard song browser checks now assert the small rectangular label. User confirmation of the reported appearance remains open.
+
+Validation: 424 relevant backend tests, 373 frontend tests, frontend build; isolated Engineer and Summoner browser checks (see QA scripts). Broad backend discovery was not repeated; prior native map-variant discovery failure remains a limitation.
+
+October 7 Engineer preparation follow-up: added Rapid Assembly amber gear/check/sparks, dedicated ElevenLabs ready sound, confirmation text and a preparation buff until consumption/end of turn. Added one-turn Dynamite recovery beginning at detonation, so the detonation turn cannot also throw another charge. Preserved movement/main action and consumed-only Rapid Assembly cooldown. Validation: 30 Engineer backend tests, all 374 frontend tests and frontend build pass. Generated sound has no clipped samples. This follow-up has not had a new browser visual/listening pass.
+
+October 7 Dynamite throw/visibility: explicit throw event preserves origin and hazard snapshot; composed portrait wind-up/release returns to neutral, projectile arcs and spins, placed bundle appears only on landing. Removed hazard playback now falls back to explosion snapshots, covering newly thrown charges already detonated in the returned state. Validation: 30 Engineer tests, 375 frontend tests, build and isolated Chrome throw/landing/explosion checks with no browser exceptions. Reused existing art; no live saves or production changes.
+
+October 7 Captor follow-up: fixed Resolve label covering portraits and legacy Attack-to-Subdue remapping; Abduct now uses the styled, draggable Summoner placement panel. Every successful Resolve attack checks capture at zero Resolve, including the threshold hit; captured targets skip further control/pull processing. Existing HP badges retained; expanded HP/Resolve presentation deferred. Validated actual browser input/commands and focused capture regressions.
+
+October 7 release preparation: current Job work validated for dev/main and production/release publishing using the independent release builder. Added empty production initialization and source QA exclusions; full production reset authorized with backup. See docs/design/RELEASE_PREPARATION.md for execution conditions.

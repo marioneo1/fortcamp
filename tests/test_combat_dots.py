@@ -39,7 +39,7 @@ class PercentageDotTests(unittest.TestCase):
   conditions.finish_activation(t);conditions.finish_activation(t);self.assertEqual(dots.count(t['statuses'][0]),2)
  def test_poison_and_bleed_damage_even_if_unit_guards(self):
   b,a,t=self.fixture(100);self.stack(t,a,'poison',2);self.stack(t,a,'bleed',3);t.update(moved=False,physical_action=False,guarding=True)
-  combat._tick_gear_statuses(b,t);self.assertEqual(t['hp'],65);conditions.finish_activation(t)
+  combat._tick_gear_statuses(b,t);self.assertEqual(t['hp'],75);conditions.finish_activation(t)
   self.assertEqual({s['id']:s['stacks'] for s in t['statuses']},{'poison':1,'bleed':2})
  def test_caltrops_only_apply_bleed_until_turn_end(self):
   b,a,t=self.fixture(100);combat.spaces.place_zone(b,a,{'zone':'caltrops','turns':2},[{'x':3,'y':2},{'x':4,'y':2}]);t['zone_location']=[0,0]
@@ -50,7 +50,7 @@ class PercentageDotTests(unittest.TestCase):
   b,a,t=self.fixture();self.stack(t,a,'burn',1);conditions.finish_activation(t);self.assertFalse(conditions.has(t,'burn'))
  def test_json_legacy_layers_preserve_count_and_ignore_old_damage_or_duration(self):
   b,a,t=self.fixture(100);t['statuses']=[{'id':'poison','turns':2,'layers':[{'turns':1,'tick_damage':999},{'turns':2,'tick_damage':999},{'turns':1,'tick_damage':999}]}]
-  b=json.loads(json.dumps(b));t=b['units'][t['id']];combat._tick_gear_statuses(b,t);self.assertEqual(t['hp'],70);conditions.finish_activation(t);self.assertEqual(dots.count(t['statuses'][0]),2)
+  b=json.loads(json.dumps(b));t=b['units'][t['id']];combat._tick_gear_statuses(b,t);self.assertEqual(t['hp'],90);conditions.finish_activation(t);self.assertEqual(dots.count(t['statuses'][0]),2)
  def test_armor_does_not_reduce_dot_and_barrier_still_absorbs(self):
   b,a,t=self.fixture(100);t['armor']=1000;self.stack(t,a,'burn',5);conditions.barrier(t,6,2,a)
   self.assertEqual(combat._tick_dot_status(b,t,'burn'),4);self.assertEqual(t['hp'],96)
@@ -64,5 +64,22 @@ class PercentageDotTests(unittest.TestCase):
   with patch('backend.combat._attack_hits',return_value=(True,{'damage_bonus':0},1)):mage.impact(b,a,'meteor',{'x':3,'y':2})
   event=next(e for e in b['animation_events'] if e['type']=='zone_created');cast=next(e for e in b['animation_events'] if e['type']=='mage_cast')
   self.assertEqual(event['attack_packet'],cast['attack_packet']);self.assertEqual(event['zone_id'],b['zones'][0]['id'])
+
+
+ def test_poison_stacks_extend_duration_with_constant_ten_percent_tick(self):
+  b,a,t=self.fixture(100);self.stack(t,a,'poison',4)
+  for index in range(4):
+   t['status_activation']=[20+index,1];hp=t['hp'];combat._tick_gear_statuses(b,t)
+   self.assertEqual(hp-t['hp'],10)
+   combat._tick_gear_statuses(b,t);self.assertEqual(hp-t['hp'],10)
+   conditions.finish_activation(t)
+   self.assertEqual(sum(dots.count(s) for s in t['statuses'] if s['id']=='poison'),3-index)
+  self.assertFalse(conditions.has(t,'poison'))
+
+ def test_poison_cashout_is_linear_while_bleed_is_still_triangular(self):
+  _,_,t=self.fixture(100)
+  self.assertEqual(dots.potential(t,'poison',4),40)
+  self.assertEqual(dots.potential(t,'bleed',4),50)
+  self.assertEqual(dots.base_damage(t,'poison',0),0)
 
 if __name__=='__main__':unittest.main()

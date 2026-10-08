@@ -111,8 +111,8 @@ class AttackApproachTests(unittest.TestCase):
         self.assertEqual({(p['x'],p['y']) for p in result['zones'][0]['cells']},expected)
 
     def test_ally_spell_previews_and_accepts_move_and_cast(self):
-        from backend.job_loadouts import SKILLS
-        spell=deepcopy(SKILLS['job:cleric:barrier'])
+        from backend.job_loadouts import active
+        spell=active('qa:cover_plate','Cover Plate','Protect an adjacent ally.',[{'type':'guard'},{'type':'barrier','amount':8,'turns':1}],'ally',1,'physical_care',3)
         ally=deepcopy(self.actor);ally.update(id='ally',name='Ally',x=4,y=4)
         self.battle['units']['ally']=ally
         self.actor['skills']=[spell];self.actor['special']=spell

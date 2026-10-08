@@ -16,10 +16,10 @@ test('All eight Ranger skills use matching art with readable tactical categories
 test('Owner marks and Poison layers are explicit with one-stack turn-end decay',()=>{
  const marks=['Alice','Bob'].map(name=>({id:'mark',quarry:true,source_id:name,source_name:name,turns:3}));
  assert.equal(visibleStatuses({statuses:marks}).length,2);
- assert.match(statusDetails(marks[0]).description,/100% accuracy/);
+ assert.match(statusDetails(marks[0]).description,/guaranteed accuracy/);
  assert.match(statusDetails(marks[0]).details.join(' '),/Alice.*3 target turns/);
- const text=statusDetails({id:'poison',turns:2,layers:[{tick_damage:2},{tick_damage:1}]}).details.join(' ');
- assert.match(text,/10% max HP per stack/);
+ const poison=statusDetails({id:'poison',turns:2,layers:[{tick_damage:2},{tick_damage:1}]});
+ assert.match(poison.description,/10% max HP at turn end/);assert.match(poison.details.join(' '),/2 turns remaining/);
  for(const id of ['pestilence','poison_imbue','sharpshooter'])assert.ok(statusVisual({id}).image.includes('/ranger-v1/'));
 });
 test('Ranger forecasts explain variable arrows, crits, cashout and Rapid Fire',()=>{

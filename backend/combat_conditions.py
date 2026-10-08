@@ -7,7 +7,7 @@ from . import combat_dots as dots
 CONTROL = {'stun', 'sleep', 'freeze', 'paralyze'}
 RECOVERY = CONTROL | {'bind'}
 
-STATUS_IDS = {'stun','sleep','freeze','paralyze','bind','poison','burn','bleed','blind','fear','slow','mute','hobbled','pestilence','wet','blister'}
+STATUS_IDS = {'stun','sleep','freeze','paralyze','bind','poison','burn','bleed','blind','fear','slow','mute','hobbled','pestilence','wet','blister','disarm'}
 
 def innate_resistances(unit):
     # Selective authored identities, never a blanket boss debuff resistance.
@@ -31,9 +31,9 @@ def status_chance(unit,sid,base=100):
 
 def resistance_view(unit):
     return {'statuses':{sid:resistance(unit,sid) for sid in sorted(STATUS_IDS) if resistance(unit,sid)},
-            'control_recovery':unit.get('control_immunity',0),
+            'control_recovery':0,
             'control_duration_limit':1 if unit.get('boss') or unit.get('kind')=='chieftain' else None,
-            'control_lock_active':any(has(unit,sid) for sid in (RECOVERY if unit.get('status_version') else CONTROL)),
+            'control_lock_active':False,
             'recovery_affects':sorted(RECOVERY if unit.get('status_version') else CONTROL)}
 
 def has(unit, sid):
@@ -44,17 +44,12 @@ def remove(unit, *ids):
     unit['statuses'] = [s for s in unit.get('statuses', []) if s.get('id') not in ids]
     for s in removed:
         if s.get('elemental_freeze') and unit.get('hp',1)>0:
-            unit['control_immunity']=2
             apply(unit,'wet',s.get('wet_turns',2),{'id':s.get('source_id'),'name':s.get('source_name')})
 
 def apply(unit, sid, turns, source=None):
     if sid in dots.PERCENT:return add_stack(unit,sid,turns,source or {'id':unit['id'],'name':unit.get('name','')})
     if sid in {'hobbled'} and any(s.get('id')==sid and 'layers' in s for s in unit.get('statuses',[])):
         return add_stack(unit,sid,turns,source or {'id':unit['id'],'name':unit.get('name','')})
-    if sid in (RECOVERY if unit.get('status_version') else CONTROL) and unit.get('control_immunity', 0) > 0:
-        return False
-    if unit.get('status_version') and sid in RECOVERY and any(has(unit,s) for s in RECOVERY):
-        return False
     remove(unit, sid)
     status = {'id': sid, 'turns': max(1, min(6 if sid in {'wet','blister','weapon_enchant'} else 3, int(turns))),
               'applied_activation': unit.get('status_activation')}
@@ -105,7 +100,7 @@ def start_activation(battle, unit):
     """Called once by the engine's persistent activation stamp."""
     unit.pop('paralyzed_move', None)
     unit.pop('forced_skip', None)
-    unit['control_immunity'] = max(0, int(unit.get('control_immunity', 0)) - 1)
+    unit.pop('control_immunity',None)  # Retire legacy blanket anti-stunlock immunity.
     if unit.get('status_version'):
         unit['reaction_ready'] = True
     if has(unit, 'stun') or has(unit, 'sleep') or any(s.get('id')=='freeze' and s.get('elemental_freeze') for s in unit.get('statuses',[])):
@@ -149,8 +144,6 @@ def finish_activation(unit):
         status['turns'] -= 1
         if status['turns'] <= 0:
             remove(unit,status['id'])
-            if status['id'] in (RECOVERY if unit.get('status_version') else CONTROL):
-                unit['control_immunity'] = 2
 
 
 def barrier(unit, amount, turns, source):

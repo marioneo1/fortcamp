@@ -40,6 +40,24 @@ export function playbackDuration(timeline){
     r.start+Math.max(r.duration,r.event.type==='ground_impact'||r.event.type==='fighter_rally'?650:0)));
 }
 
+// Defeated temporary units may already be absent from the final map markup.
+// Keep a presentation body until its actual defeat/dissolve event is played.
+export function departureGhostPlans(previous,battle,timeline){
+ const deaths=timeline.filter(r=>['death_burst','knockout'].includes(r.event.type));
+ const ids=new Set(deaths.map(r=>r.event.unit_id));
+ const dissolves=timeline.filter(r=>r.event.type==='martial_effect'&&['summoner_dissolve','summoner_sacrifice'].includes(r.event.skill)&&!ids.has(r.event.unit_id));
+ const rows=new Map();
+ for(const row of [...deaths,...dissolves]){
+  const id=row.event.unit_id,after=battle.units?.[id];
+  const birth=timeline.find(r=>r.event.type==='martial_effect'&&['summoner_conjure','engineer_build'].includes(r.event.skill)&&r.event.unit_id===id);
+  const before=previous?.units?.[id]||(birth&&after?{...after,hp:after.max_hp,alive:true,conscious:true,extracted:false,condition:'active',statuses:[]}:null);
+  if(!before||before.alive===false||before.extracted||before.condition==='dismissed')continue;
+  if(dissolves.includes(row)&&(!after?.summoner_creature||after.alive!==false&&!after.extracted))continue;
+  if(!rows.has(id))rows.set(id,{...row,before});
+ }
+ return [...rows.values()];
+}
+
 export function needsPlaybackLock(events,battle){
   return events.some(e=>e.type!=='movement'||e.forced||e.leap||
     battle.units?.[e.unit_id]?.team!=='player');

@@ -47,7 +47,7 @@ class MageTests(unittest.TestCase):
   b,a,t=self.fixture()
   with patch('backend.combat_mage.roll',return_value=1):mage.freeze(b,a,t)
   conditions.start_activation(b,t);self.assertTrue(t['forced_skip'])
-  combat._deal_damage(b,a,t);self.assertEqual(t['hp'],480);self.assertFalse(conditions.has(t,'freeze'));self.assertTrue(conditions.has(t,'wet'));self.assertEqual(t['control_immunity'],2)
+  combat._deal_damage(b,a,t);self.assertEqual(t['hp'],480);self.assertFalse(conditions.has(t,'freeze'));self.assertTrue(conditions.has(t,'wet'));self.assertFalse(t.get('control_immunity',0))
  def test_freeze_expiry_wet_and_dot_does_not_break(self):
   b,a,t=self.fixture()
   with patch('backend.combat_mage.roll',return_value=1):mage.freeze(b,a,t)
@@ -107,10 +107,10 @@ class MageTests(unittest.TestCase):
   with patch('backend.combat_mage.roll',return_value=1):
    for _ in range(3):combat._deal_damage(b,deepcopy(a),t)
   s=next(s for s in t['statuses'] if s['id']=='burn');self.assertEqual(len(s['layers']),3);hp=t['hp'];combat._tick_gear_statuses(b,t);self.assertEqual(t['hp'],hp-30);conditions.finish_activation(t);self.assertEqual(s['stacks'],2)
- def test_frost_enchant_next_hit_breaks_and_recovery_blocks_relock(self):
+ def test_frost_enchant_next_hit_breaks_and_can_refreeze(self):
   b,a,t=self.fixture(['enchant_weapon']);self.use(b,'enchant_weapon',a,element='frost');a['attack_elevation_rule']='melee'
   with patch('backend.combat_mage.roll',return_value=1):
-   combat._deal_damage(b,deepcopy(a),t);self.assertTrue(conditions.has(t,'freeze'));combat._deal_damage(b,deepcopy(a),t);self.assertFalse(conditions.has(t,'freeze'));self.assertTrue(conditions.has(t,'wet'))
+   combat._deal_damage(b,deepcopy(a),t);self.assertTrue(conditions.has(t,'freeze'));combat._deal_damage(b,deepcopy(a),t);self.assertTrue(conditions.has(t,'freeze'));self.assertTrue(conditions.has(t,'wet'))
  def test_lightning_enchant_once_per_target_across_source_copies(self):
   b,a,t=self.fixture(['enchant_weapon']);self.use(b,'enchant_weapon',a,element='lightning');a['attack_elevation_rule']='melee';conditions.apply(t,'wet',2,a)
   with patch('backend.combat_mage.roll',return_value=1):combat._deal_damage(b,deepcopy(a),t)
@@ -156,7 +156,7 @@ class MageTests(unittest.TestCase):
  def test_freeze_cleansing_returns_wet(self):
   b,a,t=self.fixture()
   with patch('backend.combat_mage.roll',return_value=1):mage.freeze(b,a,t)
-  conditions.remove(t,'freeze');self.assertTrue(conditions.has(t,'wet'));self.assertEqual(t['control_immunity'],2)
+  conditions.remove(t,'freeze');self.assertTrue(conditions.has(t,'wet'));self.assertFalse(t.get('control_immunity',0))
  def test_meteor_consumes_rally_once_and_keeps_snapshot_bonus(self):
   b,a,t=self.fixture(['meteor']);conditions.apply(a,'rally_power',1,a);self.use(b,'meteor',t)
   self.assertFalse(conditions.has(a,'rally_power'));a['ability_activation']+=1
@@ -227,11 +227,24 @@ class MageFriendlyFireTests(unittest.TestCase):
   b,a,t=self.fixture();mage.scorch(b,a,{'x':3,'y':2},2)
   ally=self.add(b,t,'friend',7,7,'player');mage.scorch(b,ally,{'x':3,'y':2},2)
   before=deepcopy(b);self.assertEqual(combat._dash_ground_damage(b,a,[(3,2),(4,2),(3,2)]),12);self.assertEqual(b,before)
+  # A real route excludes the tile already occupied. Start outside this path
+  # so all three entries, including the return to (3,2), legitimately count.
+  t.update(x=2,y=2,zone_location=[2,2])
   self.assertEqual(combat._dash_ground_damage(b,t,[(3,2),(4,2),(3,2)]),60)
  def test_lethal_self_hit_finishes_other_victims(self):
   b,a,t=self.fixture(['fireball']);a['hp']=1;ally=self.add(b,t,'friend',3,3,'player')
   with self.hit():self.use(b,'fireball',t)
   self.assertFalse(combat._combat_active(a));self.assertLess(t['hp'],500);self.assertLess(ally['hp'],500)
   json.dumps(combat.battle_view(b))
+
+
+ def test_boss_freeze_feedback_retains_elemental_ice_after_one_turn_expiry(self):
+  b,a,t=self.fixture();t['boss']=True
+  with patch('backend.combat_mage.roll',return_value=1):mage.freeze(b,a,t)
+  event=next(e for e in b['animation_events'] if e.get('status_id')=='freeze')
+  ice=next(s for s in event['statuses_snapshot'] if s['id']=='freeze')
+  self.assertTrue(ice['elemental_freeze']);self.assertEqual(ice['turns'],1)
+  t['status_activation']=[99,0];conditions.start_activation(b,t);self.assertTrue(t['forced_skip']);conditions.finish_activation(t)
+  self.assertFalse(conditions.has(t,'freeze'));self.assertTrue(conditions.has(t,'wet'));self.assertTrue(ice['elemental_freeze'])
 
 if __name__=='__main__' :unittest.main()

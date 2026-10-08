@@ -5,6 +5,7 @@ const scorch=()=>['/assets/mage-scorched-v3/fire_strip.png',...[1,2,3,4].flatMap
 export function magePlaybackAssets(events=[]){
  const paths=new Set();const add=name=>paths.add(root+name+'.png');
  for(const e of events){
+  if(e.status_id==='freeze'||e.statuses_snapshot?.some(s=>s.id==='freeze'&&s.elemental_freeze))frozen().forEach(p=>paths.add(p));
   const k=e.mage_skill;
   if(k==='meteor'){add('meteor_rock');add('fire_contact');scorch().forEach(p=>paths.add(p))}
   if(k==='fireball'){add('fire_contact');scorch().forEach(p=>paths.add(p))}

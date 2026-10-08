@@ -177,7 +177,7 @@ class SlotGearTests(unittest.TestCase):
         self.assertEqual(after['damage'], before['damage'])
         actor['strength'] = 100
         self.assertEqual(_throw_profile(b, actor)['range'], 5)
-        b['terrain'] = [{'id': 'wall', 'name': 'Wall', 'destructible': True, 'hp': 100, 'armor': 0}]
+        b['terrain'] = [{'id': 'wall', 'name': 'Wall', 'x':3,'y':2,'destructible': True, 'hp': 100, 'armor': 0}]
         _damage_terrain(b, actor, 'wall')
         self.assertEqual(b['terrain'][0]['hp'], 100 - actor['attack'] - 3)
 

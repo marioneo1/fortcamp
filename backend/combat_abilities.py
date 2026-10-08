@@ -4,6 +4,11 @@ import math
 from . import combat_spaces as spaces
 from . import combat_entities as entities
 from . import combat_monk as monk
+from . import combat_bard as bard
+from . import combat_druid as druid
+from . import combat_summoner as summoner
+from . import combat_engineer as engineer
+from . import combat_captor as captor
 
 VERSION = 1
 STATUSES = {'stun','sleep','poison','bleed','charm','confuse','berserk','freeze',
@@ -31,10 +36,14 @@ def validate(skill):
     if 'combo_kind' in skill and skill['combo_kind'] not in {'opener','follow_up','finisher'}:raise ValueError('Invalid combo technique')
     if 'combo_stage' in skill and skill['combo_stage'] not in {'follow_up','finisher'}:raise ValueError('Invalid combo stage')
     if skill.get('combo_kind') in {'follow_up','finisher'} and skill.get('combo_stage')!=skill['combo_kind']:raise ValueError('Combo stage must match technique')
+    if skill.get('engineer_kind') not in {None,*engineer.KINDS}:raise ValueError('Invalid Engineer technique')
     if 'quick_action' in skill and not isinstance(skill['quick_action'],bool):raise ValueError('Invalid quick action')
     if skill.get('rogue_kind') not in {None,'cheap_shot','crippling_cut','exploit_weakness','shadowstep','caltrops','backflip','throwing_knife'}:raise ValueError('Invalid Rogue technique')
     if skill.get('ranger_kind') not in {None,'mark_quarry','longshot','multi_shot','rapid_fire','poison_attack','pestilence_shot','rupturing_blow'}:raise ValueError('Invalid Ranger technique')
+    if skill.get('cleric_kind') not in {None,'mend','heal','sanctuary','rest','smite','holy_light'}:raise ValueError('Invalid Cleric technique')
     if skill.get('mage_kind') not in {None,'chain_lightning','flash_freeze','singularity','meteor','fireball','enchant_weapon','typhoon'}:raise ValueError('Invalid Mage spell')
+    if skill.get('bard_kind') not in {None,'jeering_verse','cue_the_strike','accelerando','quickening_chorus','war_anthem','song_of_peace','maestro'}:raise ValueError('Invalid Bard technique')
+    if skill.get('summoner_kind') not in {None,*summoner.KINDS}:raise ValueError('Invalid Summoner technique')
     _integer(skill.get('range'), 1, 20)
     if skill.get('range_shape','diamond') not in {'diamond','square'}:raise ValueError('Unsupported range shape')
     cost = skill.get('cost', {})
@@ -43,7 +52,7 @@ def validate(skill):
     _integer(cost['cooldown'], 0, 20)
     if cost['charges'] is not None:
         _integer(cost['charges'], 1, 20)
-    if not cost['cooldown'] and cost['charges'] is None and skill.get('ranger_kind') not in {'mark_quarry','poison_attack'}:
+    if not cost['cooldown'] and cost['charges'] is None and not skill.get('fury_cost') and skill.get('druid_kind') not in {'prowler','bulwark','rat'} and skill.get('ranger_kind') not in {'mark_quarry','poison_attack'} and skill.get('cleric_kind') != 'rest' and skill.get('summoner_kind') != 'overload' and not skill.get('engineer_kind') and skill.get('captor_kind')!='subduing_blow':
         raise ValueError('Ability must have a cooldown or charge limit')
     if 'fury_cost' in skill:_integer(skill['fury_cost'],1,5)
     if 'fury_gain' in skill:_integer(skill['fury_gain'],1,2)
@@ -63,10 +72,19 @@ def validate(skill):
                    'displace': {'mode','distance','collision_damage','stop_adjacent','collision_stun'},
                    'leap_attack': {'radius','inner_push','outer_push','power_percent','collision_stun'},
                    'area_attack': {'radius','push','power_percent'},
-                   'zone': {'zone','radius','turns'}, 'form': {'form','turns'}, 'deploy': {'entity'}, 'dash_attack': {'power_percent'}, 'rogue_utility': {'kind'}, 'mage_spell': {'kind'}}
+                   'zone': {'zone','radius','turns'}, 'form': {'form','turns'}, 'deploy': {'entity'}, 'dash_attack': {'power_percent'}, 'rogue_utility': {'kind'}, 'mage_spell': {'kind'}, 'cleric_spell': {'kind'}, 'druid_spell': {'kind'}, 'summoner_spell': {'kind'}, 'engineer_technique': {'kind'}, 'captor_technique': {'kind'},
+                   'bard_song': {'song','radius','no_linger'}, 'bard_command': {'kind'}, 'bard_provoke': {'turns','vulnerability_percent'}}
         if kind not in allowed or set(effect) - (allowed[kind] | {'type','conditions'}):
             raise ValueError('Unsupported ability effect')
+        if kind=='engineer_technique' and (effect.get('kind')!=skill.get('engineer_kind') or effect.get('kind') not in engineer.KINDS or len(effects)!=1):raise ValueError('Invalid Engineer technique')
+        if kind=='summoner_spell' and (effect.get('kind')!=skill.get('summoner_kind') or effect.get('kind') not in summoner.KINDS or len(effects)!=1):raise ValueError('Invalid Summoner technique')
+        if kind=='cleric_spell' and (effect.get('kind')!=skill.get('cleric_kind') or effect.get('kind') not in {'mend','heal','sanctuary','rest','smite','holy_light'} or len(effects)!=1):raise ValueError('Invalid Cleric spell')
+        if kind=='druid_spell' and (effect.get('kind')!=skill.get('druid_kind') or effect.get('kind') not in {'prowler','bulwark','rat','rejuvenation','bramble_wall','living_armor'} or len(effects)!=1):raise ValueError('Invalid Druid technique')
+        if kind=='captor_technique' and (effect.get('kind')!=skill.get('captor_kind') or effect.get('kind') not in captor.KINDS or len(effects)!=1):raise ValueError('Invalid Captor technique')
         if kind=='mage_spell' and (effect.get('kind')!=skill.get('mage_kind') or effect.get('kind') not in {'chain_lightning','flash_freeze','singularity','meteor','fireball','enchant_weapon','typhoon'} or len(effects)!=1):raise ValueError('Invalid Mage spell effect')
+        if kind=='bard_song' and (effect.get('song')!=skill.get('bard_kind') or effect.get('song') not in {'accelerando','quickening_chorus','war_anthem','song_of_peace'} or len(effects)!=1):raise ValueError('Invalid Bard Song effect')
+        if kind=='bard_command' and (skill.get('bard_kind')!='cue_the_strike' or effect.get('kind')!='cue_the_strike' or len(effects)!=1):raise ValueError('Invalid Bard command effect')
+        if kind=='bard_provoke' and (skill.get('bard_kind')!='jeering_verse' or len(effects)!=1):raise ValueError('Invalid Jeering Verse effect')
         if kind == 'attack':
             if skill['target'] != 'enemy' or attacks:
                 raise ValueError('Only one enemy attack is supported')
@@ -113,6 +131,15 @@ def validate(skill):
                 raise ValueError('Area attacks require self targeting and one effect')
             _integer(effect.get('radius'),1,1)
             _integer(effect.get('push'),1,2)
+        if kind == 'bard_song':
+            _integer(effect.get('radius'),1,3)
+            if skill['target']!='ally' or not skill.get('self_only'):
+                raise ValueError('Songs require self targeting')
+        if kind == 'bard_command' and (skill['target']!='enemy' or not skill.get('quick_action')):
+            raise ValueError('Cue the Strike must be a quick enemy-targeted command')
+        if kind == 'bard_provoke':
+            if skill['target']!='enemy':raise ValueError('Jeering Verse requires an enemy target')
+            _integer(effect.get('turns'),1,3);_integer(effect.get('vulnerability_percent'),1,50)
         if kind == 'heal':
             if ('amount' in effect)==('max_hp_percent' in effect):raise ValueError('Choose one healing amount')
             _integer(effect.get('amount',effect.get('max_hp_percent')), 1, 100 if 'max_hp_percent' in effect else 200)
@@ -197,14 +224,18 @@ def availability(unit, skill):
     if not skill.get('ability_version'):
         return {'available':not unit.get('acted') and not unit.get('special_used',False),
                 'reason':'Main action already used' if unit.get('acted') else 'Shared technique use spent' if unit.get('special_used') else None}
+    special=summoner.availability(unit,skill)
+    if special is not None:return special
     state=unit.get('ability_state',{}).get(skill['id'],{})
     charges=skill['cost']['charges']
     if charges is not None and state.get('uses',0)>=charges:
         return {'available':False,'reason':'No uses remaining','uses_remaining':0,'cooldown_remaining':0}
     remaining=max(0,state.get('ready_at',0)-unit.get('ability_activation',0))
-    restriction = (monk.restriction(unit,skill) or (f"Requires {skill['fury_cost']} Fury" if unit.get('fury',0)<skill.get('fury_cost',0) else
+    active_song=bard.active_song(unit)
+    song_switch = active_song and skill.get('bard_kind') in bard.SONGS and skill.get('bard_kind') != active_song
+    restriction = (f"Stop {bard.SONGS[active_song]['label']} first" if song_switch and not bard.has_maestro(unit) else
+                   ('Disarm prevents weapon techniques' if conditions_disarmed(unit,skill) else None) or captor.restriction(unit,skill) or engineer.restriction(unit,skill) or druid.restriction(unit,skill) or monk.restriction(unit,skill) or (f"Requires {skill['fury_cost']} Fury" if unit.get('fury',0)<skill.get('fury_cost',0) else
                    'Weapon techniques are unavailable in this form' if unit.get('form') and skill.get('source_kind','equipment')=='equipment' and any(e['type'] in {'attack','leap_attack','area_attack','dash_attack'} for e in skill['effects']) else
-                   'Capture weapons cannot perform damaging techniques' if unit.get('capture_weapon') and (any(e['type'] in {'attack','leap_attack','area_attack','dash_attack'} for e in skill['effects']) or skill.get('mage_kind') not in {None,'enchant_weapon','flash_freeze'}) else
                    'Mute prevents this spell' if skill['elevation_rule'] in {'ignore','line_of_effect'} and any(s.get('id')=='mute' for s in unit.get('statuses',[])) else None))
     return {'available':remaining==0 and not unit.get('acted') and not restriction,'reason':'Main action already used' if unit.get('acted') else restriction or (f'Ready in {remaining} of your turns' if remaining else None),
             'cooldown_remaining':remaining,'uses_remaining':None if charges is None else charges-state.get('uses',0)}
@@ -217,6 +248,9 @@ def spend(unit, skill):
         unit['special_used']=True
         return
     if skill.get('fury_cost'):unit['fury']-=skill['fury_cost']
+    if skill.get('cleric_kind')!='rest':
+        from .combat_cleric import stop_rest
+        stop_rest(unit)
     state=unit.setdefault('ability_state',{}).setdefault(skill['id'],{})
     state['uses']=state.get('uses',0)+1
     state['ready_at']=unit.get('ability_activation',0)+skill['cost']['cooldown']
@@ -226,6 +260,9 @@ def start_activation(unit, stamp):
     if unit.get('ability_stamp') != stamp:
         unit['ability_stamp']=list(stamp)
         unit['ability_activation']=unit.get('ability_activation',0)+1
+        if bard.cooldown_bonus(unit):
+            for state in unit.get('ability_state', {}).values():
+                state['ready_at'] = max(unit['ability_activation'], state.get('ready_at', 0) - 1)
 
 
 def matches(condition, target, context):
@@ -248,3 +285,7 @@ def resolve(skill, target, handlers):
         if all(matches(c,target,context) for c in effect.get('conditions',[])):
             context.update(handlers[effect['type']](effect) or {})
     return context
+
+
+def conditions_disarmed(unit,skill):
+    return any(s['id']=='disarm' for s in unit.get('statuses',[])) and skill.get('elevation_rule') in {'melee','ballistic'} and any(e['type'] in {'attack','leap_attack','dash_attack','area_attack'} for e in skill.get('effects',[])) and not skill.get('mage_kind')

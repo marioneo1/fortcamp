@@ -1,5 +1,71 @@
 # Fortcamp feature backlog
 
+## October 7: Captor / Resolve
+
+Implemented: eight-skill Captor, separate lethal Attack and Resolve Subdue, isolation forecasts, paired Abduct, uncapped earned Hold with 0.75x Resolve ticks, free release, Blitz, Disarm, unconscious recovery, migration and generated art/audio. See docs/design/CAPTOR_REWORK_REVIEW.md. Open: boss capture pacing, numerical/art/audio playtesting, personality-driven capture AI and coordinated isolation/drag planning.
+
+## October 7: Summoner autonomous kit
+
+Implemented: eight Job choices, Fire/Earth/Grass companion selection, atomic
+three-Wisp placement, autonomous movement/attacks, persistent one/all commands,
+Reclaim, Transposition, Projection, overlapping friendly-fire Sacrifice, Overload,
+Life Pact, Rapid Conjuration and legacy loadout migration. New summons act after
+the next owner activation, without manual turns or the legacy automatic damage
+budget. Generated portrait/icon/effect atlas and six Summoner SFX; Battle Lab
+uses the new catalogue. See docs/design/SUMMONER_REWORK_REVIEW.md.
+
+Follow-up implemented: Grass inherits full INT/max HP and attacks with normal
+INT-powered damage. Summon Orders is a numbered/reorderable innate skill-bar tile
+with its command popup, costing no equipped slot. Defeated/dismissed summons retain
+presentation bodies until their actual playback event, including birth and death
+within one response; final server cleanup no longer hides them ahead of attacks.
+
+Protect Ally is implemented for Bound Companions, including targeting their
+Summoner. Grass heals the assigned ally and centers defensive bursts on them;
+Earth/Fire stay near and prioritize threats. Follow is now Follow Summoner.
+All-summons Protect affects only the Companion; unavailable targets fall back
+to the Summoner. This remains best-effort support, without attack interception.
+
+Open: live numerical/aesthetic playtesting; coordinated multi-summon planning;
+personality-aware Summoner caster/enemy AI. Current owner auto-play is conservative
+and does not plan sacrifice/overload/swap combinations. Creature commands are
+best-effort goals, and creatures do not open doors. Engineer rework remains separate.
+
+## October 7: Bard behavior and usability pass
+
+Fixed recipient-timed lingering after stop/switch/source defeat, immediate NO LINGER
+removal, persistent once-per-turn Quickening cooldown recovery, instant-Meteor return
+exception, and wall-aware shared Song areas. Updated player descriptions and Stop
+Playing cooldown presentation. Song of Peace retains the user-confirmed automatic
+stop at the Bard's second following activation and never lingers.
+
+Deferred: personality-aware Bard AI for performance choice, switching, stopping,
+commands and provocation. Work on this separately alongside hidden personalities;
+current behavior pass does not redesign AI. See docs/design/BARD_REWORK_REVIEW.md.
+
+## October 6: Bard battlefield conductor implemented in dev
+
+Added the eight-skill Bard kit with planted Songs, one-cell acquisition refresh,
+activation-timed lingering, NO LINGER Accelerando/Song of Peace, movement lock,
+Maestro switching, War Anthem damage support, Quickening cooldown ticks, Jeering
+Verse forced-target AI/vulnerability, and Cue the Strike's two-stage ally/enemy
+command. The existing status, action, targeting, cooldown, attack and animation
+systems remain authoritative. Added a painted Bard icon atlas/crops and six short
+ElevenLabs lute cues. Frontend now supports Cue target selection and an active Song
+slot's Stop Playing action. Accelerando Meteor resolves immediately without a stale
+armed event. Focused job tests and frontend build pass; numeric balance, advanced AI
+song planning and multi-Bard playtesting remain open. No production rollout.
+
+Follow-up hardening in dev: Cue the Strike keeps its selected ally across redraws
+and submits an explicit ally ID; the mission and Battle Lab command schemas now
+preserve that second target; dead or unconscious Bards immediately release
+their performance and NO LINGER Song statuses; Maestro preserves ordinary War Anthem
+and Quickening lingering windows when switching; Song of Peace explains and
+enforces its automatic two-Bard-activation stop; active Songs refresh a settled
+unit's buff through its next activation without tile polling; Bard status icons are
+compact on both tokens and the tray. Focused Bard tests (28), frontend tests
+(332), and the frontend build pass. No production rollout.
+
 ## October 6: Connecting-screen regression fixed (implemented in dev)
 
 Added the missing inert createHotContext interface required by Vite's versioned CSS imports. Its absence prevented game initialization; reproduced on the actual running dev page. Full source startup reaches the expected environment sign-in guard with no JS exceptions; fixture preview now uses the same steady client. Regression coverage includes context methods, style injection and versioned CSS. Restart the running launcher to replace its cached client. No save/auth/production changes. Reference: docs/design/DEVELOPMENT_RUNNER.md.
@@ -1096,3 +1162,114 @@ full map/structure audit remain deferred. See docs/design/COMBAT_CONTROLS.md.
 Completed in dev: doubled persistent doorway buttons to 44px and spaced the
 pair apart. Original Job/build design catalogue remains available in
 docs/design/STARTING_JOBS_AND_SKILLS_V1.md; distinguish it from implemented kits.
+
+
+- Completed October 6: right-click targeting cancel/Move with right-drag preserved; occupied AoE attack cursors; explicit red self/ally forecasts; contact-timed status application badges/hover details. Intermediate status expiration/decay events and synchronized HP HUD remain separate future presentation work.
+
+- Completed October 6: final-path entry-hazard preview (damage, stack attempts, delayed Bleed/Poison wording, hazardous-cell outline); painted open/close doors, retreat markers, pan and interaction cursors; consistent map cursor fallbacks. Delayed zone impacts and reactive survival-passive forecasting remain outside the entry-hazard warning.
+
+- Completed October 6: solo Mage versus one-turn Frozen boss now visibly freezes and thaws even when both changes resolve in a single response; no gameplay duration increase. Removed the unused global recent-freeze visual cache.
+
+
+October 7 housekeeping: nine obsolete Chrome QA profiles moved out of E-drive root
+into ignored dev data/browser-qa/archived-profiles. Future QA profile location is
+now documented and required by AGENTS.md. No game saves or production changes.
+
+October 7 ? Cleric rework completed in dev: eight-skill pool, finite healing charges, continuous vulnerable Rest, placed Sanctuary, mixed-damage Smite, Exorcist, cross-shaped Holy Light, and Battle Priest self-only transformations. Matching native-generated icon atlas and browser QA added. See docs/design/CLERIC_REWORK_REVIEW.md.
+
+Deferred: personality-aware Job AI (including Bard performance decisions and Cleric Sanctuary/Rest planning); Bard visual/audio polish requested for a later pass; Cleric dedicated audio/Sanctuary polish and balance playtesting.
+
+October 7 balance refinement completed: Holy Light uses the smallest five-cell cross; Smite lasts the casting turn plus two following turns; Heal restores 40% maximum HP in both builds; Battle Priest reduces all incoming damage by 15%. Barbarian Skullbreaker and Groundbreaker have no cooldown, retaining 2/4 Fury and main-action costs.
+
+October 7 Druid rework completed in dev: eight-skill pool, persistent once-per-
+activation quick forms, movement-preserving transitions, global Bleed amplification,
+Rat lethal-damage rules, Rejuvenation, Living Armor, shared-health Bramble terrain
+and specialization passives. Native art includes circular animal portraits,
+ability icons, transformation/restoration effects and reactive vine frames;
+five ElevenLabs sounds are installed. See docs/design/DRUID_REWORK_REVIEW.md and
+docs/art/DRUID_V1.md. Validation: 363 backend tests, 341 frontend tests, build and
+isolated browser QA passed. No production deployment.
+
+Deferred Druid work: personality-aware form selection and wall-placement planning,
+encounter balance testing of uncapped global Bleed doubling, and human listening
+review of the generated sound pack. Basic healing/form/protection/wall-attack
+heuristics are implemented; this is not complete tactical Druid AI.
+
+Druid follow-up: fixed missing-form/missing-metadata equality that renamed other
+Jobs' skills to Humanoid Form; fixed ally/self preview selection for Rejuvenation
+and Living Armor. Rat direct attacks/forecasts now deal fixed 1 before Barriers;
+Bramble lasts four caster turns. Added cross-Job naming and support-casting
+regressions and browser command checks. Future AI request recorded: Rat should
+normally have lowest target priority unless a guaranteed hit/AoE can punish it.
+
+
+### October 7 combat inspection / Druid polish completed
+
+- Rat evasion reduced to 90%; form/return targeting explicitly marks SELF.
+- Bramble corpses fade next battlefield round and disappear the following round, independent of caster survival.
+- Blanket control recovery removed; selective resistances and boss short durations remain. Resistance display consolidated under one buff.
+- Right-click ally/enemy draggable inspection with actual armor math and stat explanations implemented. Right-drag pan and empty-map cancel preserved.
+- Deferred: personality-aware AI resistance/control planning and Rat low target priority except guaranteed/area threats. No change to Fighter/Barbarian kits or production.
+
+### October 7 follow-up completed
+
+Bounded horizontal hover summary, compact independently scrollable effects and right-click hint implemented. Full descriptions stay in the inspector. Corrupt question-mark separators/multipliers corrected. Poison duration stacks now cause constant 10% max-HP base ticks; cashout, previews, help and tests updated. Burn/Bleed damage stacking unchanged.
+
+
+## October 7: Unit details readability and effect inspection (implemented)
+
+Replaced the persistent inspector's unequal stats/effect columns with full-width stats above bounded, scrollable effect cards. Audited compact status summaries/clock labels and element-specific enchantment help; individual map badge hover retains full explanations. Added one independent draggable effect inspector, reused on subsequent right-clicks without replacing Unit details. Preserved independent close, stat explanations, scroll position and right-drag map pan.
+
+Validation: 351 frontend tests, build and isolated Chrome checks for fourteen effects, full hover text, singleton replacement, independent drag/close, narrow layout and existing Druid interactions passed. No production changes or live save edits. Deferred: distinct status icon art, map badge crowding and personality-aware AI remain separate work.
+
+
+### October 7: repeated loading/performance follow-up
+
+Fixed confirmed unnecessary inspector innerHTML replacement on unchanged battle redraws. Browser regression checks retain both inspectors' DOM, refresh changed effects and confirm History sends no API request. Local fixture timings improved; all 351 frontend tests, build and inspector browser checks pass. Dev startup/source mode, cache headers and playback timing remain unchanged. Still open: reproduce/profile the user's repeated live map, History and general element-loading delay; local fixture results do not prove that broader issue resolved.
+
+
+### October 7: hover-card responsiveness (implemented)
+
+Coalesced map/unit and status-dock hover to one update per frame. Removed per-mousemove status serialization and repeated geometry reads; cached unchanged hover content survives control redraws. Pending hover cancels on exit/rebind, and new presentation status snapshots still refresh. Browser regression checks verify 100 unchanged pointer moves cause zero hover layout reads/content replacements, plus fast-exit cancellation, current effects, scrolling and pinned details. All 353 frontend tests and build pass. Loading, combat playback and production remain unchanged.
+
+
+### October 7: cross-unit hover and command tiles (implemented)
+
+Added bounded reusable unit-card DOM caching and 90ms intent only for switching inspected units in Move mode. Attack forecasts, keyboard focus and right-click remain immediate; old cards hide during switches and pending display cancels on exit/inspection. Commands now match 88px skill squares, with larger painted icons and consistent states/hotkey labels. 356 frontend tests, build and isolated hover/details browser checks pass. Open playtest item: assess switch-delay feel and shorten/remove the single tuning value if needed. Live runner, saves and production untouched.
+
+
+### October 7: simplify cursor-following hover (implemented)
+
+Removed stat calculation tooltips/focus targets/native abbreviation titles from the transient unit summary; kept calculations in pinned right-click details. Removed the 90ms switch timer rather than replacing it with 20ms. Hover effects now show at most three compact rows and an overflow count; full scrollable lists remain in Unit details. 356 frontend tests, build and both hover/details browser checks pass, including plain summary stats, pinned stat help, three-unit frame-only switching and fourteen-effects overflow. Live hover smoothness remains a user playtest item; the observed tooltip behavior is fixed without claiming it was the only performance cause.
+
+
+### October 7: Engineer machinery rework (implemented)
+
+Eight active Job choices; timed construction, active deployment slots, independent
+Sentry/Heavy firing cycles, Quick mounting/exit, Overclock's four-shot payoff,
+Scuttle/ejection, interrupting friendly-fire mines and delayed Dynamite. Generated
+packed turret ready/fire/recoil/wreck art, operator seat portraits, icons/props and
+four ElevenLabs clips. Confirmed placement and known-mine path warnings. Old Job
+IDs migrate without save reset. Advanced placement/mine/mount AI and personality,
+Heavy friendly-fire targeting and subjective sound mix review remain deferred.
+See docs/design/ENGINEER_REWORK_REVIEW.md and docs/art/ENGINEER_V1.md. Relevant
+backend/UI checks pass; the broad map reachability suite's native process exit
+remains a separate unresolved validation limitation. No production changes.
+
+### October 7: hover movement rendering follow-up (implemented)
+
+Replaced left/top movement of transient cards with contained transform positioning. Removed display hiding during next-frame unit switches and made transient cards pointer-transparent, preventing accidental pointer interception. Removed obsolete crossing-grace handlers; actual units/badges remain right-click inspectable. 356 frontend tests, build and hover/details browser checks pass. New isolated positioning benchmark reports 89 layouts for 90 left/top updates versus zero for transforms. Full unit switches still require content layout, and live stutter resolution remains unconfirmed. No added delay or gameplay/loading changes.
+
+### October 7: Engineer/Summoner placement refinement
+
+Implemented: blocking/attackable unfinished machines with preserved HP, destroyed-build cancellation/slot refund; direct combat targeting and remote Scuttle; enemy-clear mine trigger placement and AoE mine detonation; delayed wreck/mine playback and two-round wreck cleanup; draggable remembered placement windows/E keycaps; concise Engineer/Summoner battle copy; eight generated Engineer icons, unfinished props, explosive bolt/cross blast, dedicated ElevenLabs bolt impact.
+
+Pending: confirm live appearance after the Bard SELF-label fix; user sound/art review; broad skill-description audit and future reference menu. Personality-aware AI remains deferred. Validation recorded in the mission history.
+
+October 7 follow-up: Rapid Assembly now has an activation effect, dedicated generated mechanical sound, ready text and visible preparation buff. Dynamite now requires one recovery turn after its explosion; existing fuse and blast remain unchanged. Listening/playtest feedback remains open.
+
+October 7 Dynamite visibility follow-up implemented: portrait hurl, arcing prop toss and landing-to-explosion hazard playback, including solo battles resolving throw and explosion in one response. Validated in an isolated browser; further feel feedback remains open.
+
+October 7 Captor follow-up: fixed Resolve label covering portraits and legacy Attack-to-Subdue remapping; Abduct now uses the styled, draggable Summoner placement panel. Every successful Resolve attack checks capture at zero Resolve, including the threshold hit; captured targets skip further control/pull processing. Existing HP badges retained; expanded HP/Resolve presentation deferred. Validated actual browser input/commands and focused capture regressions.
+
+October 7 release preparation: removed dev-save/upload seeding from new production storage; production working copies exclude QA/test launchers and fixtures. Authorized launch wipe is backed up separately. See docs/design/RELEASE_PREPARATION.md.

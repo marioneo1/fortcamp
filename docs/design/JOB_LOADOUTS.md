@@ -1,5 +1,16 @@
 # Jobs and character loadouts
 
+Implemented Engineer rework: [Engineer review](ENGINEER_REWORK_REVIEW.md) documents
+eight actives, construction/slots instead of Components, mounting, Overclock,
+mines/Dynamite and idempotent migration. Starter has three active choices; normal
+five-slot limits remain. Existing battle snapshots retain their saved kit.
+
+Implemented Summoner rework: [Summoner review](SUMMONER_REWORK_REVIEW.md) records
+eight choices, three starter actives, unlocks at 2/5/9/12/16 successes, autonomous
+creatures, innate orders/Reclaim, chosen placement, lifecycle cooldowns and legacy
+ID migration. Five character slots still apply. With Engineer's rework the catalogue has 95 skills
+across twelve Jobs; older counts below describe earlier passes.
+
 Implemented Mage rework: [Mage review](MAGE_REWORK_REVIEW.md) records three starter actives, eight choices, practice unlocks at 2/5/9/12/16, elemental interactions, delayed casts, chosen weapon enchantments and compatibility migration. The current catalogue is 85 executable definitions across twelve Jobs.
 
 Implemented Ranger rework: [Ranger rework review](RANGER_REWORK_REVIEW.md) records eight skills, three starting actives, practice unlocks at 2/5/9/12/16, owner-specific Mark, ranged/Poison builds and loadout migration.
@@ -153,3 +164,17 @@ innate/equipment Traits panel. See COMBAT_CONTROLS.md for drag/Arrange behavior.
 ## Rogue rework (implemented in dev)
 
 Eight choices, three starter actives, unlocks at 2/5/9/12/16 successful contracts. Slotted Trap Expert costs one of five slots. Multiple independently cooled Quick Actions precede one main attack; normal walking locks after the first Quick Action, while legal mobility techniques remain usable. Old Rogue choices/order migrate without losing practice; current saved battles retain snapshots. See ROGUE_REWORK_REVIEW.md for exact geometry, stack/cooldown rules and limitations. Battle Lab's 16-success tier exposes the whole pool.
+
+## Cleric rework (implemented in dev)
+
+Eight choices; starter Mend, Rest and Holy Light; other skills unlock at 2/5/9/12/16 successful contracts. Traditional restoration uses finite battle charges recovered by continuous vulnerable Rest. Slotted Battle Priest changes healing into self-only cooldown skills. Legacy choices map without losing practice or automatically enabling Battle Priest. See CLERIC_REWORK_REVIEW.md for formulas, timing, UI, migration and AI limits.
+
+## Druid rework (implemented in dev)
+
+Eight choices; starter Prowler, Rejuvenation and Bramble Wall; remaining unlocks
+at 2/5/9/12/16 successes. Persistent quick-action forms share HP and allow one
+change per activation, preserving legal movement before the change. Animal
+forms cannot cast nature spells. Shared-health Bramble terrain and regenerative
+support reuse existing combat clocks; two slotted specialization passives remain
+within the five-slot limit. Legacy choices migrate without losing practice.
+See DRUID_REWORK_REVIEW.md for exact mechanics, AI scope and balance risks.

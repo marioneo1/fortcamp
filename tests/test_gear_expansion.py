@@ -5,7 +5,7 @@ from unittest.mock import patch
 from backend.content import ITEMS, MISSION_TEMPLATES, GENERAL_LOOT_TABLE, EVENT_REWARD_TABLES, MISSION_RANKS
 from backend.gear_expansion import CHAIN_RELICS
 from backend.mission_loot import roll_item_pool, scene_reward_template
-from backend.combat import _player_unit, _deal_damage, _current_unit, create_goblin_warcamp_battle, apply_player_command, _player_auto_turn
+from backend.combat import _player_unit, _deal_damage, _current_unit, _finish_turn, create_goblin_warcamp_battle, apply_player_command, _player_auto_turn
 from backend.game import new_game
 
 
@@ -37,7 +37,7 @@ class GearExpansionTests(unittest.TestCase):
             self.assertEqual(enemy['condition'], 'unconscious')
             self.assertTrue(enemy['alive'])
             self.assertFalse(actor['special_used'])
-            self.assertEqual(actor['combat_record']['total_damage'],0)
+            self.assertEqual(actor['combat_record']['total_damage'],1)
 
     def test_element_affinities_and_nonlethal_safety(self):
         battle, actor, enemy = self.battle('coalbrand_sabre')
@@ -50,16 +50,20 @@ class GearExpansionTests(unittest.TestCase):
 
     def test_status_ticks_once_per_activation_and_expires(self):
         battle, actor, enemy = self.battle('coalbrand_sabre')
-        actor['statuses']=[{'id': 'burn', 'turns': 2}]
+        actor['statuses']=[{'id': 'burn', 'stacks': 2}]
         actor.update(hp=60, max_hp=60, armor=99, guarding=True)
         _current_unit(battle)
-        self.assertEqual(actor['hp'], 58)
+        self.assertEqual(actor['hp'], 60)
         self.assertTrue(actor['guarding'])
         for _ in range(10):_current_unit(battle)
-        self.assertEqual(actor['hp'], 58)
-        battle['round']+=1
+        self.assertEqual(actor['hp'], 60)
+        _finish_turn(battle)
+        self.assertEqual(actor['hp'],58)
+        battle['round']+=1;battle['turn_index']=0
         _current_unit(battle)
-        self.assertEqual(actor['hp'], 56)
+        self.assertEqual(actor['hp'],58)
+        _finish_turn(battle)
+        self.assertEqual(actor['hp'], 57)
         self.assertEqual(actor['statuses'], [])
 
     def test_poison_immune_races_and_subdue_never_proc(self):
@@ -113,7 +117,8 @@ class GearExpansionTests(unittest.TestCase):
         chief.update(hp=1,statuses=[{'id':'burn','turns':2,'source_id':'player','source_name':actor['name']}])
         battle['turn_order']=['gob_chief','player']
         battle['round'] += 1
-        self.assertIsNone(_current_unit(battle))
+        self.assertIsNotNone(_current_unit(battle))
+        _finish_turn(battle)
         self.assertEqual(chief['condition'],'dead')
         self.assertTrue(battle['decision_pending'])
         self.assertTrue(battle['battle_won'])

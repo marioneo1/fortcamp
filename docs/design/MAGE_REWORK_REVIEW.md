@@ -24,7 +24,7 @@ New Mages learn/equip Chain Lightning, Fireball and Typhoon. Ordinary five-slot 
 ## Elemental rules and costs
 
 - **Wet** is elemental setup, not inferred from race. Lightning retains it; Fireball consumes it. Duration is two target turns, four with Debuffer.
-- **Elemental Frozen** prevents acting and movement. Direct HP damage breaks the ice AFTER the full hit; fully absorbed Barrier hits and DoTs do not. Natural expiry, damage or cleansing leaves Wet. Existing boss one-activation control duration, selective Freeze resistance and shared control recovery still apply. A failed Freeze applies Wet immediately, including a recovery-blocked attempt.
+- **Elemental Frozen** prevents acting and movement. Direct HP damage breaks the ice AFTER the full hit; fully absorbed Barrier hits and DoTs do not. Natural expiry, damage or cleansing leaves Wet. Existing boss one-activation control duration, selective Freeze resistance still apply. A failed Freeze applies Wet immediately. Control can be chained; post-control recovery immunity was removed October 7.
 - **Legacy equipment Freeze** retains its old movement restriction and direct-damage vulnerability in existing saves. Only newly authored Mage Freeze has `elemental_freeze` metadata and the above ice-breaking rules. This avoids silently rewriting previous gear balance.
 - **Burn** deals 2% of target max HP per stack, minimum one base HP per stack. At target turn end it deals current pool damage, then loses one stack. Burn resistance reduces final modified damage instead of blocking application. See [Combat DoTs](COMBAT_DOTS.md).
 - **Blister** lowers outgoing damage by 10% and accuracy by 10 percentage points. It affects all outgoing damage, including status damage; explicit guaranteed accuracy remains guaranteed.
@@ -64,3 +64,9 @@ Mage behavior tests cover propagation, Wet retention/conversion, selective boss 
 Real Chrome fixtures check loaded icons, cancel-without-command, selected Frost dispatch, ice/channel overlays, five impact types and effect cleanup. Frontend production build passes with the existing bundle-size warning. Runtime assets are included in Git; generated source atlases remain staging references.
 
 Numeric balance across ranks, human listening/aesthetic review of the synthesized clips, full-channel pacing in live fights and advanced elemental AI remain playtesting work. This pass does not claim all encounters are balanced or all spells have cinematic bespoke animation.
+
+
+October 6 presentation refinement: valid Fireball/Meteor ground targets on occupied unit cells now show the caster's official attack cursor. Self/ally area forecasts carry red You/Ally warnings. Status application snapshots prevent post-resolution Burn badges appearing before their playback contacts. See Combat Controls and Combat Status Presentation for scope and limitations.
+
+
+October 6: one-turn boss Freeze now replays from intermediate status snapshots, including a cast that applies and expires during the same solo-player response. Elemental ice metadata is recorded before the status snapshot. Portrait ice grows, holds briefly, then thaws (or shatters on direct damage); playback input remains locked until these transitions finish. Gameplay Freeze duration and resistance are unchanged.

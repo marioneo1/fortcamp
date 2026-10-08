@@ -31,18 +31,17 @@ def targets(b,a,center,radius,allies=False,include_self=False,preview=False):
    candidates.append(position if preview else u)
  return sorted(candidates,key=lambda u:(c._distance(center,u),u['id']))
 def duration(a,turns):return turns*(2 if specialized(a) else 1)
-def status(b,a,t,sid,turns=2,chance=100,packet=None):
+def status(b,a,t,sid,turns=2,chance=100,packet=None,metadata=None):
  from . import combat as c
  if not c._combat_active(t):return False
  applied=roll(b,a,sid)<=conditions.status_chance(t,sid,chance) and conditions.apply(t,sid,turns if sid in conditions.RECOVERY else duration(a,turns),a)
+ if applied and metadata:next(s for s in t['statuses'] if s['id']==sid).update(metadata)
  feedback(b,t,'status' if applied else 'resisted',status_id=sid,attack_packet=packet)
  c.martial.flush(b,t)
  return applied
 def freeze(b,a,t,turns=2,chance=100,packet=None):
- applied=status(b,a,t,'freeze',turns,chance,packet)
- if applied:
-  s=next(s for s in t['statuses'] if s['id']=='freeze');s.update(elemental_freeze=True,wet_turns=duration(a,2))
- else:status(b,a,t,'wet',2,packet=packet)
+ applied=status(b,a,t,'freeze',turns,chance,packet,metadata={'elemental_freeze':True,'wet_turns':duration(a,2)})
+ if not applied:status(b,a,t,'wet',2,packet=packet)
  return applied
 def burn(b,a,t,count=1,packet=None):
  from . import combat as c
@@ -122,6 +121,7 @@ def impact(b,a,kind,center):
    if distance:c._apply_displacement(b,origin,t,{'mode':'pull' if kind=='singularity' else 'push','distance':1 if kind=='singularity' else 2},amount,child)
   for event in b['animation_events'][begin:]:event.update(attack_packet=child,impact_origin_packet=p,impact_offset=0)
  if kind in {'fireball','meteor'}:scorch(b,a,center,radius,p)
+ c.engineer.area_hit(b,a,cells(b,center,radius),p)
  conditions.remove(b['units'].get(a['id'],a),'rally_power')
  return {'attacked':True}
 def chain(b,a,t):
@@ -145,9 +145,8 @@ def execute(b,a,t,s,element=None):
  from . import combat as c
  if not c.abilities.availability(a,s)['available']:raise ValueError(c.abilities.availability(a,s)['reason'])
  if s['mage_kind']=='enchant_weapon' and element not in ELEMENTS:raise ValueError('Choose Fire, Frost or Lightning')
- if a.get('capture_weapon') and s['mage_kind'] not in {'enchant_weapon','flash_freeze'}:raise ValueError('Capture weapons cannot perform damaging techniques')
  c._commit_player_movement(b,a)
- if not c._combat_active(a):return {'interrupted':True}
+ if not c._combat_active(a) or a.get('engineer_interrupted') and c.bard.attack_skill(s):return {'interrupted':True}
  kind=s['mage_kind']
  if kind=='chain_lightning':result=chain(b,a,t)
  elif kind in {'fireball','singularity','typhoon'}:result=impact(b,a,kind,t)
@@ -158,12 +157,17 @@ def execute(b,a,t,s,element=None):
  else:
   delay={'kind':kind,'owner_id':a['id'],'due':clock(a)+1,'center':{'x':t['x'],'y':t['y']},'source':deepcopy(a)}
   b.setdefault('mage_delays',[]).append(delay)
-  if kind=='meteor':
+  if kind=='meteor' and not conditions.has(a,'bard_accelerando'):
    conditions.remove(a,'rally_power')
    a['mage_channel']={'origin':[a['x'],a['y']]};a.setdefault('statuses',[]).append({'id':'channeling'})
-  packet(b,a,kind+'_armed',t,3 if kind=='meteor' else 2)
-  b['log'].append(f"{a['name']} prepares {s['name']}: "+('lands on their next activation and spends it; control, silence or displacement interrupts.' if kind=='meteor' else 'freezes everyone still inside, including allies and the caster, after their next activation.'))
-  result={'delayed':True}
+  if kind=='meteor' and conditions.has(a,'bard_accelerando'):
+   b['mage_delays'].remove(delay)
+   result=impact(b,{**a,'x':a['x'],'y':a['y']},'meteor',{'x':t['x'],'y':t['y']})
+   b['log'].append(f"{a['name']} casts {s['name']} through Accelerando without Channeling.")
+  else:
+   packet(b,a,kind+'_armed',t,3 if kind=='meteor' else 2)
+   b['log'].append(f"{a['name']} prepares {s['name']}: "+('lands on their next activation and spends it; control, silence or displacement interrupts.' if kind=='meteor' else 'freezes everyone still inside, including allies and the caster, after their next activation.'))
+   result={'delayed':False if kind=='meteor' and conditions.has(a,'bard_accelerando') else True}
  c.abilities.spend(a,s);a['acted']=True
  return result
 def settle(b,a,phase):

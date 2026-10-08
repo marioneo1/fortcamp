@@ -1,5 +1,9 @@
 # Fortcamp Sound Effects Guide
 
+## Captor foley, October 7
+
+Four ElevenLabs clips use tools/generate_captor_sfx.py, with original MP3s/reports in staging-sfx/captor-v1 and runtime WAVs in frontend/public/assets/sfx. See docs/art/CAPTOR_V1.md. Existing net Subdue sound is reused.
+
 ## Combat impact pack
 
 > Modern painted-fantasy tactical RPG, warm soft low-mid texture, compact readable one-shot, gentle at low volume, no piercing highs, no music, no voices, no ambience, no trailer boom.
@@ -145,6 +149,19 @@ Run `.venv\Scripts\python.exe tools\generate_sfx_pack.py` to rebuild the current
 
 After the first pack sounds coherent in game, generate ranged release, arrow impact, magic cast families, fire/freeze/status applications, footsteps by terrain, doors, chests, barricade damage, wall collapse, prisoner handling, and event ambience. Do not generate all of these before approving the first pack; the chosen first pack becomes the audible reference for later prompts.
 
+## Bard Song pack
+
+> Modern fantasy MMORPG lute performance, short readable fantasy game cue, warm wooden lute and soft hand percussion, clear melodic identity, restrained reverb, no voices, no lyrics, no battle impacts, no ambience, no long loop.
+
+| Filename | Length | Prompt |
+|---|---:|---|
+| `bard_jeering_verse.wav` | 1.8 s | A sly descending lute phrase with one playful dissonant pluck and a quick mocking cadence, mischievous battlefield provocation. Ends cleanly and immediately. |
+| `bard_cue_strike.wav` | 1.2 s | A crisp conductor cue: two bright lute plucks and a short rising hand-drum pickup, decisive and encouraging, like ordering an ally to strike now. |
+| `bard_accelerando.wav` | 2.4 s | A quickening lute ostinato that accelerates into a bright clean flourish, agile and energizing, suggesting channeling time collapsing into an instant. |
+| `bard_quickening_chorus.wav` | 2.4 s | A precise repeating lute rhythm with clocklike hand percussion and a light upward turn, suggesting abilities returning faster. Clearly rhythmic, controlled, and cleanly resolved. |
+| `bard_war_anthem.wav` | 2.8 s | A bold rising lute-and-frame-drum war anthem, compact heroic melody with warm strings tucked behind it, encouraging allied offense without becoming a full orchestral fanfare. |
+| `bard_song_of_peace.wav` | 2.8 s | A gentle suspended lute melody with soft breathy flute and a calm final chord, disarming and serene, clearly signaling a temporary no-attack sanctuary. |
+
 ## Selection rules
 
 - UI sounds must remain quiet enough to tolerate rapid clicking.
@@ -283,3 +300,46 @@ Selected from target material, not armor points. Cutting, piercing and crushing 
 | `rogue_backflip.wav` | 0.7 s | Quick leather-cloth backflip whoosh followed by soft boots landing on packed dirt. Light agile movement. |
 | `rogue_caltrops.wav` | 0.7 s | A handful of small steel caltrops scatter onto dirt with three quiet dry taps and tiny gritty scrapes. |
 | `rogue_knife_throw.wav` | 0.5 s | A small throwing knife flicked quickly through air. Brief restrained cloth and air swish, no impact. |
+
+## Druid nature pack
+
+> Fantasy tactical game sound effect, dry close recording, no music, no speech, no metallic chime, no shrill tail.
+
+| File | Duration | Prompt |
+| --- | --- | --- |
+| `druid_prowler.wav` | 1.0 s | Air rush and leaves spiraling into a brief restrained panther growl. Agile transformation, soft start, decisive organic finish. |
+| `druid_bulwark.wav` | 1.2 s | Deep woody creak and swirling leaves settle into one short bear growl, heavy earthy transformation with a low thump. |
+| `druid_rat.wav` | 0.7 s | Quick dry rustle of leaves contracting with tiny paws skittering, subtle short rat squeak, light evasive transformation. |
+| `druid_growth.wav` | 1.2 s | Living roots growing rapidly, branches creaking softly and leaves unfurling, warm organic restorative magic, no tonal ringing. |
+| `druid_vine_lash.wav` | 0.6 s | Thorny vine whips through air then slaps flesh with a dry leafy snap, short powerful organic lash, hit louder than swing. |
+
+## Summoner spirit pack
+
+> Cohesive painterly fantasy RPG effects, warm low mids, short restrained treble, no music, no speech, no shrill ringing tail. Clear close impact with a soft natural decay.
+
+| File | Duration | Prompt |
+| --- | --- | --- |
+| `summoner_conjure.wav` | 1.0 s | A spirit gathers into a small creature: soft airy spiral, rounded resonant pulse and compact warm arrival thump. Magical yet tactile, no bells. |
+| `summoner_transposition.wav` | 0.7 s | Two short spatial folds swap places: quick soft vacuum pulls followed by paired low airy pops. Clean teleport, no sizzling high frequencies. |
+| `summoner_projection.wav` | 0.8 s | A concentrated spirit bolt rushing forward and striking with a dense warm magical pulse, quiet launch and stronger rounded hit. |
+| `summoner_sacrifice.wav` | 0.9 s | A bound spirit collapses then explodes: tiny intake, weighty bass impact, scattered airy energy with a short dry tail. No glass, no whistle. |
+| `summoner_overload.wav` | 0.9 s | A creature is flooded with unstable power: rising low electric rumble, tight pulsating pressure and one decisive deep surge. No sharp zap. |
+| `summoner_life_pact.wav` | 0.8 s | Living energy transfers between two beings: soft heartbeat, warm flowing breath and a gentle restorative pulse. No voices or musical notes. |
+
+
+## Engineer machinery pack
+
+> Grounded hand-built wood and iron mechanisms, warm low mids, dry tactile attacks, restrained treble. No music, speech, magical chimes or shrill ringing tail. Powerful impact louder than preparation.
+
+| File | Duration | Prompt |
+| --- | --- | --- |
+| `engineer_assembly.wav` | 0.9 s | Quick wooden brace settling, two muted iron ratchet clicks, final solid locking clunk. A small ballista has finished assembly. |
+| `engineer_overclock.wav` | 0.9 s | Heavy mechanical crank accelerating, low unstable motor strain with tight iron vibration. Short weighty surge, no alarm or high pitch whine. |
+| `engineer_explosion.wav` | 1.0 s | Compact ground-level black powder explosion, deep punch and crunchy wood iron debris, short dry rumbling decay. No whistle or ringing. |
+| `engineer_mine.wav` | 0.6 s | Pressure pin clicks then a sharp concussive low explosion with dull earth scatter. Close grounded stun charge; no electrical or magical sound. |
+
+## Engineer explosive bolt refinement
+
+`tools/generate_engineer_impact_sfx.py` generates one retained ElevenLabs clip, `engineer_bolt_explosion.wav`: wooden bolt contact followed by a low black-powder boom and short debris decay, no music, voices, whistle, ringing or magic. Prompt, originals and technical metrics live in `staging-sfx/engineer-impact-v2`; reused on subsequent runs. Heavy contact anchors this cue and the cross explosion.
+
+Rapid Assembly: `engineer_rapid_assembly.wav`, 0.9-second mechanical ratchet/tool/latch ready cue with no magic or ringing; original and metrics under `staging-sfx/engineer-preparation-v1`. Existing generator retains originals to prevent repeated billing.

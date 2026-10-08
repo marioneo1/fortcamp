@@ -20,12 +20,12 @@ Cooldowns count personal activations using the existing engine. All seven techni
 ## Decisions and cross-Job interactions
 
 - Mark is a main action. A free, cooldown-free mark would be mandatory bookkeeping instead of a setup decision. Ranger is vulnerable during setup; replacing a quarry has a cost.
-- Poison now deals **10% of target maximum HP per stack** at target turn end, then loses exactly one stack. Burn and Bleed follow the same pool clock with different percentages; [Combat DoTs](COMBAT_DOTS.md) is canonical.
+- Poison now deals **10% of target maximum HP per turn, regardless of stack count** at target turn end, then loses exactly one stack. Poison stacks extend duration; Burn and Bleed still increase tick strength while sharing the one-stack decay clock; [Combat DoTs](COMBAT_DOTS.md) is canonical.
 - Poison imbue is one attack, not one arrow. A fully missed/fully absorbed attack preserves it; a damaging volley spends it and applies one stack per damaging arrow. Poison Attack can consume an earlier coating and create a fresh one.
 - Poison resistance applies per stack. Undead/Automaton immunity remains. Stacks form one pool and decay one at a time. Views do not tick or roll anything.
 - Generic on-hit equipment effects get one attempt on the first landed arrow; flat equipment/perk damage bonuses have one volley budget. Armor applies to each arrow; finite Barrier depletes across arrows. Hold Together's attack bonus and Iron Reversal's defensive form cover the whole volley, consistent with techniques.
 - Pestilence's incoming modifier is additive with Monk direct-hit vulnerability, not multiplied repeatedly. It also amplifies Poison, Bleed, collision and other indirect damage. Target maximum HP sets DoT base damage; current applicable damage modifiers are applied at resolution.
-- Rupture sums remaining base Poison/Bleed damage across the shrinking stack pools: per-stack damage ? n(n+1)/2. Halve potential once, then apply current damage modifiers once; do not double-amplify Pestilence. Bleed no longer requires exertion.
+- Rupture sums remaining base Poison damage linearly (10% max HP times remaining duration stacks), plus Bleed damage across the shrinking stack pool (per-stack damage times n(n+1)/2). Halve potential once, then apply current damage modifiers once; do not double-amplify Pestilence. Bleed no longer requires exertion.
 - Longshot and Multi-Shot are alternative main attacks. They are never multiplied together. Critical doubling belongs to Longshot only; this pass does not silently add random crits to every Job.
 - Rapid Fire cannot choose Mark, passives, itself, unusable/cooling-down attacks, unmarked Longshot or blocked targets. It does not choose arbitrary enemies behind the player's back. It may fire a technique again as the main action if that technique remains available. No Quick Action after the main action.
 

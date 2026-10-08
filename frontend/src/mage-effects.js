@@ -30,6 +30,16 @@ export function emitMageEffect(field,event,battle,delay=0){
  const pulse=(name,size=1.3,spin=0)=>sprite(name,at,size,[{opacity:.9,transform:'translate(-50%,-50%) scale(.8)'},{opacity:.95,offset:.15,transform:'translate(-50%,-50%) scale(1)'},{opacity:0,transform:`translate(-50%,-50%) scale(1.15) rotate(${spin}deg)`}],550);
  const k=event.mage_skill,contact=event.contact_ms??240;
  if(k==='flash_freeze_armed'||(k==='enchant_weapon'&&event.enchant_element==='frost'))warmFrozenSurfaces();
+ if(k==='holy_light'){
+  later(contact,()=>{
+   if(!field.isConnected||document.hidden)return;
+   const light=document.createElement('span');light.className='cleric-holy-impact';
+   light.style.cssText=`left:${(at.x+.5)*cw}px;top:${(at.y+.5)*ch}px;width:${cw*1.8}px;height:${ch*1.8}px`;
+   field.append(light);
+   const motion=light.animate([{opacity:0,transform:'translate(-50%,-50%) scale(.25)'},{opacity:1,offset:.2,transform:'translate(-50%,-50%) scale(1)'},{opacity:0,transform:'translate(-50%,-50%) scale(1.25)'}],{duration:reduced?200:520});
+   motion.onfinish=motion.oncancel=()=>light.remove();
+  });return;
+ }
  if(k==='chain_lightning'){
   later(contact-80,()=>{if(!field.isConnected||document.hidden)return;const from=event.from_point,dx=(at.x-from.x)*cw,dy=(at.y-from.y)*ch,angle=Math.atan2(dy,dx)*180/Math.PI;
    const img=document.createElement('img');img.src=root+'lightning_arc.png';img.className='mage-effect mage-lightning';img.style.cssText=`left:${(from.x+.5)*cw+dx/2}px;top:${(from.y+.5)*ch+dy/2}px;width:${Math.max(cw*.65,Math.hypot(dx,dy))}px;height:${ch*.7}px;--bolt-angle:${angle}deg`;field.append(img);const animation=img.animate(reduced?[{opacity:.8},{opacity:0}]:[{opacity:0},{opacity:1,offset:.15},{opacity:.25,offset:.4},{opacity:.95,offset:.55},{opacity:0}],{duration:280,fill:'both'});animation.onfinish=animation.oncancel=()=>img.remove();

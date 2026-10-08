@@ -12,9 +12,12 @@ def normalize(status):
 
 def count(status):return len(status['layers']) if 'layers' in status else max(1,int(status.get('stacks',1)))
 def base_damage(unit,sid,stacks):
+    if stacks<=0:return 0
     per_stack=unit['max_hp']*PERCENT[sid]
+    if sid=='poison':return per_stack  # Stacks extend duration, never tick strength.
     return (max(1,per_stack) if sid=='burn' else per_stack)*stacks
 
 def potential(unit,sid,stacks):
+    if sid=='poison':return base_damage(unit,sid,1)*stacks
     # n stacks now, then n-1, ... down to one on future turn ends.
     return base_damage(unit,sid,1)*stacks*(stacks+1)/2

@@ -1,12 +1,14 @@
 // Basic attack identity follows the equipped weapon, rather than the character's Job.
 export function basicAttackArt(unit){
- if(unit?.capture_weapon)return 'subdue';
+ if(unit?.capture_weapon)return 'attack';
  if(unit?.attack_elevation_rule==='ballistic')return 'ranged';
  if(['ignore','line_of_effect'].includes(unit?.attack_elevation_rule))return 'magic';
  return 'attack';
 }
 export function targetingArt(unit,skill){
  if(!skill)return basicAttackArt(unit);
+ if(skill.captor_kind==='hook_and_drag')return 'chain_hook';
+ if(skill.captor_kind&&skill.captor_kind!=='blitz')return 'subdue';
  if(['shadowstep','backflip','caltrops'].includes(skill.rogue_kind))return 'pointer';
  if(skill.rogue_kind==='throwing_knife')return 'attack';
  if(skill.target==='ally'||(skill.effects||[]).some(e=>['deploy','form'].includes(e.type)))return 'pointer';

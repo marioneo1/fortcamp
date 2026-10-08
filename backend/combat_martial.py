@@ -1,7 +1,7 @@
 """Bounded martial passives; shares resolved damage and owner activation clocks."""
 from .combat_feedback import record as feedback
 
-HARMFUL = ('stun','freeze','sleep','paralyze','bind','charm','confuse','fear','mute',
+HARMFUL = ('disarm','captor_held','stun','freeze','sleep','paralyze','bind','charm','confuse','fear','mute',
            'blind','hobbled','slow','armor_fracture','vulnerable','open_guard','palm_exposure','poison','burn','bleed')
 
 
@@ -122,7 +122,6 @@ def try_unstoppable(unit):
     state['unstoppable_ready'] = clock+3
     if status.get('elemental_freeze'):
         from . import combat_conditions as conditions
-        unit['control_immunity']=2
         conditions.apply(unit,'wet',status.get('wet_turns',2),{'id':status.get('source_id'),'name':status.get('source_name')})
     unit.setdefault('martial_feedback',[]).append(status['id'])
     if status['id'] in ('stun','sleep','freeze','paralyze'):

@@ -33,7 +33,7 @@ test('Ground warnings and scorch use explicit labels and painted top-down art',(
  const z={cells:[{x:2,y:3}],owner_name:'Mage',name:'Meteor',remaining:1,description:'Leave before impact'};assert.match(zoneOverlay([{...z,kind:'meteor_armed'}],escape),/METEOR INCOMING/);assert.match(zoneOverlay([{...z,kind:'flash_freeze_armed'}],escape),/FREEZE ARMED/);assert.match(zoneOverlay([{...z,kind:'scorched'}],escape),/mage-scorched-v2\/soot_/);
 });
 test('Enchantment and Frozen tooltips disclose element, duration and ice breaking',()=>{
- const e=statusDetails({id:'weapon_enchant',element:'lightning',turns:2,paralyzed_targets:['enemy']});assert.ok(e.details.some(v=>v.includes('LIGHTNING')));const f=statusDetails({id:'freeze',elemental_freeze:true,turns:2,wet_turns:4});assert.match(f.description,/Cannot act/);assert.ok(f.details.some(v=>v.includes('4 turns of Wet')));
+ const e=statusDetails({id:'weapon_enchant',element:'lightning',turns:2,paralyzed_targets:['enemy']});assert.match(e.name,/Lightning/);assert.match(e.description,/25%.*only once/);const f=statusDetails({id:'freeze',elemental_freeze:true,turns:2,wet_turns:4});assert.match(f.description,/Cannot act/);assert.ok(f.details.some(v=>v.includes('4 turns of Wet')));
 });
 test('Selecting Mage ally spell exposes ally preview even after an enemy spell',()=>{
  const s={id:'job:mage:enchant_weapon',target:'ally'};const v={current_unit_id:'p',units:{p:{skills:[s]}},attack_previews:{p:{},e:{skill:{}}},skill_previews:{[s.id]:{p:{support:true}}}};assert.equal(selectBattleSkill(v,s.id).attack_previews.p.skill.support,true);

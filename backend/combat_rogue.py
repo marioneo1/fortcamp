@@ -5,7 +5,7 @@ from . import combat_abilities as abilities
 from .combat_feedback import record as feedback
 
 KINDS={'cheap_shot','crippling_cut','exploit_weakness','shadowstep','caltrops','backflip','throwing_knife'}
-NEGATIVE={'wet','blister','pestilence','bleed','hobbled','poison','burn','blind','slow','stun','sleep','freeze','bind','paralyze','fear','mute','armor_fracture','vulnerable','mark','open_guard','panic','pit_trapped','palm_exposure','charm','confuse','berserk','reckless_exposure'}
+NEGATIVE={'disarm','captor_held','captor_abducted','wet','blister','pestilence','bleed','hobbled','poison','burn','blind','slow','stun','sleep','freeze','bind','paralyze','fear','mute','armor_fracture','vulnerable','mark','open_guard','panic','pit_trapped','palm_exposure','charm','confuse','berserk','reckless_exposure'}
 UTILITY={'shadowstep','backflip','caltrops','throwing_knife'}
 
 def active(u):return u.get('alive',True) and u.get('conscious',True) and not u.get('extracted') and not u.get('carried_by')

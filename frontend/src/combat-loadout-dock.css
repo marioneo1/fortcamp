@@ -1,7 +1,7 @@
 
 .hotbar-slots>button.unavailable{filter:saturate(.4);opacity:.65}.hotbar-slots>button.passive-slot{border-color:#b89e64;cursor:grab}.hotbar-slots>button.dragging{opacity:.35}.hotbar-slots>button.drop-slot{outline:3px solid #f2cf80;outline-offset:3px}.hotbar-slots img{pointer-events:none;-webkit-user-drag:none}.passive-cooling{filter:saturate(.3);opacity:.65}
 /* Desktop: character, Traits, skills, commands share one row. */
-.layout-a .battle-command-dock{grid-template-columns:minmax(210px,250px) 88px minmax(0,1fr) 300px;align-items:center;gap:14px}
+.layout-a .battle-command-dock{grid-template-columns:minmax(210px,250px) 88px minmax(0,1fr) 324px;align-items:center;gap:14px}
 .layout-a .dock-actor{display:contents}
 .layout-a .active-unit-card{grid-column:1;grid-row:1;flex-direction:row;align-items:center;gap:12px;min-width:0}
 .layout-a .active-unit-card>div:last-child{min-width:0;flex:1;max-width:none}
@@ -11,8 +11,14 @@
 .layout-a .combat-hotbar header{flex-wrap:wrap;gap:6px}
 .layout-a .combat-hotbar header>small{flex-basis:100%;order:3}
 .layout-a .battle-primary-panel{grid-column:4;grid-row:1;align-self:center}
-.layout-a .battle-primary-panel .combat-actions{gap:7px}
-.layout-a .battle-primary-panel .combat-actions>button{min-height:72px;padding:6px;font-size:13px}
+.layout-a .battle-primary-panel .combat-actions{gap:30px 12px;padding:0 0 24px;justify-items:center}
+.layout-a .battle-primary-panel .combat-actions>button{position:relative;width:88px;height:88px;min-height:88px;padding:6px;gap:0;font-size:12px;border:2px solid #b6a171;border-radius:4px;background:radial-gradient(circle at 50% 35%,#344538,#121511 80%);box-shadow:0 1px 4px #0009;overflow:visible}
+.layout-a .battle-primary-panel .combat-action-art{width:72px;height:72px;flex:0 0 72px}
+.layout-a .battle-primary-panel .combat-actions>button>span:not(.combat-action-art){position:absolute;top:calc(100% + 5px);left:-10px;right:-10px;text-align:center;line-height:18px;color:#e9dfc7}
+.layout-a .battle-primary-panel .combat-actions>button:hover:not(:disabled),.layout-a .battle-primary-panel .combat-actions>button:focus-visible{outline:2px solid #f0cf7c;outline-offset:2px}
+.layout-a .battle-primary-panel .combat-actions>button.active{outline:2px solid #fff0b3;outline-offset:2px;border-color:#e9ce83}
+.layout-a .battle-primary-panel .combat-actions>button:disabled{filter:saturate(.4);opacity:.65}
+.layout-a .battle-primary-panel .combat-actions kbd{font-size:12px}
 .layout-a .combat-status-tray{grid-column:1/-1;grid-row:2}
 .layout-a .battle-action-preview{grid-column:1/-1;grid-row:3}
 .battle-traits-button{display:flex;flex-direction:column;gap:5px;flex:0 0 auto;padding:14px 18px;border:1px solid #b49c6588;border-radius:9px;background:#1a251e;color:#e9d49c}.battle-traits-button span{font-size:16px;font-weight:700}.battle-traits-button small{font-size:11px;color:#b8c6ae}.intrinsic-traits-list{display:grid;gap:10px}.intrinsic-traits-list article{border:1px solid #82927466;border-radius:10px;padding:12px;background:#1b2920}.intrinsic-traits-list article small,.intrinsic-traits-list article b{display:block}.intrinsic-traits-list p{line-height:1.5;margin:6px 0 0}.intrinsic-traits-list small{color:#b9ab80}
@@ -23,7 +29,3 @@
 .skill-order-dialog{width:min(920px,calc(100vw - 32px))}.skill-order-dialog .hotbar-slots{display:flex;flex-wrap:wrap;gap:16px;padding:10px 0 30px}.skill-order-dialog .hotbar-slots>button{width:88px;height:88px;flex:0 0 88px}.skill-order-dialog .ability-icon{width:100%;height:100%}.skill-order-button{font-size:12px;padding:4px 10px}
 
 .skill-order-button{border:1px solid #b49c6588;border-radius:7px;background:#223027;color:#ead7a2;cursor:pointer}.skill-order-button:hover{background:#34442f}
-
-/* Only passive readiness icons on map tokens shrink; other buffs keep their size. */
-.battle-token .readable-statuses .status-badge.passive-readiness{width:27px;height:27px;align-self:start;justify-self:start}
-.battle-token .passive-readiness .status-count{font-size:10px;min-width:11px;padding:1px 2px}

@@ -27,6 +27,9 @@ class JobStarterTests(unittest.TestCase):
                 state=new_game({'starting_role':job})
                 b=combat.create_battle(state,['player'],'starter-smoke','contract:rats_storehouse')
                 v=combat.auto_resolve(b,max_steps=24)
+                if v['status']=='active':
+                    self.assertIn('paused',b.get('auto_pause_reason',''))
+                    v=combat.auto_resolve(b,max_steps=48)
                 self.assertEqual(v['status'],'complete')
                 # Capture remains chance-based; victory is not guaranteed by Job.
                 self.assertIn(v['outcome'],{'success','critical_success','failure','critical_failure'})
@@ -48,7 +51,7 @@ class JobStarterTests(unittest.TestCase):
                 for iid in definition['kit']:
                     self.assertLessEqual(ITEMS[iid].get('power',0),1)
                     icon=ITEMS[iid].get('icon');self.assertTrue((Path('frontend/public')/icon.lstrip('/')).is_file(),icon)
-        self.assertEqual(len(jobs.SKILLS),85)
+        self.assertEqual(len([s for s in jobs.SKILLS if s.startswith('job:summoner:')]),8)
 
     def test_matching_gear_available_without_resale_profit(self):
         state=new_game({'starting_role':'engineer'});offers={o['item']:o for o in trade_view(state,'qa',100)['camp_items']}
@@ -62,7 +65,8 @@ class JobStarterTests(unittest.TestCase):
                 original=deepcopy(char)
                 for i in range(1,10):
                     result=jobs.credit_contract(state,['player'],'success',f'mission:{i}')
-                    self.assertEqual(len(char['learned_skills']),3+sum(i>=n for n in (2,5,9)))
+                    unlocks = (2, 2, 5, 5, 9) if job == 'bard' else (2, 5, 9)
+                    self.assertEqual(len(char['learned_skills']),3+sum(i>=n for n in unlocks))
                     self.assertEqual(jobs.credit_contract(state,['player'],'success',f'mission:{i}'),[])
                 for key in ('equipped_skills','attributes','equipment','traits','perks','skill_slots'):
                     self.assertEqual(char[key],original[key])
@@ -97,12 +101,11 @@ class JobStarterTests(unittest.TestCase):
         jobs.update(state,'player',[]);normalize_state(state)
         self.assertEqual(char['equipped_skills'],[])
 
-    def test_bard_regeneration_is_a_legal_support_action(self):
+    def test_bard_song_is_a_legal_self_targeted_action(self):
         b,a,t=fixtures.AbilityFoundationTests().fixture('mage')
-        skill=jobs.SKILLS['job:bard:refrain'];a['skills']=[deepcopy(skill)];a['hp']=30
-        self.assertTrue(combat._support_eligible(b,a,a,combat._support_effect(skill,a)))
+        skill=deepcopy(jobs.SKILLS['job:bard:accelerando']);a['skills']=[skill];a['job_id']='bard'
         combat._resolve_ability(b,a,a,skill)
-        self.assertTrue(any(s['id']=='regeneration' for s in a['statuses']))
+        self.assertEqual(a.get('bard_song'),'accelerando')
 
     def test_auto_uses_commanded_unit_without_extra_owner_attack(self):
         b,a,t=fixtures.AbilityFoundationTests().fixture('mage')

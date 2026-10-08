@@ -19,8 +19,9 @@ def owned(battle, owner):
 
 def usage(battle, owner):
     # A pair reserves two points collectively, not two per member.
-    groups={u['deployment_id']:u['capacity_cost'] for u in owned(battle,owner) if u['resource_pool']=='capacity'}
-    return sum(groups.values())
+    units=[u for u in owned(battle,owner) if u['resource_pool']=='capacity']
+    groups={u['deployment_id']:u['capacity_cost'] for u in units if not u.get('summoner_creature')}
+    return sum(groups.values())+sum(u['capacity_cost'] for u in units if u.get('summoner_creature'))
 
 
 def available(battle,owner,kind):
@@ -65,7 +66,7 @@ def deploy(battle,owner,kind,positions):
 
 def can_command(battle,owner,entity):
     return bool(owner.get('alive') and owner.get('conscious',True) and not owner.get('extracted') and not owner.get('carried_by')
-                and entity and entity in owned(battle,owner) and entity['deployed_at']<owner.get('ability_activation',0)
+                and entity and not entity.get('engineer_machine') and entity in owned(battle,owner) and entity['deployed_at']<owner.get('ability_activation',0)
                 and not owner.get('acted') and not owner.get('forced_skip')
                 and not entity.get('forced_skip') and not entity.get('panicked'))
 
@@ -75,6 +76,9 @@ def cleanup(battle,active):
         if not unit.get('temporary'):continue
         owner=battle['units'].get(unit['owner_id'])
         if not owner or not active(owner) or not active(unit):
+            if unit.get('engineer_machine'):
+                unit.update(alive=False,conscious=False,condition='dead',hp=0)
+                continue
             unit.update(extracted=True,alive=False,conscious=False,condition='dismissed')
 
 

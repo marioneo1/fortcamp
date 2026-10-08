@@ -7,7 +7,7 @@ import {chainLifetime,chainTravel,displacementPreviewMarkup} from './fighter-eff
 test('basic attack art follows weapon rules and capture overrides ranged magic',()=>{
  assert.equal(basicAttackArt({attack_elevation_rule:'ballistic'}),'ranged');
  assert.equal(basicAttackArt({attack_elevation_rule:'line_of_effect'}),'magic');
- assert.equal(basicAttackArt({attack_elevation_rule:'ignore',capture_weapon:true}),'subdue');
+ assert.equal(basicAttackArt({attack_elevation_rule:'ignore',capture_weapon:true}),'attack');
  assert.equal(basicAttackArt({attack_elevation_rule:'melee'}),'attack');
  for(const name of ['ranged','magic','pointer','loading','unavailable','chain_hook'])assert.ok(existsSync(new URL(`../public/assets/combat-controls-v2/${name}.png`,import.meta.url)));
 });

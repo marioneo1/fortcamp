@@ -52,77 +52,35 @@ class CaptureStarterTests(unittest.TestCase):
         normalize_state(state)
         self.assertEqual(state['characters'][0]['equipment'],equipment)
 
-    def test_failed_restraint_damages_without_procs_and_is_retryable(self):
-        _,b,a,t=self.battle()
-        t['evasion']=0
-        expected=battle_view(b)['attack_previews'][t['id']]['subdue']['damage_on_hit']
-        a.update(attack=1000,element='fire',on_hit={'id':'burn','chance':100,'turns':3})
-        with patch('backend.combat.random.Random') as rng, patch('backend.combat._advance_to_player'):
-            rng.return_value.randint.return_value=100
-            apply_player_command(b,{'action':'subdue','target_id':t['id']})
-        self.assertEqual(t['hp'],10-expected)
-        self.assertEqual(t['condition'],'active')
-        self.assertEqual(t['statuses'],[])
-        self.assertTrue(a['acted'])
-        self.assertFalse(a['special_used'])
-        a['acted']=False;b['turn_index']=0
-        with patch('backend.combat.random.Random') as rng:
-            rng.return_value.randint.return_value=1
-            apply_player_command(b,{'action':'subdue','target_id':t['id']})
-        self.assertEqual(t['condition'],'unconscious')
-        self.assertTrue(t['alive'])
-        self.assertGreater(a['combat_record']['total_damage'],0)
-        self.assertEqual(a['combat_record']['subdues'],1)
-        self.assertFalse(any(e['type']=='death_burst' for e in b['animation_events']))
+    def test_failed_restraint_reduces_resolve_without_hp_damage(self):
+        from backend import combat_captor as cap
+        _,b,a,t=self.battle();before=t['hp']
+        with patch.object(cap,'roll',return_value=0):_capture_attempt(b,a,t)
+        self.assertEqual(t['hp'],before);self.assertLess(t['resolve'],t['max_resolve'])
+        self.assertFalse(t['statuses'])
 
-    def test_capture_weapon_has_only_subdue_preview_and_rejects_attack(self):
-        _,b,a,t=self.battle()
-        previews=battle_view(b)['attack_previews'][t['id']]
-        self.assertIsNone(previews['attack'])
-        self.assertIsNotNone(previews['subdue'])
-        before=(a['x'],a['y'],t['hp'],b.get('roll_counter'))
-        with self.assertRaisesRegex(ValueError,'only use Subdue'):
-            apply_player_command(b,{'action':'attack','target_id':t['id']})
-        self.assertEqual((a['x'],a['y'],t['hp'],b.get('roll_counter')),before)
+    def test_capture_weapon_has_attack_and_subdue_previews(self):
+        _,b,a,t=self.battle();previews=battle_view(b)['attack_previews'][t['id']]
+        self.assertIsNotNone(previews['attack']);self.assertIsNotNone(previews['subdue'])
+        self.assertEqual(a['attack_range'],1)
 
-    def test_balanced_stats_wounds_control_and_boss_resistance(self):
-        _,b,a,t=self.battle()
-        a['capture_attributes']={'str':12,'dex':12,'int':12}
-        balanced=capture_preview(a,t)['chance']
-        a['capture_attributes']={'str':28,'dex':4,'int':4}
-        self.assertLess(capture_preview(a,t)['chance'],balanced)
-        t['hp']=t['max_hp'];healthy=capture_preview(a,t)['chance']
-        t['hp']=1;wounded=capture_preview(a,t)['chance']
-        self.assertGreater(wounded,healthy)
-        t['statuses']=[{'id':'bind'}]
-        self.assertGreater(capture_preview(a,t)['chance'],wounded)
-        t['statuses']=[];t['boss']=True
-        self.assertLess(capture_preview(a,t)['chance'],wounded)
+    def test_capture_odds_independent_of_wounds_and_armor(self):
+        _,b,a,t=self.battle();chance=capture_preview(a,t)['chance']
+        t.update(hp=1,armor=100);self.assertEqual(capture_preview(a,t)['chance'],chance)
+        t['boss']=True;self.assertLess(capture_preview(a,t)['chance'],chance)
 
-    def test_preview_matches_attempt_and_polling_cannot_roll(self):
-        _,b,a,t=self.battle(weapon='goblin_net_bow')
-        preview=battle_view(b)['attack_previews'][t['id']]['subdue']
-        self.assertTrue(preview['capture'])
+    def test_preview_polling_does_not_roll_or_modify_resolve(self):
+        _,b,a,t=self.battle(weapon='goblin_net_bow');before=deepcopy(b)
         for _ in range(4):battle_view(b)
-        self.assertNotIn('roll_counter',b)
-        with patch('backend.combat.random.Random') as rng:
-            rng.return_value.randint.return_value=preview['chance']+1
-            _capture_attempt(b,a,t)
-        self.assertEqual(t['hp'],10-preview['damage_on_hit'])
-        self.assertEqual(b['roll_counter'],1)
-        self.assertIn(f"vs {preview['chance']}% capture chance",b['log'][-1])
+        self.assertEqual(b,before);self.assertNotIn('capture_roll',b)
 
     def test_capture_range_and_structures(self):
-        _,b,a,t=self.battle(weapon='patrol_capture_net')
-        t['x']=4
+        _,b,a,t=self.battle(weapon='patrol_capture_net');t['x']=4
         self.assertIsNotNone(battle_view(b)['attack_previews'][t['id']]['subdue'])
         t['x']=7
         with self.assertRaises(ValueError):_capture_attempt(b,a,t)
         b['terrain']=[{'id':'wall','kind':'wall','name':'Wall','x':3,'y':2,'destructible':True,'hp':10,'armor':0}]
-        self.assertEqual(battle_view(b)['terrain_targets'],[])
-        with self.assertRaisesRegex(ValueError,'structures'):
-            apply_player_command(b,{'action':'attack','target_id':'wall'})
-        self.assertEqual(b['terrain'][0]['hp'],10)
+        self.assertIn('wall',battle_view(b)['terrain_targets'])
 
     def test_no_unarmed_blunt_or_glove_capture_loophole(self):
         for weapon in ['worn_mallet','knotted_staff','watchmans_cudgel','mercykeepers_maul','triage_baton']:
@@ -158,16 +116,15 @@ class CaptureStarterTests(unittest.TestCase):
         self.assertEqual(t['condition'],'dead')
         self.assertNotIn('finisher_counter',b)
 
-    def test_auto_capture_does_not_use_lethal_basic_or_spend_focus(self):
-        _,b,a,t=self.battle(weapon='goblin_net_bow')
+    def test_auto_capture_does_not_use_lethal_basic(self):
+        from backend import combat_captor as cap
+        _,b,a,t=self.battle(weapon='goblin_net_bow');t['resolve']=0
+        a['skills']=[]
         for unit in b['units'].values():
             if unit['team']=='enemy' and unit is not t:unit.update(alive=False,conscious=False,condition='dead')
         for obj in b['objects'].values():obj['state']='opened' if obj['id']=='prisoner_pen' else 'disabled'
-        with patch('backend.combat.random.Random') as rng:
-            rng.return_value.randint.return_value=1
-            _player_auto_turn(b,a,'balanced')
+        with patch.object(cap,'roll',return_value=0):_player_auto_turn(b,a,'balanced')
         self.assertEqual(t['condition'],'unconscious')
-        self.assertFalse(a['special_used'])
 
     def test_saved_blunt_permissions_are_removed_and_old_net_becomes_capture(self):
         for weapon,enabled in [('worn_mallet',False),('goblin_net_bow',True)]:
@@ -199,29 +156,22 @@ class CaptureStarterTests(unittest.TestCase):
 
 
 
-    def test_restraint_stops_at_one_hp_and_does_not_bypass_boss_capture(self):
-        _,b,a,t=self.battle()
-        t.update(hp=2,boss=True,evasion=0)
-        with patch('backend.combat._capture_preview',return_value={'chance':0,'hit_chance':100}):
-            for _ in range(6):_capture_attempt(b,a,t)
-        self.assertEqual(t['hp'],1)
-        self.assertEqual(t['condition'],'active')
-        self.assertTrue(t['alive'])
-        self.assertEqual(a['combat_record']['total_damage'],1)
-        self.assertFalse(any(e['type'] in {'death_burst','knockout'} for e in b['animation_events']))
+    def test_restraint_never_reduces_hp_or_guarantees_boss_capture(self):
+        from backend import combat_captor as cap
+        _,b,a,t=self.battle();t.update(hp=2,boss=True,evasion=0)
+        with patch.object(cap,'roll',side_effect=lambda *args:99 if args[-1]=='capture' else 0):
+            for _ in range(20):_capture_attempt(b,a,t)
+        self.assertEqual(t['hp'],2);self.assertEqual(t['resolve'],0);self.assertEqual(t['condition'],'active')
+        self.assertEqual(a['combat_record']['total_damage'],0)
 
-    def test_missed_net_does_not_damage_and_barrier_absorbs_landed_squeeze(self):
-        from backend import combat_conditions as conditions
+    def test_missed_net_does_not_damage_and_barrier_does_not_protect_resolve(self):
+        from backend import combat_captor as cap,combat_conditions as conditions
         _,b,a,t=self.battle()
-        with patch('backend.combat._capture_preview',return_value={'chance':0,'hit_chance':0}):_capture_attempt(b,a,t)
-        self.assertEqual(t['hp'],10)
-        self.assertFalse(next(e for e in b['animation_events'] if e['type']=='net_cast')['hit'])
-        conditions.barrier(t,20,2,a)
-        preview=battle_view(b)['attack_previews'][t['id']]['subdue']
-        self.assertEqual(preview['damage_on_hit'],0)
-        with patch('backend.combat._capture_preview',return_value={'chance':0,'hit_chance':100}):_capture_attempt(b,a,t)
-        self.assertEqual(t['hp'],10)
-        self.assertLess(next(s['amount'] for s in t['statuses'] if s['id']=='barrier'),20)
+        with patch.object(cap,'roll',return_value=100):_capture_attempt(b,a,t)
+        self.assertEqual(t['hp'],10);self.assertFalse(next(e for e in b['animation_events'] if e['type']=='net_cast')['hit'])
+        conditions.barrier(t,20,2,a);before=t['resolve']
+        with patch.object(cap,'roll',return_value=0):_capture_attempt(b,a,t)
+        self.assertLess(t['resolve'],before);self.assertEqual(t['hp'],10);self.assertEqual(next(s['amount'] for s in t['statuses'] if s['id']=='barrier'),20)
 
     def test_capture_damage_scales_slowly_and_remains_below_standard_weapons(self):
         from backend.capture_weapons import capture_power

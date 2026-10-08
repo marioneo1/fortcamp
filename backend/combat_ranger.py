@@ -89,7 +89,7 @@ def execute(b,a,t,s,free=False):
  if not c._can_attack(b,a,t,s['range']):raise ValueError('Target is outside technique range')
  if not legal(b,a,t,s):raise ValueError('Longshot requires your Mark Quarry, or no legal Rapid Fire attack can reach this target')
  c._commit_player_movement(b,a)
- if not c._combat_active(a):return {'interrupted':True}
+ if not c._combat_active(a) or a.get('engineer_interrupted') and c.bard.attack_skill(s):return {'interrupted':True}
  if kind=='mark_quarry':
   conditions.mark(b,a,t,3,0);next(v for v in t['statuses'] if v['id']=='mark' and v['source_id']==a['id'])['quarry']=True
   feedback(b,t,'status',status_id='mark');b['log'].append(f"{a['name']} marks {t['name']}; their own attacks cannot miss while the mark lasts.")

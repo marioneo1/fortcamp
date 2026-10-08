@@ -1465,6 +1465,10 @@ async def _update_battle_instance(
         view = apply_player_command(battle, command)
     else:
         view = battle_view(battle)
+    # Animation events are a response payload, not durable combat state. Keep
+    # them in ``view`` for this request, but never replay them on a later GET
+    # or resynchronization of the saved battle.
+    battle['animation_events'] = []
     spent = set(battle.get('supplies_used', [])) - supplies_before
     if spent:
         previous_state = deepcopy(player.state)

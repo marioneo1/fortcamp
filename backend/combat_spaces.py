@@ -4,6 +4,7 @@ from . import combat_conditions as conditions
 from .combat_feedback import record as feedback
 
 ZONES = {
+    'fire_wall':{'name':'Fire Wall','relation':'everyone','events':['entry'],'status':'burn','entry_per_cell':True,'description':'Each tile entry applies Burn and triggers it, plus half the Fire Companion INT as fire damage. Allies are affected.'},
     'scorched': {'name':'Scorched ground','relation':'everyone','events':{'entry'},'status':'burn','entry_damage':0,'entry_per_cell':True,'description':'Each committed tile entry adds Burn and immediately triggers its current stack damage without consuming a stack. Re-entry counts; overlapping fire patches do not add damage. Burns everyone, including allies and the caster.'},
     'caltrops':{'name':'Caltrops','relation':'everyone','events':['entry','placement'],'entry_per_cell':True,'trap':True,'statuses':['bleed','hobbled'],'description':'Placement on an occupied tile and each tile entry attempt one Bleed and one Hobble stack for two target turns. Allies and push/pull count; Trap Expert avoids it. Overlapping strips do not multiply an entry.'},
     'ember': {'name': 'Ember Patch', 'relation': 'enemy', 'events': ['entry'],
@@ -17,11 +18,12 @@ ZONES = {
     'sanctuary': {'name': 'Consecrated Ground', 'relation': 'ally', 'events': ['start'], 'heal': 3,
                   'description': 'Restores 3 HP at activation start. Burn prevents this healing.'},
 }
-FORM_FIELDS = ('attack', 'attack_range', 'attack_elevation_rule', 'weapon', 'weapon_type',
-               'move', 'armor', 'element', 'on_hit', 'knockout_finisher', 'displacement_resistance')
+FORM_FIELDS = ('attack', 'attack_range', 'attack_elevation_rule', 'weapon', 'weapon_type', 'melee_style',
+               'move', 'armor', 'evasion', 'element', 'on_hit', 'knockout_finisher', 'displacement_resistance')
 FORMS = {
     'prowler': {'name': 'Prowler', 'move_delta': 1, 'armor_delta': 0, 'resistance': 0,
                 'description': 'Mobile melee form. Keeps HP, race and ground traversal; weapon techniques are unavailable.'},
+    'rat':{'name':'Rat','move_delta':1,'armor_delta':0,'resistance':0,'description':'90% evasion against aimed attacks; AoE and cannot-miss attacks bypass it. Any received damage kills.'},
     'bulwark': {'name': 'Bulwark', 'move_delta': -1, 'armor_delta': 3, 'resistance': 50,
                  'description': 'Durable melee form with 50 added knockback resistance, lower movement, and no HP refill.'},
 }
@@ -108,10 +110,10 @@ def trigger_zones(battle, unit, event, active, hostile, apply_status, damage, on
             apply_status({**owner,'scorched_source':zone} if zone['kind']=='scorched' else owner, unit, rule['status'])
         if rule.get('damage'):
             damage(owner, unit, rule['damage'], rule['name'])
-        if event=='entry' and rule.get('entry_damage'):
-            damage(owner,unit,rule['entry_damage'],rule['name'])
+        if event=='entry' and zone.get('entry_damage',rule.get('entry_damage')):
+            damage(owner,unit,zone.get('entry_damage',rule.get('entry_damage')),rule['name'])
         if rule.get('heal') and not conditions.has(unit, 'burn'):
-            amount = min(rule['heal'], max(0, unit['max_hp']-unit['hp']))
+            amount = min(zone.get('heal',rule['heal']), max(0, unit['max_hp']-unit['hp']))
             unit['hp'] += amount
             if amount:
                 feedback(battle,unit,'heal',amount)
@@ -149,7 +151,7 @@ def change_form(unit, effect):
 
 
 def expire_form(unit):
-    if unit.get('form') and unit['form']['expires_at'] <= unit.get('ability_activation', 0):
+    if unit.get('form') and not unit['form'].get('persistent') and unit['form']['expires_at'] <= unit.get('ability_activation', 0):
         end_form(unit)
 
 
@@ -162,5 +164,6 @@ def presentation(battle):
         rule = ZONES[z['kind']]
         zones.append({**deepcopy(z), 'name': rule['name'], 'description': rule['description'],
                       'owner_name': owner['name'],
-                      'remaining': max(0, z['expires_at']-owner.get('ability_activation', 0))})
+                      'remaining': max(0, z['expires_at']-owner.get('ability_activation', 0)),
+                      **({'description':f"Restores {z['heal']} HP to allies at turn start; Burn prevents healing."} if 'heal' in z else {})})
     return zones

@@ -1,3 +1,4 @@
+import {playbackDuration} from './combat-playback.js';
 // Presentation only: generated materials never decide damage or status duration.
 export const FROZEN_ROOT='/assets/mage-frozen-v2/';
 export const SCORCH_ROOT='/assets/mage-scorched-v2/';
@@ -9,45 +10,62 @@ export function warmFrozenSurfaces(){
 export function surfaceSeed(value){let h=2166136261;for(const c of String(value)){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
 export function elementalFrozen(unit){return !!unit?.statuses?.some(s=>s.id==='freeze'&&s.elemental_freeze)}
 export function frozenMarkup(unit){
- if(!elementalFrozen(unit)||unit.alive===false||unit.conscious===false)return '';
+ const active=elementalFrozen(unit);
+ if(!active||unit?.alive===false||unit?.conscious===false)return '';
  return `<span class="mage-ice-shell" aria-hidden="true" style="--ice-surface:url('${FROZEN_ROOT}frozen_${surfaceSeed(unit.id)%4+1}.png')"><span class="ice-surface"></span><span class="ice-glint"></span></span>`;
 }
 export function frozenTransitionPlan(previous,battle,timeline){
- const plans=[];
+ const plans=[],end=Math.max(playbackDuration(timeline),...timeline.map(r=>r.start),0);
  for(const [id,unit] of Object.entries(battle.units||{})){
-  const before=elementalFrozen(previous?.units?.[id]),after=elementalFrozen(unit);
-  if(before===after)continue;
-  const relevant=timeline.filter(r=>r.event.unit_id===id&&r.event.type==='combat_feedback');
-  const application=relevant.find(r=>r.event.kind==='status'&&r.event.status_id==='freeze');
-  const hit=relevant.find(r=>r.event.amount>0&&['physical','magic','fire','lightning','collision','restraint'].includes(r.event.kind));
-  plans.push({id,mode:after?'freeze':hit?'break':'thaw',delay:Math.max(0,(after?application:hit)?.start||0)});
+  let active=elementalFrozen(previous?.units?.[id]),onset=null;
+  const change=(next,delay,mode)=>{if(next===active)return;if(!next&&mode==='thaw'&&onset!==null)delay=Math.max(delay,onset+500);plans.push({id,mode:next?'freeze':mode,delay:Math.max(0,delay)});active=next;if(next)onset=delay};
+  for(const row of timeline.filter(r=>r.event.unit_id===id&&r.event.type==='combat_feedback').sort((a,b)=>a.start-b.start)){
+   const e=row.event,hit=e.amount>0&&['physical','magic','fire','lightning','collision','restraint'].includes(e.kind);
+   if(Array.isArray(e.statuses_snapshot))change(elementalFrozen({statuses:e.statuses_snapshot}),row.start,hit?'break':'thaw');
+   else if(e.kind==='status'&&e.status_id==='freeze'&&elementalFrozen(unit))change(true,row.start,'freeze');
+   else if(active&&hit&&!elementalFrozen(unit))change(false,row.start,'break');
+  }
+  const final=elementalFrozen(unit);
+  // Old recordings may only have the final state; modern snapshots also retain
+  // Freeze -> thaw entirely contained within one server response (solo vs boss).
+  if(active!==final){
+   const relevant=timeline.filter(r=>r.event.unit_id===id&&r.event.type==='combat_feedback');
+   const hit=relevant.find(r=>r.event.amount>0&&['physical','magic','fire','lightning','collision','restraint'].includes(r.event.kind));
+   const application=relevant.find(r=>r.event.kind==='status'&&r.event.status_id==='freeze');
+   change(final,final?application?.start||0:onset!==null?Math.max(end,onset+500):(hit?.start??end),hit?'break':'thaw');
+  }
  }
  return plans;
 }
 export function animateFrozenTransitions(previous,battle,timeline,tokenFor){
  const reduced=window.matchMedia('(prefers-reduced-motion: reduce)').matches;
  const plans=frozenTransitionPlan(previous,battle,timeline);if(plans.length)warmFrozenSurfaces();
- for(const plan of plans){
-  const token=tokenFor(plan.id);if(!token)continue;
-  const persistent=token.querySelector('.mage-ice-shell');
-  if(plan.mode==='freeze'&&persistent)persistent.style.visibility='hidden';
-  const overlay=document.createElement('span');overlay.className='mage-ice-transition';overlay.setAttribute('aria-hidden','true');
-  // The old surface remains present until the damage contact that actually breaks it.
-  if(plan.mode!=='freeze'){overlay.style.backgroundImage=`url('${FROZEN_ROOT}frozen_1.png')`;token.append(overlay)}
-  setTimeout(()=>{
-   if(!token.isConnected){overlay.remove();return}
-   if(reduced||document.hidden){overlay.remove();if(persistent)persistent.style.visibility='';return}
-   if(!overlay.isConnected)token.append(overlay);
+ for(const id of new Set(plans.map(p=>p.id))){
+  const token=tokenFor(id);if(!token)continue;
+  const generation=Symbol();token.icePlaybackGeneration=generation;
+  token.querySelectorAll('.mage-ice-transition').forEach(n=>n.remove());
+  let shell=token.querySelector('.mage-ice-shell');
+  if(!shell){token.insertAdjacentHTML('beforeend',frozenMarkup({id,alive:true,statuses:[{id:'freeze',elemental_freeze:true}]}));shell=token.querySelector('.mage-ice-shell')}
+  if(shell)shell.style.visibility=elementalFrozen(previous?.units?.[id])?'':'hidden';
+  const valid=()=>token.isConnected&&token.icePlaybackGeneration===generation;
+  let phase=0;
+  for(const plan of plans.filter(p=>p.id===id))setTimeout(()=>{
+   if(!valid())return;
+   const currentPhase=++phase;token.querySelectorAll('.mage-ice-transition').forEach(n=>n.remove());
+   if(shell)shell.style.visibility='hidden';
+   if(reduced||document.hidden){if(shell)shell.style.visibility=plan.mode==='freeze'?'':'hidden';return}
+   const overlay=document.createElement('span');overlay.className='mage-ice-transition';overlay.setAttribute('aria-hidden','true');token.append(overlay);
    const interval=plan.mode==='thaw'?160:85;
    for(let i=0;i<4;i++)setTimeout(()=>{
-    if(!token.isConnected){overlay.remove();return}
+    if(!valid()){overlay.remove();return}
     overlay.style.backgroundImage=`url('${FROZEN_ROOT}${plan.mode}_${i+1}.png')`;
     overlay.style.opacity=plan.mode==='freeze'?'.76':String(.8-i*.1);
     if(plan.mode==='break')overlay.style.transform=`scale(${1+i*.09})`;
    },i*interval);
-   setTimeout(()=>{overlay.remove();if(persistent?.isConnected)persistent.style.visibility=''},4*interval);
+   setTimeout(()=>{overlay.remove();if(valid()&&phase===currentPhase&&shell)shell.style.visibility=plan.mode==='freeze'?'':'hidden'},4*interval);
   },plan.delay);
  }
+ return Math.max(0,...plans.map(p=>p.delay+(p.mode==='thaw'?640:340)));
 }
 export function scorchedArtwork(zone,x,y,width,height,clip){
  const mask=clip+'-scorch-soft',blur=clip+'-scorch-blur';

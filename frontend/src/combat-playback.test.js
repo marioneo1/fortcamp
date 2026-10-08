@@ -1,8 +1,38 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {composeMotion,poseFrames,walkingFrames,createPlaybackGate,needsPlaybackLock,playbackDuration} from './combat-playback.js';
+import {composeMotion,poseFrames,walkingFrames,createPlaybackGate,needsPlaybackLock,playbackDuration,departureGhostPlans} from './combat-playback.js';
 import {impactTimeline} from './combat-impact.js';
 import {recoilFrames} from './combat-animation.js';
+
+test('dismissed summons stay represented until their late killing contact, without duplicate dissolve ghosts',()=>{
+ const previous={units:{w:{id:'w',alive:true,hp:1,condition:'active',summoner_creature:true}}};
+ const battle={units:{w:{id:'w',alive:false,extracted:true,condition:'dismissed',summoner_creature:true}}};
+ const timeline=impactTimeline([{type:'melee_attack',attacker_id:'first',target_id:'owner',attack_packet:1},
+  {type:'melee_attack',attacker_id:'second',target_id:'owner',attack_packet:2},
+  {type:'melee_attack',attacker_id:'last',target_id:'w',attack_packet:3},
+  {type:'death_burst',unit_id:'w',attack_packet:3},
+  {type:'martial_effect',skill:'summoner_dissolve',unit_id:'w',attack_packet:4}]);
+ const plans=departureGhostPlans(previous,battle,timeline);
+ assert.equal(plans.length,1);assert.equal(plans[0].event.type,'death_burst');
+ assert.equal(plans[0].before.hp,1);assert.ok(plans[0].start>timeline[1].start+timeline[1].duration);
+});
+test('Reclaim, Sacrifice and Overload dissolution also retain a presentation body until their own event',()=>{
+ for(const skill of ['summoner_dissolve','summoner_sacrifice']){
+  const previous={units:{s:{id:'s',alive:true,hp:20}}},battle={units:{s:{alive:false,condition:'dismissed',summoner_creature:true}}};
+  const rows=[{start:900,duration:560,event:{type:'martial_effect',unit_id:'s',skill}}];
+  assert.equal(departureGhostPlans(previous,battle,rows)[0].start,900);
+  assert.deepEqual(departureGhostPlans(battle,battle,rows),[]);
+ }
+});
+test('a summon born and killed during one server response still receives its conjure and departure presentation',()=>{
+ const battle={units:{s:{id:'s',hp:0,max_hp:30,alive:false,extracted:true,condition:'dismissed',summoner_creature:true}}};
+ const rows=[{start:0,duration:560,event:{type:'martial_effect',unit_id:'s',skill:'summoner_conjure'}},
+  {start:2000,duration:560,event:{type:'martial_effect',unit_id:'s',skill:'summoner_dissolve'}}];
+ const plan=departureGhostPlans({units:{}},battle,rows)[0];
+ assert.equal(plan.before.hp,30);assert.equal(plan.before.condition,'active');assert.equal(plan.before.extracted,false);
+ assert.equal(plan.start,2000);assert.equal(battle.units.s.hp,0);
+ assert.deepEqual(departureGhostPlans({units:{}},battle,rows.slice(1)),[]);
+});
 
 const move=(from,to,delay,duration)=>({frames:[{transform:`translate(${from}px,0)`,offset:0},{transform:`translate(${to}px,0)`,offset:1}],delay,duration});
 test('later enemy movement cannot prefill the pose before the initial push',()=>{

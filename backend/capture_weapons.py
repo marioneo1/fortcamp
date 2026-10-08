@@ -8,28 +8,11 @@ def capture_power(actor):
     return 2+int(actor.get('capture_weapon',{}).get('base',8))//12+int(2*math.log1p(balanced/8))
 
 
-def capture_preview(actor, target):
-    profile = actor.get('capture_weapon')
-    if not profile: return None
-    attrs = actor.get('capture_attributes', {'str':actor.get('strength',4), 'dex':4, 'int':actor.get('intelligence',4)})
-    values = [max(1, int(attrs.get(k,4))) for k in ('str','dex','int')]
-    # Raising one attribute alone has much less effect than a balanced build.
-    balanced = min(values) + (sum(values)/3-min(values))*.35
-    stats = 16 * math.log1p(balanced/8)
-    wounded = 36 * (1-max(0,min(1,target['hp']/max(1,target['max_hp']))))
-    perks = actor.get('perk_modifiers', {})
-    bonus = perks.get('capture_chance',0) + actor.get('gear_rules',{}).get('capture_chance',0)
-    if target['hp'] <= target['max_hp']/2: bonus += perks.get('wounded_capture',0)
-    boss = bool(target.get('boss') or target.get('kind') == 'chieftain')
-    if boss: bonus += perks.get('boss_capture',0)
-    statuses = {s['id'] for s in target.get('statuses',[])}
-    setup = 10 if statuses & {'stun','sleep','ambush_sleep','freeze'} else 6 if statuses & {'bind','paralyze'} else 0
-    chance = profile['base'] + stats + wounded + bonus + setup - target.get('evasion',0)*.5 - target.get('armor',0)*.6
-    if target.get('guarding'): chance -= 8
-    if boss: chance -= 20
-    return {'chance':max(2,min(60 if boss else 95,round(chance))), 'capture':True, 'damage_bonus':0,
-            'description':'A landed attempt deals modest nonlethal damage, then restrains on a successful capture check. Damage stops at 1 HP; wounds help subsequent attempts.',
-            'balanced_rating':round(balanced,1)}
+def capture_preview(actor,target):
+    from .combat_captor import odds
+    if not actor.get('capture_weapon'):return None
+    return {'chance':round(odds(actor,target),2),'capture':True,'damage_bonus':0,'description':'Subdue reduces Resolve instead of HP; at zero Resolve, each landed attempt may capture.'}
+
 
 def apply_capture_content(items, missions, general, events, perks, effects):
     definitions = {
@@ -48,14 +31,14 @@ def apply_capture_content(items, missions, general, events, perks, effects):
             'power':0,'attack_range':reach,'bonuses':{},'attribute_bonuses':{},'granted_perks':[],
             'tags':['capture']+(['mission_exclusive'] if rank is None else []),
             'capture_weapon':{'base':base,'range':reach,'elevation_rule':rule}, 'icon':f'/assets/catalogue/items/{art}.png',
-            'description':f'Capture weapon. Range {reach}; modest balanced STR/DEX/INT restraint damage and a capture check. Damage stops at 1 HP; capture leaves the target unconscious. Never kills. Wounded or controlled targets are easier; bosses resist. '+('Frayed starter gear with a low capture chance.' if iid=='frayed_capture_net' else '')}
+            'description':f'Capture weapon. Range {reach}; balanced STR/DEX/INT Resolve damage. Unlocks Subdue alongside lethal unarmed Attack; at zero Resolve, attempts may leave the target unconscious and carryable. INT and AGI resist Resolve damage; bosses have low capture odds. '+('Frayed starter gear with a low capture chance.' if iid=='frayed_capture_net' else '')}
         if rank: general.append((iid,rank,7))
     # Existing genuine restraint tools become capture weapons; no damage-mode loophole.
     for iid,base,reach in [('goblin_net_bow',20,3),('hunters_bola',18,2),('mooncord_sling',25,4)]:
         item=items[iid];item.update(weapon_type='capture',weapon_scaling='balanced',power=0,
             capture_weapon={'base':base,'range':reach,'elevation_rule':'ballistic'},attack_range=reach)
         item.pop('combat_skill',None);item.pop('on_hit',None)
-        item['description']='A dedicated capture weapon. Modest balanced STR/DEX/INT restraint damage and capture checks; damage stops at 1 HP. Never kills. Lower HP and control effects help.'
+        item['description']='A dedicated capture weapon. Subdue deals balanced STR/DEX/INT Resolve damage and attempts capture at zero Resolve; lethal unarmed Attack remains available.'
     for item in items.values():
         item['tags']=[t for t in item.get('tags',[]) if t!='nonlethal']
         skill=item.get('combat_skill')

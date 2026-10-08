@@ -68,3 +68,19 @@
 .battle-door-control span{position:absolute;right:-2px;bottom:-2px;display:grid;place-items:center;width:11px;height:11px;border-radius:50%;background:#d5b66a;color:#211c13;font:bold 10px/1 sans-serif;pointer-events:none}
 .battle-door-control:hover,.battle-door-control:focus-visible{background:#514329;outline:2px solid #fff0c8;outline-offset:2px}
 .battle-door-control:disabled{opacity:.55;cursor:default}
+
+.aoe-preview-chip.friendly-fire-forecast{border-color:#d97068;background:rgba(49,17,23,.96)}
+.aoe-preview-chip.friendly-fire-forecast b{color:#ffaca4;text-shadow:0 1px 2px #18080b}
+
+.battle-viewport{position:relative}
+.movement-hazard-card{position:absolute;margin:0;width:max-content;max-width:calc(100% - 20px);z-index:65;display:flex;align-items:flex-start;gap:10px;padding:12px 16px;background:#261719f5;border:1px solid #c97661;border-radius:10px;box-shadow:0 5px 18px #0009;pointer-events:none;color:#f7dfcd;text-align:left}
+.movement-hazard-card[hidden]{display:none}
+.movement-hazard-card>img{width:32px;height:32px;object-fit:contain}
+.movement-hazard-card strong{display:block;color:#ffb2a3;font-size:15px}
+.movement-hazard-card span{display:block;font-size:13px;line-height:1.5}
+.movement-hazard-card small{display:block;color:#d1b9ab;margin-top:5px;font-size:11px}
+.battlefield .battle-cell.hazard-path-preview{outline:2px solid #ff966d;outline-offset:-3px;box-shadow:inset 0 0 16px #cf412846}
+.battlefield .exit-marker{display:flex;align-items:center;gap:2px;justify-content:center;font-size:8px;background:#10241de8;border:1px solid #8fbc91;border-radius:5px;padding:1px 3px;pointer-events:none}
+.exit-marker img{width:18px;height:18px;object-fit:contain}
+
+.battlefield .battle-door-control>img{width:100%;height:100%;object-fit:contain;padding:1px;filter:drop-shadow(0 2px 2px #000a)}

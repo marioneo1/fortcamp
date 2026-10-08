@@ -2,6 +2,15 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {combatAudioSchedule} from './combat-audio.js';
 import {impactTimeline} from './combat-impact.js';
+test('Rapid Assembly preparation sound plays with its visual at activation',()=>{
+ const events=[{type:'martial_effect',skill:'engineer_rapid_assembly',attack_event:true,attack_packet:1},{type:'sound',attack_packet:1,before_contact:true,cues:[{name:'engineer_rapid_assembly',offset:0}]}];
+ assert.equal(combatAudioSchedule({},events).cues.find(c=>c.name==='engineer_rapid_assembly').delay,0);
+});
+test('Explosive ballista sound lands with its bolt rather than when fired',()=>{
+ const events=[{type:'sound',attack_event:true,attack_packet:1,cues:[]},{type:'martial_effect',attack_event:true,attack_packet:2,impact_origin_packet:1,skill:'engineer_cross_blast'},{type:'sound',attack_packet:2,cues:[{name:'engineer_bolt_explosion',offset:0}]}];
+ const cues=combatAudioSchedule({},events).cues;
+ assert.equal(cues.find(c=>c.name==='engineer_bolt_explosion').delay,220);
+});
 
 test('Earthbreaker sound follows takeoff and landing rather than footsteps',()=>{
  const events=[{type:'movement',leap:true,points:[{x:0,y:0},{x:3,y:0}]},{type:'ground_impact',attack_packet:1}];
@@ -12,6 +21,13 @@ test('Earthbreaker sound follows takeoff and landing rather than footsteps',()=>
  assert.ok(cues[1].delay>400);
  assert.equal(cues[2].delay,cues[1].delay);
  assert.equal(cues[1].volume,.65);
+});
+test('Bard commands and Songs resolve to dedicated SFX',()=>{
+ const songs=['jeering_verse','cue_strike','accelerando','quickening_chorus','war_anthem','song_of_peace'];
+ for(const song of songs){
+  const cues=combatAudioSchedule({},[{type:'bard_song',song}]).cues;
+  assert.deepEqual(cues.map(c=>c.name),[`bard_${song}`]);
+ }
 });
 test('Collision audio uses contact, distinguishes bodies/walls and avoids duplicate damage sounds',()=>{
  for(const bystander_id of [null,'other']){

@@ -37,10 +37,10 @@ export function impactTimeline(events){
       duration=(event.contact_ms??240)+550;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='ground_impact'){
       duration=650;cursor=Math.max(cursor,start+duration);
-    }else if(event.type==='rogue_knife'){duration=500;cursor=Math.max(cursor,start+duration);
+    }else if(event.type==='rogue_knife'||event.type==='druid_lash'){duration=500;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='rogue_effect'){duration=event.from?0:320;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='martial_effect'){
-      duration=560;cursor=Math.max(cursor,start+duration);
+      duration=event.skill==='engineer_dynamite_throw'?700:560;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='net_cast'){
       duration=COMBAT_MOTION.netDuration;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='chain_attack'){
@@ -74,6 +74,10 @@ export function impactTimeline(events){
 }
 
 export const feedbackStyles={
+  resolve:{label:'Resolve',icon:'⛓',color:'#64dfca'},
+  capture_ready:{label:'Capture Ready',icon:'⛓',color:'#9af5df'},
+  assembly_ready:{label:'Instant build ready',icon:'⚙',color:'#ffdc8c'},
+  dissipate:{label:'Dissipated',icon:'◇',color:'#a8ded8'},
   restraint:{label:'Squeeze',icon:'\u25c7',color:'#d5c6ff'},
   physical:{label:'Hit',icon:'✦',color:'#fff0cd'},
   magic:{label:'Magic',icon:'✧',color:'#c5b3ff'},
@@ -97,7 +101,7 @@ export function feedbackText(event,definitions={}){
   const style={...(feedbackStyles[event.kind]||feedbackStyles.physical)};
   if(event.kind==='physical'&&event.melee_style)style.label=({slash:'Slash',hack:'Chop',crush:'Crush',blunt:'Strike',fist:'Punch',stab:'Stab'})[event.melee_style]||style.label;
   if(event.critical){style.label='Critical';style.color='#ffd479'}
-  if(event.kind==='status')return {...style,...(event.status_id==='stun'?{color:'#f2ce72'}:{}),label:definitions[event.status_id]?.name||event.status_id,icon:definitions[event.status_id]?.icon||style.icon,value:''};
+  if(event.kind==='status')return {...style,...(event.status_id==='stun'?{color:'#f2ce72'}:{}),label:definitions[event.status_id]?.name||({summon_overload:'Overload',summon_order:'Summon order'})[event.status_id]||event.status_id,icon:definitions[event.status_id]?.icon||style.icon,value:''};
   return {...style,value:event.amount?`${['heal','barrier','fury'].includes(event.kind)?'+':'−'}${event.amount}`:event.absorbed?'Blocked':''};
 }
 export function protectionMarkup(unit){
@@ -107,7 +111,7 @@ export function protectionMarkup(unit){
 }
 export function impactArtwork(event){
   if(event.kind==='combo')return [];
-  if(['fury','intercept','counter','resisted','captured','capture_failed','restraint'].includes(event.kind))return [];
+  if(['resolve','capture_ready','fury','intercept','counter','resisted','captured','capture_failed','restraint'].includes(event.kind))return [];
   if(event.absorbed)return [event.barrier_broken?'barrier_break':'barrier_hit'];
   if(event.monk_skill&&event.kind==='physical')return [event.monk_skill==='heaven_piercing'?'monk:palm_expand':'monk:palm_contact'];
   if(event.kind==='status'&&['iron_reversal','flowing_footwork','open_guard'].includes(event.status_id))return ['monk:'+({iron_reversal:'defensive_expand',flowing_footwork:'dash_ribbon',open_guard:'broken_guard'})[event.status_id]];

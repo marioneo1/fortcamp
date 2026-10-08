@@ -3,6 +3,13 @@ import assert from 'node:assert/strict';
 import {selectBattleSkill,skillPicker,skillAvailability,skillTiming} from './equipment-skills.js';
 import {describeGear} from './equipment-ui.js';
 
+test('switching to support exposes self and allies missing from offensive target list',()=>{
+ const wall={id:'wall',target:'enemy'},heal={id:'heal',target:'ally'};
+ const b={current_unit_id:'p',units:{p:{id:'p',skills:[wall,heal],special:wall}},attack_previews:{e:{attack:{chance:90}}},skill_previews:{heal:{p:{support:true,chance:100},ally:{support:true,chance:100}}}};
+ const v=selectBattleSkill(b,'heal');assert.equal(v.attack_previews.p.skill.support,true);assert.equal(v.attack_previews.ally.skill.support,true);
+ assert.equal(v.attack_previews.e.skill,null);assert.equal(v.attack_previews.e.attack.chance,90);assert.equal(b.attack_previews.p,undefined);
+});
+
 test('skill selection substitutes authoritative range previews without changing server view',()=>{
  const first={id:'blade',name:'Blade'},second={id:'lance',name:'Lance',source_name:'Projector'};
  const b={current_unit_id:'p',units:{p:{id:'p',skills:[first,second],special:first}},attack_previews:{e:{attack:{range:1},skill:{range:1}}},skill_previews:{lance:{e:{range:5}}}};

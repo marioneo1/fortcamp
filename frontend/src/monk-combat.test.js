@@ -48,9 +48,9 @@ test('All eight Monk icons and status artwork resolve to imported assets',()=>{
  assert.deepEqual(impactArtwork({kind:'combo'}),[]);
 });
 
-test('Boss inspection separates named resistances, duration and temporary recovery',()=>{
+test('Boss inspection names selective resistances without retired recovery immunity',()=>{
  const html=resistanceMarkup({boss:true,status_version:1,resistance_details:{statuses:{stun:25,poison:100},control_duration_limit:1,control_recovery:1}},String);
- assert.match(html,/stun: 25% resistance/);assert.match(html,/poison: immune/);assert.match(html,/at most 1 turn/);assert.match(html,/Control recovery active/);
+ assert.match(html,/stun: 25% resistance/);assert.match(html,/poison: immune/);assert.match(html,/at most 1 turn/);assert.doesNotMatch(html,/Control recovery active|prevents immediate stun/);
  assert.match(html,/Unlisted debuffs have no innate resistance/);
  assert.equal(resistanceMarkup({},String),'');
 });

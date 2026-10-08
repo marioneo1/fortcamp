@@ -40,3 +40,6 @@ frontend/node_modules/
 
 # Rebuilt procedural combat textures; sources live in the build tool.
 docs/art/effekseer/Texture/
+
+# Local editing scratch scripts are never release source.
+/temp/

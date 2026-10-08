@@ -9,11 +9,11 @@ Implemented in dev. Two dedicated transparent 4×4 sheets replace the initial de
 
 Runtime assets: `frontend/public/assets/mage-frozen-v2/` — `freeze_1`–`freeze_4`, `frozen_1`–`frozen_4`, `break_1`–`break_4`, `thaw_1`–`thaw_4`. Sixteen 256px RGBA crops.
 
-The translucent blue-white surface is clipped to the same circle and exact 17%/66% geometry as the face, rather than outside the portrait. Four stable frost patterns are selected by unit ID. The face remains visible beneath the ice; HP and status badges remain above it. A restrained glint supplies idle motion without moving the entire ice pattern.
+The translucent blue-white surface is clipped to the same circle and exact 17%/66% geometry as the face, rather than outside the portrait. Intermediate status snapshots drive ice growth, the stable shell and thaw/shatter, including a one-turn boss Freeze that starts and ends in the same server response. Natural transient ice has at least 500ms from application before thaw begins; damage breaks it at the real hit contact. This replaces the unused recent-freeze cache. Four stable frost patterns are selected by unit ID. The face remains visible beneath the ice; HP and status badges remain above it. A restrained glint supplies idle motion without moving the entire ice pattern.
 
 On a newly Frozen state, four spreading frames begin at the recorded status contact, followed by the stable surface. When an existing Frozen state ends on direct damage, fracture/shard frames begin at that damage contact. Other endings use thaw/droplet frames. The removed surface remains until that contact so it cannot disappear early. Death transitions use the existing live ghost token. Effects skip disconnected/hidden tokens, clean up and respect reduced motion. Frost frames preload when Freeze is armed or Frost enchantment is cast, avoiding cold frame downloads at the hit. Legacy movement-only equipment Freeze keeps its earlier representation.
 
-Limitation: state-to-state transition animation does not reconstruct a brief Freeze that both applies and breaks within the same returned multi-hit activation. The gameplay remains correct; a dedicated per-hit elemental transition event can extend this later.
+Short-duration limitation: Freeze with less than one second of actual uptime (uncommon outside testing fixtures) may show application/removal transitions without the stable layer between them. The gameplay remains correct; a dedicated per-hit elemental transition event can extend this later.
 
 ## Scorched ground
 

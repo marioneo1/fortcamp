@@ -26,10 +26,10 @@ equipped slot. Fury remains in the persisted battle, never in the roster.
 | Skill | Effect | Cost / cooldown | Unlock |
 | --- | --- | --- | --- |
 | Reckless Blow | 200% attack; gain one Fury even on miss; take 20% more damage until next owner turn | Main action; 2 turns | Starter |
-| Skullbreaker | 125% attack; a hit stuns for two target activations | 2 Fury; main action; 4 turns | Starter |
+| Skullbreaker | 125% attack; a hit stuns for two target activations | 2 Fury; main action; no cooldown | Starter |
 | Bloodfury | Direct enemy hits leaving you at 50% HP or less grant two Fury | Passive slot | Starter |
 | Bloodied Strength | Attack rises linearly with missing HP, from no bonus at full HP to +50% at 1 HP | Passive slot | 2 successes |
-| Groundbreaker | 200% attack against enemies in all eight neighboring cells; push one cell | 4 Fury; main action; 5 turns | 5 |
+| Groundbreaker | 200% attack against enemies in all eight neighboring cells; push one cell | 4 Fury; main action; no cooldown | 5 |
 | Too Angry to Fall | First lethal damage leaves 1 HP; subsequent lethal damage cannot kill until your next turn | Passive slot; once per battle | 9 |
 | Bloodthirst | Each lethal kill heals 20% maximum HP; multiple kills in the triggering turn each heal | Passive slot; 3 owner-turn cooldown | 12 |
 | Unstoppable | Automatically spend one Fury to remove one harmful status, prioritizing disabling control | Passive slot; 3 owner-turn cooldown | 16 |

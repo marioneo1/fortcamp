@@ -85,10 +85,10 @@ class CombatSpacesTests(unittest.TestCase):
         a['statuses']=[];a['status_activation']=[3,0];ally['conscious']=False
         a['conscious']=False;combat._trigger_zones(b,t,'start');self.assertEqual(t['hp'],100)
 
-    def test_binding_respects_recovery_and_preview_does_not_consume(self):
+    def test_binding_ignores_retired_recovery_flag(self):
         b,a,t=self.fixture();self.zone(b,a,t,'binding');t['control_immunity']=2
         t.update(x=4,y=2);combat._apply_tile_entry(b,t)
-        self.assertFalse(any(s['id']=='bind' for s in t['statuses']))
+        self.assertTrue(any(s['id']=='bind' for s in t['statuses']))
         t['control_immunity']=0;t['status_activation']=[2,1];t.update(x=3,y=2)
         combat._apply_tile_entry(b,t)
         self.assertTrue(any(s['id']=='bind' for s in t['statuses']))

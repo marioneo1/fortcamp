@@ -31,6 +31,21 @@ class RunProfileTests(unittest.TestCase):
             self.assertEqual(git('rev-parse', 'HEAD'), commit)
             self.assertEqual(git('status', '--porcelain', '--untracked-files=no'), '')
             configure_release_launchers(prod)  # Repeating does not restore the unwanted launchers.
+
+    def test_release_initializes_empty_data_and_preserves_existing_saves(self):
+        import sqlite3
+        from tools.prepare_release_copy import initialize_release_data
+        with tempfile.TemporaryDirectory() as d:
+            data=Path(d)/'fortcamp-release-data'
+            initialize_release_data(data)
+            with closing(sqlite3.connect(data/'fortcamp.db')) as db:
+                self.assertEqual(db.execute("SELECT count(*) FROM sqlite_master WHERE type='table'").fetchone()[0],0)
+                db.execute('CREATE TABLE keep_me(value TEXT)');db.execute("INSERT INTO keep_me VALUES('existing production data')");db.commit()
+            initialize_release_data(data)
+            with closing(sqlite3.connect(data/'fortcamp.db')) as db:
+                self.assertEqual(db.execute('SELECT value FROM keep_me').fetchone()[0],'existing production data')
+            self.assertEqual(list((data/'portraits').iterdir()),[])
+
     def test_release_copies_shared_framing_without_copying_player_data(self):
         with tempfile.TemporaryDirectory() as d:
             dev = Path(d)/'dev'; prod = Path(d)/'prod'

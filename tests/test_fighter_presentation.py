@@ -153,7 +153,7 @@ class FighterPresentationTests(unittest.TestCase):
             self.use(b,a,t,'bash')
             self.assertEqual(other['hp'],max(0,hp-9))
             self.assertFalse(conditions.has(t,'stun'))
-            self.assertEqual(conditions.has(other,'stun'),not immune and hp>9)
+            self.assertEqual(conditions.has(other,'stun'),hp>9)
             self.assertTrue(any(e['type']=='collision_recoil' for e in b['animation_events']))
 
     def test_lethal_earthbreaker_pushes_body_into_ally_outside_impact_area(self):
@@ -186,7 +186,7 @@ class FighterPresentationTests(unittest.TestCase):
         self.assertTrue(any(e['type']=='collision_recoil' for e in events))
         self.assertTrue(conditions.has(t,'stun'))
 
-    def test_driving_person_collision_stuns_both_and_respects_immunity(self):
+    def test_driving_person_collision_stuns_both_ignoring_retired_recovery(self):
         for immune in (False,True):
             b,a,t=self.fixture()
             other=deepcopy(t);other.update(id='bystander',x=4,team=a['team'],control_immunity=2 if immune else 0)
@@ -194,7 +194,7 @@ class FighterPresentationTests(unittest.TestCase):
             self.use(b,a,t,'bash')
             self.assertEqual((t['hp'],other['hp']),(73,91))
             self.assertTrue(conditions.has(t,'stun'))
-            self.assertEqual(conditions.has(other,'stun'),not immune)
+            self.assertTrue(conditions.has(other,'stun'))
 
     def test_driving_armor_reduces_scaled_power_and_resisted_push_cannot_stun(self):
         b,a,t=self.fixture();t.update(armor=4,displacement_resistance=100)

@@ -29,3 +29,20 @@ Mage sprites are warmed from the battle's equipped skills. Before manual or auto
 
 
 October 6 startup regression: Vite's versioned CSS imports still requested `createHotContext`, even in steady mode. The initial adapter omitted that export and stopped the entire module graph before initialization. The adapter now provides the inert context methods as well as style helpers; no reload connection is opened. Actual source-server tests include versioned CSS requests, context methods and style application. Browser fixture previews use the same adapter instead of the stock client, so full game/CSS imports exercise it too. Restart an already running dev server after this fix because its middleware cached the preceding client source.
+
+
+## Temporary browser QA profiles
+
+Use the checkout-local `data/browser-qa/profile` for isolated Chrome QA via
+`--user-data-dir` with an absolute resolved path. Do not create drive-root profiles.
+The data directory is ignored by Git; this is browser cache/preferences, not game saves.
+Historical drive-root QA profiles were moved to `data/browser-qa/archived-profiles`
+on October 7 after confirming none was in use. Browser QA scripts connect to CDP
+port 9229 and local fixtures on port 8766; the scripts do not hardcode a profile path.
+
+
+### October 7: repeated loading investigation
+
+The running dev-discord session was verified to use Vite source mode, auto_reload=false, with no built-preview switch. The Unit details refinement did not change the launcher, API polling or asset-loading strategy. Read-only asset probes confirmed existing no-store headers; however, Chrome reused an identical decoded image within the same document with no second HTTP response, so no-store alone was not established as the cause of repeated delays. Cache policy remains unchanged. The isolated fixture cannot establish timings in the user's live Discord/browser session.
+
+Inspector redraws now preserve unchanged DOM; see COMBAT_STATUS_PRESENTATION.md. tools/combat_loading_browser_qa.mjs profiles fixture rendering and History; --live-assets optionally performs two read-only image loads from localhost:5174, never authenticated APIs or saves. Restart the normal steady-mode dev launcher to load changed source; no automatic restart was performed during an active user session.

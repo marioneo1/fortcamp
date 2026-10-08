@@ -1,8 +1,14 @@
 # Fortcamp documentation map
 
+Implemented Captor: [Captor and Resolve](design/CAPTOR_REWORK_REVIEW.md) documents separate Attack/Subdue, Resolve, eight skills, Hold ticks and unconscious recovery; [Captor art/audio](art/CAPTOR_V1.md) records generated packs and foley.
+
+Implemented Summoner: [Summoner rework](design/SUMMONER_REWORK_REVIEW.md) documents eight skills, autonomous owner-linked turns, innate one/all commands, chosen placement, group replacement cooldowns, capacity, sacrifice/empowerment, migration and AI limits. [Summoner art/audio](art/SUMMONER_V1.md) records the packed portrait/icon/effect atlas and six generated sounds. Start a fresh Battle Lab encounter to try the new kit.
+
+Current navigation polish: [Combat controls](design/COMBAT_CONTROLS.md) documents final-path hazard warnings and custom map cursors; [Painted navigation atlas](art/COMBAT_NAVIGATION_V1.md) records the six-icon generation and importer.
+
 Current dev playtesting: [Development runner](design/DEVELOPMENT_RUNNER.md) serves source files with a CSS-only dev client, no automatic reload connection, and no startup build, retains debug tools/dev saves, offers opt-in live editing and preserves timestamped logs. Scorched V3 loops are slowed to 3.2?4.0 seconds following motion feedback.
 
-Current DoT rules: [Combat DoTs](design/COMBAT_DOTS.md) defines Burn 2%, Poison 10%, Bleed 5% maximum HP per stack, target-end damage/one-stack decay, Burn entry hits and damage resistance. Current fire art: [Scorched V3](art/SCORCHED_V3.md), one sixteen-frame patch per cell, larger upper-left Meteor and impact-gated ground. Older surface notes below record preceding passes.
+Current DoT rules: [Combat DoTs](design/COMBAT_DOTS.md) defines Burn 2% and Bleed 5% maximum HP per damage stack, Poison 10% maximum HP per turn with duration stacks, target-end damage/one-stack decay, Burn entry hits and damage resistance. Current fire art: [Scorched V3](art/SCORCHED_V3.md), one sixteen-frame patch per cell, larger upper-left Meteor and impact-gated ground. Older surface notes below record preceding passes.
 
 
 Current Mage surface art: [Frozen portraits and Scorched ground V2](art/MAGE_SURFACES_V2.md) records two dedicated 4×4 sheets, portrait frost/spread/shatter/thaw, connected feathered scorch, large central cinders and three to five independently phased small fires per cell, exact prompts and browser validation. Replaces the initial ice cage and explosion ground stamps.
@@ -16,6 +22,8 @@ Current painted combat props: [Tactical props pack](art/TACTICAL_PROPS_V1.md) co
 Implemented Rogue: [Rogue rework](design/ROGUE_REWORK_REVIEW.md) documents eight skills, multiple Quick Actions before one activation-ending main action, traps, positional/stack forecasts, chosen landings, migration and AI limitations. [Rogue art/audio](art/ROGUE_V1.md) records the packed atlas and four generated sounds. October 6: centred Rogue confirmation/attack selection, fixed Knife Exploit dispatch and fixed Caltrops previews with smaller pulsing steel art; see those same documents. Numerical/aesthetic playtesting remains open.
 
 Implemented Monk: [Monk rework](design/MONK_REWORK_REVIEW.md) documents eight skills, full starter combo, technique budgets, readiness, AI and migration. [Monk art](art/MONK_V1.md) records the packed assets and import workflow. Numerical balance remains provisional. Map status columns use 3px gaps; see [Status presentation](design/COMBAT_STATUS_PRESENTATION.md).
+
+Implemented Bard: [Bard rework](design/BARD_REWORK_REVIEW.md) documents planted Songs, lingering and NO LINGER timing, Jeering Verse, Cue the Strike, Song of Peace targeting, Maestro switching, audio cues and current AI/balance limits.
 
 Current skill-bar layout and saved order: [Combat controls](design/COMBAT_CONTROLS.md) covers slotted passives, drag swaps, Arrange, innate/equipment Traits, horizontal acting card and passive readiness buffs. Bloodthirst healing is now 20% max HP per kill.
 
@@ -174,3 +182,15 @@ October 5 persistent doorway controls pass.
 
 Job/build brainstorming catalogue: [Starting Jobs and Skills V1](design/STARTING_JOBS_AND_SKILLS_V1.md).
 Implemented loadouts: [Jobs and character loadouts](design/JOB_LOADOUTS.md).
+
+Cleric finite restoration and Battle Priest: [Cleric rework](design/CLERIC_REWORK_REVIEW.md). Native generated icons and shared effects: [Cleric art](art/CLERIC_V1.md).
+
+Druid persistent animal forms, movement transitions, global Bleed and living terrain:
+[Druid rework](design/DRUID_REWORK_REVIEW.md). Portraits, vine frames and sounds:
+[Druid art](art/DRUID_V1.md).
+
+Engineer construction, mounted machines, mines and delayed explosives:
+[Engineer rework](design/ENGINEER_REWORK_REVIEW.md). Sprites/audio:
+[Engineer art](art/ENGINEER_V1.md).
+
+[Production preparation](design/RELEASE_PREPARATION.md) records dev/release targets, testing-tool exclusions, clean production initialization and the authorized launch reset.

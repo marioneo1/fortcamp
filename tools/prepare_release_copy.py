@@ -26,7 +26,7 @@ def configure_release_launchers(target):
     dirty = subprocess.check_output(['git', 'status', '--porcelain', '--untracked-files=no'], cwd=target, text=True)
     if dirty.strip():
         raise ValueError('Commit or restore source changes before filtering release shortcuts')
-    patterns = '/*\n' + ''.join(f'!/{name}\n' for name in DEV_ONLY_LAUNCHERS)
+    patterns = '/*\n' + ''.join(f'!/{name}\n' for name in DEV_ONLY_LAUNCHERS) + '!/tests/\n!/temp/\n!/questions/\n!/question/\n!/gpt-changes-and-updates/\n!/linkapi-changes-and-updates/\n!/frontend/src/*.test.js\n!/tools/*_browser_qa.mjs\n!/tools/build_*_preview.py\n'
     subprocess.run(['git', 'sparse-checkout', 'set', '--no-cone', '--stdin'], cwd=target,
                    input=patterns, text=True, check=True)
 
@@ -96,6 +96,16 @@ def production_destination(target,data,production_env):
         raise
 
 
+def initialize_release_data(data):
+    """New releases start empty; never seed production from development saves/uploads."""
+    data=Path(data).resolve();data.mkdir(parents=True,exist_ok=True)
+    save=data/'fortcamp.db'
+    if not save.exists():
+        with closing(sqlite3.connect(save)) as db:
+            db.execute('PRAGMA user_version=0')
+    (data/'portraits').mkdir(exist_ok=True)
+
+
 def main():
     parser=argparse.ArgumentParser(description=__doc__);parser.add_argument('--version');parser.add_argument('--parent',type=Path);parser.add_argument('--prod',action='store_true',help='Update the fixed fortcamp-prod folder, keeping a rollback copy and the production save')
     args=parser.parse_args()
@@ -144,18 +154,7 @@ def build_copy(args,target,data,production_env):
     shutil.copy2(production_env,target/'.env')
     values={'DATABASE_URL':f'sqlite+aiosqlite:///{(data/"fortcamp.db").as_posix()}','DEV_BYPASS_AUTH':'false','GAME_DEBUG_MODE':'false','MISSION_TIME_SCALE':'1.0','BOT_ENABLED':'true','DISCORD_TEST_GUILD_ID':'','FORTCAMP_UPLOAD_ROOT':str(data/'portraits'),'FORTCAMP_PROFILE':'release','FORTCAMP_WEB_ORIGIN':dotenv_values(production_env).get('FORTCAMP_RELEASE_WEB_ORIGIN') or 'https://play.fortcampgame.fyi'}
     for name,value in values.items():set_key(str(target/'.env'),name,value,quote_mode='always')
-    data.mkdir(parents=True,exist_ok=True)
-    save=data/'fortcamp.db'
-    if not save.exists():
-        source=ROOT/'data'/'fortcamp-stable.db'
-        if not source.exists():source=ROOT/'data'/'fortcamp.db'
-        if source.exists():
-            with sqlite3.connect(source) as src,sqlite3.connect(save) as dest:src.backup(dest)
-    if not (data/'portraits').exists():
-        uploads=ROOT/'data'/'stable_portraits'
-        if not uploads.exists():uploads=ROOT/'data'/'portraits'
-        if uploads.exists():shutil.copytree(uploads,data/'portraits')
-        else:(data/'portraits').mkdir()
+    initialize_release_data(data)
     info={'version':args.version,'commit':commit,'branch':'release','runtime_data':str(data),'created_at':datetime.now().isoformat()}
     (target/'.fortcamp-release.json').write_text(json.dumps(info,indent=2))
     # Only release copies receive a release launcher; keep alpha's entry points unambiguous.

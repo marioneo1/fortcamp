@@ -12,6 +12,10 @@ export function combatAudioSchedule(battle,events=battle?.animation_events||[]){
       else if(event.mage_skill==='meteor'){playSfx('earthbreaker_land',.65,delay+event.contact_ms);playSfx('earthbreaker_crater',.48,delay+event.contact_ms);playSfx('mage_fireball',.22,delay+event.contact_ms)}
       else playSfx('magic_cast',.24,delay+30);
     }
+    else if(event.type==='bard_song'){
+      const cue={jeering_verse:'bard_jeering_verse',cue_strike:'bard_cue_strike',accelerando:'bard_accelerando',quickening_chorus:'bard_quickening_chorus',war_anthem:'bard_war_anthem',song_of_peace:'bard_song_of_peace'}[event.song];
+      if(cue)playSfx(cue,event.song==='war_anthem'?.38:.3,delay);
+    }
     else if(event.type==='movement'&&event.rogue_motion)playSfx(event.teleport?'rogue_shadowstep':'rogue_backflip',.32,delay);
     else if(event.type==='rogue_effect'&&event.effect==='caltrops')playSfx('rogue_caltrops',.3,delay);
     else if(event.type==='rogue_knife'){playSfx('rogue_knife_throw',.12,delay);playSfx(event.hit?`melee_stab_${event.impact_surface==='flesh'?'flesh':'hit'}`:'attack_miss',event.hit?.55:.25,delay+280)}

@@ -144,7 +144,7 @@ class CombatToolsTests(unittest.TestCase):
         self.assertEqual(p.get('forced_skip'), blocked)
         self.assertEqual(p.get('paralyzed_move'), immobilized)
 
-    def test_control_does_not_stack_and_bosses_get_a_recovery_activation(self):
+    def test_control_refreshes_without_duplicates_and_bosses_can_be_controlled_again(self):
         unit = {'id': 'boss', 'boss': True, 'statuses': [], 'status_activation': [1, 0]}
         conditions.apply(unit, 'stun', 3)
         conditions.apply(unit, 'stun', 3)
@@ -152,9 +152,9 @@ class CombatToolsTests(unittest.TestCase):
         self.assertEqual(unit['statuses'][0]['turns'], 1)
         unit['status_activation'] = [2, 0]
         conditions.finish_activation(unit)
-        self.assertFalse(conditions.apply(unit, 'freeze', 2))
+        self.assertTrue(conditions.apply(unit, 'freeze', 2))
         conditions.start_activation({'seed': 'x'}, unit)
-        self.assertFalse(conditions.apply(unit, 'freeze', 2))
+        self.assertTrue(conditions.apply(unit, 'freeze', 2))
         conditions.start_activation({'seed': 'x'}, unit)
         self.assertTrue(conditions.apply(unit, 'freeze', 2))
 

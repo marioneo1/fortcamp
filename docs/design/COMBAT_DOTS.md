@@ -1,14 +1,14 @@
-# Burn, Poison and Bleed ? implemented in dev, October 6, 2026
+# Burn, Poison and Bleed - implemented in dev, October 6, 2026
 
 This is the current canonical rule, superseding attack-scaled independent DoT durations and exertion-only Bleed in earlier Job documents.
 
-| Status | Base damage per stack | Normal trigger | Decay |
+| Status | Base damage | Normal trigger | Decay |
 | --- | --- | --- | --- |
 | Burn | 2% of target maximum HP, minimum 1 per stack before modifiers | Target turn end | Remove one stack after damage |
-| Poison | 10% of target maximum HP | Target turn end | Remove one stack after damage |
+| Poison | 10% of target maximum HP total, regardless of stack count | Target turn end | Remove one duration stack after damage |
 | Bleed | 5% of target maximum HP | Target turn end | Remove one stack after damage |
 
-All stacks contribute to one damage event. Five Burn stacks on a 50-HP target deal 5 base damage, then four stacks deal 4 on the next turn end. No tick at activation start, during polling, discarded movement previews or each Quick Action. Guarding and skipped activations still end a turn and resolve DoTs. Owned temporary units resolve their own end once during their owner's entity phase.
+Burn and Bleed stacks contribute to one damage event. Poison stacks are duration only: five stacks cause five 10%-max-HP base ticks, not a 50% tick. Additional Poison extends duration. Five Burn stacks on a 50-HP target deal 5 base damage, then four stacks deal 4 on the next turn end. No tick at activation start, during polling, discarded movement previews or each Quick Action. Guarding and skipped activations still end a turn and resolve DoTs. Owned temporary units resolve their own end once during their owner's entity phase.
 
 ## Application, resistance and damage
 
@@ -28,8 +28,11 @@ Caltrops apply Bleed/Hobble on placement occupants and actual entry, without imm
 
 Pools retain a layer per application for source metadata. Former per-layer expiry and attack-scaled tick damage no longer determine damage; old nonlayered statuses become one stack unless they explicitly stored a stack count. Old `turns` is not a stack count. Reading battle views normalizes copies, not the saved battle.
 
-Rupturing Blow estimates remaining unmodified damage as per-stack base ? n(n+1)/2 for Poison and Bleed separately. It consumes both pools after a landed hit and cashes out half that potential through current damage modifiers once. It does not assume future exertion or predict future defensive changes.
+Rupturing Blow estimates remaining unmodified Poison damage as 10% max HP times remaining duration stacks. Bleed still uses per-stack base times n(n+1)/2 across its shrinking damage pool. It consumes both pools after a landed hit and cashes out half that potential through current damage modifiers once. It does not assume future exertion or predict future defensive changes.
 
 Aggregate tick credit currently uses the oldest remaining layer's source; individual layer source metadata remains available. Splitting statistical credit between several contributors is future work. Existing battle skill snapshots remain intact; start a fresh battle to test the new three-activation Fireball cooldown.
 
 Validation covers percentage/rounding order, resistance, stack decay, Quick Actions, temporary units, legacy JSON, Barrier, trap entry, shared fire overlap, pure movement previews and Ranger cashout. See the latest history entry for test totals.
+
+
+October 7 correction: Poison is duration stacking, not damage stacking. Its end-turn tick remains 10% maximum HP before the existing incoming modifiers, Barrier and integer rounding. Exactly one duration stack is removed per completed target turn. Application resistance/immunity, ownership, once-per-end resolution and no damage on Poison trap entry remain unchanged. Existing pools retain their counts without save migration. Ranger cashout, previews and descriptions use the corrected linear remaining Poison damage.

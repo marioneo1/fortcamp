@@ -1,8 +1,14 @@
 # Combat controls and targeting
 
+Engineer uses centered Confirm/Cancel for machinery/hazard placement and mounting/
+exit, with legal highlights and prop previews. C/Escape/right-click cancel. Attack
+fires an occupied machine; Overclock leaves the first of two shots in the same
+activation. Mine interruptions truncate committed routes and suppress the pending
+offensive cast. [Full rules](ENGINEER_REWORK_REVIEW.md).
+
 ## October 5: Monk buffs and resistance inspection
 
-See MONK_REWORK_REVIEW.md for the updated kit: capped per-punch exposure, advancement-gated stun, enemy-specific reversal evasion, three-turn hit healing and brief physical parry. Effects reuse existing clocks, feedback and packed icons. Direct damage amplifiers add together; damage-over-time/collision/environmental sources are excluded. Unit inspection now separates individual status resistance, boss control-duration limits and temporary control recovery. Status chance for weapons, abilities, zones and collision stuns shares `combat_conditions.status_chance`; missing percentages do not imply universal boss resistance. Authored per-boss profiles override thematic defaults. Parry excludes magic and area attacks, with a distinct contact label. Fresh battle snapshots use the updated skills.
+See MONK_REWORK_REVIEW.md for the updated kit: capped per-punch exposure, advancement-gated stun, enemy-specific reversal evasion, three-turn hit healing and brief physical parry. Effects reuse existing clocks, feedback and packed icons. Direct damage amplifiers add together; damage-over-time/collision/environmental sources are excluded. Unit inspection groups individual status resistance, boss control-duration limits and push/pull resistance into one Innate resistances buff. Status chance for weapons, abilities, zones and collision stuns shares `combat_conditions.status_chance`; missing percentages do not imply universal boss resistance. Authored per-boss profiles override thematic defaults. Parry excludes magic and area attacks, with a distinct contact label. Fresh battle snapshots use the updated skills.
 
 ## October 5: Monk sequence presentation
 
@@ -473,3 +479,72 @@ Replaced the temporary steel-vector Caltrops with three seeded, pure top-down pa
 Fixed both Battle Lab and normal combat API schemas dropping `knife_skill_id` and Caltrops `rotation`. Knife delivery now reaches the engine for Basic Attack, Cheap Shot and Exploit Weakness. Vertical strips remain vertical after confirmation. Caltrops immediately attempt one Bleed/Hobble stack on occupants of newly placed tiles (including allies); resistance and Trap Expert apply. This triggers only the new strip, marks the current tile, and does not charge an extra entry for standing still. Later committed movement and push/pull continue adding stacks per entered tile.
 
 Validation: 70 focused backend/Battle Lab tests and all 293 frontend tests, frontend build, real Chrome UI checks for Knife confirmation/strip rotation, painted prop display, turret fire/recoil/bolt cleanup and destroyed art. Existing bundle-size warning remains. No production rollout or save reset. Restart the dev server and refresh the browser for the changed request schemas. Art source/import details: docs/art/TACTICAL_PROPS_V1.md via docs/INDEX.md.
+
+
+### October 6: targeting cancellation and occupied AoE cells
+
+Implemented: a stationary right-click in the map cancels targeting/placement and returns to Move without issuing a command. Right-drag still pans (five-pixel gesture threshold); interrupted gestures do not cancel. Rogue confirmation and Mage enchantment prompts also accept right-click cancellation. Playback remains protected against player commands.
+
+Ground-targeted spells use their legal ground-cell preview for occupied targets, rather than the unit-only attack check. A valid occupied cell shows the acting unit's weapon attack cursor. Friendly-fire forecasts use warm red text and explicit You/Ally labels; enemy forecasts retain the ordinary palette.
+
+
+### October 6: movement hazard warnings and painted navigation
+
+Implemented: hovering a reachable destination in Move shows the consequences of its final path from START. Hazardous path cells gain an orange outline; the map overlay separates immediate HP damage from Burn/Bleed/Poison stacks and delayed turn-end damage. The chosen path warning remains when the pointer leaves the map. Discarded positioning previews remain free. Resistant status applications are labelled as attempts/up to a stack count; fatal routes say lethal risk. Forecasts reuse zone eligibility and damage/barrier calculations on an isolated character copy, account for overlapping patches and Trap Expert, and require no hover API calls. This is an entry-hazard estimate, not a prediction of later enemy attacks, reactive survival passives or delayed Meteor/Freeze impacts.
+
+Open/close doorway buttons use distinct painted doors; extraction cells retain a boots-and-threshold EXIT/HOLD marker even when movement path numbers are present. Panning uses a painted four-way compass cursor. Map surfaces, props, blocked ground and interactions use Fortcamp cursors instead of browser arrows/hands. Generated art and exact prompt: [Navigation atlas](../art/COMBAT_NAVIGATION_V1.md).
+
+
+## October 7: inspect units and allow chained control
+
+Right-click a visible ally or enemy to open a persistent, draggable Unit details window. Drag its header; close with its X or Escape while focused. Right-drag still pans, including when begun over a unit. Right-click empty map space still cancels targeting and selects Move. Inspection sends no combat command. The window refreshes from current presentation snapshots, closes if its unit disappears, and is removed when the battle closes. Hidden enemies remain unavailable.
+
+Hover or keyboard-focus HP, ATK, ARM, MOV, RNG, ACC, EVA, INIT and LVL for calculations/explanations. New player battle snapshots retain their actual initial stat ingredients; old battles and authored enemies use their existing battle/profile values without invented origin data. ATK includes Pestilence/Bloodied Strength; skill multipliers and target-dependent mitigation belong to attack forecasts. Evasion is weighted by attack type (ballistic 100%, melee 60%, magic 30%), not an independent dodge roll. Rat overrides ordinary aimed contact chance to 10%.
+
+Armor is flat subtraction: max(1, attack power + bonuses - effective armor after piercing), before outgoing/incoming multipliers and Barrier. Armor Fracture subtracts ceil(30% of armor), without stacking. Armor 10 becomes 7; incoming power 20 becomes 13 before other modifiers. Current magic hits also use armor before magic mitigation. Percentage Burn/Poison/Bleed bypass armor. Do not advertise a fixed armor damage-reduction percentage: it varies with incoming power.
+
+Innate resistance appears under Buffs, combining status application resistance, Burn damage resistance, knockback resistance and boss control-duration limits. Unlisted statuses have no innate resistance. The former blanket active-control exclusion and post-control recovery immunity are removed, including legacy saved immunity flags. Controls can overlap, refresh and be reapplied. Selective authored/racial resistance and boss/chieftain one-target-turn hard-control limits remain. Repeated Frost enchant hits may break and reapply Freeze; Lightning enchant still retains its deliberate once-per-target/application restriction.
+
+October 7 hover refinement: unit summaries stay horizontal and bounded as effects accumulate; effects scroll independently. Hover advertises right-click inspection. A 120ms pointer crossing allowance permits scrolling the temporary card; leaving the card/unit closes it. Full calculations and effect details remain in the draggable inspector.
+
+
+### October 7: independent effect inspection
+
+Right-click an individual status badge on a unit or in the acting-character dock to pin that effect's explanation. Right-clicking its temporary hover or an effect card in Unit details does the same. There is one Effect details window: inspecting another effect updates it, and Unit details stays open. Drag the header to move; close with X or Escape while focused. Right-drag on a map badge continues to pan without opening a window. Inspection sends no command.
+
+Unit details now places stats above a full-width, bounded effect grid. Effect overflow scrolls, with precise duration/stack labels and compact rules; traits/passives can expand below. Hovering individual map badges retains full rules. Existing stat calculation help remains available. No action, damage or resistance rules changed in this refinement.
+
+
+### October 7: command tile consistency
+
+The six primary commands use 88px square tiles, matching the desktop skill tile size, with 72px painted glyphs, consistent four-pixel corners, dark backgrounds, gold frames and selected/focus outlines. Hotkey/name labels sit below each tile. Desktop keeps three columns and two rows at the right of skills with a wider 324px allocation; existing responsive row layouts remain. Disabled commands desaturate. Controls and hotkeys are unchanged. Unit-switch intent and its targeting/right-click bypasses are documented in COMBAT_STATUS_PRESENTATION.md.
+
+
+October 7 current hover behavior: no added unit-switch delay. The cursor-following summary has plain stats and at most three effect rows with an overflow count; its effect column does not scroll. Right-click Unit details retains stat calculation help, all effects and scrolling. Right-click map badges still opens the independent effect inspector.
+
+
+October 7 rendering follow-up: transient unit/status hover is display-only and pointer-transparent, follows the cursor with transform positioning, and closes immediately on leaving its unit/badge. Use right-click on the actual unit or map/dock status badge for persistent details. The old hover-card pointer-crossing allowance is removed. Pinned windows remain draggable and interactive.
+
+### Summoner placement and orders
+
+Summoner skills open a centered map confirmation panel. Bound Companion first asks
+for Fire, Earth or Grass, then an empty tile within two cells. Wisp Swarm selects
+three distinct tiles before one confirmation. C, Escape or right-click cancels
+without spending an action. The corresponding active skill becomes Quick Reclaim.
+
+The numbered Summon Orders skill-bar tile opens a popup for Hold Position, Focus
+Target, Follow Summoner, Stand Down or Clear Order, for one creature or all. Bound
+Companions also offer Protect Ally: select a living ally on the map or from the popup target list, including the
+Summoner, and confirm. Grass heals/supports them; Earth/Fire prioritize their
+threats. No interception is granted. In All summons mode, Protect Ally changes
+only the Companion's order, leaving Wisps unchanged. The skill tile can be
+reordered and does not use an equipped skill slot. Orders persist and cost no
+action. Creatures move and attack autonomously after their owner's activation,
+beginning on the following owner activation after conjuring. They do not receive
+manual turns. Transposition selects two owned bodies (the caster may be one),
+then confirms a swap; it ends normal walking but leaves the main action available.
+See SUMMONER_REWORK_REVIEW.md for lifecycle, creature profiles and AI limitations.
+
+### Engineer/Summoner placement refinement — October 7
+
+Placement windows drag by their header and remember separate positions. E confirms a valid selection; C/Escape/right-click cancels. Turret construction alone uses the Engineer window. Dynamite and mines use ground AoE targeting; mounting and Scuttle highlight owned legal machines; Rapid Assembly targets self. Invalid placement uses the X cursor. Engineer/Summoner battle descriptions are concise single sentences; extended reference text is retained for a later menu. Mines/wrecks now retain their presentation until resolved explosion/defeat events play.

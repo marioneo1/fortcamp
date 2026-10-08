@@ -1,7 +1,12 @@
 """Presentation facts from resolved combat, never a second damage simulation."""
 
 
+from copy import deepcopy
+
+
 def record(battle, unit, kind, amount=0, **details):
+    if kind == 'status':
+        details['statuses_snapshot'] = deepcopy(unit.get('statuses', []))
     battle.setdefault('animation_events', []).append({
         'type': 'combat_feedback', 'unit_id': unit['id'],
         'x': unit['x'], 'y': unit['y'], 'kind': kind,

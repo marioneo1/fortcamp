@@ -281,11 +281,17 @@ class CombatCommandRequest(BaseModel):
     x: int | None = None
     y: int | None = None
     target_id: str | None = None
+    # Cue the Strike uses a second unit target: the allied performer.
+    # Keep it in the API schema so Pydantic does not silently discard it.
+    ally_id: str | None = None
     move_to: CombatApproachPosition | None = None
     position: CombatApproachPosition | None = None
     placement_id: str | None = None
     skill_id: str | None = None
     knife_skill_id: str | None = None
+    positions: list[dict[str, int]] | None = Field(default=None,max_length=3)
+    entity_id: str | None = None
+    order: str | None = None
     element: str | None = None
     rotation: int = Field(default=0, ge=0, le=1)
     item_id: str | None = None

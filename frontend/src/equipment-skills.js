@@ -5,7 +5,7 @@ export function selectBattleSkill(view,id){
   const selected=skills.find(skill=>skill.id===id)||actor.special||skills[0];
   const previews=view.skill_previews?.[selected.id];
   return {...view,units:{...view.units,[actor.id]:{...actor,special:selected}},
-    attack_previews:previews?Object.fromEntries(Object.entries(view.attack_previews||{}).map(([target,actions])=>[target,{...actions,skill:previews[target]??null}])):view.attack_previews};
+    attack_previews:previews?Object.fromEntries([...new Set([...Object.keys(view.attack_previews||{}),...Object.keys(previews)])].map(target=>[target,{...view.attack_previews?.[target],skill:previews[target]??null}])):view.attack_previews};
 }
 export function skillAvailability(actor,skill=actor?.special){
   if(actor?.acted)return {available:false,reason:'Main action already used'};

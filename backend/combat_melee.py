@@ -40,6 +40,7 @@ def weapon_style(weapon):
 def attack_style(attacker, ability=None):
     if ability and ability.get('id') in SKILL_STYLES:
         return SKILL_STYLES[ability['id']]
+    if attacker.get('capture_weapon'):return 'fist'
     return weapon_style(attacker)
 
 
