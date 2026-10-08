@@ -11,3 +11,5 @@ For this launch the user explicitly authorized a full production gameplay reset.
 Validation includes release-profile/initialization tests, combat Job tests, frontend tests/build and an isolated production-config startup/API smoke check with no Discord bot or live saves. Release controls and initial empty storage are verified before final handoff. Balance/aesthetic limitations documented per Job still apply; this preparation does not declare them resolved.
 
 Release builder correction: asset copying overlays the committed public asset directories rather than failing when Git already supplied the destination. A failed preparation restores the previous production checkout; live saves are reset only after preparation and isolated validation succeed.
+
+Dependency check: patched transitive source-map-js from 1.2.1 to 1.2.2 for GHSA-68fv-2mgg-jv7q. npm reports zero vulnerabilities after the lockfile update; all 379 frontend tests pass.
