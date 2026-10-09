@@ -3,20 +3,29 @@
 Updated October 8, 2026. Read this at session start and when the user pivots.
 This is a concise checkpoint, not a substitute for system documents or backlog.
 
-## Active: dev and production publication
+## Complete: dev and production publication
 
 - User authorized pushing current dev and production; preserve production saves.
 - Production port 5173 is stopped. Release builder retains credentials, backs up
   SQLite and uses release flags; QA tools/tests/drafts excluded.
 - Name uploads remain drafts, not installed runtime content.
+- Published main and release code commit 84c2bfd, production version
+  0.3.1-prod.20261008.221602. Production prepared but left stopped.
+- 71 focused + 370 Job/profile + 178 navigation/mission backend test runs and
+  411 frontend tests passed. Isolated release startup/API smoke passed; debug
+  labs and force-refresh return 404 even for an admin.
+- Verified all 1,517 runtime assets match dev, production credentials unchanged,
+  database logical contents equal pre-update backup.
+- Backup: fortcamp-release-data/backups/before-prod-update-20261008-221605-014751.db.
+  Prior checkout: fortcamp-backups/prod-20261008-221605-014751.
 - Validation/publication results recorded in RELEASE_PREPARATION.md.
 
-## Active: starting race eligibility - implemented in dev
+## Complete: starting race eligibility - included in release
 
 - Previous creator/API allowed 41 races, including Secret Werewolf.
 - Approved 14 starting choices enforced by creator and API; full 42-race
   content catalogue and existing saves retained. Five onboarding tests, creator
-  test and frontend build pass. Production unchanged; restart dev backend
+  test and frontend build pass. Included in October 8 release; restart dev backend
   when reload is off. See design/STARTING_RACE_AUDIT.md.
 - User has supplied seven race_names JSON files in content/drafts/names;
   ingestion/validation is pending, not cancelled by the race-selection audit.

@@ -32,3 +32,18 @@ all Job/release-profile regression checks and final checkout verification follow
 
 Additional prepublication validation: 370 Job/release-profile tests passed.
 Staged source scan found no credential literals or database/private-key files.
+
+Publication complete: code commit `84c2bfd` pushed to main/release; immutable
+tag `v0.3.1-prod.20261008.221602` published. Production checkout prepared
+at the normal fortcamp-prod path, left stopped for its normal launcher.
+178 additional navigation/mission tests passed. Final isolated release startup
+and API smoke verified the built frontend, full 42-race content catalogue, 14
+creator choices, and 404 responses for Battle/Portrait/Wall Labs and debug
+mission refresh even with an authenticated-admin fixture. The fixture used
+a temporary database with the Discord bot disabled; no real messages sent.
+
+All 1,517 runtime media files match dev by SHA-256. Production credentials
+match the archived preceding checkout, and SQLite logical contents exactly
+match the pre-update backup. Backup: fortcamp-release-data/backups/
+before-prod-update-20261008-221605-014751.db. Prior checkout:
+fortcamp-backups/prod-20261008-221605-014751. No save reset occurred.
