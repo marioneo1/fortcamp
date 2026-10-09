@@ -1,5 +1,9 @@
 # Jobs and character loadouts
 
+Current short roster: [Classes at a glance](CLASSES_AT_A_GLANCE.md). As of October
+8, there are 12 selectable Jobs, 97 Job skills and one extra Road Bola definition.
+Historical counts below belong to earlier implementation passes.
+
 Implemented Engineer rework: [Engineer review](ENGINEER_REWORK_REVIEW.md) documents
 eight actives, construction/slots instead of Components, mounting, Overclock,
 mines/Dynamite and idempotent migration. Starter has three active choices; normal

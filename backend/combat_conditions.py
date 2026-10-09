@@ -7,7 +7,7 @@ from . import combat_dots as dots
 CONTROL = {'stun', 'sleep', 'freeze', 'paralyze'}
 RECOVERY = CONTROL | {'bind'}
 
-STATUS_IDS = {'stun','sleep','freeze','paralyze','bind','poison','burn','bleed','blind','fear','slow','mute','hobbled','pestilence','wet','blister','disarm'}
+STATUS_IDS = {'rat_weakness','stun','sleep','freeze','paralyze','bind','poison','burn','bleed','blind','fear','slow','mute','hobbled','pestilence','wet','blister','disarm'}
 
 def innate_resistances(unit):
     # Selective authored identities, never a blanket boss debuff resistance.
@@ -124,6 +124,11 @@ def finish_activation(unit):
         if unit.get('status_finished_stamp')==stamp:return
         unit['status_finished_stamp']=deepcopy(stamp)
     for status in list(unit.get('statuses', [])):
+        if status.get('id')=='rat_weakness':
+            status['stacks']=max(0,status.get('stacks',1)-1)
+            status['turns']=status['stacks']
+            if not status['stacks']:remove(unit,'rat_weakness')
+            continue
         if status.get('id') in dots.PERCENT:
             dots.normalize(status)
             if status['layers']:status['layers'].pop(0)
@@ -181,12 +186,12 @@ def mark_bonus(attacker,target):
 
 def hostile_units(battle, unit, living):
     others = [u for u in living if u['id'] != unit['id']]
-    if has(unit, 'berserk') or unit.get('mercenary_hostile_all'):
+    if has(unit, 'berserk') or unit.get('mercenary_hostile_all') or unit.get('wildlife_hostile_all'):
         return others
     charm = next((s for s in unit.get('statuses', []) if s.get('id') == 'charm'), None)
     source = battle['units'].get(charm.get('source_id')) if charm else None
     team = source.get('team', unit['team']) if source else unit['team']
-    return [u for u in others if u['team'] != team or u.get('mercenary_hostile_all')]
+    return [u for u in others if u['team'] != team or u.get('mercenary_hostile_all') or u.get('wildlife_hostile_all')]
 
 def confused_target(battle, attacker, target, in_range):
     if not has(attacker, 'confuse'):

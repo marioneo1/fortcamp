@@ -18,7 +18,7 @@ from .appearance import has_appearance, sanitize_appearance, tagged_appearance
 from .perk_effects import modifiers
 from .mission_loot import roll_item_pool
 from .economy import initialize as initialize_economy, settle as settle_economy, public_economy, earn_relationship, practice
-from .races import RACE_CATALOG, RACE_FAMILIES, RACE_GAMEPLAY, REGIONAL_RECRUIT_TABLES, race_families, race_mission_bonus, generated_genders
+from .races import RACE_CATALOG, RACE_FAMILIES, RACE_GAMEPLAY, REGIONAL_RECRUIT_TABLES, STARTING_RACES, race_families, race_mission_bonus, generated_genders
 
 from .outcome_balance import CRITICAL_SOFT_CAPS, CRITICAL_STAT_LIMITS, classify_roll, outcome_probabilities
 
@@ -144,6 +144,7 @@ def public_content() -> dict[str, Any]:
         "races": {
             race: {
                 "rarity": details[0], "discovery": details[1],
+                "starting_selectable": race in STARTING_RACES,
                 "family": (RACE_FAMILIES.get(race) or (None,))[0],
                 "families": list(RACE_FAMILIES.get(race, ())),
                 "gameplay": RACE_GAMEPLAY.get(race, RACE_GAMEPLAY["Human"]),

@@ -35,13 +35,14 @@ function children(parent,fresh){
   }
   for(const node of old)if(!used.has(node)&&!node.hasAttribute?.('data-live-overlay'))node.remove();
 }
-export function patchLiveHTML(root,html){
+export function patchLiveHTML(root,html,transform){
   const previous=rendered.get(root);
-  if(previous?.html===html&&previous.first===root.firstChild)return;
+  if(previous?.html===html&&previous.transform===transform&&previous.first===root.firstChild)return;
   const template=root.ownerDocument.createElement('template');template.innerHTML=html;
+  transform?.(template.content);
   children(root,template.content);
   root.dispatchEvent(new CustomEvent('portrait-framing-update',{bubbles:true}));
-  rendered.set(root,{html,first:root.firstChild});
+  rendered.set(root,{html,transform,first:root.firstChild});
 }
 export function captureMovingPositions(field){
   const positions=new Map();

@@ -15,3 +15,20 @@ Release builder correction: asset copying overlays the committed public asset di
 Dependency check: patched transitive source-map-js from 1.2.1 to 1.2.2 for GHSA-68fv-2mgg-jv7q. npm reports zero vulnerabilities after the lockfile update; all 379 frontend tests pass.
 
 Final checkout audit also excludes performance QA, preview servers and portrait-authoring launchers/tools, alongside browser QA and source test files. Production keeps its runtime and tunnel/setup launchers.
+
+## October 8 update
+
+User authorized publishing current dev/main and production/release. Production
+saves and credentials are preserved; this update does not repeat the launch wipe.
+Includes mobile/floating HUD, command/extraction fixes, targeting/navigation fixes,
+E-rank encounter variations and wildlife, animal audio/portraits, field gear and
+the approved 14-race character creator. Name uploads and character-story drafts
+remain authoring inputs, not installed gameplay. Release sparse checkout now
+also excludes docs/content/drafts. Debug tools remain guarded and hidden through
+release configuration.
+
+71 focused backend tests and 411 frontend tests passed before release preparation;
+all Job/release-profile regression checks and final checkout verification follow.
+
+Additional prepublication validation: 370 Job/release-profile tests passed.
+Staged source scan found no credential literals or database/private-key files.

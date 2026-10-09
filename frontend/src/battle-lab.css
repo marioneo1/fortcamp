@@ -11,3 +11,28 @@
 .lab-team-source{display:block;margin:18px 0 12px}.lab-job-party{border:1px solid #536046;border-radius:10px;padding:12px}.lab-job-party>p{font-size:12px;color:#bac5b2;line-height:1.5;margin-top:0}.lab-job-party legend{color:#d7c38c;padding:0 6px}.lab-job-tester{background:#101a13;border:1px solid #52604488;border-radius:10px;padding:12px;margin-bottom:12px}.lab-job-controls{display:flex;align-items:end;gap:10px}.lab-job-controls label{flex:1;min-width:0}.lab-job-controls button{height:40px}.lab-job-skills{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:8px}.lab-job-skills label{display:flex;gap:8px;align-items:start;padding:8px;background:#222e22;border-radius:7px;cursor:pointer}.lab-job-skills small{display:block;color:#aab9a2;font-size:11px;line-height:1.4;margin-top:3px}.lab-job-skills label:has(input:disabled){opacity:.55}.lab-job-party[hidden],.lab-party[hidden]{display:none}@media(max-width:760px){.lab-job-skills{grid-template-columns:1fr}.lab-job-controls{flex-wrap:wrap}.lab-job-controls label{flex-basis:40%}}
 
 .lab-test-weapon{display:flex;flex-direction:column;gap:6px;margin:12px 0}.lab-test-weapon select{width:100%;min-width:0}.lab-test-weapon small{font-size:12px;color:#b8c5af;line-height:1.4}
+
+/* Touch setup uses one scrollable column; desktop setup stays unchanged. */
+@media(max-width:1100px) and (hover:none) and (pointer:coarse){
+ .battle-lab{width:calc(100vw - env(safe-area-inset-left) - env(safe-area-inset-right));max-width:100vw;height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom));max-height:100dvh;border-radius:0;box-sizing:border-box}
+ .battle-lab :is(.lab-header,.lab-notice,.lab-filters){flex-shrink:0}
+ .battle-lab .lab-header{padding:8px 12px;align-items:center}
+ .battle-lab .lab-header h2{font-size:20px;margin:0}
+ .battle-lab .lab-header p,.battle-lab .lab-header .eyebrow{display:none}
+ .battle-lab .lab-header button{width:44px;height:44px}
+ .battle-lab .lab-notice{padding:6px 12px;font-size:11px}
+ .battle-lab .lab-filters{padding:8px 12px;gap:8px;grid-template-columns:1fr 64px 1fr}
+ .battle-lab .lab-filters label:last-child{grid-column:auto}
+ .battle-lab .lab-workspace{display:block;overflow:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch}
+ .battle-lab .lab-list{max-height:124px;border-right:0;border-bottom:1px solid #536046;padding:6px}
+ .battle-lab .lab-list>small{padding:0 6px 4px}
+ .battle-lab .lab-details{overflow:visible;min-width:0;padding:12px}
+ .battle-lab :is(fieldset,.lab-job-tester,.lab-job-controls,label){min-width:0;box-sizing:border-box}
+ .battle-lab :is(select,input:not([type=checkbox])){font-size:16px;max-width:100%;box-sizing:border-box}
+ .battle-lab .lab-job-controls{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+ .battle-lab .lab-job-controls button{grid-column:1/-1;min-height:40px}
+ .battle-lab .lab-job-skills,.battle-lab .lab-settings{grid-template-columns:1fr}
+ .battle-lab>.lab-footer{padding:8px 12px;gap:4px}
+ .battle-lab>.lab-footer small{font-size:11px}
+ .battle-lab>.lab-footer button{min-height:44px;padding:8px 12px}
+}

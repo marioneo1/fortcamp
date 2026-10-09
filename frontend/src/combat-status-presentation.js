@@ -21,6 +21,7 @@ const META={
  fear:['debuff','bard:discord',4],panic:['debuff','bard:discord',4],charm:['debuff','bard:refrain',4],
  confuse:['debuff','captor:dust',4],berserk:['debuff','barbarian:stand',4],mute:['debuff','bard:silence',4],
  blind:['debuff','captor:dust',5],poison:['debuff','ranger:poison_attack',6],burn:['debuff','mage:fireball',6],
+ rat_weakness:['debuff','rogue:exploit_weakness',6],rat_swarm:['buff','druid:rat',12],
  bleed:['debuff','rogue:caltrops',6],hobbled:['debuff','rogue:crippling_cut',7],slow:['debuff','mage:binding',7],
  armor_fracture:['debuff','barbarian:expose',8],vulnerable:['debuff','barbarian:expose',8],
  mark:['debuff','ranger:mark_quarry',8],pit_trapped:['debuff','captor:bind',3],
@@ -57,6 +58,8 @@ function details(status,definitions){return statusDetails(status,{guard:guardDef
 export function statusCardNotes(s,definitions={}){
  if(s.id==='summon_order')return ['Persistent order; acts automatically after its owner.'];
  if(s.id==='summon_overload')return [`${s.turns} owner turns until automatic death.`];
+ if(s.id==='rat_weakness')return [`${s.stacks||1} stacks: -${Math.min(30,5*(s.stacks||1))}% damage dealt; +${Math.min(30,5*(s.stacks||1))}% damage taken; lose one stack at turn end.`];
+ if(s.id==='rat_swarm')return [`${s.stacks||1} rats; HP and attack combined; ${s.stacks||1} Weakness stacks per landed bite.`];
  const d=details(s,definitions),source=s.source_name?[`From ${s.source_name}`]:[];
  if(s.id==='innate_resistance')return ['Always active; unlisted debuffs have no innate resistance.'];
  if(['poison','burn','bleed'].includes(s.id))return [...d.details.slice(0,1),...source];
@@ -81,11 +84,8 @@ export function mapStatusMarkup(unit,definitions,escape){
  return `<span class="status-row readable-statuses">${statuses.map(s=>statusBadge(s,definitions,escape,{unitId:unit.id,compact:true})).join('')}</span>`;
 }
 export function statusTrayMarkup(unit,definitions,escape){
- const statuses=visibleStatuses(unit);if(!statuses.length)return '';
- return `<section class="combat-status-tray" aria-label="Acting character effects">${['buff','debuff','other'].map(kind=>{
-  const rows=statuses.filter(s=>statusVisual(s).kind===kind);if(!rows.length)return '';
-  return `<div class="status-group status-${kind}"><b>${kind==='buff'?'Buffs':kind==='debuff'?'Debuffs':'Other effects'}</b><div>${rows.map(s=>statusBadge(s,definitions,escape,{unitId:unit.id})).join('')}</div></div>`;
- }).join('')}</section>`;
+ const statuses=visibleStatuses(unit);
+ return `<section class="combat-status-tray" aria-label="Acting character buffs, debuffs and other effects"><b class="status-tray-heading">Effects</b><div class="status-tray-icons">${statuses.slice(0,24).map(s=>statusBadge(s,definitions,escape,{unitId:unit.id})).join('')}${statuses.length?'':'<span class="effects-empty">No active effects</span>'}</div><button class="effects-overflow" data-all-effects data-effect-count="${statuses.length}">${statuses.length>24?`+${statuses.length-24} more`:'All effects'}</button></section>`;
 }
 export function statusListMarkup(unit,definitions,escape,{compact=false,cards=false,limit=Infinity}={}){
  const all=visibleStatuses(unit);if(!all.length)return '<p>No active status effects.</p>';

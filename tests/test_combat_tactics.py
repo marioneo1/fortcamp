@@ -12,6 +12,22 @@ from backend.combat import (_deal_damage, _current_unit, _perform_attack, _resol
 class TacticalFoundationTests(unittest.TestCase):
     def fixture(self):return ability_tests.AbilityFoundationTests().fixture()
 
+    def test_leave_action_hidden_away_from_exit_disabled_during_hold_then_usable(self):
+        b,a,_=self.fixture()
+        b['extraction']={'name':'Western exit','tiles':[{'x':1,'y':2}]}
+        self.assertFalse(any(entry['command']['action']=='leave' for entry in _context_actions(b,a)))
+        a.update(x=1,y=2,exit_ready=False)
+        entry=next(entry for entry in _context_actions(b,a) if entry['command']['action']=='leave')
+        self.assertFalse(entry['available'])
+        with self.assertRaisesRegex(ValueError,'Hold this exit'):
+            apply_player_command(b,entry['command'])
+        a['exit_ready']=True
+        entry=next(entry for entry in _context_actions(b,a) if entry['command']['action']=='leave')
+        self.assertTrue(entry['available'])
+        with patch('backend.combat._advance_to_player'):
+            apply_player_command(b,entry['command'])
+        self.assertTrue(a['extracted'])
+
     def effect_skill(self,actor,effects,target='enemy'):
         return {**deepcopy(actor['skills'][0]),'id':'test-tactic','range':4,'target':target,
             'effects':effects,'cost':{'cooldown':2,'charges':None},'elevation_rule':'physical_care' if target=='ally' else 'melee'}
@@ -176,7 +192,8 @@ class TacticalFoundationTests(unittest.TestCase):
 
     def test_barrier_does_not_block_capture_checks(self):
         b,a,t=ability_tests.AbilityFoundationTests().fixture('captor');conditions.barrier(t,200,1,a)
+        t['resolve']=1
         from backend.combat import _capture_attempt
-        with patch('backend.combat.random.Random') as rng:
-            rng.return_value.randint.return_value=1;_capture_attempt(b,a,t)
+        with patch('backend.combat_captor.roll',return_value=0):
+            _capture_attempt(b,a,t)
         self.assertEqual(t['condition'],'unconscious');self.assertTrue(t['alive'])

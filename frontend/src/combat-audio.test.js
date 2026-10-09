@@ -106,3 +106,43 @@ test('melee family and chain swings remain quieter than their contact, including
  const cues=combatAudioSchedule({},[{type:'sound',cues:[{name:'melee_swing',offset:45},{name:'structure_hit',offset:185}]}]).cues;
  assert.equal(cues[0].volume,.12);assert.equal(cues[1].volume,.55);
 });
+
+const animalBattle={round:1,units:{rat:{species_profile:'store_rat'},wolf:{species_profile:'fence_wolf'},human:{}}};
+test('bear claws retain flesh contact but its voice and death are animal cues',()=>{
+ const b={units:{bear:{species_profile:'foraging_bear'}}};
+ const cues=combatAudioSchedule(b,[{type:'melee_attack',attacker_id:'bear',target_id:'human',melee_style:'slash',impact_surface:'flesh',hit:true,attack_packet:1},{type:'death_burst',unit_id:'bear',attack_packet:2}]).cues;
+ assert.ok(cues.some(c=>c.name.startsWith('bear_attack_')));
+ assert.ok(cues.some(c=>c.name==='melee_slash_flesh'));
+ assert.ok(cues.some(c=>c.name.startsWith('bear_death_')));
+ assert.ok(!cues.some(c=>c.name==='unit_death'||c.name.startsWith('bear_bite')));
+});
+test('three-rat swarm has three timed bite contacts and no weapon swing',()=>{
+ const cues=combatAudioSchedule(animalBattle,[{type:'melee_attack',attacker_id:'rat',target_id:'human',bite_count:3,contact_ms:460,attack_duration:540,hit:true}]).cues;
+ assert.deepEqual(cues.filter(c=>c.name.startsWith('rat_bite')).map(c=>c.delay),[100,280,460]);
+ assert.ok(cues.some(c=>c.name.startsWith('rat_attack')));
+ assert.ok(!cues.some(c=>c.name.startsWith('melee_')));
+});
+test('missed animal bite has effort but no flesh contact or hurt cry',()=>{
+ const cues=combatAudioSchedule(animalBattle,[{type:'melee_attack',attacker_id:'wolf',target_id:'rat',hit:false}]).cues;
+ assert.ok(cues.some(c=>c.name.startsWith('wolf_attack')));
+ assert.ok(!cues.some(c=>c.name.includes('_bite_')||c.name.includes('_hurt_')));
+});
+test('final dead state never schedules death until its resolved death event',()=>{
+ const battle={units:{rat:{species_profile:'store_rat',condition:'dead',alive:false}}};
+ const events=[{type:'melee_attack',attacker_id:'human',target_id:'rat',hit:true,attack_packet:2},{type:'combat_feedback',unit_id:'rat',kind:'physical',amount:6,attack_packet:2},{type:'death_burst',unit_id:'rat',attack_packet:2}];
+ const cues=combatAudioSchedule(battle,events).cues;
+ const deaths=cues.filter(c=>c.name.startsWith('rat_death'));
+ assert.equal(deaths.length,1);assert.ok(deaths[0].delay>185);
+ assert.ok(!cues.some(c=>c.name==='unit_death'||c.name.startsWith('rat_hurt')));
+ assert.ok(!combatAudioSchedule(battle,[]).cues.length);
+});
+test('animal hurt cry follows actual damage, not zero damage or status application',()=>{
+ const events=[{type:'combat_feedback',unit_id:'wolf',kind:'physical',amount:3},{type:'combat_feedback',unit_id:'wolf',kind:'physical',amount:0},{type:'combat_feedback',unit_id:'wolf',kind:'status',status_id:'hobble'}];
+ const cues=combatAudioSchedule(animalBattle,events).cues;
+ assert.equal(cues.filter(c=>c.name.startsWith('wolf_hurt')).length,1);
+});
+test('rat merge uses gathering audio and variations change across activations',()=>{
+ const events=[{type:'rat_merge',unit_id:'rat',target_id:'rat2'}];
+ const variants=[1,2,3].map(round=>combatAudioSchedule({...animalBattle,round},events).cues[0].name);
+ assert.equal(new Set(variants).size,3);assert.ok(variants.every(n=>n.startsWith('rat_swarm')));
+});

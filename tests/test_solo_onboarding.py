@@ -40,7 +40,14 @@ class SoloOnboardingTests(unittest.TestCase):
         with self.assertRaisesRegex(ValueError,'missions'):camp_action(state,'hire',archetype='builder')
         self.assertEqual(state['characters'],before);self.assertEqual(state['resources']['gold'],100)
 
-    def test_creation_rejects_unknown_and_limited_races(self):
-        self.assertEqual(CharacterCreate(race='Goblin').race,'Goblin')
-        for race in ('Invented race','Celestial'):
+    def test_creation_allows_only_starting_races_without_removing_discovery_content(self):
+        from backend.game import public_content
+        from backend.races import RACE_CATALOG, STARTING_RACES
+        content = public_content()['races']
+        self.assertEqual(len(STARTING_RACES), 14)
+        self.assertEqual(set(content), set(RACE_CATALOG))
+        self.assertEqual({race for race, profile in content.items() if profile['starting_selectable']}, STARTING_RACES)
+        for race in STARTING_RACES:
+            self.assertEqual(CharacterCreate(race=race).race, race)
+        for race in (set(RACE_CATALOG) - STARTING_RACES) | {'Invented race'}:
             with self.assertRaises(ValueError):CharacterCreate(race=race)

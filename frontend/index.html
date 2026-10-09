@@ -1,6 +1,6 @@
 <!doctype html>
 <html lang="en">
-<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0"/><title>Fortcamp</title><style>/* Hide inactive screens before the main stylesheet arrives. */.hidden{display:none!important}html{background:#0d1017;color:#e8e4db}body{margin:0}</style></head>
+<head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width,initial-scale=1.0,viewport-fit=cover"/><title>Fortcamp</title><style>/* Hide inactive screens before the main stylesheet arrives. */.hidden{display:none!important}html{background:#0d1017;color:#e8e4db}body{margin:0}</style></head>
 <body>
 <div id="toast" class="toast"></div>
 <div id="loading" class="center-card"><h1>Fortcamp</h1><p id="loading-text">Connecting…</p></div>
@@ -61,7 +61,7 @@
   </section>
   <section id="tab-roster" class="tab-panel hidden"><nav class="workspace-nav" aria-label="Roster sections"><button data-roster-view="characters">Characters</button><button data-roster-view="inventory">Inventory</button><button data-roster-view="collections">Collections</button><button data-open-prison>Prisoners <span data-prison-count>0</span><span aria-hidden="true"> &rarr;</span></button></nav><div class="roster-layout"><div class="roster-browser"><div id="roster-list" class="roster-list"></div></div><div id="character-detail" class="detail-panel panel"></div></div><div id="roster-inventory" hidden></div><div id="roster-collections" class="roster-collections" hidden></div></section>
 </main>
-<div id="mission-modal" class="modal hidden"><div class="modal-card"><button class="modal-close" id="mission-close">×</button><div id="mission-detail"></div></div></div>
+<div id="mission-modal" class="modal hidden"><div class="modal-card"><button class="modal-close" id="mission-close" aria-label="Close battle view" title="Close battle view">×</button><div id="mission-detail"></div></div></div>
 <div id="portrait-lightbox" class="portrait-lightbox hidden" aria-modal="true" role="dialog"><button id="portrait-lightbox-close" aria-label="Close portrait">×</button><figure><img id="portrait-lightbox-image" alt=""><figcaption id="portrait-lightbox-name"></figcaption></figure></div>
 <dialog id="sound-settings-modal" aria-labelledby="audio-settings-title"><button id="sound-settings-close" class="modal-close" aria-label="Close sound settings">×</button><div id="sound-settings-content"></div></dialog>
 <script type="module" src="/src/main.js?v=20260930-guild-board-v1"></script>

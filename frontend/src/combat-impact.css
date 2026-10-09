@@ -11,3 +11,8 @@
 .combat-feedback-layer{position:absolute;inset:0;z-index:100;pointer-events:none;overflow:visible;isolation:isolate}.combat-feedback-layer .combat-float{z-index:3}.combat-feedback-layer .painted-hit-sprite{z-index:1}.combat-feedback-layer .combat-impact-particle{z-index:2}
 
 .combat-feedback-layer .combat-float{transition:margin-left .08s ease-out}
+
+.combat-float.combat-dialogue{background:#111c16ed;border:1px solid #ad956166;border-radius:8px;padding:6px 9px;white-space:normal;text-shadow:0 1px 2px #000;z-index:6}.combat-dialogue small{font-size:12px;line-height:1.3}.combat-dialogue b{display:none}
+
+/* Independent wildlife can attack both sides. */
+.battle-token.independent-wildlife { --team-color: #d6ac61; border-color: #d6ac61; }

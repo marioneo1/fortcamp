@@ -148,3 +148,13 @@ test('a pulled enemy cannot start its own attack until both collision rebounds f
  assert.ok(attack.start>=collision.start+collision.duration+100);
  assert.ok(attack.start>=rows[1].start+rows[1].duration);
 });
+
+
+test('rat merging keeps the departing body until the merge and blocks subsequent motion',()=>{
+ const events=[{type:'movement',unit_id:'rat',points:[{x:1,y:1},{x:2,y:1}]},
+ {type:'rat_merge',unit_id:'rat',target_id:'swarm',unit_snapshot:{id:'rat',alive:true,hp:5}},
+ {type:'melee_attack',attacker_id:'wolf',attack_packet:2}];
+ const rows=impactTimeline(events);
+ assert.ok(rows[1].start>=rows[0].start+rows[0].duration);
+ assert.ok(rows[2].start>=rows[1].start+400);
+});

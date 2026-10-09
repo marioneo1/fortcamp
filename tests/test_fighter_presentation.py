@@ -349,11 +349,13 @@ class FighterPresentationTests(unittest.TestCase):
         self.assertEqual((a['x'],a['y']),(5,3));self.assertTrue(a['acted'])
         self.assertEqual(len([e for e in b['animation_events'] if e.get('leap')]),1)
 
-    def test_capture_weapon_blocks_leap_and_hook_but_not_rally(self):
+    def test_capture_weapon_keeps_fighter_job_techniques_available(self):
         from backend.combat_abilities import availability
-        b,a,t=self.fixture();a['capture_weapon']=True
-        self.assertFalse(availability(a,self.skill('pull'))['available'])
-        self.assertFalse(availability(a,self.skill('cover'))['available'])
+        b,a,t=self.fixture();a['capture_weapon']={'range':1,'elevation_rule':'melee'}
+        # Capture equipment adds Subdue; it does not replace lethal combat or
+        # remove the Fighter's body/chain-based Job techniques.
+        self.assertTrue(availability(a,self.skill('pull'))['available'])
+        self.assertTrue(availability(a,self.skill('cover'))['available'])
         self.assertTrue(availability(a,self.skill('rally'))['available'])
 
     def test_auto_can_choose_a_real_leap_instead_of_attacking_a_ground_proxy(self):

@@ -1310,3 +1310,5 @@ for _id,_art in {'chipped_sword':'knight_blade','splintered_shield':'ironcap_buc
     ITEMS[_id]['icon']=f'/assets/catalogue/items/{_art}.png'
 from .starter_equipment import apply_starter_content
 apply_starter_content(ITEMS)
+from .field_gear import apply as apply_field_gear
+apply_field_gear(ITEMS, GENERAL_LOOT_TABLE)

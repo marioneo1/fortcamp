@@ -15,6 +15,54 @@ class PlayerNavigationTests(unittest.TestCase):
     def navigate(self,b,x,y):
         with patch('backend.combat._advance_to_player'):
             return apply_player_command(b,{'action':'navigate','x':x,'y':y})
+    def test_door_intent_chooses_near_side_from_inside_and_outside(self):
+        for position,expected in (((1,2),(2,2)),((5,2),(4,2))):
+            b,a=self.fixture(position)
+            b['terrain'][-1]['rotation']=90
+            with patch('backend.combat._advance_to_player'):
+                view=apply_player_command(b,{'action':'navigate','gate_id':'door','x':2,'y':2})
+            self.assertEqual((a['x'],a['y']),expected)
+            self.assertFalse(a.get('acted',False))
+            self.assertEqual(b['terrain'][-1]['state'],'closed')
+    def test_one_click_approaches_and_operates_from_either_side(self):
+        for position in ((1,2),(5,2)):
+            for opened in (False,True):
+                b,a=self.fixture(position);gate=b['terrain'][-1]
+                gate.update(rotation=90,state='opened' if opened else 'closed',blocking=not opened)
+                with patch('backend.combat._advance_to_player'):
+                    apply_player_command(b,{'action':'navigate','gate_id':'door','x':2,'y':2,
+                        'operate_gate':True,'gate_operation':'Close' if opened else 'Open'})
+                self.assertEqual(gate['state'],'closed' if opened else 'opened')
+                self.assertTrue(a['acted'])
+                kinds=[e['type'] for e in b['animation_events']]
+                self.assertIn('movement',kinds)
+
+    def test_short_movement_does_not_operate_a_distant_door(self):
+        b,a=self.fixture((0,2),1);gate=b['terrain'][-1];gate['rotation']=90
+        apply_player_command(b,{'action':'navigate','gate_id':'door','x':2,'y':2,'operate_gate':True,'gate_operation':'Open'})
+        self.assertEqual((a['x'],a['y']),(1,2))
+        self.assertEqual(gate['state'],'closed');self.assertFalse(a['acted'])
+
+    def test_combined_position_operates_without_a_second_request(self):
+        b,a=self.fixture((1,2));gate=b['terrain'][-1];gate['rotation']=90
+        with patch('backend.combat._advance_to_player'):
+            apply_player_command(b,{'action':'navigate','gate_id':'door','x':2,'y':2,'position':{'x':2,'y':2},'operate_gate':True,'gate_operation':'Open'})
+        self.assertEqual(gate['state'],'opened');self.assertTrue(a['acted'])
+
+    def test_hazard_interruption_prevents_automatic_operation(self):
+        b,a=self.fixture((1,2));gate=b['terrain'][-1];gate['rotation']=90
+        def interrupted(*args):a['engineer_interrupted']=True
+        with patch('backend.combat._commit_player_movement',side_effect=interrupted):
+            apply_player_command(b,{'action':'navigate','gate_id':'door','x':2,'y':2,
+                'operate_gate':True,'gate_operation':'Open'})
+        self.assertEqual(gate['state'],'closed');self.assertFalse(a['acted'])
+
+    def test_stale_open_intent_never_closes_an_already_opened_door(self):
+        b,a=self.fixture((2,2));gate=b['terrain'][-1]
+        gate.update(rotation=90,state='opened',blocking=False)
+        apply_player_command(b,{'action':'navigate','gate_id':'door','x':2,'y':2,
+            'operate_gate':True,'gate_operation':'Open'})
+        self.assertEqual(gate['state'],'opened');self.assertFalse(a['acted'])
     def test_equal_distance_prefers_open_entrance_without_opening_door(self):
         b,a=self.fixture();view=self.navigate(b,5,3)
         self.assertEqual((a['x'],a['y']),(5,3))

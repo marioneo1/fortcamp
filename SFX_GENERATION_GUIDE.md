@@ -343,3 +343,55 @@ Selected from target material, not armor points. Cutting, piercing and crushing 
 `tools/generate_engineer_impact_sfx.py` generates one retained ElevenLabs clip, `engineer_bolt_explosion.wav`: wooden bolt contact followed by a low black-powder boom and short debris decay, no music, voices, whistle, ringing or magic. Prompt, originals and technical metrics live in `staging-sfx/engineer-impact-v2`; reused on subsequent runs. Heavy contact anchors this cue and the cross explosion.
 
 Rapid Assembly: `engineer_rapid_assembly.wav`, 0.9-second mechanical ratchet/tool/latch ready cue with no magic or ringing; original and metrics under `staging-sfx/engineer-preparation-v1`. Existing generator retains originals to prevent repeated billing.
+
+
+## Animal combat pack
+
+> Isolated organic animal game sound, dry close microphone, no music, no speech, no metal, no reverb tail. Immediate onset, one short event, clean quiet ending.
+
+| File | Duration | Prompt |
+|---|---|---|
+| `rat_attack_1.wav` | 0.7 s | Brown rat aggressive short chitter and breathy squeak before a bite, restrained pitch. |
+| `rat_attack_2.wav` | 0.7 s | Brown rat quick raspy defensive chirrup and snort, compact attack effort. |
+| `rat_attack_3.wav` | 0.7 s | Brown rat low coarse chatter with one short squeak, lunging attack effort. |
+| `rat_bite_1.wav` | 0.7 s | Small incisors sink into flesh, soft wet puncture and tiny jaw snap, no crunching metal. |
+| `rat_bite_2.wav` | 0.7 s | Small rat bite contact, damp sharp nip and brief skin tear, not a sword. |
+| `rat_bite_3.wav` | 0.7 s | Rat incisors biting, short fleshy pinch and subtle jaw crunch, compact impact. |
+| `rat_hurt_1.wav` | 0.7 s | Brown rat clipped startled squeak on being struck, no prolonged shrill whistle. |
+| `rat_hurt_2.wav` | 0.7 s | Brown rat rough short pain chitter and gasp. |
+| `rat_hurt_3.wav` | 0.7 s | Brown rat brief breathy distressed squeal on impact, subdued high end. |
+| `rat_death_1.wav` | 1.2 s | Brown rat soft fading squeak and final exhale, short natural death vocal. |
+| `rat_death_2.wav` | 1.2 s | Brown rat low rasping dying chitter tapering to silence. |
+| `rat_death_3.wav` | 1.2 s | Brown rat last broken squeak and breath release, no melodrama. |
+| `rat_swarm_1.wav` | 1.2 s | Three rats scurrying together, tiny claws and layered low rat chitters, quick gathering. |
+| `rat_swarm_2.wav` | 1.2 s | Three rats regroup, close quick claw patter and overlapping short squeaks. |
+| `rat_swarm_3.wav` | 1.2 s | Small rat group clusters, fur rustle, tiny footsteps and coarse social chatter. |
+| `wolf_attack_1.wav` | 0.7 s | Wolf short throaty growl and explosive breathy snarl before biting, no lion roar. |
+| `wolf_attack_2.wav` | 0.7 s | Wolf compact low rumble into a sharp attack bark, realistic canine. |
+| `wolf_attack_3.wav` | 0.7 s | Wolf aggressive short raspy snarl with forceful exhale, no long howl. |
+| `wolf_bite_1.wav` | 0.7 s | Wolf jaws clamp into flesh, deep damp puncture and brief heavy jaw snap, no metal. |
+| `wolf_bite_2.wav` | 0.7 s | Wolf bite impact, short wet tearing contact and muted flesh compression. |
+| `wolf_bite_3.wav` | 0.7 s | Canine fangs bite flesh, heavy fleshy thud with subtle puncture crack. |
+| `wolf_hurt_1.wav` | 0.7 s | Wolf short startled pain yelp and breath, natural canine. |
+| `wolf_hurt_2.wav` | 0.7 s | Wolf clipped rough whine and low grunt when struck. |
+| `wolf_hurt_3.wav` | 0.7 s | Wolf sudden hoarse yip on impact, quick natural decay. |
+| `wolf_death_1.wav` | 1.2 s | Wolf low broken whimper and final breath, subdued short dying vocal. |
+| `wolf_death_2.wav` | 1.2 s | Wolf short fading canine groan and exhale, no theatrical howl. |
+| `wolf_death_3.wav` | 1.2 s | Wolf quiet breathy yelp fading into a last low whine. |
+
+
+## Bear combat pack
+
+> Isolated natural brown bear game vocal, dry close sound, no music, no human voice, no metal, no long reverb. Immediate onset, one short event, clean quiet ending.
+
+| File | Duration | Prompt |
+|---|---|---|
+| `bear_attack_1.wav` | 0.8 s | Short forceful bear huff and low growl as it swipes with a paw. |
+| `bear_attack_2.wav` | 0.8 s | Bear compact raspy attacking grunt and heavy exhale, not a lion roar. |
+| `bear_attack_3.wav` | 0.8 s | Brown bear brief chesty snarl and breathy effort on a claw swipe. |
+| `bear_hurt_1.wav` | 0.8 s | Brown bear abrupt low pain grunt and snort when struck. |
+| `bear_hurt_2.wav` | 0.8 s | Bear clipped rough groan on impact, no theatrical roar. |
+| `bear_hurt_3.wav` | 0.8 s | Bear short breathy distressed growl from being hit. |
+| `bear_death_1.wav` | 1.2 s | Brown bear last low broken groan and breath fading out. |
+| `bear_death_2.wav` | 1.2 s | Bear short dying rumble into a final soft exhale. |
+| `bear_death_3.wav` | 1.2 s | Brown bear subdued last grunt and weakening breath, no long howl. |

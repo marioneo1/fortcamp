@@ -1,0 +1,1782 @@
+{
+  "schema_version": "0.2",
+  "batch_id": "character_blueprints_pilot_001",
+  "content_type": "character_blueprint",
+  "revision": 2,
+  "entries": [
+    {
+      "id": "character_blueprints_pilot_001.guard_01",
+      "title": "The Watchful Caravan Guard",
+      "identity": {
+        "races": [
+          "Human",
+          "Dwarf",
+          "Wood Elf"
+        ],
+        "genders": [
+          "female",
+          "male"
+        ],
+        "base_personalities": [
+          "strategist"
+        ],
+        "jobs": [
+          "ranger",
+          "fighter"
+        ],
+        "authored_character_exclusions": [
+          "No named canonical NPCs, incompatible prior histories or overlapping major personal chains.",
+          "Never infer individual history from race, art or personality."
+        ]
+      },
+      "core_promise": "An aloof caravan guard must distinguish the hostile Orc warband that harmed a convoy from individual Orcs, with the player able to support vengeance, professional focus or earned reconciliation.",
+      "facets": [
+        {
+          "id": "character_blueprints_pilot_001.guard_01.facet_reserve",
+          "tag": "voice:reserved",
+          "operation": "reveal_fixed",
+          "starts_revealed": null,
+          "claim": "Speaks in short, deliberate observations; reserved is a voice habit, not evidence of indifference.",
+          "prerequisites": [
+            "Assigned once at character creation; revelation follows a saved eligible beat."
+          ],
+          "incompatible_with": [],
+          "provenance": "Fixed individual voice choice"
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.facet_aloof",
+          "tag": "social:aloof",
+          "operation": "reveal_fixed",
+          "starts_revealed": null,
+          "claim": "Keeps conversational distance, especially when a person asks for trust before earning it.",
+          "prerequisites": [
+            "Assigned once at character creation; revelation follows a saved eligible beat."
+          ],
+          "incompatible_with": [],
+          "provenance": "Fixed social manner"
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.facet_caravan",
+          "tag": "background:caravan_guard",
+          "operation": "reveal_fixed",
+          "starts_revealed": null,
+          "claim": "Previously helped guard a particular trade convoy and knows how to keep a moving group together.",
+          "prerequisites": [
+            "Assigned once at character creation; revelation follows a saved eligible beat."
+          ],
+          "incompatible_with": [],
+          "provenance": "Blueprint-specific latent autobiography supported by background:caravan_guard"
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.facet_grievance",
+          "tag": "history:orc_warband_grievance",
+          "operation": "reveal_fixed",
+          "starts_revealed": null,
+          "claim": "A particular hostile Orc warband assaulted the convoy this individual guarded; loss of people and supplies remains unsettled, but no specific survivor or enemy identity is assumed.",
+          "prerequisites": [
+            "Assigned once at character creation; revelation follows a saved eligible beat."
+          ],
+          "incompatible_with": [],
+          "provenance": "Fixed individual latent-history record"
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.facet_distrust",
+          "tag": "belief:distrusts_orcs",
+          "operation": "reveal_fixed",
+          "starts_revealed": null,
+          "claim": "This individual is presently wary of Orcs because of that particular raid; the grievance does not establish that Orcs generally behave alike.",
+          "prerequisites": [
+            "Assigned once at character creation; revelation follows a saved eligible beat."
+          ],
+          "incompatible_with": [
+            "character_blueprints_pilot_001.guard_01.facet_individuals"
+          ],
+          "provenance": "Individual starting belief, not a racial trait. Retire its active hostile dialogue if and only if transformed."
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.facet_mastery",
+          "tag": "motive:mastery",
+          "operation": "reveal_fixed",
+          "starts_revealed": null,
+          "claim": "Wants to improve disciplined convoy protection rather than lose another vulnerable group to a rushed decision.",
+          "prerequisites": [
+            "Assigned once at character creation; revelation follows a saved eligible beat."
+          ],
+          "incompatible_with": [],
+          "provenance": "Professional motive anchored in the caravan-guard background."
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.facet_individuals",
+          "tag": "belief:individuals_over_ancestry",
+          "operation": "transform_established",
+          "starts_revealed": null,
+          "claim": "After evidence and a voluntary turning point, evaluates an Orc player and other individuals on demonstrated choices rather than shared ancestry.",
+          "prerequisites": [
+            "Active facet_distrust, a saved boundary_arm or boundary_private promise, verified costly truthful-report choice at node_quiet_account, and explicit reconciliation at milestone_reckoning. No Orc kills suffice."
+          ],
+          "incompatible_with": [
+            "character_blueprints_pilot_001.guard_01.facet_distrust"
+          ],
+          "provenance": "Branch-specific belief transformation"
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.facet_devotion",
+          "tag": "bond:earned_devotion",
+          "operation": "develop_open",
+          "starts_revealed": null,
+          "claim": "Can commit to watching the player’s back as a chosen, loyal companion while remaining quiet and independent-minded.",
+          "prerequisites": [
+            "Reconciliation resolved; explicit optional platonic pledge at node_trust."
+          ],
+          "incompatible_with": [],
+          "provenance": "Player-chosen relational development only"
+        }
+      ],
+      "establishment": {
+        "core_facet_ids": [
+          "character_blueprints_pilot_001.guard_01.facet_reserve",
+          "character_blueprints_pilot_001.guard_01.facet_aloof",
+          "character_blueprints_pilot_001.guard_01.facet_caravan",
+          "character_blueprints_pilot_001.guard_01.facet_grievance",
+          "character_blueprints_pilot_001.guard_01.facet_distrust",
+          "character_blueprints_pilot_001.guard_01.facet_mastery",
+          "character_blueprints_pilot_001.guard_01.facet_individuals",
+          "character_blueprints_pilot_001.guard_01.facet_devotion"
+        ],
+        "intro_reveal_ids": [
+          "character_blueprints_pilot_001.guard_01.facet_reserve",
+          "character_blueprints_pilot_001.guard_01.facet_aloof",
+          "character_blueprints_pilot_001.guard_01.facet_grievance",
+          "character_blueprints_pilot_001.guard_01.facet_distrust"
+        ],
+        "remaining_reveal_beats": [
+          {
+            "facet_id": "character_blueprints_pilot_001.guard_01.facet_caravan",
+            "beat": "Saved route-memory reveals prior convoy duty."
+          },
+          {
+            "facet_id": "character_blueprints_pilot_001.guard_01.facet_mastery",
+            "beat": "Saved watchcraft talk reveals desire to improve protection."
+          },
+          {
+            "facet_id": "character_blueprints_pilot_001.guard_01.facet_individuals",
+            "beat": "Only branch-verified truthful sacrifice and reconciliation transform distrust."
+          },
+          {
+            "facet_id": "character_blueprints_pilot_001.guard_01.facet_devotion",
+            "beat": "Only an accepted platonic pledge develops devotion."
+          }
+        ],
+        "established_when": "Intro plus saved route-memory and watchcraft reveal the six fixed starting facets. Transformation and devotion remain optional."
+      },
+      "introduction": {
+        "entry_point": "prisoner_introduction",
+        "eligibility": {
+          "all": [
+            {
+              "field": "speaker.personality",
+              "op": "eq",
+              "value": "strategist"
+            },
+            {
+              "field": "speaker.job",
+              "op": "in",
+              "value": [
+                "ranger",
+                "fighter"
+              ]
+            },
+            {
+              "field": "speaker.tags",
+              "op": "has",
+              "value": "history:orc_warband_grievance"
+            },
+            {
+              "field": "speaker.conscious",
+              "op": "eq",
+              "value": null
+            }
+          ],
+          "any": [],
+          "none": []
+        },
+        "reveal_beats": [
+          "At the one-time prisoner introduction, the reserved guard reveals a specific preassigned caravan raid by a hostile Orc warband and personal distrust; no universal Orc claim.",
+          "Before accepting recruitment, if the PLAYER is Orc, display: proposed loyalty ceiling 80 until evidenced reconciliation. No retroactive cap; separate from prison resistance.",
+          "Explain two accessible options for repairing distrust: authenticated mission accountability plus an independent costly truthful private-contract path; no random enemy is required."
+        ],
+        "prospective_loyalty_cap": {
+          "value": null,
+          "when": "New recruitment only, player.race=Orc and this individual has active grievance and distrust; player.race context needs review.",
+          "disclosed_before": "First meaningful prisoner introduction, before recruitment confirmation or loyalty investment.",
+          "cause": "Individual grievance against a particular hostile warband, not race-wide behavior or prison resistance.",
+          "lift_condition": "Verified costly fair-report act plus freely selected reconciliation; deactivate distrust and lift ONLY this cap, without granting loyalty points. Do not enable cap unless a deterministic trust route is enabled.",
+          "review_required": null
+        },
+        "player_options": [
+          {
+            "id": "character_blueprints_pilot_001.guard_01.intro_offer",
+            "player_intent": "Offer recruitment with honest expectations.",
+            "consequence": "Show conditional 80 ceiling before acceptance. After recruitment, unlock route-memory; no trust bonus.",
+            "next": "character_blueprints_pilot_001.guard_01.node_route_memory"
+          },
+          {
+            "id": "character_blueprints_pilot_001.guard_01.intro_ask",
+            "player_intent": "Ask what happened, without demanding trust.",
+            "consequence": "Disclose only seeded history; after recruitment unlock route-memory.",
+            "next": "character_blueprints_pilot_001.guard_01.node_route_memory"
+          },
+          {
+            "id": "character_blueprints_pilot_001.guard_01.intro_defer",
+            "player_intent": "Decline or defer recruiting.",
+            "consequence": "Postpone recruitment; same introduction can resume, no cap or one-off charged.",
+            "next": "end"
+          }
+        ],
+        "repeat_policy": {
+          "repeat_key": "personal:guard_warband:initial_terms",
+          "scope": "character",
+          "max_offers": null,
+          "retry": "same_instance_only"
+        }
+      },
+      "conversation_nodes": [
+        {
+          "id": "character_blueprints_pilot_001.guard_01.node_route_memory",
+          "when": "Saved recruited companion talk after introduction.",
+          "speaker_intent": "Describes actual convoy work and an unfinished worry.",
+          "reveal_or_develop": [
+            {
+              "facet_id": "character_blueprints_pilot_001.guard_01.facet_caravan",
+              "transition": "Reveal fixed background once."
+            }
+          ],
+          "choices": [
+            {
+              "id": "character_blueprints_pilot_001.guard_01.route_listen",
+              "player_intent": "Listen.",
+              "consequence": "Save background reveal.",
+              "next": "character_blueprints_pilot_001.guard_01.node_watchcraft"
+            },
+            {
+              "id": "character_blueprints_pilot_001.guard_01.route_leave",
+              "player_intent": "Give space.",
+              "consequence": "Pause at this node.",
+              "next": "end"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.node_watchcraft",
+          "when": "After route memory, on ordinary talk.",
+          "speaker_intent": "Prefers preparation over impulsive retaliation.",
+          "reveal_or_develop": [
+            {
+              "facet_id": "character_blueprints_pilot_001.guard_01.facet_mastery",
+              "transition": "Reveal professional motive once."
+            }
+          ],
+          "choices": [
+            {
+              "id": "character_blueprints_pilot_001.guard_01.watchcraft_ask",
+              "player_intent": "Ask about protecting the party.",
+              "consequence": "Save mastery reveal.",
+              "next": "character_blueprints_pilot_001.guard_01.node_boundary"
+            },
+            {
+              "id": "character_blueprints_pilot_001.guard_01.watchcraft_pause",
+              "player_intent": "Change subject.",
+              "consequence": "Pause at this node.",
+              "next": "end"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.node_boundary",
+          "when": "After background and professional motive; no enemy required.",
+          "speaker_intent": "Asks whether to seek evidence, request a quiet contract, or stop.",
+          "reveal_or_develop": [],
+          "choices": [
+            {
+              "id": "character_blueprints_pilot_001.guard_01.boundary_arm",
+              "player_intent": "Promise to pursue evidence truthfully even if the facts cost a compensation claim.",
+              "consequence": "Save character_blueprints_pilot_001.guard_01.state_truthful_promise and arm same one-off arc; no enemy spawned.",
+              "next": "character_blueprints_pilot_001.guard_01.milestone_consent"
+            },
+            {
+              "id": "character_blueprints_pilot_001.guard_01.boundary_private",
+              "player_intent": "Pursue an ordinary private-contract review instead.",
+              "consequence": "Save same truthful promise and arm deterministic quiet route.",
+              "next": "character_blueprints_pilot_001.guard_01.node_quiet_account"
+            },
+            {
+              "id": "character_blueprints_pilot_001.guard_01.boundary_defer",
+              "player_intent": "Decide later.",
+              "consequence": "Unarmed, return here later.",
+              "next": "end"
+            },
+            {
+              "id": "character_blueprints_pilot_001.guard_01.boundary_decline",
+              "player_intent": "Stop personal involvement permanently.",
+              "consequence": "Confirmed final stop; distrust and Orc-player ceiling remain. No reward.",
+              "next": "character_blueprints_pilot_001.guard_01.branch_uncertainty"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.node_evidence",
+          "when": "After a verified encounter outcome; conscious guard at camp.",
+          "speaker_intent": "Requests an accurate account, including ally credit and final capture status.",
+          "reveal_or_develop": [],
+          "choices": [
+            {
+              "id": "character_blueprints_pilot_001.guard_01.evidence_fair",
+              "player_intent": "Tell the documented truth.",
+              "consequence": "Store report and exact outcome; truthful recital alone does NOT prove costly trust.",
+              "next": "character_blueprints_pilot_001.guard_01.milestone_reckoning"
+            },
+            {
+              "id": "character_blueprints_pilot_001.guard_01.evidence_defer",
+              "player_intent": "Discuss later.",
+              "consequence": "Hold the same recorded outcome.",
+              "next": "end"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.node_trust",
+          "when": "Once the reconciliation branch is saved, offered once after resolution.",
+          "speaker_intent": "Affirms changed belief while retaining quiet demeanor.",
+          "reveal_or_develop": [
+            {
+              "facet_id": "character_blueprints_pilot_001.guard_01.facet_individuals",
+              "transition": "Activate on saved reconciliation, retire active distrust."
+            },
+            {
+              "facet_id": "character_blueprints_pilot_001.guard_01.facet_devotion",
+              "transition": "Only if trust_pledge chosen."
+            }
+          ],
+          "choices": [
+            {
+              "id": "character_blueprints_pilot_001.guard_01.trust_pledge",
+              "player_intent": "Accept a platonic mutual-watch pledge.",
+              "consequence": "Develop devotion once; no romance, loyalty points or AI bonus.",
+              "next": "end"
+            },
+            {
+              "id": "character_blueprints_pilot_001.guard_01.trust_distance",
+              "player_intent": "Value trust without a pledge.",
+              "consequence": "Reconciliation stands; no devotion.",
+              "next": "end"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.node_quiet_account",
+          "when": "Available after boundary_private or boundary_arm; a reviewed, guaranteed ordinary private-contract offer, independent of missions and enemy spawns.",
+          "speaker_intent": "Compares the fixed convoy account with an offered disputed compensation claim that would unfairly assign blame to unrelated Orcs. No invented named witness.",
+          "reveal_or_develop": [],
+          "choices": [
+            {
+              "id": "character_blueprints_pilot_001.guard_01.quiet_publish",
+              "player_intent": "Sign the accurate limited report and waive the optional disputed compensation.",
+              "consequence": "Commit real waived compensation and truthful attribution; verified character_blueprints_pilot_001.guard_01.state_costly_truthful_report. Enable reconciliation.",
+              "next": "character_blueprints_pilot_001.guard_01.milestone_reckoning"
+            },
+            {
+              "id": "character_blueprints_pilot_001.guard_01.quiet_claim",
+              "player_intent": "Take the disputed compensation instead.",
+              "consequence": "Record refusal of the costly promise; trust unproven. Warn that this instance cannot retroactively repeat the choice.",
+              "next": "character_blueprints_pilot_001.guard_01.milestone_reckoning"
+            },
+            {
+              "id": "character_blueprints_pilot_001.guard_01.quiet_wait",
+              "player_intent": "Read it another day.",
+              "consequence": "Hold offer unchanged and unclaimed.",
+              "next": "end"
+            },
+            {
+              "id": "character_blueprints_pilot_001.guard_01.quiet_stop",
+              "player_intent": "Stop the inquiry.",
+              "consequence": "Confirmed final closure without trust; cap remains.",
+              "next": "character_blueprints_pilot_001.guard_01.branch_uncertainty"
+            }
+          ],
+          "next": "end"
+        }
+      ],
+      "personal_arcs": [
+        {
+          "id": "character_blueprints_pilot_001.guard_01.arc_warband",
+          "family_id": "guard_warband_accountability",
+          "repeat_policy": {
+            "repeat_key": "personal:guard_warband:accountability",
+            "scope": "player",
+            "max_offers": null,
+            "retry": "same_instance_only"
+          },
+          "armed_by": "character_blueprints_pilot_001.guard_01.boundary_arm or character_blueprints_pilot_001.guard_01.boundary_private; one player-scoped chain shared by all roster candidates.",
+          "entry_conditions": {
+            "registered_predicates": {
+              "all": [
+                {
+                  "field": "speaker.personality",
+                  "op": "eq",
+                  "value": "strategist"
+                },
+                {
+                  "field": "speaker.tags",
+                  "op": "has",
+                  "value": "history:orc_warband_grievance"
+                },
+                {
+                  "field": "speaker.conscious",
+                  "op": "eq",
+                  "value": null
+                }
+              ],
+              "any": [],
+              "none": []
+            },
+            "review_only_context": "Recruited guard with assigned grievance, saved arm and functioning deterministic private contract. Optional combat route requires an existing unnamed procedural Orc hostile assigned same-warband provenance BEFORE encounter. No named/lore rewrites, arbitrary Orc relabeling or new spawns."
+          },
+          "participants": [
+            "Individual recruited guard; player with reviewed player.race context.",
+            "Combat option: already-existing visible hostile Orc with saved pre-encounter warband affiliation; ordinary allies may land final hit.",
+            "Quiet option: player and guard reviewing seeded convoy facts and a real optional contested compensation claim; no extra NPC or mission required."
+          ],
+          "milestones": [
+            {
+              "id": "character_blueprints_pilot_001.guard_01.milestone_consent",
+              "event": "camp_talk",
+              "prerequisites": [
+                "Saved boundary_arm, guard recruited."
+              ],
+              "player_objective": "Accept evidence-based accountability without a required personal kill.",
+              "scoring": "Arm once. Quiet contract becomes available immediately; recognition remains optional.",
+              "next": "character_blueprints_pilot_001.guard_01.milestone_recognition"
+            },
+            {
+              "id": "character_blueprints_pilot_001.guard_01.milestone_recognition",
+              "event": "enemy_spotted",
+              "prerequisites": [
+                "Consent saved; reviewed generation hook has bound a compatible existing hostile BEFORE mission; it is visible."
+              ],
+              "player_objective": "Recognize affiliation only after seeing the bound foe.",
+              "scoring": "Do not treat a generic Orc as perpetrator; if no match, offer node_quiet_account directly, never farm random encounters.",
+              "next": "character_blueprints_pilot_001.guard_01.milestone_encounter"
+            },
+            {
+              "id": "character_blueprints_pilot_001.guard_01.milestone_encounter",
+              "event": "personal_milestone",
+              "prerequisites": [
+                "Same saved enemy, actual combat result recorded."
+              ],
+              "player_objective": "Allow real defeat, lawful finalized alive capture, escape or restraint; avoid mandatory guard final hit.",
+              "scoring": "Track ally final hit, death, defeat, escape, retreat and actual finalized capture distinctly; actor-down delays talk. Pending outcome waits, not victory.",
+              "next": "character_blueprints_pilot_001.guard_01.node_evidence"
+            },
+            {
+              "id": "character_blueprints_pilot_001.guard_01.milestone_reckoning",
+              "event": "camp_talk",
+              "prerequisites": [
+                "A conscious guard; documented encounter report OR saved quiet-contract decision."
+              ],
+              "player_objective": "Choose specialization, truthful reconciliation, or warned unresolved closure.",
+              "scoring": "Specialization needs verified affiliated encounter. Reconciliation needs character_blueprints_pilot_001.guard_01.state_costly_truthful_report from an actual waived claim (not mere Orc defeat); failure means defer/uncertainty. Each ending once.",
+              "next": "end"
+            }
+          ],
+          "resolution_branches": [
+            {
+              "id": "character_blueprints_pilot_001.guard_01.branch_specialization",
+              "name": "Warband accountability and specialization",
+              "trigger": "Authenticated same-warband encounter, factual report and explicit specialization choice.",
+              "resolved": "This encounter is addressed; training is chosen.",
+              "remaining_conflicts": "Orc distrust and Orc-player 80 cap remain; no implied trust.",
+              "facet_changes": "Retain facet_mastery and facet_distrust; no individuals-first conversion or devotion.",
+              "base_personality_change": "No base personality or combat-AI change.",
+              "reward_contract_id": "character_blueprints_pilot_001.guard_01.reward_specialization"
+            },
+            {
+              "id": "character_blueprints_pilot_001.guard_01.branch_reconciliation",
+              "name": "Truthful reconciliation and optional platonic bond",
+              "trigger": "Prior boundary_arm or boundary_private promise; node_quiet_account.quiet_publish has irreversibly waived a real offered disputed payment and logged fair attribution; guard freely affirms at reckoning.",
+              "resolved": "Collective distrust ends and this player is assessed individually; grievance history is not erased.",
+              "remaining_conflicts": "Specific warband losses may remain unredressed; no automatic relationship score or devotion.",
+              "facet_changes": "Deactivate facet_distrust; activate facet_individuals; optional later facet_devotion at node_trust. Lift only conditional Orc-player cap.",
+              "base_personality_change": "No base personality or combat-AI change.",
+              "reward_contract_id": "character_blueprints_pilot_001.guard_01.reward_reconciliation"
+            },
+            {
+              "id": "character_blueprints_pilot_001.guard_01.branch_uncertainty",
+              "name": "Final stop without fabricated resolution",
+              "trigger": "Explicit final stop at boundary_decline, quiet_stop, or reckoning; show remaining distrust first.",
+              "resolved": "The hunt ends without pretending proof or trust.",
+              "remaining_conflicts": "Distrust and Orc-player ceiling remain; no extra chain or reward.",
+              "facet_changes": "Keep fixed facts, distrust and normal professional dialogue; no devotion.",
+              "base_personality_change": "No base personality or combat-AI change.",
+              "reward_contract_id": "character_blueprints_pilot_001.guard_01.reward_uncertainty"
+            }
+          ],
+          "failure_and_recovery": [
+            "Bound combat target unavailable/dead/escaped or no eligible mission: offer deterministic node_quiet_account immediately; never reassign unrelated Orcs, respawn target or wait on random chance.",
+            "Combat ally final hit counts for truthful team outcome; actor down waits for recovery; retreat leaves same attempt pending. Capture only after existing finalized capture/recovery, distinct from defeat/death.",
+            "Private contract is one authentic offer: truthful waiver commits the cost and evidence once; taking compensation fails this proof, and reload/clicks cannot resample it. Warn before the irreversible decision.",
+            "Deferral resumes the saved offer; confirmed stop closes without lift. All endings and grants share the player one-off key."
+          ],
+          "reward_contract_ids": [
+            "character_blueprints_pilot_001.guard_01.reward_specialization",
+            "character_blueprints_pilot_001.guard_01.reward_reconciliation",
+            "character_blueprints_pilot_001.guard_01.reward_uncertainty"
+          ]
+        }
+      ],
+      "conclusion": {
+        "established_condition": "Intro plus two saved ordinary talks; not conditional on an encounter.",
+        "core_closed_condition": "One saved specialization, reconciliation or warned final-stop branch. A defer is not closure.",
+        "closed_behavior": "No new major personal warband chain or replayable reward; retire resolved hunt prompts, not history.",
+        "continuing_growth": "Reserved conversation, friendships, normal progression and memories continue; devotion is optional and platonic."
+      },
+      "reward_contracts": [
+        {
+          "id": "character_blueprints_pilot_001.guard_01.reward_specialization",
+          "player_expectation": "A useful lasting way to fight the confirmed warband threat.",
+          "setup": "Before acceptance, choose a REVIEWED permanent option: enemy-type anti-Orc damage technique/perk, or a defensive anti-Orc formation method.",
+          "narrative_payoff": "Practical expertise rather than miscellaneous spoils.",
+          "grant_proposal": {
+            "category": "perk",
+            "description": "Propose ONE nonstacking, once-only anti-Orc damage perk/technique (enemy-type scoped); defensive protection training is a mutually exclusive alternative. Numbers/ID unapproved.",
+            "implementation_id": null
+          },
+          "why_it_fits": "Offense rewards specialization against eligible Orc enemies; defense offers wider team protection but less direct damage.",
+          "alternative_branch_fairness": "No substitution with supplies after a permanent technique is promised. Different ending may offer truthful closure instead.",
+          "review_required": null
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.reward_reconciliation",
+          "player_expectation": "Recognition of a meaningful costly choice and freedom from blanket suspicion.",
+          "setup": "Guard sees the player forgo disputed compensation rather than blame unrelated Orcs.",
+          "narrative_payoff": "Explicit trust, a witnessed corrected account and optional platonic promise.",
+          "grant_proposal": {
+            "category": "relationship",
+            "description": "Propose persistent belief conversion and remembered trust; lift Orc-player 80 ceiling if active, with NO loyalty-point award or hidden bond stat.",
+            "implementation_id": null
+          },
+          "why_it_fits": "Non-Orc players get the same acknowledged trust and altered future dialogue even without a cap to lift.",
+          "alternative_branch_fairness": "Unlike the combat-perk branch this pays off in lasting narrative relationship and belief change; present tradeoff before commitment.",
+          "review_required": null
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.reward_uncertainty",
+          "player_expectation": "An honest ability to stop involvement.",
+          "setup": "Warn that distrust and the conditional cap survive.",
+          "narrative_payoff": "A chosen boundary without invented revenge or absolution.",
+          "grant_proposal": {
+            "category": "closure",
+            "description": "No reward, no cap removal, no perk; preserve ordinary growth.",
+            "implementation_id": null
+          },
+          "why_it_fits": "The player may decline optional content without losing existing gear.",
+          "alternative_branch_fairness": "Not advertised as equivalent to completing the personal arc.",
+          "review_required": null
+        }
+      ],
+      "aftermath": {
+        "remembered_facts": [
+          "Seeded caravan raid; selected path; bound encounter outcome when applicable; whether disputed compensation was truly waived; one-off reward claim.",
+          "Active distrust versus resolved individuals-first belief; conditional cap state; separate optional platonic pledge."
+        ],
+        "retired_hostile_lines": [
+          "On reconciliation, retire broad anti-Orc suspicion and unresolved-hunt triggers; retain factual grief and justified criticism of actual attackers."
+        ],
+        "new_voice_beats": [
+          "Specialist: understated planning pride without reconciliation.",
+          "Reconciled: specific gratitude for the costly truthful report; reserved style remains.",
+          "Unresolved stop: normal guard talk without repeated offers."
+        ],
+        "personality_change_scope": "Strategist stays strategist; no combat-AI changes.",
+        "relationship_change_scope": "Earned trust is remembered; optional devotion needs explicit separate player consent, never romance by default."
+      },
+      "capability_requests": [
+        {
+          "id": "character_blueprints_pilot_001.guard_01.cap_history_binding",
+          "description": "Persist individualized convoy grievance and pre-encounter provenance; optionally assign compatible existing unnamed procedural warband enemy within normal mission budget.",
+          "reason": "Race alone proves no guilt.",
+          "required_for": [
+            "character_blueprints_pilot_001.guard_01.facet_grievance",
+            "character_blueprints_pilot_001.guard_01.milestone_recognition"
+          ],
+          "review_required": null
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.cap_player_orc",
+          "description": "Read player.race, disclose prospective 80 cap pre-recruitment and lift only this cap on proof; never auto-grant loyalty.",
+          "reason": "Neither player.race nor individualized cap is registered.",
+          "required_for": [
+            "character_blueprints_pilot_001.guard_01.intro_offer",
+            "character_blueprints_pilot_001.guard_01.facet_individuals"
+          ],
+          "review_required": null
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.cap_conversation_state",
+          "description": "Saved routing, one player-scoped offer, branch choices, outcome distinctions and post-closure one-time talk.",
+          "reason": "New arcs and state transitions are proposals.",
+          "required_for": [
+            "character_blueprints_pilot_001.guard_01.arc_warband",
+            "character_blueprints_pilot_001.guard_01.node_evidence",
+            "character_blueprints_pilot_001.guard_01.node_trust"
+          ],
+          "review_required": null
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.cap_choice_bridge",
+          "description": "Guarantee a reviewed private compensation-contract offer with genuine waivable consideration and accurate limited blame report; store promise, choice, cost and evidence atomically.",
+          "reason": "Provides observable costly truth even without an Orc enemy or capture ability.",
+          "required_for": [
+            "character_blueprints_pilot_001.guard_01.boundary_private",
+            "character_blueprints_pilot_001.guard_01.node_quiet_account",
+            "character_blueprints_pilot_001.guard_01.branch_reconciliation"
+          ],
+          "review_required": null
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.cap_specialized_reward",
+          "description": "Balance exclusive permanent anti-Orc damage versus defensive training; approve implementation and reward before promise is displayed.",
+          "reason": "No live perk IDs supplied.",
+          "required_for": [
+            "character_blueprints_pilot_001.guard_01.reward_specialization"
+          ],
+          "review_required": null
+        },
+        {
+          "id": "character_blueprints_pilot_001.guard_01.cap_mission_context",
+          "description": "Persist actual ally final hit, actor recovery, retreat, enemy death/escape and finalized capture.",
+          "reason": "Facts must be verified; no resurrection or automatic capture.",
+          "required_for": [
+            "character_blueprints_pilot_001.guard_01.milestone_encounter",
+            "character_blueprints_pilot_001.guard_01.node_evidence"
+          ],
+          "review_required": null
+        }
+      ],
+      "routing": [
+        {
+          "from": "introduction",
+          "trigger": "intro_offer or intro_ask after confirmed recruitment",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.guard_01.node_route_memory",
+          "state_effect": "Save disclosure and conditional cap shown; wait for recruited companion talk."
+        },
+        {
+          "from": "introduction",
+          "trigger": "intro_defer",
+          "prerequisite": "No recruitment or story commitment",
+          "to": "end",
+          "state_effect": "Resume the same character-scoped introduction later with original facts."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.node_route_memory",
+          "trigger": "route_listen",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.guard_01.node_watchcraft",
+          "state_effect": "Reveal caravan once."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.node_route_memory",
+          "trigger": "route_leave",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "end",
+          "state_effect": "Resume route-memory later."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.node_watchcraft",
+          "trigger": "watchcraft_ask",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.guard_01.node_boundary",
+          "state_effect": "Reveal mastery once."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.node_watchcraft",
+          "trigger": "watchcraft_pause",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "end",
+          "state_effect": "Resume watchcraft later."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.node_boundary",
+          "trigger": "boundary_arm",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.guard_01.milestone_consent",
+          "state_effect": "Commit explicit truthful promise; arm story once."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.node_boundary",
+          "trigger": "boundary_private",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.guard_01.node_quiet_account",
+          "state_effect": "Commit truthful promise; quiet contract offered without a mission."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.node_boundary",
+          "trigger": "boundary_defer",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "end",
+          "state_effect": "Resume boundary with no one-off use."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.node_boundary",
+          "trigger": "boundary_decline",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.guard_01.branch_uncertainty",
+          "state_effect": "Confirmed final stop, distrust/cap persist."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.milestone_consent",
+          "trigger": "consent saved",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.guard_01.milestone_recognition",
+          "state_effect": "Await only optional proven existing enemy; quiet account separately unlocked."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.milestone_recognition",
+          "trigger": "valid visible affiliated hostile",
+          "prerequisite": "Approved pre-encounter mission affiliation",
+          "to": "character_blueprints_pilot_001.guard_01.milestone_encounter",
+          "state_effect": "Bind actual enemy once, not a generic Orc."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.milestone_recognition",
+          "trigger": "no compatible enemy / route not desired",
+          "prerequisite": "Reviewed private contract active",
+          "to": "character_blueprints_pilot_001.guard_01.node_quiet_account",
+          "state_effect": "Guaranteed alternative, without random farming."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.milestone_encounter",
+          "trigger": "verified actual result",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.guard_01.node_evidence",
+          "state_effect": "Store exact outcome; wait for conscious camp talk."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.node_evidence",
+          "trigger": "evidence_fair",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.guard_01.milestone_reckoning",
+          "state_effect": "Truthful facts stored; costly bridge still needed for reconciliation."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.node_evidence",
+          "trigger": "evidence_defer",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "end",
+          "state_effect": "Return to same evidence conversation."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.node_quiet_account",
+          "trigger": "quiet_publish",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.guard_01.milestone_reckoning",
+          "state_effect": "Waive real disputed claim; commit truthful report and character_blueprints_pilot_001.guard_01.state_costly_truthful_report."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.node_quiet_account",
+          "trigger": "quiet_claim",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.guard_01.milestone_reckoning",
+          "state_effect": "Save accepted compensation; fairness proof false; warn reconciliation unavailable."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.node_quiet_account",
+          "trigger": "quiet_wait",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "end",
+          "state_effect": "Resume same unconsumed offer."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.node_quiet_account",
+          "trigger": "quiet_stop",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.guard_01.branch_uncertainty",
+          "state_effect": "Final stop, cap persists."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.milestone_reckoning",
+          "trigger": "choose specialization",
+          "prerequisite": "Verified affiliated encounter and truthful report",
+          "to": "character_blueprints_pilot_001.guard_01.branch_specialization",
+          "state_effect": "Close once and queue reviewed permanent perk."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.milestone_reckoning",
+          "trigger": "choose reconciliation",
+          "prerequisite": "Saved character_blueprints_pilot_001.guard_01.state_costly_truthful_report and explicit consent",
+          "to": "character_blueprints_pilot_001.guard_01.branch_reconciliation",
+          "state_effect": "Retire distrust, lift Orc-player ceiling if present; no loyalty points."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.milestone_reckoning",
+          "trigger": "choose final uncertainty",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.guard_01.branch_uncertainty",
+          "state_effect": "Close once; distrust and cap stay."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.milestone_reckoning",
+          "trigger": "defer or insufficient proof",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "end",
+          "state_effect": "Preserve milestone; offer node_quiet_account if unconsumed."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.branch_reconciliation",
+          "trigger": "once-only aftermath on next conscious companion talk",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.guard_01.node_trust",
+          "state_effect": "Present optional platonic pledge exactly once."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.node_trust",
+          "trigger": "trust_pledge",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "end",
+          "state_effect": "Develop devotion; mark once-only talk consumed."
+        },
+        {
+          "from": "character_blueprints_pilot_001.guard_01.node_trust",
+          "trigger": "trust_distance",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "end",
+          "state_effect": "Keep reconciled state without devotion; consume once-only talk."
+        }
+      ],
+      "routing_rules": {
+        "status": "review_required, authoring-only",
+        "choice_precedence": "Selected choice.next always overrides generic node.next. Generic next is a suggested narrative successor only; it never auto-selects a choice, completes a mission or ends an arc.",
+        "resume": "end on defer means return to saved source node; end on completed choice consumes only that interaction. Final decline is a saved exclusive ending.",
+        "persistence": "Save verified facts and choice transitions atomically; reload, alternate dialogue wording or another roster member cannot reroll one-off key or grant."
+      },
+      "routing_state_ids": [
+        "character_blueprints_pilot_001.guard_01.state_truthful_promise",
+        "character_blueprints_pilot_001.guard_01.state_costly_truthful_report",
+        "character_blueprints_pilot_001.guard_01.state_disputed_claim_taken",
+        "character_blueprints_pilot_001.guard_01.state_guard_chain_closed",
+        "character_blueprints_pilot_001.guard_01.state_trust_talk_consumed"
+      ]
+    },
+    {
+      "id": "character_blueprints_pilot_001.artisan_02",
+      "title": "The Workshop Ledger",
+      "identity": {
+        "races": [
+          "Human",
+          "Dwarf",
+          "Gnome",
+          "Goblin"
+        ],
+        "genders": [
+          "female",
+          "male"
+        ],
+        "base_personalities": [
+          "dutiful"
+        ],
+        "jobs": [
+          "engineer"
+        ],
+        "authored_character_exclusions": [
+          "No named canonical NPCs, incompatible prior histories or overlapping major personal chains.",
+          "Never infer individual history from race, art or personality."
+        ]
+      },
+      "core_promise": "A sociable but exacting engineer learns that professional integrity requires recording mistakes and accepting help, not silently carrying every repair alone.",
+      "facets": [
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.facet_artisan",
+          "tag": "background:artisan",
+          "operation": "reveal_fixed",
+          "starts_revealed": true,
+          "claim": "Has practiced ordinary repair and inspection work before joining the party.",
+          "prerequisites": [
+            "Assigned once at character creation; revelation follows a saved eligible beat."
+          ],
+          "incompatible_with": [],
+          "provenance": "Individual practiced trade"
+        },
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.facet_pride",
+          "tag": "voice:craft_pride",
+          "operation": "reveal_fixed",
+          "starts_revealed": true,
+          "claim": "Takes genuine pride in careful work, especially plain things that do not break.",
+          "prerequisites": [
+            "Assigned once at character creation; revelation follows a saved eligible beat."
+          ],
+          "incompatible_with": [],
+          "provenance": "Professional voice rooted in artisan and engineer experience."
+        },
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.facet_sociable",
+          "tag": "social:gregarious",
+          "operation": "reveal_fixed",
+          "starts_revealed": true,
+          "claim": "Finds it easy to chat about tools and other people’s work, though not their own mistake.",
+          "prerequisites": [
+            "Assigned once at character creation; revelation follows a saved eligible beat."
+          ],
+          "incompatible_with": [],
+          "provenance": "Contrasts with blueprint 1 without treating dutiful as automatically outgoing."
+        },
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.facet_mastery",
+          "tag": "motive:mastery",
+          "operation": "reveal_fixed",
+          "starts_revealed": true,
+          "claim": "Wants a dependable, repeatable way to check work rather than relying on a lucky successful repair.",
+          "prerequisites": [
+            "Assigned once at character creation; revelation follows a saved eligible beat."
+          ],
+          "incompatible_with": [],
+          "provenance": "Ordinary professional ambition, not an unlock promise."
+        },
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.facet_error",
+          "tag": null,
+          "operation": "reveal_fixed",
+          "starts_revealed": false,
+          "claim": "In one earlier job, this person signed off a faulty count, wasted materials and avoided telling anyone it was their mistake.",
+          "prerequisites": [
+            "One approved per-character unreported-quality-error fact exists before node_admission; tag stays null until registered."
+          ],
+          "incompatible_with": [],
+          "provenance": "Not supported by current history tags"
+        },
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.facet_repayment",
+          "tag": "motive:repayment",
+          "operation": "reveal_fixed",
+          "starts_revealed": false,
+          "claim": "Wants to make good on the wasted resources by sharing a reliable check method with somebody else.",
+          "prerequisites": [
+            "Assigned once at character creation; revelation follows a saved eligible beat."
+          ],
+          "incompatible_with": [],
+          "provenance": "Individual motive tied to the exact past mistake, not a generic guilt mechanic."
+        },
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.facet_trust",
+          "tag": "social:selectively_trusting",
+          "operation": "develop_open",
+          "starts_revealed": false,
+          "claim": "Becomes willing to let another person inspect work and correct an error without feeling personally erased.",
+          "prerequisites": [
+            "Committed paired preparation check, eligible mission success, conscious debrief and accepted truthful ledger choice."
+          ],
+          "incompatible_with": [],
+          "provenance": "Development from friendly talk to professional trust"
+        },
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.facet_belonging",
+          "tag": "motive:belonging",
+          "operation": "develop_open",
+          "starts_revealed": false,
+          "claim": "Begins to value shared responsibility in the party as much as being the one who can fix everything.",
+          "prerequisites": [
+            "Committed paired preparation check, eligible mission success, conscious debrief and accepted truthful ledger choice."
+          ],
+          "incompatible_with": [],
+          "provenance": "Open development, not a retroactive change to employment, race or base personality."
+        }
+      ],
+      "establishment": {
+        "core_facet_ids": [
+          "character_blueprints_pilot_001.artisan_02.facet_artisan",
+          "character_blueprints_pilot_001.artisan_02.facet_pride",
+          "character_blueprints_pilot_001.artisan_02.facet_sociable",
+          "character_blueprints_pilot_001.artisan_02.facet_mastery",
+          "character_blueprints_pilot_001.artisan_02.facet_error",
+          "character_blueprints_pilot_001.artisan_02.facet_repayment",
+          "character_blueprints_pilot_001.artisan_02.facet_trust",
+          "character_blueprints_pilot_001.artisan_02.facet_belonging"
+        ],
+        "intro_reveal_ids": [
+          "character_blueprints_pilot_001.artisan_02.facet_artisan",
+          "character_blueprints_pilot_001.artisan_02.facet_pride",
+          "character_blueprints_pilot_001.artisan_02.facet_sociable",
+          "character_blueprints_pilot_001.artisan_02.facet_mastery"
+        ],
+        "remaining_reveal_beats": [
+          {
+            "facet_id": "character_blueprints_pilot_001.artisan_02.facet_error",
+            "beat": "Reveal only seeded unreported faulty count at admission."
+          },
+          {
+            "facet_id": "character_blueprints_pilot_001.artisan_02.facet_repayment",
+            "beat": "Discuss desire to make the work right at admission."
+          },
+          {
+            "facet_id": "character_blueprints_pilot_001.artisan_02.facet_trust",
+            "beat": "Develop only after committed check, mission and truthful debrief."
+          },
+          {
+            "facet_id": "character_blueprints_pilot_001.artisan_02.facet_belonging",
+            "beat": "Develop only on accepted collaborative ledger resolution."
+          }
+        ],
+        "established_when": "First post-recruitment talk shows four fixed traits; saved admission reveals seeded mistake and repayment motive. Trust/belonging are optional developments."
+      },
+      "introduction": {
+        "entry_point": "companion_introduction",
+        "eligibility": {
+          "all": [
+            {
+              "field": "speaker.personality",
+              "op": "eq",
+              "value": "dutiful"
+            },
+            {
+              "field": "speaker.job",
+              "op": "eq",
+              "value": "engineer"
+            },
+            {
+              "field": "speaker.tags",
+              "op": "has",
+              "value": "background:artisan"
+            },
+            {
+              "field": "speaker.conscious",
+              "op": "eq",
+              "value": true
+            }
+          ],
+          "any": [],
+          "none": []
+        },
+        "reveal_beats": [
+          "Early post-recruitment talk: sociable dutiful engineer checks an ordinary fitting twice and values reliable repair.",
+          "Personal count error is a preassigned, unapproved individual fact, revealed later only if that provenance is approved; no special skill or reward at intro."
+        ],
+        "prospective_loyalty_cap": null,
+        "player_options": [
+          {
+            "id": "character_blueprints_pilot_001.artisan_02.intro_talk",
+            "player_intent": "Ask why the engineer checks everything twice.",
+            "consequence": "Open standards talk after recruitment; no reward or actual inspection yet.",
+            "next": "character_blueprints_pilot_001.artisan_02.node_standards"
+          },
+          {
+            "id": "character_blueprints_pilot_001.artisan_02.intro_share",
+            "player_intent": "Offer to compare procedures.",
+            "consequence": "Open standards talk after recruitment; no reward or actual inspection yet.",
+            "next": "character_blueprints_pilot_001.artisan_02.node_standards"
+          },
+          {
+            "id": "character_blueprints_pilot_001.artisan_02.intro_defer",
+            "player_intent": "Go about the day.",
+            "consequence": "Resume same introductory conversation later.",
+            "next": "end"
+          }
+        ],
+        "repeat_policy": {
+          "repeat_key": "personal:artisan_ledger:early_talk",
+          "scope": "character",
+          "max_offers": 1,
+          "retry": "same_instance_only"
+        }
+      },
+      "conversation_nodes": [
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.node_standards",
+          "when": "Saved post-recruitment introduction completed.",
+          "speaker_intent": "Shares a practical check order and unflashy pride.",
+          "reveal_or_develop": [],
+          "choices": [
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.standards_listen",
+              "player_intent": "Ask about standards.",
+              "consequence": "Ordinary identity beat.",
+              "next": "character_blueprints_pilot_001.artisan_02.node_admission"
+            },
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.standards_defer",
+              "player_intent": "Talk later.",
+              "consequence": "Pause unchanged.",
+              "next": "end"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.node_admission",
+          "when": "Approved once-seeded personal counting error exists.",
+          "speaker_intent": "Admits wasted material and a wish to repay that mistake.",
+          "reveal_or_develop": [
+            {
+              "facet_id": "character_blueprints_pilot_001.artisan_02.facet_error",
+              "transition": "Reveal seeded one-off error."
+            },
+            {
+              "facet_id": "character_blueprints_pilot_001.artisan_02.facet_repayment",
+              "transition": "Reveal repayment motive."
+            }
+          ],
+          "choices": [
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.admission_kind",
+              "player_intent": "Hear the mistake without humiliation.",
+              "consequence": "Save honest admission.",
+              "next": "character_blueprints_pilot_001.artisan_02.node_offer"
+            },
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.admission_honest",
+              "player_intent": "Ask for better procedure.",
+              "consequence": "Save same facts and motive.",
+              "next": "character_blueprints_pilot_001.artisan_02.node_offer"
+            },
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.admission_pause",
+              "player_intent": "Return later.",
+              "consequence": "Hold same disclosure.",
+              "next": "end"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.node_offer",
+          "when": "After admission; one story slot available.",
+          "speaker_intent": "Requests a two-person check during ordinary preparation and participation in a normal mission.",
+          "reveal_or_develop": [],
+          "choices": [
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.offer_agree",
+              "player_intent": "Agree to check together.",
+              "consequence": "Arm player-scoped chain, no buff or immediate check.",
+              "next": "character_blueprints_pilot_001.artisan_02.milestone_agreement"
+            },
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.offer_defer",
+              "player_intent": "Not yet.",
+              "consequence": "Hold same offer.",
+              "next": "end"
+            },
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.offer_decline",
+              "player_intent": "Permanently decline.",
+              "consequence": "Confirm no-test closure and no reward; no penalty.",
+              "next": "character_blueprints_pilot_001.artisan_02.branch_no_test"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.node_review",
+          "when": "Verified field success after checked preparation; conscious engineer at camp.",
+          "speaker_intent": "Compares what the team actually learned.",
+          "reveal_or_develop": [],
+          "choices": [
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.review_correct",
+              "player_intent": "Discuss the genuine check and any correction.",
+              "consequence": "Save honest debrief; begin ledger step.",
+              "next": "character_blueprints_pilot_001.artisan_02.milestone_account"
+            },
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.review_wait",
+              "player_intent": "Debrief later.",
+              "consequence": "Hold verified outcome.",
+              "next": "end"
+            },
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.review_stop",
+              "player_intent": "End this personal review.",
+              "consequence": "Confirmed no-test/no-payout closure; no false success.",
+              "next": "character_blueprints_pilot_001.artisan_02.branch_no_test"
+            }
+          ],
+          "next": "end"
+        },
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.node_ledger",
+          "when": "Only after conscious truthful debrief and milestone_account; not on conversation opening alone.",
+          "speaker_intent": "Shares credit without denying the old error.",
+          "reveal_or_develop": [],
+          "choices": [
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.ledger_credit",
+              "player_intent": "Record shared contribution.",
+              "consequence": "Mutually exclusive shared-credit ending with reviewed ordinary supplies.",
+              "next": "character_blueprints_pilot_001.artisan_02.branch_shared_credit"
+            },
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.ledger_private",
+              "player_intent": "Keep accurate account within party.",
+              "consequence": "Mutually exclusive private ending with reviewed gold.",
+              "next": "character_blueprints_pilot_001.artisan_02.branch_private_account"
+            },
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.ledger_notyet",
+              "player_intent": "Decide later.",
+              "consequence": "No branch or reward; resume same ledger.",
+              "next": "end"
+            },
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.ledger_stop",
+              "player_intent": "Close without claiming successful shared accounting.",
+              "consequence": "Confirmed no-reward ending; prior check remains in memory.",
+              "next": "character_blueprints_pilot_001.artisan_02.branch_no_test"
+            }
+          ],
+          "next": "end"
+        }
+      ],
+      "personal_arcs": [
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.arc_ledger",
+          "family_id": "artisan_shared_inspection",
+          "repeat_policy": {
+            "repeat_key": "personal:artisan_ledger:shared_inspection",
+            "scope": "player",
+            "max_offers": 1,
+            "retry": "same_instance_only"
+          },
+          "armed_by": "character_blueprints_pilot_001.artisan_02.offer_agree; one player-scoped chain per save/account, not per engineer roster copy.",
+          "entry_conditions": {
+            "registered_predicates": {
+              "all": [
+                {
+                  "field": "speaker.personality",
+                  "op": "eq",
+                  "value": "dutiful"
+                },
+                {
+                  "field": "speaker.job",
+                  "op": "eq",
+                  "value": "engineer"
+                },
+                {
+                  "field": "speaker.tags",
+                  "op": "has",
+                  "value": "background:artisan"
+                },
+                {
+                  "field": "speaker.conscious",
+                  "op": "eq",
+                  "value": true
+                }
+              ],
+              "any": [],
+              "none": []
+            },
+            "review_only_context": "Recruited conscious engineer with seeded personal error, explicit accepted offer, normal mission and player + engineer prepared to inspect; all tracking beyond registry is review-only."
+          },
+          "participants": [
+            "Recruited engineer and player as narrative second checker; no mandatory new physical item or extra NPC.",
+            "An existing normal mission with verified participant and success status; no special enemy is needed."
+          ],
+          "milestones": [
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.milestone_agreement",
+              "event": "camp_talk",
+              "prerequisites": [
+                "Saved offer_agree; seeded personal error and recruited engineer."
+              ],
+              "player_objective": "Agree to permit a genuine second opinion.",
+              "scoring": "Save permission and one eligible prep choice; opening conversation is not a check.",
+              "next": "character_blueprints_pilot_001.artisan_02.milestone_check"
+            },
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.milestone_check",
+              "event": "mission_entry",
+              "prerequisites": [
+                "Normal eligible mission entry; engineer present and conscious, agreement committed; proposed prepare_joint_check choice shown."
+              ],
+              "player_objective": "Select prepare_joint_check once to do the narrative two-person inspection.",
+              "scoring": "The explicit choice records both participants checking and a correction accepted; opening/reopening talk never commits it. No inspection minigame, stats or equipment changes.",
+              "next": "character_blueprints_pilot_001.artisan_02.milestone_field",
+              "preparation_choice": {
+                "id": "character_blueprints_pilot_001.artisan_02.prepare_joint_check",
+                "status": "review_required",
+                "trigger": "Player explicitly selects once in eligible normal mission preparations; both participants present and conscious.",
+                "effect": "Commit the narrative two-person check and accepted correction as a saved fact. No equipment change, physical minigame or reward.",
+                "on_skip": "Do not score inspection; continue pending for next eligible mission."
+              }
+            },
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.milestone_field",
+              "event": "mission_success",
+              "prerequisites": [
+                "Committed preparation check and actual ordinary mission participation on a mission after that choice."
+              ],
+              "player_objective": "Participate normally, then examine its real result.",
+              "scoring": "Exact policy: SUCCESS qualifies for debrief (even if an ally makes final hit). FAILURE/RETREAT does not; preserve the single check and await the next normal eligible SUCCESS with engineer participating. No second check or one-off reroll. Actor down can debrief only after recovery.",
+              "next": "character_blueprints_pilot_001.artisan_02.node_review"
+            },
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.milestone_account",
+              "event": "camp_talk",
+              "prerequisites": [
+                "Eligible success saved; node_review.review_correct chosen; conscious engineer and seeded error."
+              ],
+              "player_objective": "Acknowledge earlier mistake and verified cooperation, then choose shared or private ledger account.",
+              "scoring": "Record truthful debrief once, route to node_ledger; ledger choice exclusively resolves and pays once.",
+              "next": "character_blueprints_pilot_001.artisan_02.node_ledger"
+            }
+          ],
+          "resolution_branches": [
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.branch_shared_credit",
+              "name": "Shared accurate ledger",
+              "trigger": "Saved review and ledger_credit after qualifying success.",
+              "resolved": "Shares credit, accepts past error and collaborative responsibility.",
+              "remaining_conflicts": "Retains fussy craft standards without perfectionism as sole identity.",
+              "facet_changes": "Develop facet_trust and facet_belonging; original error stays history.",
+              "base_personality_change": "No base personality or combat-AI change.",
+              "reward_contract_id": "character_blueprints_pilot_001.artisan_02.reward_supplies"
+            },
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.branch_private_account",
+              "name": "Private truthful ledger",
+              "trigger": "Saved review and ledger_private after qualifying success.",
+              "resolved": "Honest private responsibility and shared method without invented outside audience.",
+              "remaining_conflicts": "Reserved about past mistakes outside party.",
+              "facet_changes": "Develop facet_trust and facet_belonging; no fabricated public acclaim.",
+              "base_personality_change": "No base personality or combat-AI change.",
+              "reward_contract_id": "character_blueprints_pilot_001.artisan_02.reward_private"
+            },
+            {
+              "id": "character_blueprints_pilot_001.artisan_02.branch_no_test",
+              "name": "Final stop without successful ledger resolution",
+              "trigger": "Confirmed offer_decline, review_stop or ledger_stop; not a temporary defer.",
+              "resolved": "Voluntary activity stops with no false mechanical or emotional success.",
+              "remaining_conflicts": "Open trust and belonging facets remain undeveloped.",
+              "facet_changes": "Keep identity established, preserve actual attempt; no reward.",
+              "base_personality_change": "No base personality or combat-AI change.",
+              "reward_contract_id": "character_blueprints_pilot_001.artisan_02.reward_no_test"
+            }
+          ],
+          "failure_and_recovery": [
+            "At prep, if either person missing/unconscious, do not present prepare_joint_check; wait for another eligible ordinary mission, no invented interaction.",
+            "If actor downs after prep, preserve recorded check; dialogue waits for recovery. Retreat or mission failure is not success: repeat normal mission participation until first eligible success, WITHOUT repeating the committed inspection.",
+            "Enemy capture and defeat are unrelated to checklist scoring; ally final hit counts only as team mission success. No special target, revival or added enemy.",
+            "Defer retains the same state. Confirmed final decline ends only optional chain. Save/reload, duplicate clicks and alternate ending choices never grant extra rewards."
+          ],
+          "reward_contract_ids": [
+            "character_blueprints_pilot_001.artisan_02.reward_supplies",
+            "character_blueprints_pilot_001.artisan_02.reward_private",
+            "character_blueprints_pilot_001.artisan_02.reward_no_test"
+          ]
+        }
+      ],
+      "conclusion": {
+        "established_condition": "Intro and seeded admission reveal normal identity independently of quest.",
+        "core_closed_condition": "Explicit shared, private or final-stop resolution; mission entry and agreement alone do not close the arc.",
+        "closed_behavior": "No recycled quality crisis, duplicate one-off check or repeat payout.",
+        "continuing_growth": "Ordinary practical banter, competence, relationships and leveling continue; base dutiful personality unchanged."
+      },
+      "reward_contracts": [
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.reward_supplies",
+          "player_expectation": "A modest useful share for completed honest teamwork.",
+          "setup": "Commit joint check, participate in successful normal mission and document collaboration.",
+          "narrative_payoff": "The engineer accepts correction and records joint credit.",
+          "grant_proposal": {
+            "category": "ordinary_loot",
+            "description": "One approved ordinary maintenance-supplies bundle, existing loot table, reviewed amount; grant once per player.",
+            "implementation_id": null
+          },
+          "why_it_fits": "Everyday craft work merits everyday materials, not a fabricated skill.",
+          "alternative_branch_fairness": "Private branch receives comparable modest gold; both require equivalent completed work.",
+          "review_required": true
+        },
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.reward_private",
+          "player_expectation": "A modest tangible return without public disclosure.",
+          "setup": "Same verified shared inspection and qualifying success, then honest private ledger choice.",
+          "narrative_payoff": "Professional responsibility without conjured witnesses.",
+          "grant_proposal": {
+            "category": "gold",
+            "description": "One small approved ordinary gold payment from credible existing resources, economy reviewed, granted once per player.",
+            "implementation_id": null
+          },
+          "why_it_fits": "Private wages/settlement fit practical labor.",
+          "alternative_branch_fairness": "Comparable value to supplies, never both payouts.",
+          "review_required": true
+        },
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.reward_no_test",
+          "player_expectation": "A clean choice to stop optional participation.",
+          "setup": "Confirmed stop before full accounting.",
+          "narrative_payoff": "Identity remains coherent without invented lesson.",
+          "grant_proposal": {
+            "category": "closure",
+            "description": "No bonus, loot or gold.",
+            "implementation_id": null
+          },
+          "why_it_fits": "No validated finished work.",
+          "alternative_branch_fairness": "Regular progression unaffected; temporary deferral is not final stop.",
+          "review_required": true
+        }
+      ],
+      "aftermath": {
+        "remembered_facts": [
+          "Single seeded materials miscount, actual prep-check selection, mission outcomes, debrief, mutually exclusive ledger choice and one grant."
+        ],
+        "retired_hostile_lines": [
+          "After a completed collaborative account, retire exclusive-ownership complaints, not craft pride; no racial animus."
+        ],
+        "new_voice_beats": [
+          "Completed: quiet pride in the partner catching an error.",
+          "Stopped: ordinary repairs with no assertion of completed inspection."
+        ],
+        "personality_change_scope": "Dutiful remains dutiful; conditional trust/belonging expand voice only.",
+        "relationship_change_scope": "Respect for a reliable collaborator, never romance or automatic loyalty stat."
+      },
+      "capability_requests": [
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.cap_individual_error",
+          "description": "Add reviewable per-character history:unreported_quality_error and immutable seeded personal facts; facet_error remains tag=null until approval.",
+          "reason": "Cannot fabricate autobiographical error.",
+          "required_for": [
+            "character_blueprints_pilot_001.artisan_02.facet_error",
+            "character_blueprints_pilot_001.artisan_02.node_admission"
+          ],
+          "review_required": true
+        },
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.cap_companion_state",
+          "description": "Save first talk, choices, professional revelations, once-only player-scoped arc and exclusive endpoints.",
+          "reason": "No current conversation/arc state runtime documented.",
+          "required_for": [
+            "character_blueprints_pilot_001.artisan_02.intro_talk",
+            "character_blueprints_pilot_001.artisan_02.arc_ledger"
+          ],
+          "review_required": true
+        },
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.cap_check_observation",
+          "description": "Provide explicit prepare_joint_check narrative prep choice, persist check and acceptance, without minigame or stat buff.",
+          "reason": "Mission entry alone cannot prove shared inspection.",
+          "required_for": [
+            "character_blueprints_pilot_001.artisan_02.milestone_check"
+          ],
+          "review_required": true
+        },
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.cap_failure_recovery",
+          "description": "Track roster participation, ordinary success versus failure/retreat, actor recovery and debrief.",
+          "reason": "Only first later eligible success qualifies, even after failed attempts.",
+          "required_for": [
+            "character_blueprints_pilot_001.artisan_02.milestone_field",
+            "character_blueprints_pilot_001.artisan_02.node_review"
+          ],
+          "review_required": true
+        },
+        {
+          "id": "character_blueprints_pilot_001.artisan_02.cap_economy_reward",
+          "description": "Approve one ordinary loot or gold grant and stable claim per player, with a real source.",
+          "reason": "No balance amounts or implementation IDs approved.",
+          "required_for": [
+            "character_blueprints_pilot_001.artisan_02.reward_supplies",
+            "character_blueprints_pilot_001.artisan_02.reward_private"
+          ],
+          "review_required": true
+        }
+      ],
+      "routing": [
+        {
+          "from": "introduction",
+          "trigger": "intro_talk or intro_share after recruitment",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.artisan_02.node_standards",
+          "state_effect": "Unlock standards talk."
+        },
+        {
+          "from": "introduction",
+          "trigger": "intro_defer",
+          "prerequisite": "No recruitment or story commitment",
+          "to": "end",
+          "state_effect": "Resume the same character-scoped introduction later with original facts."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.node_standards",
+          "trigger": "standards_listen",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.artisan_02.node_admission",
+          "state_effect": "Save ordinary voice beat."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.node_standards",
+          "trigger": "standards_defer",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "end",
+          "state_effect": "Resume standards later."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.node_admission",
+          "trigger": "admission_kind or admission_honest",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.artisan_02.node_offer",
+          "state_effect": "Reveal only seeded error and repayment motive."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.node_admission",
+          "trigger": "admission_pause",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "end",
+          "state_effect": "Resume same admission."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.node_offer",
+          "trigger": "offer_agree",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.artisan_02.milestone_agreement",
+          "state_effect": "Arm player-scoped one-off."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.node_offer",
+          "trigger": "offer_defer",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "end",
+          "state_effect": "Resume offer later."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.node_offer",
+          "trigger": "offer_decline",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.artisan_02.branch_no_test",
+          "state_effect": "Confirm final no-reward stop."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.milestone_agreement",
+          "trigger": "agreed",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.artisan_02.milestone_check",
+          "state_effect": "Wait for eligible normal mission and explicit prep choice."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.milestone_check",
+          "trigger": "character_blueprints_pilot_001.artisan_02.prepare_joint_check selected",
+          "prerequisite": "Both present and conscious, normal mission prepared",
+          "to": "character_blueprints_pilot_001.artisan_02.milestone_field",
+          "state_effect": "Commit paired check once; no minigame, no new item."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.milestone_check",
+          "trigger": "skip prep or absent partner",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.artisan_02.milestone_check",
+          "state_effect": "No check recorded; await next eligible mission."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.milestone_field",
+          "trigger": "eligible normal mission success",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.artisan_02.node_review",
+          "state_effect": "Save mission success; await conscious camp debrief."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.milestone_field",
+          "trigger": "mission failure / retreat",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.artisan_02.milestone_field",
+          "state_effect": "Keep completed check; next normal eligible SUCCESS required."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.node_review",
+          "trigger": "review_correct",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.artisan_02.milestone_account",
+          "state_effect": "Save true debrief."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.node_review",
+          "trigger": "review_wait",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "end",
+          "state_effect": "Return to saved review."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.node_review",
+          "trigger": "review_stop",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.artisan_02.branch_no_test",
+          "state_effect": "Confirmed final stop."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.milestone_account",
+          "trigger": "debrief recorded",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.artisan_02.node_ledger",
+          "state_effect": "Offer exclusive ledger choices; no automatic choice."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.node_ledger",
+          "trigger": "ledger_credit",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.artisan_02.branch_shared_credit",
+          "state_effect": "Grant approved ordinary loot once per player."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.node_ledger",
+          "trigger": "ledger_private",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.artisan_02.branch_private_account",
+          "state_effect": "Grant approved modest gold once per player."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.node_ledger",
+          "trigger": "ledger_notyet",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "end",
+          "state_effect": "Resume ledger without award."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.node_ledger",
+          "trigger": "ledger_stop",
+          "prerequisite": "Saved prior state; chosen option or verified event",
+          "to": "character_blueprints_pilot_001.artisan_02.branch_no_test",
+          "state_effect": "Final no-reward stop."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.branch_shared_credit",
+          "trigger": "first ordinary companion talk after final ending",
+          "prerequisite": "Saved branch closure; one-off aftermath not previously consumed",
+          "to": "end",
+          "state_effect": "Deliver a branch-specific remembered comment once, then continue ordinary repeatable craft dialogue; no new choice, chain or reward."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.branch_private_account",
+          "trigger": "first ordinary companion talk after final ending",
+          "prerequisite": "Saved branch closure; one-off aftermath not previously consumed",
+          "to": "end",
+          "state_effect": "Deliver a branch-specific remembered comment once, then continue ordinary repeatable craft dialogue; no new choice, chain or reward."
+        },
+        {
+          "from": "character_blueprints_pilot_001.artisan_02.branch_no_test",
+          "trigger": "first ordinary companion talk after final ending",
+          "prerequisite": "Saved branch closure; one-off aftermath not previously consumed",
+          "to": "end",
+          "state_effect": "Deliver a branch-specific remembered comment once, then continue ordinary repeatable craft dialogue; no new choice, chain or reward."
+        }
+      ],
+      "routing_rules": {
+        "status": "review_required, authoring-only",
+        "choice_precedence": "Selected choice.next always overrides generic node.next. Generic next is a suggested narrative successor only; it never auto-selects a choice, completes a mission or ends an arc.",
+        "resume": "end on defer means return to saved source node; end on completed choice consumes only that interaction. Final decline is a saved exclusive ending.",
+        "persistence": "Save verified facts and choice transitions atomically; reload, alternate dialogue wording or another roster member cannot reroll one-off key or grant."
+      },
+      "routing_state_ids": [
+        "character_blueprints_pilot_001.artisan_02.state_joint_check_done",
+        "character_blueprints_pilot_001.artisan_02.state_eligible_success",
+        "character_blueprints_pilot_001.artisan_02.state_truthful_debrief",
+        "character_blueprints_pilot_001.artisan_02.state_artisan_chain_closed"
+      ]
+    }
+  ],
+  "proposals": [
+    {
+      "id": "character_blueprints_pilot_001.proposal_guard_story_family",
+      "kind": "story_family",
+      "description": "Register guard_warband_accountability as a single player-scoped one-off chain. Reuse original repeat_key, with saved choices, verified outcomes and exclusive reviewed grants.",
+      "reason": "Blueprint-local family IDs are authoring references; the current story registry does not contain this family."
+    },
+    {
+      "id": "character_blueprints_pilot_001.proposal_guard_warband_provenance",
+      "kind": "history_and_encounter_context",
+      "description": "Save individual grievance and optional reviewed pre-encounter affiliation on an existing unnamed procedural hostile Orc within mission budget. No named lore rewrite, post hoc generic Orc match or respawn.",
+      "reason": "history:orc_warband_grievance is proposed, and speaker/target predicates cannot prove personal relationship or warband affiliation."
+    },
+    {
+      "id": "character_blueprints_pilot_001.proposal_guard_loyalty_ceiling",
+      "kind": "conditional_loyalty_cap",
+      "description": "Proposal: before first recruitment of this individual, if player.race is Orc and the assigned grievance/belief is active, disclose loyalty cap 80; only lift on explicit evidenced reconciliation. Distinct from prison resistance; do not retroactively lower current loyalty.",
+      "reason": "player.race and individual context-sensitive ceiling are not currently registered capabilities."
+    },
+    {
+      "id": "character_blueprints_pilot_001.proposal_guard_fairness",
+      "kind": "persistent_choice_and_bond",
+      "description": "Persist prior truthful promise and waived disputed compensation with accurate limited culpability report; only that costly proof can enable trust conversion. Deterministic private contract independent of enemy/capture.",
+      "reason": "Trust cannot be inferred from killing Orcs, a single dialogue click or an unchanged speaker.tags snapshot."
+    },
+    {
+      "id": "character_blueprints_pilot_001.proposal_guard_training",
+      "kind": "reward_review",
+      "description": "Review one permanent anti-Orc damage perk/technique versus defensive training. Approve balance, exclusive grant and implementation_id before promising either; no supplies substitution.",
+      "reason": "No approved perk or item ID for this personal specialization exists in the supplied contract."
+    },
+    {
+      "id": "character_blueprints_pilot_001.proposal_artisan_story_family",
+      "kind": "story_family",
+      "description": "Register artisan_shared_inspection as a single player-scoped one-off chain using original repeat_key, ordinary field participation, authored truth and once-only grant.",
+      "reason": "It is a blueprint-local story proposal, not a registered quest template."
+    },
+    {
+      "id": "character_blueprints_pilot_001.proposal_artisan_history",
+      "kind": "new_history_tag",
+      "description": "Propose history:unreported_quality_error for this specific instantiated engineer only, with immutable seeded details and explicit disclosure gating; do not classify it as existing.",
+      "reason": "The draft tag registry cannot support autobiographical detail of an unreported counting mistake."
+    },
+    {
+      "id": "character_blueprints_pilot_001.proposal_artisan_field_check",
+      "kind": "scoring_and_event",
+      "description": "Offer ONE explicit prepare_joint_check narrative preparation option, no minigame; save paired check and later ordinary mission success/debrief. Failure or retreat retries success only, not preparation.",
+      "reason": "mission_entry and mission_success do not establish that a paired inspection happened."
+    },
+    {
+      "id": "character_blueprints_pilot_001.proposal_artisan_payment",
+      "kind": "reward_review",
+      "description": "Approve one existing ordinary-loot OR modest gold grant for verified work, never both; specify source, economy values and player-scoped claim.",
+      "reason": "Economy costs, amounts and loot IDs are not in the provided contract."
+    },
+    {
+      "id": "character_blueprints_pilot_001.proposal_common_persistence",
+      "kind": "conversation_arc_framework",
+      "description": "Review nonexecuting routing state and player-scoped one-off rewards/chains; introductions remain character-scoped. Save choices, event waits, defer/stop, recovery, endings and once-only post-resolution talks.",
+      "reason": "These are draft authoring semantics, not an implemented runtime conversation/story framework."
+    },
+    {
+      "id": "character_blueprints_pilot_001.proposal_guard_private_contract",
+      "kind": "trust_evidence_and_guaranteed_recovery",
+      "description": "Provide a deterministic ordinary private-contract dispute over an optional compensation claim and limited truthful warband attribution; waiving a real claim is an observable cost, offered regardless of enemy availability. Never fake past lore. If this hook cannot be implemented, do not activate the Orc-player cap.",
+      "reason": "Resolves distrust through verified fair action without random encounters or mandatory capture loadout."
+    },
+    {
+      "id": "character_blueprints_pilot_001.proposal_global_one_off_scope",
+      "kind": "player_scoped_repeat_policy",
+      "description": "Both pilot major arcs retain their exact repeat_key strings, now scope=player; one roster member can claim a chain reward once, not each copy. Character introductions retain character scope.",
+      "reason": "Prevents roster-copy story and alternate-branch payout farming."
+    }
+  ],
+  "self_review": {
+    "entry_count": 2,
+    "duplicate_ids": [],
+    "unknown_references": [],
+    "overlength_ids": [],
+    "unsupported_claims": [
+      "Review only: player.race, individualized 80 ceiling, per-character grievance/provenance, authored routing and atomic persistence are not registered live mechanics.",
+      "Review only: the guaranteed disputed-compensation contract and truthful-cost tracking require a credible approved claim source; without this, do not activate the conditional loyalty cap.",
+      "Review only: enemy prebinding, actual encounter/capture result events and anti-Orc damage/defensive training implementation are unapproved.",
+      "Review only: artisan individual quality-error tag, prepare_joint_check choice, mission participation scoring, gold/loot payout need implementation and balance review."
+    ],
+    "notes": [
+      "Two unchanged original entry IDs, 16 original facet IDs, 10 original conversation-node IDs, both original arc IDs, all original milestone IDs and six original reward IDs preserved.",
+      "Original entry, facet, node, arc, milestone, branch, reward and capability IDs preserved. Added guard node_quiet_account, boundary_private and four quiet choices; artisan review_stop, ledger_stop and namespaced prepare_joint_check; review-only routing/state metadata and root revision=2. No original IDs retired.",
+      "Major arc repeat_key strings preserved, scope changed from character to player. Introduction repeat policies remain character-scoped.",
+      "Guard evidence/trust and artisan review/ledger now have incoming routes. No intended conversation, conditional milestone or ending is left without an authored entry path; conditional combat still needs its proposed generation hook.",
+      "Reconciliation requires a documented sacrificed claim; Orc kills alone do not convert beliefs. Guard specialism can propose permanent anti-Orc damage OR defensive training; no forced capture or supplies substitution.",
+      "Artisan: one narrated prep selection plus actual mission success, with failure/retreat retry of ordinary mission only.",
+      "Author self-review only; no official contract or engine validator is claimed.",
+      "All authored route destinations have IDs; conditional enemy path depends on review approval, but deterministic quiet fallback does not depend on enemy spawn. No dead-end intended after event failures."
+    ]
+  }
+}

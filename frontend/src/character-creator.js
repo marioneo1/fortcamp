@@ -2,7 +2,7 @@ import {escapeHTML as esc} from './mission-board-ui.js';
 import {raceEffects} from './character-effects.js';
 
 export function startingRaces(content){
-  return Object.entries(content.races||{}).filter(([,race])=>race.rarity!=='Limited').sort(([a],[b])=>a==='Human'?-1:b==='Human'?1:a.localeCompare(b));
+  return Object.entries(content.races||{}).filter(([,race])=>race.starting_selectable===true).sort(([a],[b])=>a==='Human'?-1:b==='Human'?1:a.localeCompare(b));
 }
 export function mountCharacterCreator(root,content){
   const race=root.querySelector('#cc-race'),perk=root.querySelector('#cc-trait');

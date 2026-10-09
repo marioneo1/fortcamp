@@ -17,7 +17,7 @@ class JobLoadoutTests(unittest.TestCase):
                 state=self.state();before=deepcopy(state['characters'][0]);inventory=deepcopy(state['inventory'])
                 jobs.update(state,'player',definition['starter_skills'],job)
                 char=state['characters'][0];actives,passives,mods=jobs.snapshot(char)
-                self.assertEqual((len(actives),len(passives)),(3,0) if job in {'monk','rogue','ranger','mage','cleric','druid','summoner','engineer'} else (2,1))
+                self.assertEqual((len(actives),len(passives)),(3,0) if job in {'monk','rogue','ranger','mage','cleric','druid','summoner','engineer','captor'} else (2,1))
                 self.assertEqual(char['equipment'],before['equipment']);self.assertEqual(state['inventory'],inventory)
                 self.assertEqual(char['perks'],before['perks']);self.assertEqual(char['traits'],before['traits'])
                 unit=combat._player_unit(state,char,2,2)

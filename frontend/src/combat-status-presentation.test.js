@@ -10,6 +10,17 @@ test('Cleric regeneration shows remaining healing ticks with its new matching ic
  assert.equal(visual.count,2);assert.match(visual.image,/cleric-v1\/sanctuary.png/);
 });
 const defs={stun:{name:'Stun',description:'Cannot act during the next activation.'},poison:{name:'Poison',description:'Takes damage each activation.'},rally_power:{name:'Attack boost',description:'Next attack +25%.'}};
+test('effects tray stays available to position even with no active effects',()=>{
+ const tray=statusTrayMarkup({id:'a',statuses:[]},defs,esc);
+ assert.match(tray,/No active effects/);assert.match(tray,/data-all-effects/);
+});
+test('effects dock provides wrapping icons while the popup retains every effect',()=>{
+ const unit={id:'a',statuses:['poison','burn','bleed','blind','stun','slow','wet','fear'].map(id=>({id,turns:2}))};
+ const tray=statusTrayMarkup(unit,defs,esc);
+ assert.equal((tray.match(/data-unit-status=/g)||[]).length,8);
+ assert.match(tray,/status-tray-icons/);
+ assert.equal((statusListMarkup(unit,defs,esc,{cards:true}).match(/data-effect-id=/g)||[]).length,8);
+});
 test('control takes priority, guard is visible and same effect is not duplicated',()=>{
  const unit={guarding:true,statuses:[{id:'poison',turns:2},{id:'stun',turns:1},{id:'poison',turns:2}]};
  assert.deepEqual(visibleStatuses(unit).map(s=>s.id),['stun','poison','guard']);
@@ -38,7 +49,7 @@ test('Bard song statuses use the extracted Bard artwork',()=>{
 test('map, tray and inspection retain every effect and its description',()=>{
  const unit={id:'a',statuses:[{id:'poison',turns:2},{id:'stun',turns:1},{id:'rally_power'}]};
  const map=mapStatusMarkup(unit,defs,esc);assert.equal((map.match(/data-unit-status=/g)||[]).length,3);assert.doesNotMatch(map,/status-overflow/);
- const tray=statusTrayMarkup(unit,defs,esc);assert.match(tray,/Buffs/);assert.match(tray,/Debuffs/);assert.equal((tray.match(/data-unit-status=/g)||[]).length,3);
+ const tray=statusTrayMarkup(unit,defs,esc);assert.match(tray,/buffs, debuffs/);assert.match(tray,/All effects/);assert.equal((tray.match(/data-unit-status=/g)||[]).length,3);
  const list=statusListMarkup(unit,defs,esc);assert.match(list,/Cannot act/);assert.match(list,/Next attack \+25%/);assert.match(list,/one stack expires after each tick/);
  assert.equal(mapStatusMarkup({...unit,alive:false},defs,esc),'');
 });

@@ -1,7 +1,7 @@
 """Bounded martial passives; shares resolved damage and owner activation clocks."""
 from .combat_feedback import record as feedback
 
-HARMFUL = ('disarm','captor_held','stun','freeze','sleep','paralyze','bind','charm','confuse','fear','mute',
+HARMFUL = ('rat_weakness','disarm','captor_held','stun','freeze','sleep','paralyze','bind','charm','confuse','fear','mute',
            'blind','hobbled','slow','armor_fracture','vulnerable','open_guard','palm_exposure','poison','burn','bleed')
 
 

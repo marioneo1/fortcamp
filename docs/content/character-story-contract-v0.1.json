@@ -1,0 +1,386 @@
+{
+  "schema_version": "0.1",
+  "status": "DRAFT AUTHORING CONTRACT ONLY. No runtime importer or new traits implemented.",
+  "catalog_snapshot_date": "2026-10-08",
+  "maintenance": {
+    "canonical_existing_sources": [
+      "backend/races.py:RACE_CATALOG,RACE_GROUPS",
+      "backend/relationships.py:PERSONALITIES",
+      "backend/job_loadouts.py:JOBS"
+    ],
+    "rule": "Refresh existing IDs when canonical catalogues change; separately review proposed tag/event additions. Bump contract version for incompatible authoring changes. Never recycle retired story IDs.",
+    "quest_catalogue": "New story templates must enter a reviewed story registry with repeat_scope, cooldown, outcomes and reward references before dialogue is commissioned."
+  },
+  "existing_ids": {
+    "races": [
+      "Human",
+      "Goblin",
+      "Dwarf",
+      "Wood Elf",
+      "Half-Orc",
+      "Halfling",
+      "Tiefling",
+      "Hobgoblin",
+      "Bugbear",
+      "Kobold",
+      "Orc",
+      "Revenant",
+      "Undead",
+      "High Elf",
+      "Gnome",
+      "Manaforged",
+      "Homunculus",
+      "Dreamkin",
+      "Lizardfolk",
+      "Harpy",
+      "Minotaur",
+      "Centaur",
+      "Astral Elf",
+      "Voidsent",
+      "Alien",
+      "Dark Elf",
+      "Dryad",
+      "Faun",
+      "Catfolk",
+      "Foxkin",
+      "Merfolk",
+      "Dragonkin",
+      "Fairy",
+      "Slimefolk",
+      "Automaton",
+      "Aasimar",
+      "Vampire",
+      "Banshee",
+      "Ogre",
+      "Troll",
+      "Werewolf",
+      "Celestial"
+    ],
+    "race_families": {
+      "Beastkin": [
+        "Catfolk",
+        "Centaur",
+        "Dragonkin",
+        "Faun",
+        "Foxkin",
+        "Harpy",
+        "Kobold",
+        "Lizardfolk",
+        "Merfolk",
+        "Minotaur",
+        "Werewolf"
+      ],
+      "Deathless": [
+        "Banshee",
+        "Revenant",
+        "Undead",
+        "Vampire"
+      ],
+      "Goblinoid": [
+        "Bugbear",
+        "Goblin",
+        "Hobgoblin"
+      ],
+      "Elven": [
+        "Astral Elf",
+        "Dark Elf",
+        "High Elf",
+        "Wood Elf"
+      ],
+      "Construct": [
+        "Automaton",
+        "Homunculus",
+        "Manaforged"
+      ],
+      "Giantkin": [
+        "Minotaur",
+        "Ogre",
+        "Troll"
+      ],
+      "Fae": [
+        "Dryad",
+        "Fairy",
+        "Faun",
+        "Foxkin"
+      ],
+      "Planar": [
+        "Aasimar",
+        "Celestial",
+        "Tiefling",
+        "Voidsent"
+      ]
+    },
+    "personalities": [
+      "berserker",
+      "survivor",
+      "coward",
+      "guardian",
+      "dutiful",
+      "duelist",
+      "opportunist",
+      "strategist",
+      "reckless",
+      "merciful",
+      "curious",
+      "steadfast"
+    ],
+    "jobs": [
+      "fighter",
+      "barbarian",
+      "rogue",
+      "ranger",
+      "mage",
+      "cleric",
+      "monk",
+      "bard",
+      "druid",
+      "engineer",
+      "summoner",
+      "captor"
+    ],
+    "genders": [
+      "female",
+      "male"
+    ]
+  },
+  "proposed_tags": {
+    "background": [
+      "background:caravan_guard",
+      "background:artisan",
+      "background:former_soldier",
+      "background:field_medic",
+      "background:itinerant_scholar",
+      "background:debt_collector"
+    ],
+    "motive": [
+      "motive:recognition",
+      "motive:security",
+      "motive:reconciliation",
+      "motive:mastery",
+      "motive:belonging",
+      "motive:repayment"
+    ],
+    "voice": [
+      "voice:dry_humor",
+      "voice:complains",
+      "voice:appearance_pride",
+      "voice:craft_pride",
+      "voice:reserved",
+      "voice:warm"
+    ],
+    "needs": [
+      "needs:blood"
+    ]
+  },
+  "proposed_events": {
+    "mission_entry": "Party enters mission; target context limited to disclosed briefing or visible enemies.",
+    "enemy_spotted": "First relevant visible enemy, never hidden opponents.",
+    "ally_rescued": "Verified rescue of an ally; bind ally, not enemy.",
+    "self_wounded": "Speaker has just taken damage and remains conscious.",
+    "mission_success": "Verified successful mission outcome.",
+    "camp_talk": "Explicit conversation topic; bound known prior encounter may supply target."
+  },
+  "proposed_line_families": [
+    "blood_opportunity",
+    "unsuitable_quarry",
+    "elven_appearance",
+    "craft_comparison",
+    "approach_caution",
+    "mission_focus",
+    "rescue_relief",
+    "wounded_resolve",
+    "shared_success",
+    "professional_memory",
+    "belonging",
+    "mercy"
+  ],
+  "predicate_contract": {
+    "shape": {
+      "field": "speaker.race",
+      "op": "eq",
+      "value": "Vampire"
+    },
+    "semantics": "requires.all: every predicate true; nonempty requires.any: at least one true; requires.none: every predicate false. Empty any adds no restriction.",
+    "fields": {
+      "speaker.race": [
+        "eq",
+        "in"
+      ],
+      "speaker.gender": [
+        "eq",
+        "in"
+      ],
+      "speaker.personality": [
+        "eq",
+        "in"
+      ],
+      "speaker.job": [
+        "eq",
+        "in"
+      ],
+      "speaker.tags": [
+        "has",
+        "has_any"
+      ],
+      "speaker.conscious": [
+        "eq"
+      ],
+      "target.present": [
+        "eq"
+      ],
+      "target.known": [
+        "eq"
+      ],
+      "target.hostile": [
+        "eq"
+      ],
+      "target.race": [
+        "eq",
+        "in"
+      ],
+      "target.race_families": [
+        "has",
+        "has_any"
+      ],
+      "target.living": [
+        "eq"
+      ],
+      "target.blood_eligible": [
+        "eq"
+      ],
+      "camp_topic": [
+        "eq",
+        "in"
+      ]
+    },
+    "value_rules": "eq requires scalar; in and has_any require array; has requires one registered tag/family. Boolean fields require boolean. target.living and blood_eligible are explicit encounter facts, not derived blindly from race family.",
+    "camp_topics": [
+      "outlook",
+      "recent_encounter",
+      "belonging"
+    ],
+    "placeholders": [
+      "speaker",
+      "target",
+      "ally",
+      "mission"
+    ],
+    "binding_rules": "Any placeholder or target predicate requires a bound, known participant. Combat targets must be currently visible. Prior targets in camp must come from a recorded encounter. ally_rescued must bind a living rescued ally. No pronouns guessed from names."
+  },
+  "output_contract": {
+    "top_level_required": [
+      "schema_version",
+      "batch_id",
+      "content_type",
+      "entries",
+      "proposals",
+      "self_review"
+    ],
+    "content_types": [
+      "dialogue",
+      "story_outline"
+    ],
+    "dialogue_entry_required": [
+      "id",
+      "family_id",
+      "event",
+      "requires",
+      "text",
+      "weight",
+      "cooldown"
+    ],
+    "dialogue_entry_example": {
+      "id": "voice_pilot_001.blood.01",
+      "family_id": "blood_opportunity",
+      "event": "mission_entry",
+      "requires": {
+        "all": [
+          {
+            "field": "speaker.race",
+            "op": "eq",
+            "value": "Vampire"
+          },
+          {
+            "field": "speaker.tags",
+            "op": "has",
+            "value": "needs:blood"
+          },
+          {
+            "field": "target.present",
+            "op": "eq",
+            "value": true
+          },
+          {
+            "field": "target.known",
+            "op": "eq",
+            "value": true
+          },
+          {
+            "field": "target.hostile",
+            "op": "eq",
+            "value": true
+          },
+          {
+            "field": "target.living",
+            "op": "eq",
+            "value": true
+          },
+          {
+            "field": "target.blood_eligible",
+            "op": "eq",
+            "value": true
+          }
+        ],
+        "any": [],
+        "none": []
+      },
+      "text": "At least this quarry has a pulse.",
+      "weight": 1,
+      "cooldown": {
+        "speaker_missions": 3,
+        "family_missions": 1,
+        "max_per_mission": 1
+      }
+    },
+    "limits": {
+      "combat_text_chars": 100,
+      "mission_entry_text_chars": 140,
+      "camp_text_chars": 300,
+      "weight_min": 1,
+      "weight_max": 3
+    },
+    "cooldown_rules": "Use exactly speaker_missions, family_missions and max_per_mission nonnegative integer fields; cooldown values are proposals for review, not a runtime clock implementation.",
+    "story_outline_entry_required": [
+      "id",
+      "family_id",
+      "title",
+      "eligibility",
+      "binding",
+      "repeat_policy",
+      "recognition_text",
+      "choices",
+      "outcomes",
+      "recovery",
+      "aftermath",
+      "reward_proposal"
+    ],
+    "story_outline_format": "family_id must be old_rival for the initial batch. eligibility uses the same requires shape as dialogue and only registered predicates; concepts needing missing facts go in proposals. binding is a prose description of necessary validated participants, not executable spawn logic. choices, outcomes, recovery and aftermath are arrays of concise prose strings; reward_proposal is prose, never an invented skill/perk ID.",
+    "repeat_policy_example": {
+      "repeat_key": "personal:old_rival:first_challenge",
+      "scope": "player",
+      "max_offers": 1,
+      "retry": "same_instance_only"
+    },
+    "repeat_policy_rules": "scope player means one occurrence across that player account/save, not once for each roster member. scope character is allowed only if explicitly requested. Never means never reoffer as a new instance; retry/defer policy for the same instance must be explicit. A repeat_key is a stable authored identity shared by variants of the same one-off; new entry IDs or wording do not create a new repeat entitlement. The initial four old_rival outlines share personal:old_rival:first_challenge.",
+    "proposals_format": "Array of objects with id, kind, description, reason; these cannot be referenced in executable line predicates until separately approved.",
+    "self_review_required": [
+      "entry_count",
+      "duplicate_ids",
+      "unknown_references",
+      "overlength_ids",
+      "unsupported_claims",
+      "notes"
+    ],
+    "self_review_format": "entry_count is integer; every other field is an array of strings. Self-review is author checking, not proof of programmatic validation."
+  }
+}

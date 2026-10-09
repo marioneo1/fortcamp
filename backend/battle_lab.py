@@ -291,7 +291,11 @@ class Position(BaseModel):
 
 
 class CommandRequest(BaseModel):
+    gate_id: str | None = None
+    operate_gate: bool = False
+    gate_operation: str | None = None
     action: str
+    choice: str | None = None
     x: int | None = None
     y: int | None = None
     target_id: str | None = None

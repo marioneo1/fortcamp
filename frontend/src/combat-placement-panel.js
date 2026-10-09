@@ -4,7 +4,7 @@ export function bindPlacementPanel(panel,key,signal){
  const place=(x,y)=>{const left=Math.max(8,Math.min(innerWidth-panel.offsetWidth-8,x)),top=Math.max(8,Math.min(innerHeight-panel.offsetHeight-8,y));Object.assign(panel.style,{position:'fixed',left:`${left}px`,top:`${top}px`,transform:'none'});return {x:left/innerWidth,y:top/innerHeight}};
  try{const p=JSON.parse(localStorage.getItem(storageKey));if(Number.isFinite(p?.x)&&Number.isFinite(p?.y))requestAnimationFrame(()=>{if(panel.isConnected)place(p.x*innerWidth,p.y*innerHeight)})}catch{}
  let drag=null;
- panel.addEventListener('pointerdown',e=>{if(e.button!==0||!e.target.closest('[data-placement-handle]'))return;const r=panel.getBoundingClientRect();drag={id:e.pointerId,x:e.clientX-r.left,y:e.clientY-r.top};panel.setPointerCapture(e.pointerId);e.preventDefault()},{signal});
+ panel.addEventListener('pointerdown',e=>{if(e.button!==0||!e.target.closest('[data-placement-handle]')||e.target.closest('button,a,input,select,textarea,[role="button"]'))return;const r=panel.getBoundingClientRect();drag={id:e.pointerId,x:e.clientX-r.left,y:e.clientY-r.top};panel.setPointerCapture(e.pointerId);e.preventDefault()},{signal});
  panel.addEventListener('pointermove',e=>{if(drag?.id!==e.pointerId)return;const p=place(e.clientX-drag.x,e.clientY-drag.y);try{localStorage.setItem(storageKey,JSON.stringify(p))}catch{}},{signal});
  panel.addEventListener('pointerup',()=>{drag=null},{signal});panel.addEventListener('lostpointercapture',()=>{drag=null},{signal});
 }

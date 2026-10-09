@@ -1,5 +1,90 @@
 # Combat controls and targeting
 
+## October 8: extend direct targeting to skills and Subdue
+
+The shared unit handler now executes the selected skill or Subdue with its
+validated approach, matching explicit basic Attack. No generic Move & Attack
+menu appears just because the preview includes movement. Invalid explicit
+targets cannot fall back to other skills/basic attacks, and occupied-floor
+clicks filter actions to the selected mode. Move mode still offers contextual
+choices. Dedicated AoE/self, placement, element, ally-command and Abduct flows
+keep their relevant selection/confirmation steps. This branch is shared by
+desktop and touch; mobile gesture code was not the cause.
+
+See [skill targeting audit](SKILL_TARGETING_AUDIT.md) for all base-Job catalogue
+entries, routing families, regression coverage and remaining manual checks.
+
+## October 8: single-click Attack and door intent
+
+Explicit Attack mode (A) now executes a valid enemy/obstacle click directly,
+including the previewed approach if needed. It no longer opens a second Move &
+Attack menu. Normal Move mode still exposes contextual choices; skills and Subdue
+retain their existing targeting flow. Weapon range, walls and movement allowance
+remain authoritative. This removes the extra click reported against Tarin Fen;
+it does not expand weapon reach.
+
+Clicking a distant door icon now means approach and perform the displayed Open or
+Close action on arrival in the same request. Nearby approaches retain immediate
+movement preview. Insufficient movement or discovery/hazard interruption stops
+without operating; reaching the door consumes the normal main action. Stale Open
+intent cannot accidentally close an already-open door. Both public request models
+now retain gate ID and operation intent (previously unrecognized fields were
+discarded). Plain floor navigation remains movement-only.
+
+Validation: Chrome A/adjacent/distant attack and immediate door approach checks,
+395 frontend tests, 26 focused backend tests including the real Battle Lab handler,
+and build pass. Existing playback/input locking remains in place.
+
+## October 8: target cursors and single doorway control
+
+Valid/invalid target cursors now inherit through portraits, HP labels and other token children. Pressing A shows the weapon's attack cursor across the complete enemy token. Browser QA verifies that an adjacent legal enemy click sends Attack directly, while an out-of-range target still requires approach confirmation. The reported intermittent unnecessary approach while stationary has not been reproduced; no range or wall rules were weakened.
+
+Each doorway has one permanent control centered on its physical boundary (or legacy gate footprint). Both inside and outside operating positions remain valid. A nearby approach uses the supplied legal movement graph and starts its normal optimistic walking preview before the server responds. If neither side is within the current movement allowance, the server chooses the nearest reachable operating side, with its existing shortest-route/open-entrance tie rules. Approaching does not automatically open/close or spend the main action. Opening/closing still requires server validation and normal action/animation sequencing.
+
+Validation: isolated Chrome A/cursor/direct-attack/approach/door checks, 394 frontend tests, 19 focused backend tests and frontend build pass. The broader approach suite also exposes an existing obsolete Mage-zone fixture (`test_ground_spell_preview_and_move_cast_use_same_cells`), which fails to find a retired skill before exercising combat; it remains outside this UI fix.
+
+## October 8: player layout adopted as default
+
+New/reset layouts use the exported approximately 1216px centered, bottom-aligned Command/Skills/Effects bar, centered top turn order and Battle Lab at 21.9% vertical travel. The old standalone preview, commands and tools coordinates are obsolete because those controls are now grouped. Existing saved positions remain respected. Title, Objectives and map/battle tools now share one draggable card, with the icon row directly below Objectives. On smaller windows the bar clamps to fit, the unsaved character card moves above it if necessary, and long turn orders move below the title card. Map zoom and camera behavior are unchanged.
+
+## October 8: close controls and drag interaction
+
+Command and Skills now each reserve 12px before the next divider, in addition to the 12px inset after it; icon tracks and resize calculations include this spacing.
+
+The shared placement-window drag handler now ignores interactive controls in its header, so clicking Close does not become a drag or lose its click through pointer capture. Turn Order and All Effects close reliably after dragging. Battle utilities, unit/effect inspectors, both HUD detail windows and the main battle-view Close button share 38px bordered square controls, hover/focus treatment and accessible labels. Closing the battle view does not order extraction; placement actions continue to use Cancel.
+
+## October 8: compact combined action bar and fixed character card
+
+The latest floating HUD replaces separate Commands and Skills with one draggable Command | Skills | Effects panel. Fixed column tracks give command and skill buttons identical spacing and sizes; the effects section wraps across then down. The panel retains horizontal resizing in Edit layout. Old separate-command and preview positions are unused; Reset restores current defaults.
+
+The acting character, Traits and action description share a fixed 400 by 260 pixel card (30 extra pixels while editing), with a divider above the description. Text stays at 16px with no scrollbar or automatic font/card resizing. Commands and all base-Job active skill summaries use one concise sentence; full mechanics remain in skill tooltips. Dynamic Battle Priest healing, humanoid return, Reclaim and machine exit/cancel summaries follow their current state.
+
+Map tools are a single icon row with accessible labels and hover titles: Center map, Supplies, History, Battle options and Edit layout (plus Reset while editing). Zoomed maps now reserve at least 360px extra camera travel on either side, scaling with viewport height, so right-drag can pull edge cells clear of overlays. Fitted panning remains bounded to 120px each way. No combat rules or production data changed.
+
+## October 8: unified skills, effects and command styling
+
+The rightmost quarter of the skills container now holds Effects, separated by a vertical divider. Badges fill from left to right and wrap into rows; overflow opens the existing full-effects popup. Empty effects remain visible. Effects move with Skills rather than as a separate HUD group. The skills grid is five columns by two rows with no scrollbar; the existing skill-page controls handle more than ten abilities. Resizing the container scales skill and command tiles together (up to 88px) so ten skills remain reachable instead of forcing a third row. Commands now use the same filled square artwork, borders, top-left key badge and name underneath, with a matching header and panel height.
+
+Objectives are directly beneath the round/title in the same draggable group. The centered map margin is now 96px; the battlefield allows overflow so bottom-edge HP/Resolve labels are not clipped at the map boundary. Fitted-map panning is now limited to 120px each way (three times the original adjustment); a deliberate pan can bring an edge closer to the viewport, and Center map restores full centered breathing room. Other saved group positions remain local and preserved.
+
+## October 8: HUD sizing and bounded map adjustment
+
+Skills now use 88px square buttons with 72px artwork, matching commands, with two rows in a panel the same height as Commands. Resizing skills changes the available columns; overflow remains reachable. Buffs/debuffs are a separate draggable group beneath skills, including an empty state so the group can always be positioned. Existing browser-local positions are retained; Reset applies the updated defaults.
+
+Turn-order cards and portrait art are 50% larger (102px cards, 54px portraits). The HUD shows up to ten upcoming conscious, living, present units, fewer on narrow windows. Its scrollbar is removed; a non-interactive **+N more** label indicates overflow. Click the turn-order group (or Enter/Space while focused) to open one draggable full-order window. The full order refreshes as units die, become unconscious or leave. Effects and turn-order windows have dedicated styling so summon-placement cleanup cannot remove them.
+
+Fit now reserves 80px around the map for edge names/markers. The aspect ratio remains unchanged. Right-drag can adjust a fitted/zoomed-out map by at most 40px each way; zoomed-in maps retain ordinary panning with edge margins. Camera adjustment survives action-selection redraws. **Center map**, immediately beside Supplies, explicitly restores the centered fitted view. The same padded camera works across square, wide and tall maps; no gameplay coordinates/pathfinding are changed.
+
+## October 8: floating battle HUD (implemented in dev, experimental)
+
+The active battle viewport fills the battle window; map fitting still preserves its aspect ratio. The previous full-width header and command dock are replaced by translucent independent groups: battle title, turn order, objectives, acting character with Traits, skills/Arrange with a smaller effects row, commands, action description, and map/Supplies/History/Battle options. Preparation UI is unchanged. Existing skill and command artwork/sizes and combat rules remain unchanged. Auto One Turn and Auto Resolve remain in Battle options.
+
+Select **Edit layout**, then drag a group's labeled grip. Gold guides snap its edges/center to the window or another group's edges/center (8-pixel tolerance); hold Shift for free placement. Focused grips also support arrow keys (8 pixels, or 1 with Shift). Combat keyboard shortcuts pause while editing. Select **Done editing** to hide grips. Layout is saved automatically in this browser, shared across battles, using normalized positions and clamped after window resizing. **Reset** restores the starting edge layout. The skills group can be resized horizontally using its lower-right corner while editing; icons retain their size and the skill bar scrolls when necessary. Deliberate custom overlaps are allowed. Narrow windows stack central groups above commands by default.
+
+Buffs, debuffs and other visible effects share the row beneath skills: up to six 30-pixel badges, fewer when the container is narrow. **+N more** (or **All effects**) opens one draggable, scrollable effects window with full descriptions. Its position is remembered, it closes on actor changes/battle close, and Escape closes it. The open window refreshes on battle redraw. Map badges and the existing right-click unit inspector are unchanged.
+
+The BG3 reference informs edge placement and map space, while Fortcamp retains its own painted controls. No art generation or new assets are needed. Layout settings stay local to this browser; cross-device presets, per-resolution profiles and touch/mobile-specific HUD design are deferred.
+
 Engineer uses centered Confirm/Cancel for machinery/hazard placement and mounting/
 exit, with legal highlights and prop previews. C/Escape/right-click cancel. Attack
 fires an occupied machine; Overclock leaves the first of two shots in the same
@@ -548,3 +633,51 @@ See SUMMONER_REWORK_REVIEW.md for lifecycle, creature profiles and AI limitation
 ### Engineer/Summoner placement refinement — October 7
 
 Placement windows drag by their header and remember separate positions. E confirms a valid selection; C/Escape/right-click cancels. Turret construction alone uses the Engineer window. Dynamite and mines use ground AoE targeting; mounting and Scuttle highlight owned legal machines; Rapid Assembly targets self. Invalid placement uses the X cursor. Engineer/Summoner battle descriptions are concise single sentences; extended reference text is retained for a later menu. Mines/wrecks now retain their presentation until resolved explosion/defeat events play.
+
+
+### Mobile Safari battle controls ? October 8 (first dev pass)
+
+Touch screens up to 1100 CSS pixels use a separate battle layout; desktop mouse controls and saved desktop HUD positions are preserved. Portrait and landscape respect screen safe areas. Commands, Skills and Effects share a bottom panel with 44px action targets. Tap a tab to switch panels; Hide expands the map and Show restores controls. Goals expands objectives; Order opens the closeable turn-order window. The existing map-center icon recenters the view.
+
+Tap a command/skill, then its target. Cancel abandons targeting and returns to Move. Drag the map with one finger; pinch to zoom around the gesture midpoint. Hold a unit for 450ms to open persistent Unit Details, or hold its status badge for Effect Details. Dragging, pinching and holding suppress the gesture's action click without delaying the next deliberate tap. Touch does not use the cursor-following hover card. Browser page zoom remains enabled. Mobile details/placement windows are constrained to the screen; long lists remain scrollable inside persistent windows.
+
+Validation: 16 gesture/camera/HUD unit tests, isolated Chrome portrait/landscape touch-input checks (including no commands after pan/pinch/hold), persistent-details open/close, desktop-layout restoration, desktop HUD regression and frontend build. This is browser emulation, not actual iOS Safari validation. Real-device safe areas, browser chrome, performance, and the full collection of skill-specific multi-step placement flows still need playtesting. Non-battle screens, touch skill reordering and a complete mobile onboarding flow are outside this first pass. No deployment or combat-rule changes.
+
+
+October 8 mobile space/setup follow-up: reduced the bottom controls from 206px to 138px and actor/description card from 120px to 82px. Commands and skills use one horizontally swipeable row, with labels retained and no visible scrollbar; Effects uses a compact row and the existing detail popup. Portrait map clearance increases by 110px at the same screen size. The Lab button exposes restart/map selection during a test. Battle Lab setup uses a full-height touch dialog, a single scrollable workspace, width-constrained fieldsets and 16px native select/input text. Job selection is tested reachable, uncovered and changeable in portrait/landscape. Desktop HUD regression and frontend build pass. Actual iPhone Safari feedback remains required.
+
+
+## Withdrawal controls - October 8
+
+Leave Map belongs to the Actions menu (I), not Battle Options. It appears only
+when the acting character occupies an EXIT tile. During the initial HOLD it is
+visible but disabled, with a short instruction to hold until the next turn.
+When ready, Leave Map extracts that character using the existing rules. L selects
+it while Actions is open; a disabled entry cannot be activated by click or key.
+
+Retreat All belongs to the Commands group, with matching icon tile and R key
+badge. It retains the existing second-click/second-R confirmation and is disabled
+once withdrawal has begun. Order: Move, Attack, optional Subdue, Throw, Actions,
+Guard, End Turn, Retreat All. Desktop commands use four columns/two rows; mobile
+keeps its swipeable command row. Battle Options retains map help and auto-play,
+without either withdrawal button. No retreat/extraction timing rules changed.
+
+Validation: 15 backend tactical tests (including hidden/holding/ready/extract
+behavior), 411 frontend tests and build pass. No manual browser acceptance claimed.
+
+
+### Withdrawal layout correction
+
+Guard's dedicated button is removed. The six standard commands are Move, Attack,
+Throw, Actions, End Turn, Retreat All, in two rows of three. Subdue remains a
+seventh command when capture equipment is available; that panel uses four
+columns and still two rows. CSS now reads the same column count used for panel
+width. Retreat All's legacy full-row span is overridden inside Commands; it was
+causing the clipped third row reported by the player.
+
+End Turn help explicitly states that an unused main action grants Guard, reducing
+the next direct hit by 25%. Space ends the turn; G remains an alias for End Turn.
+Retreat confirmation and the mobile swipe row remain. Isolated actual-browser
+checks at 1440px/1000px confirm two rows, visible labels, optional Subdue, no Guard
+button, the 25% description and held/ready Leave Map states. QA tool:
+`tools/command_layout_browser_qa.mjs`; no game saves or live endpoints used.

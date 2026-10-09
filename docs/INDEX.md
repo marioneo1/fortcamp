@@ -1,5 +1,46 @@
 # Fortcamp documentation map
 
+[Starting race audit](design/STARTING_RACE_AUDIT.md): implemented 14 starting
+choices, 26 discovery races and two special acquisitions; existing characters preserved.
+
+[Classes at a glance](design/CLASSES_AT_A_GLANCE.md): short current reference for
+all 12 selectable classes, extra humanoid kits, animals, summons and machines.
+
+[Animal art/audio handoff](art/ANIMAL_CRITTERS_V1.md): preserved portraits,
+rat/wolf sounds, playback changes and required 5x4 future image batches.
+
+[Current work and parked threads](WORK_STATE.md) is the session/pivot checkpoint;
+read it first to resume unfinished work and preserve accepted decisions.
+
+[Race-name upload brief](content/RACE_NAMES_GPT_BRIEF.md) covers all 42 current
+races in seven GPT batches; [workflow](content/RACE_NAMES_WORKFLOW.md) records
+the output folder, naming-source guidance and deferred integration.
+
+Current skill click audit: [Skill targeting](design/SKILL_TARGETING_AUDIT.md)
+records the 12-Job/77-active-skill routing review, direct approach execution,
+invalid-target fallback fix, retained placement flows and test coverage.
+
+Character life / personal-story planning: [design proposal](design/CHARACTER_STORIES_PROPOSAL.md),
+[short character overview](content/CHARACTER_LIFE_OVERVIEW.md),
+[content index and maintenance rules](content/CHARACTER_STORY_CONTENT_INDEX.md),
+[GPT bulk authoring prompt](content/CHARACTER_STORY_AUTHORING_PROMPT.md) and
+[draft v0.2 content contract](content/character-story-contract-v0.2.json).
+[Upload-ready GPT brief](content/CHARACTER_LIFE_GPT_BRIEF.md) includes the
+conversation-led character-blueprint pilot and contract in one file.
+[Authoring workflow](content/CHARACTER_LIFE_WORKFLOW.md) defines the fresh-chat,
+single-upload process, offline checks and separate design/approval gates; the
+current bundle requests revision 3 with its source draft and review attached.
+Proposal only: persistent hidden backgrounds, conditional voices, novelty selection,
+optional personal objectives and explicitly once-per-player stories are not implemented yet.
+The refinement also proposes early disclosed loyalty conflicts, bounded personal
+chains, earned personality variations, core-arc closure and story-matched rewards.
+
+Current mobile battle pass: [Combat controls](design/COMBAT_CONTROLS.md) describes compact touch tabs, swipeable action rows, mobile Battle Lab setup, pan/pinch, long-press inspection and Safari validation limits. Desktop geometry remains separate; other game screens still need a mobile pass.
+
+Current E-rank audit: [Batch audit](design/E_RANK_COMBAT_AUDIT.md) records the first three contracts, existing Fighter/Rogue enemy kits, animal pack traits, targeted Fairy/Ogre HP tuning and simulation limits. [Combat capability reference](design/COMBAT_CAPABILITY_REFERENCE.md) indexes implemented mechanics and must be maintained with combat changes.
+
+Current floating battle HUD trial: [Combat controls](design/COMBAT_CONTROLS.md) documents draggable groups, snapping guides, saved local layouts, resizing and effects overflow. Implemented in dev; production unchanged.
+
 Implemented Captor: [Captor and Resolve](design/CAPTOR_REWORK_REVIEW.md) documents separate Attack/Subdue, Resolve, eight skills, Hold ticks and unconscious recovery; [Captor art/audio](art/CAPTOR_V1.md) records generated packs and foley.
 
 Implemented Summoner: [Summoner rework](design/SUMMONER_REWORK_REVIEW.md) documents eight skills, autonomous owner-linked turns, innate one/all commands, chosen placement, group replacement cooldowns, capacity, sacrifice/empowerment, migration and AI limits. [Summoner art/audio](art/SUMMONER_V1.md) records the packed portrait/icon/effect atlas and six generated sounds. Start a fresh Battle Lab encounter to try the new kit.
@@ -194,3 +235,14 @@ Engineer construction, mounted machines, mines and delayed explosives:
 [Engineer art](art/ENGINEER_V1.md).
 
 [Production preparation](design/RELEASE_PREPARATION.md) records dev/release targets, testing-tool exclusions, clean production initialization and the authorized launch reset.
+
+
+Rat swarms, wolf flanking and personality-aware toll-bandit kits:
+[E-rank audit](design/E_RANK_COMBAT_AUDIT.md) and
+[combat capability reference](design/COMBAT_CAPABILITY_REFERENCE.md).
+
+
+E-rank maintenance: [Encounter audit workflow](design/ENCOUNTER_AUDIT_WORKFLOW.md),
+[same-map radiant events](design/RADIANT_ENCOUNTERS.md),
+[field gear and bear audio](art/FIELD_GEAR_V1.md). Batch 2 is implemented in dev;
+personal character-story proposals remain separate.

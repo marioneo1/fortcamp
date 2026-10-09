@@ -3,10 +3,15 @@ import {COMBAT_MOTION} from './combat-animation.js';
 export function combatAudioSchedule(battle,events=battle?.animation_events||[]){
   if(!battle)return {cues:[],duration:0};
   const cues=[],playSfx=(name,volume,delay=0)=>cues.push({name,volume,delay});
+  // Species identity is stable; timing/condition always come from playback events.
+  const species=id=>({store_rat:'rat',fence_wolf:'wolf',foraging_bear:'bear'}[battle.units?.[id]?.species_profile]);
+  let animalCue=Number(battle.round||0)+events.reduce((n,e)=>n+String(e.attacker_id||e.unit_id||'').split('').reduce((v,c)=>v+c.charCodeAt(0),0),0);
+  const animal=(kind,action,volume,delay)=>playSfx(`${kind}_${action}_${1+animalCue++%3}`,volume,delay);
   let end=0;const impactSounds=new Set();
   for(const {event,start:delay,duration} of impactTimeline(events)){
     end=Math.max(end,delay+duration);
-    if(event.type==='mage_cast'){
+    if(event.type==='rat_merge')animal('rat','swarm',.28,delay);
+    else if(event.type==='mage_cast'){
       const cue={chain_lightning:'mage_lightning',flash_freeze:'mage_freeze',singularity:'mage_gravity',fireball:'mage_fireball',typhoon:'mage_typhoon'}[event.mage_skill];
       if(cue)playSfx(cue,event.mage_skill==='chain_lightning'?.32:.45,delay+(event.contact_ms??240));
       else if(event.mage_skill==='meteor'){playSfx('earthbreaker_land',.65,delay+event.contact_ms);playSfx('earthbreaker_crater',.48,delay+event.contact_ms);playSfx('mage_fireball',.22,delay+event.contact_ms)}
@@ -29,17 +34,37 @@ export function combatAudioSchedule(battle,events=battle?.animation_events||[]){
     else if(event.type==='net_cast'){playSfx('capture_net_cast',.32,delay+35);playSfx(event.hit?'capture_net_cinch':'capture_net_slip',.4,delay+COMBAT_MOTION.netContact);if(event.hit&&event.captured===false)playSfx('capture_net_slip',.25,delay+COMBAT_MOTION.netContact+130)}
     else if(event.type==='chain_attack'){playSfx('melee_swing',.12,delay+40);playSfx(event.hit?'melee_hit_light':'attack_miss',event.hit?.55:.32,delay+220)}
     else if(event.type==='sound'){
-      for(const cue of event.cues||[]){if(['unit_death','unit_unconscious'].includes(cue.name)&&events.some(e=>['death_burst','knockout'].includes(e.type)&&e.attack_packet===event.attack_packet))continue;playSfx(cue.name,cue.name==='melee_swing'?.12:cue.name==='structure_hit'?.55:cue.name==='barrier_absorb'?.28:cue.name==='shield_block'?.35:.4,delay+(cue.offset||0))}
+      for(const cue of event.cues||[]){if(['unit_death','unit_unconscious'].includes(cue.name)&&events.some(e=>['death_burst','knockout'].includes(e.type)&&e.attack_packet===event.attack_packet))continue;
+        const kind=species(event.target_id);if(kind&&['unit_death','unit_unconscious'].includes(cue.name)){animal(kind,cue.name==='unit_death'?'death':'hurt',.36,delay+(cue.offset||0));continue}
+        playSfx(cue.name,cue.name==='melee_swing'?.12:cue.name==='structure_hit'?.55:cue.name==='barrier_absorb'?.28:cue.name==='shield_block'?.35:.4,delay+(cue.offset||0))}
     }else if(event.type==='melee_attack'&&event.target_kind!=='terrain'){
+      const attackerSpecies=species(event.attacker_id);
+      if(attackerSpecies==='bear')animal('bear','attack',.27,delay);
+      if(attackerSpecies&&attackerSpecies!=='bear'){
+        animal(attackerSpecies,'attack',.23,delay);
+        const bites=attackerSpecies==='rat'?Math.max(1,Math.min(3,event.bite_count||1)):1;
+        for(let i=0;i<bites;i++){
+          const contact=bites>1?100+i*180:(event.contact_ms??COMBAT_MOTION.contact);
+          if(event.hit)animal(attackerSpecies,'bite',.48/Math.sqrt(bites),delay+contact);
+          else playSfx('attack_miss',.2,delay+contact);
+        }
+        continue;
+      }
       const style=['slash','hack','crush','blunt','fist','stab'].includes(event.melee_style)?event.melee_style:null;
       if(!(style==='slash'&&event.hit&&event.impact_surface==='flesh'))playSfx(style?`melee_${style}_swing`:'melee_swing',event.contact_ms===83?.07:.12,delay+Math.min(45,(event.contact_ms??185)/2));
       const blocked=events.some(e=>e.type==='combat_feedback'&&e.attack_packet===event.attack_packet&&e.absorbed>0&&!e.amount);
       if(!blocked)playSfx(event.hit?(event.target_condition==='unconscious'?'subdue_hit':style?`melee_${style}_${event.impact_surface==='flesh'?'flesh':'hit'}`:'melee_hit_light'):'attack_miss',event.hit?.55:.32,delay+(event.contact_ms??COMBAT_MOTION.contact));
-      if(event.hit&&!events.some(e=>e.type==='death_burst'&&e.attack_packet===event.attack_packet)&&event.target_condition==='dead')playSfx('unit_death',.4,delay+330);
+      if(event.hit&&!events.some(e=>e.type==='death_burst'&&e.attack_packet===event.attack_packet)&&event.target_condition==='dead'){
+        const kind=species(event.target_id);if(kind)animal(kind,'death',.36,delay+330);else playSfx('unit_death',.4,delay+330);
+      }
       else if(event.hit&&!events.some(e=>e.type==='knockout'&&e.attack_packet===event.attack_packet)&&event.target_condition==='unconscious')playSfx('unit_unconscious',.4,delay+315);
     }else if(event.type==='death_burst'||event.type==='knockout'){
-      playSfx(event.type==='knockout'?'unit_unconscious':'unit_death',.4,delay+COMBAT_MOTION.collapse*.65);
+      const kind=species(event.unit_id);
+      if(kind)animal(kind,event.type==='knockout'?'hurt':'death',.36,delay+COMBAT_MOTION.collapse*.65);
+      else playSfx(event.type==='knockout'?'unit_unconscious':'unit_death',.4,delay+COMBAT_MOTION.collapse*.65);
     }else if(event.type==='combat_feedback'){
+      const kind=species(event.unit_id);
+      if(kind&&event.amount>0&&!['burn','poison','bleed','thorns'].includes(event.kind)&&!events.some(e=>['death_burst','knockout'].includes(e.type)&&e.unit_id===event.unit_id&&e.attack_packet===event.attack_packet))animal(kind,'hurt',.26,delay);
       if(event.kind==='collision'&&!events.some(e=>e.type==='collision_recoil'&&e.attack_packet===event.attack_packet)){
         const key=`collision:${event.attack_packet??delay}`;
         if(!impactSounds.has(key)){impactSounds.add(key);playSfx('collision_hit',.5,delay)}

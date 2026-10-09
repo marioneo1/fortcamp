@@ -47,10 +47,11 @@ export function departureGhostPlans(previous,battle,timeline){
  const ids=new Set(deaths.map(r=>r.event.unit_id));
  const dissolves=timeline.filter(r=>r.event.type==='martial_effect'&&['summoner_dissolve','summoner_sacrifice'].includes(r.event.skill)&&!ids.has(r.event.unit_id));
  const rows=new Map();
- for(const row of [...deaths,...dissolves]){
+ const merges=timeline.filter(r=>r.event.type==='rat_merge');
+ for(const row of [...deaths,...dissolves,...merges]){
   const id=row.event.unit_id,after=battle.units?.[id];
   const birth=timeline.find(r=>r.event.type==='martial_effect'&&['summoner_conjure','engineer_build'].includes(r.event.skill)&&r.event.unit_id===id);
-  const before=previous?.units?.[id]||(birth&&after?{...after,hp:after.max_hp,alive:true,conscious:true,extracted:false,condition:'active',statuses:[]}:null);
+  const before=previous?.units?.[id]||row.event.unit_snapshot||(birth&&after?{...after,hp:after.max_hp,alive:true,conscious:true,extracted:false,condition:'active',statuses:[]}:null);
   if(!before||before.alive===false||before.extracted||before.condition==='dismissed')continue;
   if(dissolves.includes(row)&&(!after?.summoner_creature||after.alive!==false&&!after.extracted))continue;
   if(!rows.has(id))rows.set(id,{...row,before});

@@ -84,3 +84,14 @@ Character Equipment excludes non-wearable items; party Inventory has all gear, m
 Three owned consumables now have battle actions; four existing nonweapon items grant selectable ally treatments. Six existing weapons gain distinct status procs. Fourteen private-agreement keepsakes grant defensive/support techniques and bounded equipment rules, with independent discovery rolls rather than guaranteed rewards. They remain excluded from general/event/trade stock. Existing icon art is reused for this initial content pass; a dedicated keepsake art sheet remains optional. See [Combat tools](COMBAT_TOOLS_AND_PACING.md) and [rotating trade](../design/FACTIONS_AND_ROTATING_TRADE.md) for costs, conditions and scopes.
 
 October 4 tactical pilots (dev): existing Guild Tower Shield grants finite Shield Cover and Intercept; Duelist Gloves grant bounded Riposte; Precision Shot marks, Hook Thrust pulls and Titan Thrust pushes on hit. No new drop pools or items. Full rules and validation: ../design/COMBAT_ABILITIES.md.
+
+
+## Field gear expansion ? October 8
+
+`backend/field_gear.py` adds 20 items using existing weapon/armor/scaling helpers,
+filling knuckles, daggers, maces, grimoires and early armor slots. Eighteen join
+ordinary weighted E/D loot. Bear Claws/Pelt stay exclusive to recovered slain
+radiant bears: guaranteed pelt, independent 5% claws. Claws improve DEX weapon
+damage/Monk techniques without extra per-hit status procs. See
+[art/manifest/audio handoff](../art/FIELD_GEAR_V1.md) and
+[radiant rules](../design/RADIANT_ENCOUNTERS.md).

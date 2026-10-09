@@ -27,6 +27,9 @@ class DoorControlTests(unittest.TestCase):
                 self.assertTrue(can_operate_gate(control['approach'], gate))
                 self.assertLess(abs(control['x']-(3+delta[0]*.5)), .5)
                 self.assertLess(abs(control['y']-(3+delta[1]*.5)), .5)
+            displayed=_door_controls(battle,actor)
+            self.assertEqual(len(displayed),1)
+            self.assertEqual((displayed[0]['x'],displayed[0]['y']),(3+delta[0]*.5,3+delta[1]*.5))
 
     def test_open_and_close_from_inside_or_outside_without_crossing(self):
         for position in ((3,3), (3,2)):
@@ -34,7 +37,8 @@ class DoorControlTests(unittest.TestCase):
             actor.update(x=position[0], y=position[1])
             for operation in ('Open', 'Close'):
                 controls = _door_controls(battle, actor)
-                self.assertEqual([c['operation'] for c in controls], [operation]*2)
+                self.assertEqual([c['operation'] for c in controls], [operation])
+                self.assertEqual((controls[0]['x'],controls[0]['y']),(3,2.5))
                 self.assertTrue(all(c['command']=={'action':'interact','target_id':'door'} for c in controls))
                 with patch('backend.combat._finish_turn'):
                     _interact(battle, actor, 'door')
@@ -42,12 +46,13 @@ class DoorControlTests(unittest.TestCase):
                 actor['acted'] = False
             self.assertEqual(gate['state'], 'closed')
 
-    def test_far_controls_approach_selected_side_and_never_auto_operate(self):
+    def test_far_control_offers_both_sides_and_never_auto_operates(self):
         battle, actor, gate = self.fixture()
         actor.update(x=1,y=1)
         controls = _door_controls(battle, actor)
-        self.assertEqual([c['command'] for c in controls], [
-            {'action':'navigate','x':3,'y':3}, {'action':'navigate','x':3,'y':2}])
+        self.assertEqual(len(controls),1)
+        self.assertEqual(controls[0]['command'], {'action':'navigate','gate_id':'door','x':3,'y':2})
+        self.assertEqual(controls[0]['approaches'],[{'x':3,'y':3},{'x':3,'y':2}])
         self.assertEqual(gate['state'],'closed')
 
     def test_centered_rotated_footprints_use_outside_approach_cells(self):

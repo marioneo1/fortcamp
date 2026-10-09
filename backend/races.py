@@ -4,6 +4,13 @@ from __future__ import annotations
 
 FEMALE_ONLY_RACES = frozenset({"Banshee", "Dryad"})
 
+# Character creation only; the complete catalogue remains recruitable content.
+STARTING_RACES = frozenset({
+    "Human", "Dwarf", "Wood Elf", "High Elf", "Half-Orc", "Halfling",
+    "Gnome", "Tiefling", "Goblin", "Hobgoblin", "Orc", "Kobold",
+    "Lizardfolk", "Catfolk",
+})
+
 
 def generated_genders(race: str, profile: dict | None = None) -> tuple[str, ...]:
     """Allowed genders for new generic people; never rewrite saved identities."""
@@ -273,13 +280,13 @@ RACE_GAMEPLAY = {
     "Foxkin": _race_identity("Elusive illusionists and negotiators who win through misdirection rather than force.", hp=.82, move=1, evasion=13, initiative=3, mission={"magic": 1}, forms={"diplomacy": 2, "infiltration": 1}),
     "Merfolk": _race_identity("Exceptional aquatic rescuers whose mobility drops on dry ground.", hp=1.02, move=-1, evasion=3, movement="amphibious", mission={"medicine": 1, "survival": 2}, forms={"rescue": 2}, limitations=("Reduced movement away from water",)),
     "Dragonkin": _race_identity("Heavily protected elite combatants with draconic endurance and elemental vulnerability choices later.", hp=1.30, armor=3, evasion=-5, mission={"combat": 2, "magic": 1}, forms={"defense": 1}),
-    "Fairy": _race_identity("Tiny flying spellcasters who are exceptionally hard to hit and exceptionally easy to injure.", hp=.52, move=2, evasion=20, initiative=5, movement="flying", mission={"magic": 2}, forms={"investigation": 1, "diplomacy": 1}, weak=("bind",), limitations=("Extremely low maximum health",)),
+    "Fairy": _race_identity("Fragile flying spellcasters who trade health for mobility, evasion, and fast initiative.", hp=.75, move=2, evasion=20, initiative=5, movement="flying", mission={"magic": 2}, forms={"investigation": 1, "diplomacy": 1}, weak=("bind",), limitations=("Reduced maximum health",)),
     "Slimefolk": _race_identity("Amorphous bodies absorb impacts and pass narrow spaces but react badly to freezing.", hp=1.18, move=-1, evasion=7, armor=1, movement="amorphous", mission={"alchemy": 2, "scavenging": 1}, forms={"recovery": 1}, resist=("bleed", "impact"), weak=("freeze",)),
     "Automaton": _race_identity("Precise armored workers immune to mortal ailments but vulnerable to disruption.", hp=1.28, move=-1, armor=3, evasion=-6, mission={"building": 2}, forms={"defense": 1}, resist=("poison", "sleep", "bleed"), weak=("disruption",), limitations=("Requires repair instead of ordinary medicine",)),
     "Aasimar": _race_identity("Radiant protectors with strong resistance to corruption and broad magical utility.", hp=1.12, armor=1, mission={"medicine": 1, "magic": 2}, forms={"rescue": 1, "containment": 1}, resist=("radiant", "fear")),
     "Vampire": _race_identity("Fast, powerful night hunters whose strength comes with severe radiant vulnerability.", hp=1.08, move=1, evasion=10, initiative=4, mission={"combat": 1, "magic": 1}, forms={"infiltration": 1}, resist=("poison", "sleep"), weak=("radiant",), limitations=("Daylight penalties will apply on exposed maps",)),
     "Banshee": _race_identity("Incorporeal flying casters who evade physical threats but cannot endure focused magic.", hp=.68, move=2, evasion=18, initiative=4, movement="flying", mission={"magic": 2}, forms={"infiltration": 2}, resist=("bleed", "bind"), weak=("magic", "radiant")),
-    "Ogre": _race_identity("Enormous bruisers with high health, crushing strength, and poor evasion.", hp=1.48, hp_bonus=10, move=-1, evasion=-12, armor=1, mission={"combat": 2, "building": 1}, forms={"defense": 1}),
+    "Ogre": _race_identity("Slow, heavily built bruisers with high health and armor but poor evasion.", hp=1.35, hp_bonus=4, move=-1, evasion=-12, armor=1, mission={"combat": 2, "building": 1}, forms={"defense": 1}),
     "Troll": _race_identity("Extremely durable regenerators who are slow and especially vulnerable to fire.", hp=1.58, hp_bonus=8, move=-1, evasion=-14, armor=1, mission={"survival": 2}, forms={"defense": 1}, resist=("poison",), weak=("burn",)),
     "Werewolf": _race_identity("Fast predatory fighters with strong pursuit and unreliable control under later moon rules.", hp=1.24, move=1, evasion=8, initiative=3, mission={"combat": 2, "survival": 1}, forms={"hunt": 2}, weak=("silver",)),
     "Celestial": _race_identity("Unique divine beings with exceptional resilience and influence, constrained by personal oaths.", hp=1.35, armor=2, evasion=5, initiative=2, mission={"magic": 2, "combat": 1}, forms={"diplomacy": 2, "containment": 1}, resist=("radiant", "fear"), limitations=("Divine oaths can forbid specific choices",)),

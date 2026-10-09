@@ -192,6 +192,47 @@ views['captor_bola']=combat.battle_view(bola)
 growth_b=deepcopy(b);ga=growth_b['units'][a['id']]
 combat.druid.execute(growth_b,ga,ga,jobs.SKILLS['job:druid:living_armor']);ga['acted']=False
 views['druid_growth']=combat.battle_view(growth_b)
+views['hud_crowd']=deepcopy(views['captor_ready'])
+for i in range(11):
+ extra=deepcopy(next(iter(views['hud_crowd']['units'].values())));extra.update(id=f'hud-extra-{i}',name=f'Queue fighter {i+1}',team='enemy',x=i%8,y=7)
+ views['hud_crowd']['units'][extra['id']]=extra;views['hud_crowd']['turn_order'].append(extra['id'])
+from tests.test_encounter_behavior import EncounterBehaviorTests
+from backend import combat_encounter_ai as encounter_ai
+sw,sp,(sr,sd,st)=EncounterBehaviorTests().arena()
+sr.update(x=6,y=5,hp=5,max_hp=8,attack=2);sd.update(x=6,y=6,hp=9,max_hp=9,attack=3);st.update(x=10,y=10)
+sw.update(turn_order=['player',sr['id'],sd['id'],st['id']],turn_index=0)
+views['swarm_before']=combat.battle_view(deepcopy(sw))
+encounter_ai.merge(sw,sr,sd)
+with patch.object(combat,'_attack_hits',return_value=(True,{'chance':100,'damage_bonus':0},1)):
+    combat._perform_attack(sw,sr,sp,'melee')
+views['swarm_after']=combat.battle_view(sw)
+bb,bp,(be,bc)=EncounterBehaviorTests().arena('roadside_toll','variant-0')
+bb.update(turn_order=['player',be['id'],bc['id']],turn_index=0)
+views['bandit_before']=combat.battle_view(deepcopy(bb))
+encounter_ai.say(bb,bc,'Hold still. This road is ours.','snare')
+views['bandit_talk']=combat.battle_view(bb)
+near=deepcopy(bb)
+near['units']['player'].update(x=6,y=5)
+views['bandit_adjacent']=combat.battle_view(near)
+for label,arena in [('near',near),('far',bb)]:
+    strike=deepcopy(arena)
+    actor=strike['units']['player']
+    actor['skills']=[deepcopy(jobs.SKILLS['job:fighter:bash'])]
+    actor['special']=actor['skills'][0]
+    views['driving_strike_'+label]=combat.battle_view(strike)
+door=deepcopy(near)
+door['terrain']=[{'id':'qa-door','name':'Post Door','kind':'gate','x':5,'y':4,
+    'edge_wall':True,'wall_edges':['north'],'state':'closed','blocking':True}]
+views['door_approach']=combat.battle_view(door)
+
+# Withdrawal UI fixtures use an actual ready/holding extraction state.
+for label,ready in [('command_exit_hold',False),('command_exit_ready',True)]:
+    arena=deepcopy(bb)
+    actor=arena['units']['player']
+    arena['extraction']={'name':'QA exit','tiles':[{'x':actor['x'],'y':actor['y']}]}
+    actor['exit_ready']=ready
+    views[label]=combat.battle_view(arena)
+
 source=(ROOT/'frontend/src/main.js').read_text();source=source.replace("from './","from '/frontend/src/").replace("import './","import '/frontend/src/").replace('import "./','import "/frontend/src/')
 source=re.sub(r'import \{ DiscordSDK \} from [^;]+;','',source).replace('\ninit();','\n// Isolated fixture replaces startup.')
 source+='\nconst mageFixture='+json.dumps({'state':state,'content':public_content(),'views':views},ensure_ascii=True)+';\n'+'''

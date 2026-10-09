@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {fitMapWidth,wheelZoom,bindMapPan} from './battle-camera.js';
+import {fitMapWidth,wheelZoom,bindMapPan,floatingMapFrame} from './battle-camera.js';
 import {readHideDetails,saveHideEquipped} from './equipment-ui.js';
 
 test('fit view preserves map proportions within both viewport dimensions',()=>{
@@ -39,6 +39,16 @@ test('right-click inspects the pressed unit; right-drag from a unit only pans',(
  v.onpointerdown(e('pointerdown'));v.onpointerup(e('pointerup'));assert.deepEqual(inspected,['ally']);assert.equal(cancelled,0);
  v.onpointerdown(e('pointerdown'));v.onpointermove(e('pointermove',30));v.onpointerup(e('pointerup',30));assert.deepEqual(inspected,['ally']);assert.equal(cancelled,0);
 });
+test('floating map reserves label margins and bounded panning for every aspect ratio',()=>{
+ for(const [w,h] of [[8,8],[24,8],[8,24]]){
+  const f=floatingMapFrame(w,h,1200,850,true,1);
+  assert.ok(f.pixels<=1008);assert.ok(f.pixels*h/w<=658);
+  assert.equal(f.width-1200,240);assert.equal(f.height-850,240);
+  // Centered framing reserves 96px for edge labels; panning is a deliberate offset.
+  assert.ok((f.width-f.pixels)/2-120>=96);
+  assert.ok((f.height-f.pixels*h/w)/2-120>=96);
+ }
+});
 
 test('right-click on an owned map effect opens effect details, while dragging still only pans',()=>{
  const inspected=[],v={scrollLeft:0,scrollTop:0,classList:{add(){},remove(){}},setPointerCapture(){},hasPointerCapture(){return false}};
@@ -47,4 +57,12 @@ test('right-click on an owned map effect opens effect details, while dragging st
  v.onpointerdown(e(10));v.onpointerup(e(10));
  assert.equal(inspected.length,1);assert.equal(inspected[0][0],'boss');assert.deepEqual(inspected[0][2],{id:'mark',owner:'ranger'});
  v.onpointerdown(e(10));v.onpointermove(e(30));v.onpointerup(e(30));assert.equal(inspected.length,1);
+});
+
+test('zoomed camera has enough vertical clearance to pull edge cells past the HUD',()=>{
+ for(const [w,h] of [[8,8],[24,8],[8,24]]){
+  const f=floatingMapFrame(w,h,1200,850,false,1.5);
+  assert.ok((f.height-f.pixels*h/w)/2>=450);
+  assert.ok((f.width-f.pixels)/2>=450);
+ }
 });

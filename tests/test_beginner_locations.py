@@ -80,11 +80,13 @@ class BeginnerLocationTests(unittest.TestCase):
                 signatures.add(str((board['paint'],[(t['x'],t['y'],t['sprite']) for t in board['terrain']])))
             self.assertEqual(len(signatures),4,mid)
 
-    def test_early_encounters_keep_their_original_enemy_budgets(self):
+    def test_early_encounters_use_authored_counts(self):
         for mid in ['rats_storehouse','wolves_fence','goblin_pickpockets','ruined_well','supply_watch','prison_proof_e']:
             for preset in battle_lab.layout_presets('contract:'+mid):
                 battle=create_contract_battle(new_game({'name':'Tester'}),['player'],preset['seed'],mid,True)
-                self.assertEqual(sum(u['team']=='enemy' for u in battle['units'].values()),2,mid)
+                counts={'rats_storehouse':[3,4,2,4],'wolves_fence':[3,2,4,3],'supply_watch':[2,3,2,3]}
+                expected=counts[mid][battle['map_variation']-1] if mid in counts else 2
+                self.assertEqual(sum(u['team']=='enemy' for u in battle['units'].values()),expected,mid)
                 self.assertEqual(battle['encounter_id'],'contract:'+mid)
 
     def test_camps_have_activity_areas_without_blocking_deployment(self):

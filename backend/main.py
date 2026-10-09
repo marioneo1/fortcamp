@@ -166,8 +166,8 @@ class CharacterCreate(BaseModel):
     @field_validator('race')
     @classmethod
     def known_starting_race(cls, value):
-        from .races import RACE_CATALOG
-        if value not in RACE_CATALOG or RACE_CATALOG[value][0]=='Limited':
+        from .races import STARTING_RACES
+        if value not in STARTING_RACES:
             raise ValueError('Choose a starting race from the race dropdown')
         return value
 
@@ -278,6 +278,10 @@ class CombatApproachPosition(BaseModel):
 
 class CombatCommandRequest(BaseModel):
     action: str
+    choice: str | None = None
+    gate_id: str | None = None
+    operate_gate: bool = False
+    gate_operation: str | None = None
     x: int | None = None
     y: int | None = None
     target_id: str | None = None

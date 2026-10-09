@@ -39,6 +39,8 @@ export function impactTimeline(events){
       duration=650;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='rogue_knife'||event.type==='druid_lash'){duration=500;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='rogue_effect'){duration=event.from?0:320;cursor=Math.max(cursor,start+duration);
+    }else if(event.type==='rat_merge'){
+      duration=400;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='martial_effect'){
       duration=event.skill==='engineer_dynamite_throw'?700:560;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='net_cast'){
@@ -98,9 +100,11 @@ export const feedbackStyles={
 export function feedbackText(event,definitions={}){
   if(event.kind==='miss'&&event.parried)return {label:'Parried',icon:'?',color:'#a8ded3',value:''};
   if(event.kind==='combo')return {label:event.stage==='finisher'?'Finisher Ready':'Follow-up Ready',icon:'◆',color:'#e9c97a',value:''};
+  if(event.kind==='dialogue')return {label:event.text||'',icon:'',color:'#f0e3c4',value:''};
   const style={...(feedbackStyles[event.kind]||feedbackStyles.physical)};
   if(event.kind==='physical'&&event.melee_style)style.label=({slash:'Slash',hack:'Chop',crush:'Crush',blunt:'Strike',fist:'Punch',stab:'Stab'})[event.melee_style]||style.label;
   if(event.critical){style.label='Critical';style.color='#ffd479'}
+  if(event.kind==='status'&&event.status_id==='rat_weakness')return {label:'Gnawing Weakness',icon:'-',color:'#b4c979',value:''};
   if(event.kind==='status')return {...style,...(event.status_id==='stun'?{color:'#f2ce72'}:{}),label:definitions[event.status_id]?.name||({summon_overload:'Overload',summon_order:'Summon order'})[event.status_id]||event.status_id,icon:definitions[event.status_id]?.icon||style.icon,value:''};
   return {...style,value:event.amount?`${['heal','barrier','fury'].includes(event.kind)?'+':'−'}${event.amount}`:event.absorbed?'Blocked':''};
 }
@@ -119,7 +123,8 @@ export function impactArtwork(event){
   if(event.kind==='barrier')return ['barrier_shell'];
   if(['heal','cleanse','form'].includes(event.kind))return ['restoration_wisp'];
   if(['guard','deploy'].includes(event.kind))return ['magic_hit'];
-  if(event.kind==='status'&&['stun','freeze'].includes(event.status_id))return [];
+  if(event.kind==='status'&&['stun','freeze','rat_swarm'].includes(event.status_id))return [];
+  if(event.kind==='status'&&event.status_id==='rat_weakness')return ['poison_cloud'];
   if(event.critical){style.label='Critical';style.color='#ffd479'}
   if(event.kind==='status')return ['bind','mute','slow','hobbled','stun','freeze'].includes(event.status_id)?['binding_tether']:event.status_id==='burn'?['flame_lick']:event.status_id==='poison'?['poison_cloud']:['magic_hit'];
   if(['burn','fire'].includes(event.kind))return ['flame_lick'];
@@ -145,6 +150,7 @@ export function createImpactFeedback(){
       const value=document.createElement('b');value.textContent=style.value;
       const label=document.createElement('small');label.textContent=`${style.icon} ${style.label}`;
       node.append(value,label);
+      if(event.kind==='dialogue'){node.classList.add('combat-dialogue');node.style.maxWidth='190px'}
       if(event.absorbed){const shield=document.createElement('em');shield.textContent=`◇ ${event.absorbed} absorbed`;node.append(shield)}
       // Alternate overlapping labels around the same tile, without covering the face.
       const tile=`${event.x},${event.y}`;node.dataset.impactTile=tile;
@@ -152,8 +158,8 @@ export function createImpactFeedback(){
       const spread=field.clientWidth/battle.width*.48;
       if(siblings.length===1){siblings[0].style.marginLeft=`${-spread}px`;node.style.marginLeft=`${spread}px`}
       else if(siblings.length>1)node.style.setProperty('--float-lane',`${(siblings.length-1)*48}px`);
-      layer.append(node);node.animate([{opacity:1,transform:'translate(-50%,-65%) scale(1.1)'},{opacity:1,transform:'translate(-50%,-85%) scale(1)',offset:.15},{opacity:1,transform:'translate(-50%,-115%) scale(1)',offset:.68},{opacity:0,transform:'translate(-50%,-150%) scale(.96)'}],{duration:reduced?1400:950,fill:'forwards'}).onfinish=()=>node.remove();
-      if(reduced||['miss','captured','capture_failed','restraint'].includes(event.kind))return;
+      layer.append(node);node.animate([{opacity:1,transform:'translate(-50%,-65%) scale(1.1)'},{opacity:1,transform:'translate(-50%,-85%) scale(1)',offset:.15},{opacity:1,transform:'translate(-50%,-115%) scale(1)',offset:.68},{opacity:0,transform:'translate(-50%,-150%) scale(.96)'}],{duration:event.kind==='dialogue'?2200:reduced?1400:950,fill:'forwards'}).onfinish=()=>node.remove();
+      if(reduced||['dialogue','miss','captured','capture_failed','restraint'].includes(event.kind))return;
       for(const art of impactArtwork(event)){
         const sprite=document.createElement('i');sprite.className=`painted-hit-sprite ${event.absorbed||event.kind==='barrier'?'barrier-impact-sprite':''}`;
         const flesh=art.startsWith('flesh:'),melee=flesh||art.startsWith('melee:'),parts=art.split(':'),fade=melee&&parts[2]==='fade';

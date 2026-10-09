@@ -1,0 +1,71 @@
+/* Desktop rules and saved HUD geometry stay untouched. */
+.mobile-battle-control,.mobile-battle-tabs{display:none!important}
+@media (max-width:1100px) and (hover:none) and (pointer:coarse){
+ .modal:has(.floating-battle){padding:0!important}
+ .modal-card:has(.floating-battle){width:100vw!important;height:100dvh!important;max-width:none!important;border:0;border-radius:0;margin:0}
+ .floating-battle.layout-a{border-radius:0;--hud-tile:44px!important}
+ .floating-battle.layout-a .battle-viewport{touch-action:none;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;top:calc(112px + env(safe-area-inset-top))!important;bottom:calc(232px + env(safe-area-inset-bottom))!important;height:auto!important}
+ .floating-battle.layout-a.mobile-controls-collapsed .battle-viewport{bottom:calc(66px + env(safe-area-inset-bottom))!important}
+ .floating-battle .hud-group{max-width:none;background:linear-gradient(120deg,#15221bf5,#101a16ed)}
+ .floating-battle .hud-handle,.floating-battle [data-hud-edit],.floating-battle [data-hud-reset],.floating-battle .hud-turn-order,.floating-battle [data-hud-group="lab"]{display:none!important}
+ .floating-battle .hud-skills :is(.hotbar-slots,.combat-actions)::-webkit-scrollbar{display:none}
+ .floating-battle.mobile-lab-open [data-hud-group="lab"]{display:flex!important;left:8px!important;right:8px!important;top:112px!important;width:auto!important;max-height:40dvh;overflow:auto;z-index:40}
+ .floating-battle [data-hud-group="title"]{left:max(8px,env(safe-area-inset-left))!important;top:max(4px,env(safe-area-inset-top))!important;width:calc(100% - 64px - env(safe-area-inset-left) - env(safe-area-inset-right))!important;padding:6px 8px}
+ .floating-battle [data-hud-group="title"] h2{font-size:15px;line-height:1.2;margin:2px 0}
+ .floating-battle [data-hud-group="title"] .eyebrow{font-size:10px}
+ .floating-battle [data-hud-group="title"]>.battle-field-toolbar{margin:4px 0 0;padding:0;border:0}
+ .floating-battle [data-hud-group="title"] .hud-tool-buttons{gap:3px;flex-wrap:wrap}
+ .floating-battle [data-hud-group="title"] .hud-tool-buttons button{width:44px;height:44px;padding:9px;font-size:10px}
+ .mobile-battle-control{display:grid!important;place-items:center}
+ .floating-battle [data-hud-group="title"] .battle-objectives{display:none;margin:6px 0;padding:6px 0;font-size:12px}
+ .floating-battle.mobile-objectives-open [data-hud-group="title"] .battle-objectives{display:block;max-height:30dvh;overflow:auto}
+ .modal-card:has(.floating-battle)>#mission-close{right:max(8px,env(safe-area-inset-right));top:max(8px,env(safe-area-inset-top));width:44px;height:44px}
+ .floating-battle.layout-a .hud-skills{left:max(8px,env(safe-area-inset-left))!important;right:max(8px,env(safe-area-inset-right))!important;top:auto!important;bottom:max(8px,env(safe-area-inset-bottom));width:auto!important;min-width:0!important;height:138px!important;min-height:0!important;display:block;padding:6px 8px;resize:none!important;overflow:visible!important}
+ .mobile-battle-tabs{display:flex!important;gap:4px;height:44px;margin-bottom:6px}
+ .mobile-battle-tabs button{flex:1;min-width:0;min-height:44px;padding:3px;border:1px solid #b49c6555;border-radius:5px;background:#24382d;color:#f0e4c9;font:12px system-ui}
+ .mobile-battle-tabs button[aria-pressed="true"]{border-color:#f1d58e;background:#496047}
+ .mobile-battle-tabs [data-mobile-collapse]{flex:0 0 44px}
+ .floating-battle.layout-a .hud-skills>.battle-primary-panel,.floating-battle.layout-a .hud-skills>.combat-hotbar,.floating-battle.layout-a .hud-skills>.combat-status-tray{display:none!important;width:100%;height:78px!important;min-height:0!important;padding:0!important;border:0!important;margin:0!important}
+ .floating-battle.layout-a[data-mobile-tab="commands"] .hud-skills>.battle-primary-panel,.floating-battle.layout-a[data-mobile-tab="skills"] .hud-skills>.combat-hotbar{display:block!important}
+ .floating-battle.layout-a[data-mobile-tab="effects"] .hud-skills>.combat-status-tray{display:grid!important;grid-template-rows:14px 32px 18px;gap:1px}
+ .floating-battle.layout-a .hud-skills .combat-hotbar header,.floating-battle.layout-a .hud-skills .hud-commands-header{height:0;margin:0;overflow:hidden}
+ .floating-battle.layout-a .hud-skills .hotbar-slots,.floating-battle.layout-a .hud-skills .combat-actions,.floating-battle.layout-a .hud-skills .combat-actions:has([data-combat-mode="subdue"]){grid-template-columns:repeat(5,44px)!important;grid-template-rows:44px!important;grid-auto-rows:44px;justify-content:start;gap:12px;height:78px!important;padding:0 0 22px;display:flex;overflow-x:auto;overflow-y:hidden;scrollbar-width:none}
+ .floating-battle.layout-a .hud-skills .hotbar-slots>button,.floating-battle.layout-a .hud-skills .combat-actions>button{width:44px!important;height:44px!important;min-height:44px!important;flex:0 0 44px;touch-action:manipulation;-webkit-touch-callout:none}
+ .floating-battle.layout-a .hud-skills .hotbar-slots>button>kbd,.floating-battle.layout-a .hud-skills .combat-actions>button>kbd{display:none}
+ .floating-battle.layout-a .hud-skills .combat-actions>button>span:not(.combat-action-art){font-size:10px;line-height:11px;top:46px;max-height:22px}
+ .floating-battle .hud-actor-group{left:max(8px,env(safe-area-inset-left))!important;right:max(8px,env(safe-area-inset-right))!important;top:auto!important;bottom:calc(148px + env(safe-area-inset-bottom));width:auto!important;height:82px!important;padding:6px 8px;overflow:hidden}
+ .floating-battle.layout-a .hud-actor-group .dock-actor{height:34px;min-height:0;gap:8px}
+ .floating-battle .hud-actor-group .dock-actor>.portrait-crop,.floating-battle .hud-actor-group .dock-actor>img{width:40px!important;height:40px!important;flex:0 0 40px}
+ .floating-battle .hud-actor-group .dock-actor h3{font-size:15px;margin:0}
+ .floating-battle .hud-actor-group .dock-actor .eyebrow{font-size:10px}
+ .floating-battle .hud-actor-group .dock-actor button{min-height:44px}
+ .floating-battle .hud-actor-group .active-unit-card{padding:0;gap:6px;min-width:0;height:34px}
+ .floating-battle .hud-actor-group .active-unit-portrait{width:30px!important;height:30px!important;flex:0 0 30px!important}
+ .floating-battle .hud-actor-group .active-unit-portrait>.portrait-crop{inset:4px!important;width:22px!important;height:22px!important}
+ .floating-battle .hud-actor-group .active-unit-card b{font-size:14px}
+ .floating-battle .hud-actor-group .active-unit-card small{font-size:10px}
+ .floating-battle .hud-actor-group .active-unit-card small:first-child,.floating-battle .hud-actor-group .active-unit-card>div:last-child>span{display:none!important}
+ .floating-battle .hud-actor-group .battle-traits-button{width:60px;padding:4px;flex:0 0 60px}
+ .floating-battle .hud-actor-group .battle-action-preview{height:36px!important;margin:3px 0 0;padding:4px 0 0}
+ .floating-battle .hud-actor-group .combat-action-help{height:30px!important;font-size:12px!important;line-height:1.2}
+ .floating-battle.mobile-controls-collapsed .hud-skills{height:56px!important}
+ .floating-battle.mobile-controls-collapsed .hud-skills>.battle-primary-panel,.floating-battle.mobile-controls-collapsed .hud-skills>.combat-hotbar,.floating-battle.mobile-controls-collapsed .hud-skills>.combat-status-tray,.floating-battle.mobile-controls-collapsed .hud-actor-group{display:none!important}
+ .floating-battle .status-tray-icons{grid-template-columns:repeat(auto-fill,32px);grid-auto-rows:32px;gap:6px}
+ .floating-battle .effects-overflow{min-height:18px;font-size:11px;padding:0}
+ .unit-hover-card{display:none!important}
+ :is(.unit-inspect-window,.effect-inspect-window,.hud-inspection-panel,.battle-utility-dialog,.engineer-panel,.summoner-panel){max-width:calc(100vw - 24px - env(safe-area-inset-left) - env(safe-area-inset-right))!important;max-height:calc(100dvh - 32px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;overflow:auto;box-sizing:border-box}
+ .hud-inspection-panel{left:max(12px,env(safe-area-inset-left))!important;top:max(16px,env(safe-area-inset-top))!important;transform:none!important}
+ :is(.unit-window-handle,.effect-window-handle,.hud-inspection-panel header,.battle-utility-dialog header) button{min-width:44px;min-height:44px}
+}
+@media (max-width:1100px) and (hover:none) and (pointer:coarse) and (orientation:landscape){
+ .floating-battle.layout-a .battle-viewport{bottom:calc(146px + env(safe-area-inset-bottom))!important}
+ .floating-battle [data-hud-group="title"]{width:320px!important}
+ .floating-battle .hud-actor-group{left:350px!important;right:max(60px,env(safe-area-inset-right))!important;top:max(4px,env(safe-area-inset-top))!important;bottom:auto;height:106px!important}
+ .floating-battle .hud-actor-group .dock-actor{height:52px!important}
+ .floating-battle .hud-actor-group .battle-action-preview{height:40px!important}
+ .floating-battle .hud-actor-group .combat-action-help{height:32px!important}
+ .floating-battle.layout-a .hud-skills{height:138px!important}
+ .floating-battle.layout-a .hud-skills .hotbar-slots,.floating-battle.layout-a .hud-skills .combat-actions,.floating-battle.layout-a .hud-skills .combat-actions:has([data-combat-mode="subdue"]){grid-template-columns:repeat(10,44px)!important;grid-template-rows:44px!important;height:78px!important;gap:4px}
+ .floating-battle.layout-a .hud-skills>.combat-status-tray{grid-template-rows:16px 32px 18px;height:78px!important}
+ .floating-battle.mobile-controls-collapsed .hud-skills{height:56px!important}
+}

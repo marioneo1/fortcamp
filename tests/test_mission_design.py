@@ -695,7 +695,7 @@ class TacticalCombatTests(unittest.TestCase):
         self.assertIsNone(distant["subdue"])
         target.update({"x": 0, "y": 6})
         adjacent = battle_view(battle)["attack_previews"][target["id"]]
-        self.assertIsNone(adjacent["attack"])
+        self.assertIsNotNone(adjacent["attack"])
         self.assertIsNotNone(adjacent["subdue"])
 
     def test_objective_auto_battle_completes_both_optional_objectives(self):
@@ -765,11 +765,10 @@ class TacticalCombatTests(unittest.TestCase):
         current = battle["units"][current_id]
         target = battle["units"]["gob_guard"]
         current.update({"x": 3, "y": 1, "attack": 100, "nonlethal_capable": True, "capture_weapon": {"base":8,"range":1,"elevation_rule":"melee"}})
-        target.update({"x": 3, "y": 2, "hp": 1, "evasion": 0})
+        target.update({"x": 3, "y": 2, "resolve": 1, "evasion": 0})
 
         from unittest.mock import patch
-        with patch("backend.combat.random.Random") as rng:
-            rng.return_value.randint.return_value=1
+        with patch("backend.combat_captor.roll",return_value=0):
             apply_player_command(battle, {"action": "subdue", "target_id": target["id"]})
 
         self.assertTrue(target["alive"])

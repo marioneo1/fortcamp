@@ -1351,6 +1351,9 @@ async def _finish_battle(
             state.setdefault("inventory", []).append({"instance_id": f"item_{uuid.uuid4().hex}", "item_id": item_id})
             result["rewards"].setdefault("items", []).append(item_id)
         entry = {"unit_id": unit_id, "name": unit["name"], "gold": gold, "item": item_id}
+        if unit.get('corpse_bonus_items'):entry['bonus_items']=list(unit['corpse_bonus_items'])
+        from .combat_radiant import corpse_rewards
+        corpse_rewards(state, result, unit)
         corpse_loot.append(entry)
         result["rewards"].setdefault("loot_rolls", []).append({
             "source": f"{unit['name']} corpse", "roll": item_roll, "chance": unit.get("corpse_item_chance", 45 if kind == "chieftain" else 40 if kind == "archer" else 30),

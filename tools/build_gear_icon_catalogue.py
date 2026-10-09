@@ -23,6 +23,11 @@ def main():
     manifest["layouts"] = {"items": [6, 6], "races": [7, 6]}
     for kind, ids in [("items", ITEMS), ("races", RACE_CATALOG)]:
         existing = {row["id"] for row in manifest[kind]}
+        # The newer 5x4 sheet has its own stable assignments; never schedule its
+        # installed items again into the legacy 6x6 sheets.
+        external = ROOT / 'docs/art/FIELD_GEAR_V1_MANIFEST.json'
+        if kind == 'items' and external.exists():
+            existing.update(row['id'] for row in json.loads(external.read_text())['items'])
         for iid in ids:
             if iid not in existing:
                 index = len(manifest[kind])

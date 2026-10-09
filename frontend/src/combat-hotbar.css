@@ -85,3 +85,5 @@
 #combat-effect-window .effect-ended{padding:8px;border:1px solid #bfa36c66;border-radius:5px;color:#dfcea9;font-size:12px}
 @media(max-width:560px){.effect-card-grid{grid-template-columns:1fr}.unit-detail-effects{max-height:260px}#combat-unit-window .inspect-stat-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.unit-detail-summary{gap:6px}.unit-detail-summary>.inspect-health{font-size:13px}}
 @media(max-width:560px){#combat-unit-inspect.unit-hover-card{height:330px;gap:8px}#combat-unit-inspect.unit-hover-card .inspect-columns{gap:8px}#combat-unit-inspect.unit-hover-card .inspect-effects{padding-left:8px}#combat-unit-inspect.unit-hover-card .inspect-stat-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
+.unit-detail-techniques{margin-top:12px;border-top:1px solid #ad956144;padding-top:8px}.unit-detail-techniques summary{cursor:pointer;color:#ead6a5}.unit-detail-techniques article{padding:6px 0;border-bottom:1px solid #ad956122}.unit-detail-techniques article p{margin:4px 0;font-size:12px;line-height:1.4}

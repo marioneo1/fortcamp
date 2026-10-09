@@ -1,0 +1,2296 @@
+{
+  "schema_version": "names-0.1",
+  "batch_id": "race_names_004",
+  "revision": 1,
+  "status": "draft",
+  "entries": [
+    {
+      "race_id": "Lizardfolk",
+      "allowed_genders": [
+        "male",
+        "female"
+      ],
+      "naming_style": "gendered",
+      "convention_basis": "dnd_inspired",
+      "style_notes": "D&D provides the lizardfolk analogue, but the consulted public species listing does not establish a gendered naming grammar. Fortcamp proposes clipped hiss-and-click personal names and optional habitat or work bynames; many use only a personal name, and vowel endings never signal an official D&D rule.",
+      "sources_consulted": [
+        {
+          "title": "D&D Beyond — Character Species directory (Lizardfolk, Centaur, Minotaur, Astral Elf)",
+          "url": "https://www.dndbeyond.com/species"
+        }
+      ],
+      "given_names": {
+        "male": [
+          "Azhik",
+          "Beksar",
+          "Chetok",
+          "Daskir",
+          "Eshkur",
+          "Foktan",
+          "Geshuk",
+          "Hissar",
+          "Ikzut",
+          "Jarshek",
+          "Kossut",
+          "Lekran",
+          "Miktar",
+          "Neshok",
+          "Okras",
+          "Peksin",
+          "Qartok",
+          "Reshka",
+          "Suktan",
+          "Tekash",
+          "Uskor",
+          "Vetchik",
+          "Waskar",
+          "Xetzin",
+          "Yoksar",
+          "Zerkut",
+          "Ashkos",
+          "Briskol",
+          "Chazek",
+          "Drekosh",
+          "Ektar",
+          "Feshuk",
+          "Gasken",
+          "Hazrik",
+          "Iksun",
+          "Jekrot",
+          "Kessok",
+          "Lurshak",
+          "Mizhket",
+          "Norkash",
+          "Oztik",
+          "Preshan",
+          "Quztek",
+          "Raksun",
+          "Shokren",
+          "Tazruk",
+          "Uzresh",
+          "Veksar",
+          "Weshnik",
+          "Xaltek",
+          "Yaskon",
+          "Zuvash",
+          "Akshet",
+          "Braskel",
+          "Chosrik",
+          "Duzkan",
+          "Eskot",
+          "Foshek",
+          "Grishten",
+          "Haksur"
+        ],
+        "female": [
+          "Ashket",
+          "Brelsha",
+          "Chissel",
+          "Dazren",
+          "Ezzik",
+          "Feshta",
+          "Girshe",
+          "Heskal",
+          "Izzat",
+          "Jashri",
+          "Kessha",
+          "Lishka",
+          "Meskri",
+          "Nizshe",
+          "Ozkira",
+          "Pashket",
+          "Qessri",
+          "Rishka",
+          "Sazhet",
+          "Teshri",
+          "Ushka",
+          "Visshet",
+          "Weshri",
+          "Xashet",
+          "Yeshka",
+          "Zeshri",
+          "Arshka",
+          "Biskha",
+          "Cheshri",
+          "Dosshet",
+          "Esshik",
+          "Fashri",
+          "Gesska",
+          "Haskri",
+          "Izhes",
+          "Jiskra",
+          "Koshri",
+          "Lethsa",
+          "Mishka",
+          "Neshri",
+          "Ozhessa",
+          "Pisska",
+          "Quashri",
+          "Raskha",
+          "Sheska",
+          "Tiskri",
+          "Ulisha",
+          "Vashket",
+          "Wisska",
+          "Xeskri",
+          "Yazshi",
+          "Ziskha",
+          "Ashaxt",
+          "Breski",
+          "Chazhri",
+          "Daskha",
+          "Eshra",
+          "Fessik",
+          "Graskha",
+          "Hishri"
+        ],
+        "shared": [
+          "Azzek",
+          "Brissh",
+          "Chokesh",
+          "Daksh",
+          "Ekkas",
+          "Fashk",
+          "Gessh",
+          "Hokkesh",
+          "Ixtak",
+          "Jeksh",
+          "Kisht",
+          "Lokkess",
+          "Mekkis",
+          "Neshk",
+          "Oshtek",
+          "Paskh",
+          "Qeshk",
+          "Sotek",
+          "Tekkesh",
+          "Zassh"
+        ]
+      },
+      "second_names": {
+        "family": [],
+        "clan": [
+          "Baskshell",
+          "Chekmarsh",
+          "Dregbank",
+          "Eshtide",
+          "Fenwater",
+          "Gritbank",
+          "Hushfen",
+          "Ikdune",
+          "Jaskpool",
+          "Kestmarsh",
+          "Larkfen",
+          "Muddreach",
+          "Nestpool",
+          "Oxmarsh",
+          "Reedsilt",
+          "Scalehollow",
+          "Tarnshale",
+          "Uskdelta",
+          "Vashreed",
+          "Whetbank"
+        ],
+        "byname": [
+          "Bankwader",
+          "Claytracker",
+          "Driftreader",
+          "Eelcatcher",
+          "Fenwatcher",
+          "Fishbinder",
+          "Gravelstalker",
+          "Hatchguard",
+          "Inletfinder",
+          "Jointmender",
+          "Knifereed",
+          "Lowbanker",
+          "Mudskimmer",
+          "Nestwatcher",
+          "Poolkeeper",
+          "Reedbinder",
+          "Siltmender",
+          "Tiderunner",
+          "Waterfinder",
+          "Weirkeeper"
+        ],
+        "designation": []
+      },
+      "leader_given_names": {
+        "male": [
+          "Azkurin",
+          "Beshtok",
+          "Chaskir",
+          "Doshten",
+          "Ekrashik",
+          "Fershaken",
+          "Gorskut",
+          "Hizzok",
+          "Keshtan",
+          "Nuxresh"
+        ],
+        "female": [
+          "Ashreska",
+          "Bisshara",
+          "Cheskali",
+          "Daskress",
+          "Ezhkira",
+          "Feshkara",
+          "Gesshiri",
+          "Haskressa",
+          "Izhshira",
+          "Kosheka"
+        ],
+        "shared": [
+          "Beskash",
+          "Huxresh",
+          "Quesshok",
+          "Vaskesh"
+        ]
+      },
+      "leader_titles": [
+        {
+          "text": "Marsh Guide",
+          "role_context": "leads an assigned party safely through wetlands",
+          "gender": "any"
+        },
+        {
+          "text": "Hatch Warden",
+          "role_context": "is responsible for protection of an identified hatchery",
+          "gender": "any"
+        },
+        {
+          "text": "Reed Captain",
+          "role_context": "commands a patrol among reed channels",
+          "gender": "any"
+        },
+        {
+          "text": "Ford Keeper",
+          "role_context": "supervises passage across an established ford",
+          "gender": "any"
+        },
+        {
+          "text": "Fishing Foreman",
+          "role_context": "coordinates a communal fishing crew",
+          "gender": "any"
+        },
+        {
+          "text": "Flood Caller",
+          "role_context": "alerts a settlement to observed flood levels",
+          "gender": "any"
+        },
+        {
+          "text": "Silt Tracker",
+          "role_context": "directs a team following tracks on wet terrain",
+          "gender": "any"
+        },
+        {
+          "text": "Pool Speaker",
+          "role_context": "represents a poolside settlement in negotiations",
+          "gender": "any"
+        },
+        {
+          "text": "Bank Scout",
+          "role_context": "leads reconnaissance along a riverbank",
+          "gender": "any"
+        },
+        {
+          "text": "Canal Watcher",
+          "role_context": "organizes inspection of a maintained canal",
+          "gender": "any"
+        },
+        {
+          "text": "Shelter Steward",
+          "role_context": "coordinates upkeep of an occupied shelter",
+          "gender": "any"
+        },
+        {
+          "text": "Net Marshal",
+          "role_context": "supervises deployment of coordinated fishing nets",
+          "gender": "any"
+        }
+      ],
+      "epithets": [
+        {
+          "text": "the Reed Finder",
+          "requires_context": "located an important missing route through reeds"
+        },
+        {
+          "text": "of the Second Ford",
+          "requires_context": "is known to reside or work at the second ford"
+        },
+        {
+          "text": "the Quiet Wader",
+          "requires_context": "completed a documented stealth crossing through water"
+        },
+        {
+          "text": "the Silt Reader",
+          "requires_context": "accurately interpreted tracks left in river silt"
+        },
+        {
+          "text": "the Egg Guard",
+          "requires_context": "defended a specific nest or clutch from danger"
+        },
+        {
+          "text": "the Channel Mender",
+          "requires_context": "repaired a damaged channel or waterway"
+        },
+        {
+          "text": "the Fish Divider",
+          "requires_context": "fairly allocated a documented communal catch"
+        },
+        {
+          "text": "of the High Bank",
+          "requires_context": "resides at the locally known high bank"
+        },
+        {
+          "text": "the Lowwater Guide",
+          "requires_context": "led a party across a ford during low water"
+        },
+        {
+          "text": "the Mud Surveyor",
+          "requires_context": "charted a difficult mudflat or marsh path"
+        },
+        {
+          "text": "the Long Diver",
+          "requires_context": "completed a documented extended underwater task"
+        },
+        {
+          "text": "the Night Watcher",
+          "requires_context": "served a recorded night watch at a wetland outpost"
+        }
+      ],
+      "ordinary_formats": [
+        "{given}",
+        "{given} {clan}",
+        "{given} {byname}"
+      ],
+      "leader_formats": [
+        "{given}",
+        "{title} {given}",
+        "{given} {clan}",
+        "{given} {epithet}"
+      ]
+    },
+    {
+      "race_id": "Harpy",
+      "allowed_genders": [
+        "male",
+        "female"
+      ],
+      "naming_style": "gendered",
+      "convention_basis": "original_proposal",
+      "style_notes": "Fortcamp Harpies include male and female people; birdlike airflow consonants, short whistles and broader open vowels form an original mixed palette, not aarakocra or mythological harpy naming law. Perch and route bynames are optional descriptions rather than a mandatory family system.",
+      "sources_consulted": [],
+      "given_names": {
+        "male": [
+          "Arvek",
+          "Belkor",
+          "Cirov",
+          "Darnel",
+          "Eruvik",
+          "Falren",
+          "Gerov",
+          "Hirrek",
+          "Iskar",
+          "Jorven",
+          "Kivrel",
+          "Lassar",
+          "Merok",
+          "Norvel",
+          "Ovarik",
+          "Perosh",
+          "Quirren",
+          "Ravek",
+          "Sioren",
+          "Terval",
+          "Uvarik",
+          "Velkor",
+          "Wariq",
+          "Xirven",
+          "Yarlik",
+          "Zorev",
+          "Arsol",
+          "Brivon",
+          "Cyrrel",
+          "Dovrik",
+          "Ervan",
+          "Ferik",
+          "Glavor",
+          "Halrek",
+          "Ivaron",
+          "Jasser",
+          "Kelvor",
+          "Lervik",
+          "Morven",
+          "Neravil",
+          "Orsik",
+          "Pirven",
+          "Quelor",
+          "Rivar",
+          "Sevro",
+          "Torik",
+          "Ulvaren",
+          "Virrek",
+          "Weron",
+          "Xavriel",
+          "Yoren",
+          "Zivar",
+          "Arsil",
+          "Bekrev",
+          "Ciron",
+          "Derasil",
+          "Evorin",
+          "Farelix",
+          "Gaveril",
+          "Herovin"
+        ],
+        "female": [
+          "Aeriva",
+          "Brisaria",
+          "Ceryva",
+          "Delira",
+          "Eshali",
+          "Fivren",
+          "Galis",
+          "Herva",
+          "Isseri",
+          "Jorelle",
+          "Kivara",
+          "Lurevi",
+          "Merisa",
+          "Nevara",
+          "Orelis",
+          "Pevri",
+          "Quesselle",
+          "Rilara",
+          "Sorevi",
+          "Tisrel",
+          "Uveri",
+          "Velissa",
+          "Wairen",
+          "Xirelle",
+          "Ysalin",
+          "Zivra",
+          "Arissie",
+          "Belvani",
+          "Cireya",
+          "Dovelli",
+          "Eshira",
+          "Farella",
+          "Girelle",
+          "Helisa",
+          "Irrevi",
+          "Jasselle",
+          "Kivella",
+          "Lissari",
+          "Maravelle",
+          "Nirevi",
+          "Osiella",
+          "Peryne",
+          "Quivelle",
+          "Rassari",
+          "Selvira",
+          "Tovissa",
+          "Uliselle",
+          "Vireya",
+          "Wessari",
+          "Xavella",
+          "Yoreli",
+          "Zarevi",
+          "Avarisse",
+          "Brivella",
+          "Cirelle",
+          "Devissa",
+          "Erelvi",
+          "Farisse",
+          "Gessirae",
+          "Hilara"
+        ],
+        "shared": [
+          "Arix",
+          "Belren",
+          "Cevri",
+          "Dorel",
+          "Evish",
+          "Farel",
+          "Gavi",
+          "Haris",
+          "Irvel",
+          "Javi",
+          "Kevir",
+          "Lorish",
+          "Mervi",
+          "Norai",
+          "Orish",
+          "Pivrel",
+          "Qiren",
+          "Resil",
+          "Suvel",
+          "Tavish"
+        ]
+      },
+      "second_names": {
+        "family": [
+          "Airstone",
+          "Bellrock",
+          "Cliffrun",
+          "Duskcrag",
+          "Echostep",
+          "Farledge",
+          "Galeperch",
+          "Highridge",
+          "Keencliff",
+          "Larkspire",
+          "Mistcliff",
+          "Northcrag",
+          "Overledge",
+          "Rookcrest",
+          "Skyridge",
+          "Taluswind",
+          "Updraft",
+          "Wellcliff",
+          "Windharbor",
+          "Zephyrcrag"
+        ],
+        "clan": [],
+        "byname": [
+          "Archglider",
+          "Branchweaver",
+          "Cliffkeeper",
+          "Cloudmarker",
+          "Crosswind",
+          "Downfeather",
+          "Eddyrider",
+          "Farseer",
+          "Gustreader",
+          "Hollowperch",
+          "Inletwing",
+          "Landingguide",
+          "Nesttender",
+          "Perchfinder",
+          "Rainlistener",
+          "Ridgecaller",
+          "Sailwatcher",
+          "Thermalrider",
+          "Windcourier",
+          "Wingmender"
+        ],
+        "designation": []
+      },
+      "leader_given_names": {
+        "male": [
+          "Arvellan",
+          "Berysov",
+          "Cernavir",
+          "Dovarex",
+          "Ervelor",
+          "Firavel",
+          "Gavristen",
+          "Helvador",
+          "Iriovel",
+          "Kersavir"
+        ],
+        "female": [
+          "Averelle",
+          "Belsiria",
+          "Cirevane",
+          "Dovaria",
+          "Erelisse",
+          "Fivarella",
+          "Galarine",
+          "Hireselle",
+          "Iverisse",
+          "Kalesira"
+        ],
+        "shared": [
+          "Ashveril",
+          "Brivalen",
+          "Ciravik",
+          "Telavren"
+        ]
+      },
+      "leader_titles": [
+        {
+          "text": "Thermal Scout",
+          "role_context": "directs a scouting party using rising air",
+          "gender": "any"
+        },
+        {
+          "text": "Perch Captain",
+          "role_context": "commands a watch at an established high perch",
+          "gender": "any"
+        },
+        {
+          "text": "Cliff Warden",
+          "role_context": "coordinates protection of a cliffside community",
+          "gender": "any"
+        },
+        {
+          "text": "Aerie Guide",
+          "role_context": "leads visitors through a known nesting area",
+          "gender": "any"
+        },
+        {
+          "text": "Flight Marshal",
+          "role_context": "organizes movement of a flying patrol",
+          "gender": "any"
+        },
+        {
+          "text": "Crosswind Reader",
+          "role_context": "advises a group on observed wind changes",
+          "gender": "any"
+        },
+        {
+          "text": "Nest Steward",
+          "role_context": "coordinates care of a shared nesting place",
+          "gender": "any"
+        },
+        {
+          "text": "Signal Caller",
+          "role_context": "directs messages between distant perches",
+          "gender": "any"
+        },
+        {
+          "text": "Ridge Patroller",
+          "role_context": "leads patrols along a mountain ridge",
+          "gender": "any"
+        },
+        {
+          "text": "Flight Courier",
+          "role_context": "is assigned to coordinate important deliveries",
+          "gender": "any"
+        },
+        {
+          "text": "Ledge Keeper",
+          "role_context": "oversees safety of a busy cliff landing",
+          "gender": "any"
+        },
+        {
+          "text": "Storm Spotter",
+          "role_context": "directs an organized approaching-storm watch",
+          "gender": "any"
+        }
+      ],
+      "epithets": [
+        {
+          "text": "the Safe Landing",
+          "requires_context": "guided others through a difficult landing"
+        },
+        {
+          "text": "of the Twin Cliffs",
+          "requires_context": "comes from or maintains a place called Twin Cliffs"
+        },
+        {
+          "text": "the Gale Reader",
+          "requires_context": "has accurately predicted severe gusts"
+        },
+        {
+          "text": "the Nest Rescuer",
+          "requires_context": "saved members of an identified threatened nest"
+        },
+        {
+          "text": "of the West Thermals",
+          "requires_context": "regularly patrols a known westward thermal route"
+        },
+        {
+          "text": "the Cloud Messenger",
+          "requires_context": "delivered an important message through clouds"
+        },
+        {
+          "text": "the Silent Descent",
+          "requires_context": "performed a documented quiet aerial approach"
+        },
+        {
+          "text": "the Broken Wing Healer",
+          "requires_context": "has treated a documented injured wing"
+        },
+        {
+          "text": "the Far Percher",
+          "requires_context": "successfully reached a distant difficult perch"
+        },
+        {
+          "text": "the Ridge Lantern",
+          "requires_context": "maintained a visible ridge warning light"
+        },
+        {
+          "text": "the Windward Guard",
+          "requires_context": "served a documented windward watch"
+        },
+        {
+          "text": "the High Courier",
+          "requires_context": "completed a consequential high-altitude delivery"
+        }
+      ],
+      "ordinary_formats": [
+        "{given}",
+        "{given} {family}",
+        "{given} {byname}"
+      ],
+      "leader_formats": [
+        "{given}",
+        "{title} {given}",
+        "{given} {family}",
+        "{given} {epithet}"
+      ]
+    },
+    {
+      "race_id": "Minotaur",
+      "allowed_genders": [
+        "male",
+        "female"
+      ],
+      "naming_style": "gendered",
+      "convention_basis": "dnd_inspired",
+      "style_notes": "D&D includes playable minotaurs, but the public species overview does not prescribe transferable names or a unified culture. Fortcamp uses original robust consonant-vowel names with restrained classical and bronze-age cadence; family and craft bynames are optional, with neither maze rites nor warfare presumed.",
+      "sources_consulted": [
+        {
+          "title": "D&D Beyond — Character Species directory (Lizardfolk, Centaur, Minotaur, Astral Elf)",
+          "url": "https://www.dndbeyond.com/species"
+        },
+        {
+          "title": "D&D Beyond — Unearthed Arcana: Playable Centaurs and Minotaurs",
+          "url": "https://www.dndbeyond.com/posts/234-unearthed-arcana-playable-centaurs-and-minotaurs"
+        }
+      ],
+      "given_names": {
+        "male": [
+          "Akratos",
+          "Belthos",
+          "Cerdan",
+          "Damarok",
+          "Ektor",
+          "Faldros",
+          "Gantor",
+          "Heskos",
+          "Ildaron",
+          "Jaktor",
+          "Kaldros",
+          "Leron",
+          "Mavrok",
+          "Neptor",
+          "Orthek",
+          "Paldros",
+          "Quertos",
+          "Randelos",
+          "Sardek",
+          "Tervos",
+          "Uldaros",
+          "Varkon",
+          "Werdos",
+          "Xanthrek",
+          "Yordos",
+          "Zantor",
+          "Anthelos",
+          "Brakon",
+          "Cendros",
+          "Deltor",
+          "Evandrok",
+          "Fenaros",
+          "Galtar",
+          "Hordaros",
+          "Isanoros",
+          "Jeldrak",
+          "Kervos",
+          "Lathrok",
+          "Mordek",
+          "Naldos",
+          "Odrakon",
+          "Peltros",
+          "Qardek",
+          "Radnor",
+          "Serakon",
+          "Telros",
+          "Uldaren",
+          "Veltor",
+          "Warkos",
+          "Xeltron",
+          "Yeldros",
+          "Zeldar",
+          "Arkoron",
+          "Bendros",
+          "Cormek",
+          "Dravinos",
+          "Elarok",
+          "Farnok",
+          "Gredoros",
+          "Osvarek"
+        ],
+        "female": [
+          "Akrine",
+          "Belthene",
+          "Cessira",
+          "Deltris",
+          "Erithen",
+          "Faldine",
+          "Garthene",
+          "Helkira",
+          "Ismara",
+          "Janthe",
+          "Keldris",
+          "Loraine",
+          "Mavrene",
+          "Nastrin",
+          "Odrissa",
+          "Pelerine",
+          "Qaltris",
+          "Rheldine",
+          "Sardan",
+          "Tevrene",
+          "Ulthene",
+          "Vardine",
+          "Werissa",
+          "Xanthelle",
+          "Yaltris",
+          "Zandrine",
+          "Andressa",
+          "Bristine",
+          "Cernene",
+          "Dalkire",
+          "Evorine",
+          "Ferthis",
+          "Galthrene",
+          "Hestine",
+          "Ivarene",
+          "Jassira",
+          "Korlene",
+          "Lethris",
+          "Mendora",
+          "Neldris",
+          "Ortesse",
+          "Paldine",
+          "Qessara",
+          "Rethyne",
+          "Selthene",
+          "Terisse",
+          "Ulkene",
+          "Velthris",
+          "Wessine",
+          "Xandris",
+          "Yelthene",
+          "Zorisse",
+          "Akenne",
+          "Bertisse",
+          "Calthene",
+          "Derith",
+          "Eltressa",
+          "Festrine",
+          "Grenith",
+          "Haldrene"
+        ],
+        "shared": [
+          "Akrion",
+          "Brendos",
+          "Caltar",
+          "Destre",
+          "Erykos",
+          "Fendrakos",
+          "Gethor",
+          "Halvoren",
+          "Ilthos",
+          "Jastor",
+          "Kareth",
+          "Lendor",
+          "Menthros",
+          "Nestorin",
+          "Orvek",
+          "Petrosel",
+          "Queron",
+          "Ralden",
+          "Seldarek",
+          "Tordren"
+        ]
+      },
+      "second_names": {
+        "family": [
+          "Amberhorn",
+          "Basaltmere",
+          "Brassfold",
+          "Cairnforge",
+          "Copperstead",
+          "Dustmeadow",
+          "Flintward",
+          "Goldenquay",
+          "Hammerfen",
+          "Hollowstead",
+          "Hornridge",
+          "Jasperlane",
+          "Kilnreach",
+          "Limestone",
+          "Masonsford",
+          "Northfoundry",
+          "Oxenford",
+          "Paleflint",
+          "Quarrywell",
+          "Slatehaven"
+        ],
+        "clan": [],
+        "byname": [
+          "Archmason",
+          "Beamhauler",
+          "Bronzehand",
+          "Causewayer",
+          "Chiselled",
+          "Cisternkeeper",
+          "Doorwarden",
+          "Engraver",
+          "Fordwright",
+          "Granaryhand",
+          "Hallbuilder",
+          "Kilntender",
+          "Ledgerhand",
+          "Masonkeeper",
+          "Ochrewatch",
+          "Rampmaker",
+          "Stonecaller",
+          "Towerbuilder",
+          "Vaultreader",
+          "Wheelbinder"
+        ],
+        "designation": []
+      },
+      "leader_given_names": {
+        "male": [
+          "Akravendor",
+          "Belkaros",
+          "Cerdathos",
+          "Damarvok",
+          "Ektarion",
+          "Faldrevos",
+          "Galtheron",
+          "Hestorok",
+          "Ildemaros",
+          "Jarkeldor"
+        ],
+        "female": [
+          "Akremelle",
+          "Beltharis",
+          "Celandrine",
+          "Damarissa",
+          "Elthoria",
+          "Farindris",
+          "Galdelene",
+          "Hessorine",
+          "Ivarneth",
+          "Karthene"
+        ],
+        "shared": [
+          "Arkendos",
+          "Brastelor",
+          "Delkaron",
+          "Tersomel"
+        ]
+      },
+      "leader_titles": [
+        {
+          "text": "Gate Captain",
+          "role_context": "commands a gate defense or access team",
+          "gender": "any"
+        },
+        {
+          "text": "Quarry Steward",
+          "role_context": "coordinates labor in a managed quarry",
+          "gender": "any"
+        },
+        {
+          "text": "Mason Foreman",
+          "role_context": "directs construction by a masonry crew",
+          "gender": "any"
+        },
+        {
+          "text": "Passage Guide",
+          "role_context": "leads travelers through a difficult route",
+          "gender": "any"
+        },
+        {
+          "text": "Granary Keeper",
+          "role_context": "organizes communal grain storage",
+          "gender": "any"
+        },
+        {
+          "text": "Horn Caller",
+          "role_context": "gives horn signals for a defined watch",
+          "gender": "any"
+        },
+        {
+          "text": "Yard Marshal",
+          "role_context": "coordinates work across an active yard",
+          "gender": "any"
+        },
+        {
+          "text": "Shield Captain",
+          "role_context": "leads an equipped defensive unit",
+          "gender": "any"
+        },
+        {
+          "text": "Cistern Warden",
+          "role_context": "maintains a water reservoir for a settlement",
+          "gender": "any"
+        },
+        {
+          "text": "Bridge Surveyor",
+          "role_context": "oversees inspection of a specific bridge",
+          "gender": "any"
+        },
+        {
+          "text": "Forge Steward",
+          "role_context": "directs a working forge crew",
+          "gender": "any"
+        },
+        {
+          "text": "Market Speaker",
+          "role_context": "represents a market community in negotiations",
+          "gender": "any"
+        }
+      ],
+      "epithets": [
+        {
+          "text": "the Gate Holder",
+          "requires_context": "successfully held an assigned gate under attack"
+        },
+        {
+          "text": "the Dust Surveyor",
+          "requires_context": "mapped a hazardous dry route"
+        },
+        {
+          "text": "of the Long Ramp",
+          "requires_context": "lives or works by a locally known long ramp"
+        },
+        {
+          "text": "the Stone Setter",
+          "requires_context": "completed notable precision masonry"
+        },
+        {
+          "text": "the Grain Keeper",
+          "requires_context": "safeguarded communal grain during a shortage"
+        },
+        {
+          "text": "the Quiet Horn",
+          "requires_context": "used a known discreet warning signal"
+        },
+        {
+          "text": "the Bridge Bearer",
+          "requires_context": "helped support or rebuild an important bridge"
+        },
+        {
+          "text": "the Cistern Saver",
+          "requires_context": "prevented the loss of an important cistern"
+        },
+        {
+          "text": "the Sure Foot",
+          "requires_context": "crossed a documented unstable passage safely"
+        },
+        {
+          "text": "of the Copper Yard",
+          "requires_context": "belongs to a known Copper Yard worksite"
+        },
+        {
+          "text": "the Fair Weigher",
+          "requires_context": "has a record of honest market measurements"
+        },
+        {
+          "text": "the Passage Finder",
+          "requires_context": "found a new traversable route through an obstruction"
+        }
+      ],
+      "ordinary_formats": [
+        "{given}",
+        "{given} {family}",
+        "{given} {byname}"
+      ],
+      "leader_formats": [
+        "{given}",
+        "{title} {given}",
+        "{given} {family}",
+        "{given} {epithet}"
+      ]
+    },
+    {
+      "race_id": "Centaur",
+      "allowed_genders": [
+        "male",
+        "female"
+      ],
+      "naming_style": "gendered",
+      "convention_basis": "dnd_inspired",
+      "style_notes": "D&D centaurs are an available analogue, not evidence of one universal naming language. These original names combine open-voweled classical cadence with earthier traveling-community sounds; optional family and trail bynames imply neither compulsory nomadism nor inherited rank.",
+      "sources_consulted": [
+        {
+          "title": "D&D Beyond — Character Species directory (Lizardfolk, Centaur, Minotaur, Astral Elf)",
+          "url": "https://www.dndbeyond.com/species"
+        },
+        {
+          "title": "D&D Beyond — Unearthed Arcana: Playable Centaurs and Minotaurs",
+          "url": "https://www.dndbeyond.com/posts/234-unearthed-arcana-playable-centaurs-and-minotaurs"
+        }
+      ],
+      "given_names": {
+        "male": [
+          "Avedros",
+          "Belisorn",
+          "Cormenos",
+          "Derenik",
+          "Elvados",
+          "Farnikos",
+          "Galeron",
+          "Heradan",
+          "Ilarvos",
+          "Jorathen",
+          "Kavendis",
+          "Loranos",
+          "Merdikan",
+          "Navoresh",
+          "Orthelon",
+          "Parenos",
+          "Quernav",
+          "Rendas",
+          "Silvador",
+          "Taredos",
+          "Uldaven",
+          "Veranos",
+          "Werenos",
+          "Xaledor",
+          "Yarden",
+          "Zoravos",
+          "Andelon",
+          "Breneros",
+          "Calveren",
+          "Domeris",
+          "Estaron",
+          "Felidor",
+          "Gavaros",
+          "Heloran",
+          "Ivandros",
+          "Jalenos",
+          "Kerevon",
+          "Ladoren",
+          "Mandaros",
+          "Nirevon",
+          "Ostivan",
+          "Pelador",
+          "Quarven",
+          "Rodaris",
+          "Senedor",
+          "Talverin",
+          "Uvador",
+          "Valerok",
+          "Wenderos",
+          "Xoraven",
+          "Yolaros",
+          "Zandoren",
+          "Arvedon",
+          "Belsiro",
+          "Corvaden",
+          "Deronos",
+          "Elvaren",
+          "Fesador",
+          "Galdiren",
+          "Havoros"
+        ],
+        "female": [
+          "Avenis",
+          "Beloria",
+          "Cendria",
+          "Devrene",
+          "Eladis",
+          "Feranel",
+          "Galaris",
+          "Heliwen",
+          "Ilarine",
+          "Jalenne",
+          "Kavarine",
+          "Loresse",
+          "Meravine",
+          "Norelin",
+          "Olavene",
+          "Perenis",
+          "Quenoria",
+          "Rodelle",
+          "Seradine",
+          "Telene",
+          "Ularis",
+          "Veronel",
+          "Werenis",
+          "Xalanis",
+          "Yavelle",
+          "Zorelle",
+          "Andivene",
+          "Bralise",
+          "Cerene",
+          "Delavina",
+          "Esmerine",
+          "Falenis",
+          "Gaverine",
+          "Haleris",
+          "Iveren",
+          "Jorinne",
+          "Kessanel",
+          "Luvoren",
+          "Marenes",
+          "Nivelle",
+          "Orelene",
+          "Pavrine",
+          "Quarisse",
+          "Ravelis",
+          "Selavine",
+          "Tarenis",
+          "Ulavine",
+          "Velarine",
+          "Wendelie",
+          "Xoranis",
+          "Yerenis",
+          "Zareline",
+          "Alveris",
+          "Bellavine",
+          "Coralis",
+          "Devanel",
+          "Elarine",
+          "Fenoree",
+          "Gresaline",
+          "Halenis"
+        ],
+        "shared": [
+          "Aderon",
+          "Beleris",
+          "Carvenel",
+          "Delvaren",
+          "Eronel",
+          "Falenor",
+          "Galveron",
+          "Harendel",
+          "Ivenor",
+          "Jeralen",
+          "Kalderis",
+          "Leravon",
+          "Mavelen",
+          "Neralis",
+          "Ovaren",
+          "Peravel",
+          "Quenavel",
+          "Reneris",
+          "Talven",
+          "Welanor"
+        ]
+      },
+      "second_names": {
+        "family": [
+          "Bridgemeadow",
+          "Cloverbarrow",
+          "Duskfield",
+          "Eastgrove",
+          "Farmeadow",
+          "Fieldcrest",
+          "Grassborne",
+          "Hillmere",
+          "Longpasture",
+          "Meadowford",
+          "Northfield",
+          "Orchardrun",
+          "Rainplain",
+          "Riverhollow",
+          "Sunbarrow",
+          "Trailbloom",
+          "Valleycross",
+          "Wheatmere",
+          "Willowford",
+          "Windpasture"
+        ],
+        "clan": [],
+        "byname": [
+          "Brookfollower",
+          "Cartguide",
+          "Dawntracker",
+          "Fordrider",
+          "Grassreader",
+          "Hailwatcher",
+          "Hillsurveyor",
+          "Hoofmender",
+          "Lanternbearer",
+          "Mapkeeper",
+          "Milecounter",
+          "Pathmender",
+          "Plainscout",
+          "Rainfinder",
+          "Roadbinder",
+          "Shadefinder",
+          "Streamguide",
+          "Trackkeeper",
+          "Wayfinder",
+          "Windreader"
+        ],
+        "designation": []
+      },
+      "leader_given_names": {
+        "male": [
+          "Avederon",
+          "Bralavik",
+          "Cerenaros",
+          "Delveron",
+          "Eltharion",
+          "Fendavar",
+          "Galmeros",
+          "Heleron",
+          "Jorendak",
+          "Kelavros"
+        ],
+        "female": [
+          "Avenoria",
+          "Belerinelle",
+          "Calerina",
+          "Delisaveth",
+          "Erenadelle",
+          "Favarine",
+          "Galenoria",
+          "Helesara",
+          "Ivelorie",
+          "Karelisse"
+        ],
+        "shared": [
+          "Arendelon",
+          "Beleraven",
+          "Cerravel",
+          "Vandeloris"
+        ]
+      },
+      "leader_titles": [
+        {
+          "text": "Trail Captain",
+          "role_context": "leads a defined traveling party",
+          "gender": "any"
+        },
+        {
+          "text": "Orchard Steward",
+          "role_context": "oversees shared orchard work",
+          "gender": "any"
+        },
+        {
+          "text": "Plains Surveyor",
+          "role_context": "coordinates measurements across open terrain",
+          "gender": "any"
+        },
+        {
+          "text": "Ford Guide",
+          "role_context": "leads a party across a maintained river ford",
+          "gender": "any"
+        },
+        {
+          "text": "Caravan Speaker",
+          "role_context": "represents a caravan in negotiation",
+          "gender": "any"
+        },
+        {
+          "text": "Road Marshal",
+          "role_context": "organizes safe transit along a guarded road",
+          "gender": "any"
+        },
+        {
+          "text": "Field Warden",
+          "role_context": "supervises security around cultivated fields",
+          "gender": "any"
+        },
+        {
+          "text": "Course Reader",
+          "role_context": "advises on route selection for a planned trip",
+          "gender": "any"
+        },
+        {
+          "text": "Water Scout",
+          "role_context": "leads reconnaissance to find drinking water",
+          "gender": "any"
+        },
+        {
+          "text": "Stable Healer",
+          "role_context": "coordinates practical treatment of injured mounts or centaurs",
+          "gender": "any"
+        },
+        {
+          "text": "Cart Foreman",
+          "role_context": "manages transport and loading by a cart crew",
+          "gender": "any"
+        },
+        {
+          "text": "Ridge Lookout",
+          "role_context": "commands a watch from a known ridge",
+          "gender": "any"
+        }
+      ],
+      "epithets": [
+        {
+          "text": "the Ford Finder",
+          "requires_context": "located a usable crossing over a known river"
+        },
+        {
+          "text": "of Windward Vale",
+          "requires_context": "comes from a locally named Windward Vale"
+        },
+        {
+          "text": "the Last Cart",
+          "requires_context": "remained to escort the final cart in a known convoy"
+        },
+        {
+          "text": "the Orchard Keeper",
+          "requires_context": "protected or sustained an identified orchard"
+        },
+        {
+          "text": "the Rain Guide",
+          "requires_context": "led travelers through a dangerous rainstorm"
+        },
+        {
+          "text": "the Far Surveyor",
+          "requires_context": "completed a substantial remote survey"
+        },
+        {
+          "text": "of the North Trail",
+          "requires_context": "serves or resides by a locally named North Trail"
+        },
+        {
+          "text": "the Water Seeker",
+          "requires_context": "found a needed water source during a journey"
+        },
+        {
+          "text": "the Gentle Bridle",
+          "requires_context": "calmed a panicked transport animal without injury"
+        },
+        {
+          "text": "the Night Pathfinder",
+          "requires_context": "successfully guided a group by night"
+        },
+        {
+          "text": "the Road Rebuilder",
+          "requires_context": "restored an important damaged road"
+        },
+        {
+          "text": "the Open Hand",
+          "requires_context": "mediated a documented peaceful agreement"
+        }
+      ],
+      "ordinary_formats": [
+        "{given}",
+        "{given} {family}",
+        "{given} {byname}"
+      ],
+      "leader_formats": [
+        "{given}",
+        "{title} {given}",
+        "{given} {family}",
+        "{given} {epithet}"
+      ]
+    },
+    {
+      "race_id": "Astral Elf",
+      "allowed_genders": [
+        "male",
+        "female"
+      ],
+      "naming_style": "gendered",
+      "convention_basis": "dnd_inspired",
+      "style_notes": "Official D&D identifies Astral Elves and describes general elven adult and family-name patterns, but the consulted public sources do not establish a distinct astral-elf naming grammar. Fortcamp proposes concise, measured elven names with restrained long vowels and occasional celestial imagery, leaving family bynames optional and never assigning automatic cosmic offices.",
+      "sources_consulted": [
+        {
+          "title": "D&D Beyond — Character Species directory (Lizardfolk, Centaur, Minotaur, Astral Elf)",
+          "url": "https://www.dndbeyond.com/species"
+        },
+        {
+          "title": "D&D Beyond — 2014 Basic Rules: Races (Elf Names)",
+          "url": "https://www.dndbeyond.com/sources/dnd/basic-rules-2014/races"
+        }
+      ],
+      "given_names": {
+        "male": [
+          "Aevorin",
+          "Beliseth",
+          "Calioren",
+          "Delavor",
+          "Elariven",
+          "Falithor",
+          "Galedris",
+          "Havalien",
+          "Ilarven",
+          "Jorielan",
+          "Kaeriven",
+          "Lelorian",
+          "Merathis",
+          "Nivarion",
+          "Olaren",
+          "Perelith",
+          "Quoravel",
+          "Rethalion",
+          "Saelovir",
+          "Tervalis",
+          "Ulavion",
+          "Velaris",
+          "Weraleth",
+          "Xelior",
+          "Yathorel",
+          "Zelavir",
+          "Arvelith",
+          "Belerion",
+          "Celenar",
+          "Dalarion",
+          "Evether",
+          "Falerien",
+          "Galethor",
+          "Helerion",
+          "Isavorn",
+          "Jaeliris",
+          "Keleran",
+          "Lavenor",
+          "Merelion",
+          "Nelavor",
+          "Otharien",
+          "Pelarion",
+          "Quenalor",
+          "Raelther",
+          "Savelin",
+          "Teleris",
+          "Uravel",
+          "Veliaron",
+          "Wethoris",
+          "Xalerion",
+          "Yelavon",
+          "Zarelor",
+          "Avenith",
+          "Belariven",
+          "Coralen",
+          "Delorienis",
+          "Elather",
+          "Fialoren",
+          "Gerenith",
+          "Helavris"
+        ],
+        "female": [
+          "Aeranel",
+          "Belavine",
+          "Calerisse",
+          "Delyrien",
+          "Elariselle",
+          "Falavine",
+          "Gethariel",
+          "Helavene",
+          "Irelisse",
+          "Jalerine",
+          "Kaerelith",
+          "Leraviel",
+          "Meralisse",
+          "Niaraven",
+          "Olerisse",
+          "Phaelene",
+          "Quellaris",
+          "Rhenalisse",
+          "Saevielle",
+          "Telerien",
+          "Ularienne",
+          "Velaveth",
+          "Weralisse",
+          "Xelenis",
+          "Yaveriel",
+          "Zelaneth",
+          "Averilith",
+          "Belisarie",
+          "Carieline",
+          "Delarisse",
+          "Evariel",
+          "Felerisse",
+          "Galaveth",
+          "Herelisse",
+          "Ilenarie",
+          "Jarelisse",
+          "Keraline",
+          "Levariel",
+          "Melaven",
+          "Nethariel",
+          "Orelisse",
+          "Perenelle",
+          "Quenavine",
+          "Ralaveth",
+          "Selenarie",
+          "Talavine",
+          "Ularelle",
+          "Veleris",
+          "Walerienne",
+          "Xareneth",
+          "Yeralisse",
+          "Zavelinne",
+          "Aravielle",
+          "Beleneth",
+          "Celerisse",
+          "Devanelle",
+          "Elariene",
+          "Firenesse",
+          "Galarienne",
+          "Helereth"
+        ],
+        "shared": [
+          "Arelith",
+          "Belarieth",
+          "Cevarel",
+          "Dalerith",
+          "Erenvar",
+          "Falorien",
+          "Getharelith",
+          "Halenar",
+          "Ilenith",
+          "Javelor",
+          "Kelaris",
+          "Lethaven",
+          "Merilor",
+          "Narevel",
+          "Orelith",
+          "Palorien",
+          "Quenarel",
+          "Renathis",
+          "Selavon",
+          "Valerith"
+        ]
+      },
+      "second_names": {
+        "family": [
+          "Aeloran",
+          "Bellaveth",
+          "Celerionis",
+          "Delariven",
+          "Elarathen",
+          "Faloriel",
+          "Gelerith",
+          "Halavien",
+          "Ilarioneth",
+          "Jeraloren",
+          "Kelerath",
+          "Lavarien",
+          "Merelath",
+          "Nalerion",
+          "Orelaveth",
+          "Pelerian",
+          "Quelorin",
+          "Ralorien",
+          "Selariven",
+          "Velarioneth"
+        ],
+        "clan": [],
+        "byname": [
+          "Arcchart",
+          "Beaconwatch",
+          "Farcomet",
+          "Glasshorizon",
+          "Lanternorbit",
+          "Lightrail",
+          "Moonharbor",
+          "Nightatlas",
+          "Orbitchart",
+          "Paleaster",
+          "Quietzenith",
+          "Skymeasure",
+          "Starmarker",
+          "Sunatlas",
+          "Twilightchart",
+          "Veilcartographer",
+          "Voidpilot",
+          "Waylight",
+          "Westcomet",
+          "Zenithkeeper"
+        ],
+        "designation": []
+      },
+      "leader_given_names": {
+        "male": [
+          "Aeralvion",
+          "Belerathion",
+          "Caloverin",
+          "Daelorith",
+          "Elandoriel",
+          "Faloriven",
+          "Galenorith",
+          "Havariel",
+          "Ilenavon",
+          "Quelarien"
+        ],
+        "female": [
+          "Aerelineth",
+          "Belavaris",
+          "Caleravine",
+          "Delavethis",
+          "Elaverielle",
+          "Falerineth",
+          "Geleravine",
+          "Heliarisse",
+          "Ilenerielle",
+          "Quenarisse"
+        ],
+        "shared": [
+          "Avelorian",
+          "Belarethis",
+          "Celaveren",
+          "Telioren"
+        ]
+      },
+      "leader_titles": [
+        {
+          "text": "Chart Keeper",
+          "role_context": "maintains charts of a known navigable route",
+          "gender": "any"
+        },
+        {
+          "text": "Astral Navigator",
+          "role_context": "guides travelers using an established astral route",
+          "gender": "any"
+        },
+        {
+          "text": "Beacon Warden",
+          "role_context": "maintains an assigned beacon for a community",
+          "gender": "any"
+        },
+        {
+          "text": "Transit Captain",
+          "role_context": "commands a specific transport or escort",
+          "gender": "any"
+        },
+        {
+          "text": "Archive Steward",
+          "role_context": "directs work at a recognized archive",
+          "gender": "any"
+        },
+        {
+          "text": "Signal Reader",
+          "role_context": "interprets incoming signals for a traveling party",
+          "gender": "any"
+        },
+        {
+          "text": "Passage Surveyor",
+          "role_context": "maps a newly encountered passage",
+          "gender": "any"
+        },
+        {
+          "text": "Observatory Guide",
+          "role_context": "leads observers through a functioning observatory",
+          "gender": "any"
+        },
+        {
+          "text": "Dusk Watcher",
+          "role_context": "organizes a watch during a designated dusk shift",
+          "gender": "any"
+        },
+        {
+          "text": "Embassy Speaker",
+          "role_context": "represents a delegation during negotiations",
+          "gender": "any"
+        },
+        {
+          "text": "Vessel Pilot",
+          "role_context": "pilots a particular equipped vessel",
+          "gender": "any"
+        },
+        {
+          "text": "Waypoint Keeper",
+          "role_context": "supervises a known navigation waypoint",
+          "gender": "any"
+        }
+      ],
+      "epithets": [
+        {
+          "text": "the Fixed Bearing",
+          "requires_context": "successfully held a course through disorientation"
+        },
+        {
+          "text": "of the Third Beacon",
+          "requires_context": "maintains or served at a named third beacon"
+        },
+        {
+          "text": "the Quiet Chart",
+          "requires_context": "authored a precise map used by their community"
+        },
+        {
+          "text": "the Dusk Reader",
+          "requires_context": "decoded a signal during dim light"
+        },
+        {
+          "text": "the Passage Mender",
+          "requires_context": "repaired a damaged passage or transit route"
+        },
+        {
+          "text": "the Long Watch",
+          "requires_context": "completed an unusually prolonged verified watch"
+        },
+        {
+          "text": "of the Silver Window",
+          "requires_context": "is associated with a place locally called Silver Window"
+        },
+        {
+          "text": "the Steady Pilot",
+          "requires_context": "completed a dangerous route without deviation"
+        },
+        {
+          "text": "the Light Recorder",
+          "requires_context": "documented an unusual verified light event"
+        },
+        {
+          "text": "the Beacon Returner",
+          "requires_context": "returned safely after a documented beacon failure"
+        },
+        {
+          "text": "the Far Witness",
+          "requires_context": "reported an observed distant event accurately"
+        },
+        {
+          "text": "the Waypoint Finder",
+          "requires_context": "established a newly usable navigation waypoint"
+        }
+      ],
+      "ordinary_formats": [
+        "{given}",
+        "{given} {family}",
+        "{given} {byname}"
+      ],
+      "leader_formats": [
+        "{given}",
+        "{title} {given}",
+        "{given} {family}",
+        "{given} {epithet}"
+      ]
+    },
+    {
+      "race_id": "Voidsent",
+      "allowed_genders": [
+        "male",
+        "female"
+      ],
+      "naming_style": "gendered",
+      "convention_basis": "original_proposal",
+      "style_notes": "Voidsent are an original Fortcamp extraplanar grouping, not a claim about D&D or Final Fantasy cultures. Their personal names pair low resonant vowels with interrupted or fricative consonants; optional cell, port, or chosen bynames denote actual associations only, and neither demonic rank nor cosmic powers follow from a name.",
+      "sources_consulted": [],
+      "given_names": {
+        "male": [
+          "Akriven",
+          "Belzeth",
+          "Cothren",
+          "Duvarek",
+          "Ezzomar",
+          "Feshron",
+          "Gathvek",
+          "Hoziren",
+          "Izreth",
+          "Juvakor",
+          "Keshvor",
+          "Lorkesh",
+          "Mavzun",
+          "Norex",
+          "Othzek",
+          "Pazhren",
+          "Qerith",
+          "Ruzhek",
+          "Sothren",
+          "Tuvrek",
+          "Uzkarel",
+          "Veshkor",
+          "Wozren",
+          "Xervak",
+          "Yozreth",
+          "Zethvor",
+          "Avrok",
+          "Buzren",
+          "Cazreth",
+          "Dovzir",
+          "Eshvok",
+          "Felzun",
+          "Gorveth",
+          "Hushrek",
+          "Izoran",
+          "Jozvek",
+          "Kalthren",
+          "Luvzor",
+          "Mekharen",
+          "Nuzvok",
+          "Orketh",
+          "Palthrek",
+          "Quzoren",
+          "Ravzok",
+          "Sezhren",
+          "Torkiven",
+          "Uvorak",
+          "Valzeth",
+          "Weshzor",
+          "Xovren",
+          "Yarkev",
+          "Zunarek",
+          "Arvex",
+          "Borzhen",
+          "Chazvor",
+          "Durekhan",
+          "Ezroven",
+          "Frashvek",
+          "Gurezan",
+          "Hozvarek"
+        ],
+        "female": [
+          "Azhren",
+          "Belzira",
+          "Cevrith",
+          "Dushara",
+          "Ezveri",
+          "Feshren",
+          "Gozhira",
+          "Heziri",
+          "Izresh",
+          "Javori",
+          "Keshira",
+          "Luvrisa",
+          "Mezheni",
+          "Nushere",
+          "Ozhira",
+          "Pezrith",
+          "Quzhera",
+          "Ruzhene",
+          "Seshri",
+          "Tazhira",
+          "Uzhris",
+          "Veshira",
+          "Wozheri",
+          "Xezhene",
+          "Yezhira",
+          "Zuvrisa",
+          "Arzhene",
+          "Bravira",
+          "Cheshene",
+          "Duzhiri",
+          "Ezhara",
+          "Fozhira",
+          "Gezrith",
+          "Hushiri",
+          "Izhveri",
+          "Jezhera",
+          "Koshira",
+          "Luzheri",
+          "Mavri",
+          "Neshara",
+          "Ozhrena",
+          "Peshiri",
+          "Qazhris",
+          "Revziri",
+          "Sezhera",
+          "Tezrith",
+          "Uzhere",
+          "Vezhira",
+          "Wazheri",
+          "Xashiri",
+          "Yazhera",
+          "Zeshira",
+          "Azhris",
+          "Bezhiri",
+          "Cazheri",
+          "Dovzhene",
+          "Eshveri",
+          "Fozhene",
+          "Gazhiri",
+          "Heshira"
+        ],
+        "shared": [
+          "Arvekhs",
+          "Beshren",
+          "Cuzrak",
+          "Dervesh",
+          "Ezhvek",
+          "Fuzhen",
+          "Gozrek",
+          "Heskir",
+          "Izzven",
+          "Juzh",
+          "Kervash",
+          "Luvrek",
+          "Mezhar",
+          "Neshvor",
+          "Orzhen",
+          "Peshvek",
+          "Quzhek",
+          "Ruvzeth",
+          "Sezhrin",
+          "Vuzhek"
+        ]
+      },
+      "second_names": {
+        "family": [],
+        "clan": [],
+        "byname": [
+          "Ashenline",
+          "Blackthreshold",
+          "Breachwatch",
+          "Coldpassage",
+          "Dimcurrent",
+          "Dusksignal",
+          "Farhollow",
+          "Glasshush",
+          "Greyparapet",
+          "Hushcorridor",
+          "Liminalmark",
+          "Murmurline",
+          "Netherquay",
+          "Palejunction",
+          "Quietshelf",
+          "Riftledger",
+          "Shadowford",
+          "Thresholdkeeper",
+          "Veiledpass",
+          "Watchpoint"
+        ],
+        "designation": [
+          "Anchorbearer",
+          "Barrierreader",
+          "Channelkeeper",
+          "Corridorguide",
+          "Doorfinder",
+          "Echomapper",
+          "Foldwatcher",
+          "Gateobserver",
+          "Holdfast",
+          "Lampcarrier",
+          "Memorykeeper",
+          "Nullscribe",
+          "Passagebound",
+          "Riftseeker",
+          "Sealwatcher",
+          "Shiftwarden",
+          "Threadkeeper",
+          "Transitfinder",
+          "Vaultreader",
+          "Veilmarker"
+        ]
+      },
+      "leader_given_names": {
+        "male": [
+          "Akrezhor",
+          "Belvakren",
+          "Cezhkar",
+          "Dovrakel",
+          "Ezhmarok",
+          "Frazhven",
+          "Gurevash",
+          "Hekzurith",
+          "Izvorak",
+          "Kalzhevon"
+        ],
+        "female": [
+          "Azhavelle",
+          "Belzheri",
+          "Cevashara",
+          "Duzherine",
+          "Ezhavri",
+          "Fezherine",
+          "Gozhalis",
+          "Heshavri",
+          "Izherelle",
+          "Keshavrine"
+        ],
+        "shared": [
+          "Azhverok",
+          "Belzarek",
+          "Cuzharin",
+          "Vezhkar"
+        ]
+      },
+      "leader_titles": [
+        {
+          "text": "Threshold Scout",
+          "role_context": "leads reconnaissance through a known threshold",
+          "gender": "any"
+        },
+        {
+          "text": "Passage Warden",
+          "role_context": "oversees safe passage through an assigned route",
+          "gender": "any"
+        },
+        {
+          "text": "Gate Observer",
+          "role_context": "watches and records events at a specific gate",
+          "gender": "any"
+        },
+        {
+          "text": "Signal Keeper",
+          "role_context": "maintains a known interstation signal",
+          "gender": "any"
+        },
+        {
+          "text": "Corridor Guide",
+          "role_context": "escorts travelers along a verified corridor",
+          "gender": "any"
+        },
+        {
+          "text": "Shelter Captain",
+          "role_context": "commands defenders of a designated shelter",
+          "gender": "any"
+        },
+        {
+          "text": "Transit Speaker",
+          "role_context": "represents a traveling group in negotiation",
+          "gender": "any"
+        },
+        {
+          "text": "Rift Surveyor",
+          "role_context": "records observations of an identified rift",
+          "gender": "any"
+        },
+        {
+          "text": "Barrier Steward",
+          "role_context": "supervises maintenance of a working barrier",
+          "gender": "any"
+        },
+        {
+          "text": "Archive Reader",
+          "role_context": "interprets entrusted records for a group",
+          "gender": "any"
+        },
+        {
+          "text": "Watch Conductor",
+          "role_context": "coordinates watch shifts at a station",
+          "gender": "any"
+        },
+        {
+          "text": "Crossing Marshal",
+          "role_context": "directs an organized crossing operation",
+          "gender": "any"
+        }
+      ],
+      "epithets": [
+        {
+          "text": "the Gate Witness",
+          "requires_context": "personally witnessed a recorded gate event"
+        },
+        {
+          "text": "of the Hollow Quay",
+          "requires_context": "resides or works at a locally named Hollow Quay"
+        },
+        {
+          "text": "the Still Recorder",
+          "requires_context": "maintained accurate records under disruption"
+        },
+        {
+          "text": "the Fold Mapper",
+          "requires_context": "mapped a specific spatial fold or unusual passage"
+        },
+        {
+          "text": "the Returning Guide",
+          "requires_context": "successfully escorted lost travelers home"
+        },
+        {
+          "text": "the Signal Holder",
+          "requires_context": "sustained a warning signal under danger"
+        },
+        {
+          "text": "of the Quiet Gate",
+          "requires_context": "is assigned to or from a locally named Quiet Gate"
+        },
+        {
+          "text": "the Veil Reader",
+          "requires_context": "accurately interpreted a known obstructed observation"
+        },
+        {
+          "text": "the Corridor Saver",
+          "requires_context": "prevented a known corridor from collapse"
+        },
+        {
+          "text": "the Last Lantern",
+          "requires_context": "kept the final light working during an outage"
+        },
+        {
+          "text": "the Safe Crosser",
+          "requires_context": "led people through a documented hazardous crossing"
+        },
+        {
+          "text": "the Patient Listener",
+          "requires_context": "gathered critical information by careful listening"
+        }
+      ],
+      "ordinary_formats": [
+        "{given}",
+        "{given} {byname}",
+        "{given} {designation}"
+      ],
+      "leader_formats": [
+        "{given}",
+        "{title} {given}",
+        "{given} {byname}",
+        "{given} {epithet}"
+      ]
+    }
+  ],
+  "self_review": {
+    "race_count": 6,
+    "actual_counts_by_race": {
+      "Lizardfolk": {
+        "male": 60,
+        "female": 60,
+        "shared": 20,
+        "leader_male": 10,
+        "leader_female": 10,
+        "leader_shared": 4,
+        "second_names_total": 40,
+        "leader_titles": 12,
+        "epithets": 12
+      },
+      "Harpy": {
+        "male": 60,
+        "female": 60,
+        "shared": 20,
+        "leader_male": 10,
+        "leader_female": 10,
+        "leader_shared": 4,
+        "second_names_total": 40,
+        "leader_titles": 12,
+        "epithets": 12
+      },
+      "Minotaur": {
+        "male": 60,
+        "female": 60,
+        "shared": 20,
+        "leader_male": 10,
+        "leader_female": 10,
+        "leader_shared": 4,
+        "second_names_total": 40,
+        "leader_titles": 12,
+        "epithets": 12
+      },
+      "Centaur": {
+        "male": 60,
+        "female": 60,
+        "shared": 20,
+        "leader_male": 10,
+        "leader_female": 10,
+        "leader_shared": 4,
+        "second_names_total": 40,
+        "leader_titles": 12,
+        "epithets": 12
+      },
+      "Astral Elf": {
+        "male": 60,
+        "female": 60,
+        "shared": 20,
+        "leader_male": 10,
+        "leader_female": 10,
+        "leader_shared": 4,
+        "second_names_total": 40,
+        "leader_titles": 12,
+        "epithets": 12
+      },
+      "Voidsent": {
+        "male": 60,
+        "female": 60,
+        "shared": 20,
+        "leader_male": 10,
+        "leader_female": 10,
+        "leader_shared": 4,
+        "second_names_total": 40,
+        "leader_titles": 12,
+        "epithets": 12
+      }
+    },
+    "duplicates": [],
+    "excluded_name_collisions": [],
+    "overlength_items": [],
+    "source_limitations": [
+      "Lizardfolk: Consulted D&D references establish species or general elven naming, but no verified race-specific Fortcamp naming convention; sound palette is original inspiration.",
+      "Harpy: No official racial naming grammar established in consulted references; original Fortcamp naming proposal follows supplied style guidance.",
+      "Minotaur: Consulted D&D references establish species or general elven naming, but no verified race-specific Fortcamp naming convention; sound palette is original inspiration.",
+      "Centaur: Consulted D&D references establish species or general elven naming, but no verified race-specific Fortcamp naming convention; sound palette is original inspiration.",
+      "Astral Elf: Consulted D&D references establish species or general elven naming, but no verified race-specific Fortcamp naming convention; sound palette is original inspiration.",
+      "Voidsent: No official racial naming grammar established in consulted references; original Fortcamp naming proposal follows supplied style guidance."
+    ],
+    "shortfalls": [],
+    "next_batch_id": "race_names_005"
+  }
+}

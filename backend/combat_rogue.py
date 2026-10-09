@@ -5,7 +5,7 @@ from . import combat_abilities as abilities
 from .combat_feedback import record as feedback
 
 KINDS={'cheap_shot','crippling_cut','exploit_weakness','shadowstep','caltrops','backflip','throwing_knife'}
-NEGATIVE={'disarm','captor_held','captor_abducted','wet','blister','pestilence','bleed','hobbled','poison','burn','blind','slow','stun','sleep','freeze','bind','paralyze','fear','mute','armor_fracture','vulnerable','mark','open_guard','panic','pit_trapped','palm_exposure','charm','confuse','berserk','reckless_exposure'}
+NEGATIVE={'rat_weakness','disarm','captor_held','captor_abducted','wet','blister','pestilence','bleed','hobbled','poison','burn','blind','slow','stun','sleep','freeze','bind','paralyze','fear','mute','armor_fracture','vulnerable','mark','open_guard','panic','pit_trapped','palm_exposure','charm','confuse','berserk','reckless_exposure'}
 UTILITY={'shadowstep','backflip','caltrops','throwing_knife'}
 
 def active(u):return u.get('alive',True) and u.get('conscious',True) and not u.get('extracted') and not u.get('carried_by')
@@ -28,7 +28,7 @@ def position_power(battle,actor,target,thrown=False):
     side=strike_side(actor,target,thrown);sides=set()
     if side:sides.add(side)
     for ally in battle['units'].values():
-        if ally['id']==actor['id'] or ally['team']!=actor['team'] or not active(ally):continue
+        if ally['id']==actor['id'] or ally['team']!=actor['team'] or not active(ally) or ally.get('wildlife_hostile_all') or actor.get('wildlife_hostile_all'):continue
         d=(ally['x']-target['x'],ally['y']-target['y'])
         if abs(d[0])+abs(d[1])==1 and not c.crossed_walls(battle,(ally['x'],ally['y']),(target['x'],target['y'])):sides.add(d)
     power=250 if len(sides)>=4 else 220 if len(sides)==3 else 200 if side and (-side[0],-side[1]) in sides else 150 if len(sides)>=2 else 100

@@ -22,9 +22,9 @@ EARLY = {
  ('salvage_bells','Bells in the Scrap Heap','A caravan repairer suspects usable brass fittings are buried among rusted tools.','scavenging',{'scrap':5}),
  ('old_waymarks','The Missing Waymark','Find where a roadside marker belongs before more travelers take the wrong path.','survival',{}),
  ('apprentice_notes','The Apprentice’s Notes','Recover a workshop apprentice’s scattered measurements and put them in usable order.','building',{}),
- ('rats_storehouse','Rats in the Storehouse','Small scavengers have broken into the provision shed. Clear them before they spoil the remaining sacks.','combat',{'food':4}),
+ ('rats_storehouse','Rats in the Storehouse','Disease-bearing rats have broken into the provision shed. Separate the swarm and clear the stores before they spoil the remaining sacks.','combat',{'food':4}),
  ('roadside_toll','The Unwanted Toll','Two opportunists are stopping villagers on a narrow road. Drive them off or bring them back alive.','combat',{}),
- ('wolves_fence','Wolves at the Fence','Hungry creatures have entered a fenced clearing. Clear the approach so its keeper can return.','combat',{}),
+ ('wolves_fence','Wolves at the Fence','A hungry wolf pack has entered a fenced clearing. Keep it from surrounding you and clear the approach so its keeper can return.','combat',{}),
  ('goblin_pickpockets','The Goblin Pickpockets','Two goblins have trapped a dropped purse between them. Retrieve it and open the road.','combat',{}),
  ('ruined_well','Movement at the Old Well','An abandoned well has become a hiding place for a pair of armed scavengers. Clear the site safely.','combat',{}),
  ('supply_watch','The Small Supply Watch','A provision stop needs its approach cleared before the next delivery arrives.','combat',{}),
@@ -121,6 +121,7 @@ def apply_progression(buildings,missions,items,tracks,hall_upgrades):
                 creature={'wolves_fence':'Wolf','rats_storehouse':'Rat'}.get(mid)
                 if creature:race=creature
                 TACTICAL_CONTRACTS[mid]={'race':race,'layout':'ruin' if 'chapel' in mid or 'well' in mid else 'camp' if 'store' in mid or 'workshop' in mid or 'yard' in mid else 'road','faction':name.lower(),'enemy_count':2 if rank=='E' else 3,'rookie':rank=='E','creature':creature}
+                if mid in {'rats_storehouse','wolves_fence'}:TACTICAL_CONTRACTS[mid]['enemy_count']=3
                 mission.update(combat_encounter={'id':'contract:'+mid,'name':name},resolution_mode='tactical',mission_form='hunt',combat_critical_condition='Secure the field and keep the expedition standing.')
                 mission['reward_preview'].append('Recovered creature provisions' if mid=='wolves_fence' else 'Recovered enemy equipment')
                 if rank!='E':mission['combat_critical_condition']='Capture the commander alive, secure the field, and keep the expedition standing.' if race!='Undead' else 'Secure the field and keep the expedition standing.'

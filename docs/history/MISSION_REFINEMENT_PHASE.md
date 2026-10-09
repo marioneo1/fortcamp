@@ -1,5 +1,71 @@
 # Mission Refinement Phase
 
+October 8 skill targeting audit: the previous Attack-only change left a shared
+approach-menu check for skills/Subdue. Removed it, prevented invalid-target
+fallbacks, and filtered occupied-floor actions to the explicit mode. Reviewed
+12 base Jobs / 77 active skills; retained dedicated placement/element/drag flows.
+Near/far Driving Strike browser checks pass. No combat balance changes.
+
+October 8 follow-up: explicit Attack clicks now execute previewed approaches
+without a second menu. Door clicks combine approach and intended operation in
+one request, with both API schemas preserving the intent. Both sides, limited
+movement, hazard interruption and stale Open requests tested; Chrome interaction
+checks, 395 frontend tests, 26 focused backend tests and build pass. Dev only.
+
+October 8 attack/door UI pass: fixed portrait descendants overriding targeting
+cursors, consolidated doorway controls, and reused validated movement routes for
+immediate nearby approach feedback. Distant door routing selects its operating
+side by route cost. Chrome interaction checks, 394 frontend tests, 19 focused
+backend tests and build pass. Intermittent stationary approach prompt remains
+unreproduced; the broader approach suite has an obsolete retired Mage-zone test
+fixture. No production data or deployment changes.
+
+October 8 character blueprint review: moved character_blueprints_pilot_001.json
+unchanged into docs/content/drafts, verified matching source/destination SHA-256,
+reviewed both eight-facet/five-node/four-milestone designs and added a focused
+revision prompt. JSON/root/ID/catalogue checks pass; graph reachability, guard
+trust scoring and availability, artisan inspection flow and reward/repeat policies
+remain design revisions. Source marked reviewed/revisions required, not approved
+or implemented. No runtime, save or deployment changes.
+
+## October 8, 2026 — E-rank audit batch 1 (dev)
+
+Reviewed final catalogue/story-thread and compiled-map variants for Rats in the Storehouse, The Unwanted Toll and Wolves at the Fence. Replaced the shared 10/7-HP rookie opposition only for this batch with authored species and recruitable existing Job profiles. Rats reward separation; wolves reward denying surrounds; the toll Fighter/Rogue pair offers collision/interception and positional/debuff threats. No new starter Job, physical rat merge, save rewrite or production change.
+
+Fairy HP multiplier .52 to .75; Ogre 1.48x+10 to 1.35x+4. Flight/movement/evasion/armor unchanged. Existing saved battle snapshots remain intact. Added reusable isolated simulations, behavior tests and `COMBAT_CAPABILITY_REFERENCE.md`; corrected unsupported Engineer auto dispatch, shared battle context in damage forecasts and DoT reapplication of weapon procs. Updated stale Captor starter/capture test expectations to current Resolve behavior. Validation: 240 targeted tests, 324 balanced simulations without exceptions and 54 alternate basic-attack probes. Numerical results and unresolved AI balance limitations are recorded in `docs/design/E_RANK_COMBAT_AUDIT.md`.
+
+## October 8: saved HUD layout as default
+
+Used the player-provided localStorage export for supported group defaults and action bar width; ignored obsolete standalone groups. Merged toolbar under Objectives in the title card, retaining all controls, dragging and local overrides. Checked exported geometry, grouping and responsive bounds with isolated browser QA. No camera or production changes.
+
+## October 8: popup close usability
+
+Command and Skills now each reserve 12px before the next divider, in addition to the 12px inset after it; icon tracks and resize calculations include this spacing.
+
+Fixed interactive header buttons being captured as drags by bindPlacementPanel. Standardized battle Close controls and labels. Validated real mouse clicks after dragging HUD and inspector windows, battle utility dialog closure and placement cancellation; frontend suite and build checked. No gameplay changes or deployment.
+
+## October 8: compact floating HUD follow-up
+
+Merged commands into the skills/effects container, matched fixed tile tracks, moved descriptions into a fixed character/Traits card and authored short active-skill summaries while retaining detailed tooltips. Added a labeled icon toolbar and expanded zoomed camera clearance. Browser QA checks actual layout, summary fit, zoomed 300px vertical drag, fit/recenter, native resizing, saved dragging, effects/full-order popups and responsive bounds; frontend suite and build verified. Dev-only; no deployment.
+
+### October 8 unified control panels and edge-label correction
+
+Moved Effects into the rightmost quarter of Skills with a divider and row wrapping, removed skill scrolling, and matched command artwork/button/key/name styling and panel geometry to Skills. Two rows retain access to ten visible skills, with the existing paging for more. Resizing scales both control families and saves reliably across pointer release outside the changing resize corner. Grouped Objectives under the round/title. Increased bounded fitted-map panning from 40 to 120px, increased centered edge margins from 80 to 96px, and removed battlefield overflow clipping that cut off bottom-edge HP boxes.
+
+Validation: 385 frontend tests, frontend build, real Chrome checks covering ten skills in two rows, no scroll containers, matched control geometry, across-then-down effect wrapping, resizing/persistence, title/objective grouping, expanded pan/recenter, and prior HUD/Captor regression scenarios. Development only.
+
+### October 8 floating HUD follow-up
+
+Restored effects as an always-visible independent movable group. Matched skill artwork/button size to Commands and provided a second skill row with equal panel heights. Enlarged turn-order cards/portraits 50%, replaced HUD scrolling with an informational overflow count, and added a draggable full queue that refreshes during battle. Dedicated popup styling prevents Summoner placement cleanup from dismissing inspection windows. Added label margins and a 40px-per-direction fitted camera adjustment, preserving pan through redraws and exposing Center map beside Supplies.
+
+Validation: 385 frontend tests, frontend build, Captor browser regressions, and real-pointer HUD browser tests for matched artwork/panel sizes, empty/effected status rows, turn-order cap/full list/drag/live refresh, square map margins, pan/redraw/recenter, saved HUD placement/resizing/snapping, and 1200/900px window bounds. Pure camera tests also cover tall/wide maps and bounded label clearance. Dev-only; no production changes.
+
+## October 8, 2026 - map-first floating battle HUD (dev)
+
+Replaced the active battle's height-consuming header/footer with independently positioned translucent groups inspired by the supplied BG3 layout reference. Added edit grips, screen/peer alignment guides, snapping, normalized local persistence, Reset, keyboard nudges, skill-container resizing and compact effect overflow into one draggable detail popup. Retained token reconciliation, map proportions, existing artwork/control sizes, targeting and auto-battle options; floating transformation runs inside the existing single HTML parse. Preparation and production are unchanged.
+
+Validation: 383 frontend tests; frontend build; isolated real Chrome fixture checks for full-height fit/aspect ratio, pointer dragging/snapping, guide visibility, saved positions, reset, effects overflow and popup dragging/uniqueness, and 1200/900-pixel window bounds/default skills-command separation. Captor command, Abduct, Hold and Bola browser regression pass. See docs/design/COMBAT_CONTROLS.md for behavior and limitations.
+
 ## October 7, 2026 - Captor / Resolve
 
 Completed the base Captor kit and separate capture Resolve layer in dev. Hold wears down Resolve at 0.75x per tick, attempts capture at zero, and never damages HP. Independent Attack/Subdue, unconscious recovery, paired Abduct, interruption/persistence and generated packed art/four foley clips are documented in docs/design/CAPTOR_REWORK_REVIEW.md and docs/art/CAPTOR_V1.md. Focused backend/frontend tests, isolated browser fixture and frontend build validated; numerical balance and personality AI remain open.
@@ -2078,3 +2144,105 @@ October 7 Dynamite throw/visibility: explicit throw event preserves origin and h
 October 7 Captor follow-up: fixed Resolve label covering portraits and legacy Attack-to-Subdue remapping; Abduct now uses the styled, draggable Summoner placement panel. Every successful Resolve attack checks capture at zero Resolve, including the threshold hit; captured targets skip further control/pull processing. Existing HP badges retained; expanded HP/Resolve presentation deferred. Validated actual browser input/commands and focused capture regressions.
 
 October 7 release preparation: current Job work validated for dev/main and production/release publishing using the independent release builder. Added empty production initialization and source QA exclusions; full production reset authorized with backup. See docs/design/RELEASE_PREPARATION.md for execution conditions.
+
+
+October 8 mobile battle pass: separate touch layout preserves desktop HUD geometry and mouse controls. Added tabbed finger-sized actions, Hide/Show, Cancel, Goals/Order, safe-area sizing, pan/pinch and long-press inspection with stray-click suppression. Fixed orientation recentering and actor/description overlap. Gesture/camera/HUD tests (16), isolated Chrome portrait/landscape touch and desktop HUD checks, and frontend build passed. Actual iOS Safari and full non-battle/skill-specific coverage remain open; no deployment.
+
+
+October 8 mobile follow-up: reduced action/actor panel heights by 110px combined, restored in-battle Lab controls and fixed setup/class-selector reachability with a single-column touch workspace and constrained fields. Actual browser class changes tested in portrait/landscape; touch gestures, desktop HUD regression and build pass. Restarted only the dev-discord runner on user request; frontend/backend healthy. Temporary lab sessions reset; persistent saves untouched.
+
+
+October 8 encounter behavior pass: replaced rat Poison with capped stacking
+Gnawing Weakness and three-body HP/ATK-preserving swarms; added sequential merge
+and repeated bite presentation. Wolves coordinate cardinal flanks. Toll bandits
+use small existing personality archetypes, wounded withdrawal and sparse authored
+combat lines; seeded Road Trapper mixed kits retain their techniques on recruitment.
+See docs/design/E_RANK_COMBAT_AUDIT.md and COMBAT_CAPABILITY_REFERENCE.md.
+Broader personality/AI planning, swarm splitting, other encounter/race batches,
+actual Safari feel and manual difficulty assessment remain deferred. No production
+changes or save rewrites.
+## October 8 - Character life planning, not implementation
+
+Race-name prompt delivered: inspected existing recruit/combat naming paths and
+42-race gender catalogue, consulted official D&D naming reference, and packaged
+one upload with seven six-race batches, source/fallback guidance, protected names,
+structured pool format and output folder. Builder check confirms catalogue and
+brief consistency. No generated content imported, character renamed, gender rule
+changed or runtime name selector modified. Balance/story threads remain parked.
+
+Encounter variation clarification implemented: rats/wolves have per-layout
+counts, adjusted stats and clustered/separated arrangements, including two
+outdoor delivery-court rats. Toll keeps its stated two humans with deterministic
+Cutpurse/Trapper roles and formation differences. Existing species AI unchanged;
+opening History lines convey arrangements using current props. 432 same-preset
+comparison fights: 377 wins, zero exceptions; 60 relevant tests pass. User's
+same-rank/modest-difficulty requirement recorded; manual difficulty remains open.
+No rewards, new species/Jobs, frontend assets, saved encounters or prod changed.
+
+Pivot continuity and balance coverage: added docs/WORK_STATE.md with session-start
+and pivot maintenance instructions in AGENTS.md; preserved parked story decisions.
+Extended isolated beginner audit with --all-variants and ran every authored
+layout for twelve Jobs and Human/Fairy/Ogre: 432 fights, 377 auto-play wins, zero
+exceptions. Fourteen location/profile tests and audit compilation pass. Recorded
+coverage limits and next investigation targets; no encounter mechanics/save/prod
+changes in this follow-up.
+
+User delegated pending pilot choices: recorded nonfinancial guard trust-test
+direction and one-character allocation of the particular cap-bearing one-off.
+Added a concise maintained user overview with personalities, Jobs, races,
+individual traits, hidden history, story progression and proposed rewards.
+Concrete scene and remaining relationship-repair rules are pending; preserved
+received drafts and made no gameplay, save or live-content changes.
+
+Pilot 001 revision 3 reviewed against revision 2: offline structural checker
+passes, 23 null repairs and eight intentional nulls verified, original IDs/keys
+preserved, explicit reckoning recovery added, approximately 4,992 words. Manual
+story review recorded pending trust-test and cap-allocation decisions; no story
+approval, content import, save change or submitted-file rewrite. The completed
+revision request should not be rerun while those decisions await user input.
+
+Authoring handoff refinement: strengthened reusable prompt with typed fields,
+explicit recovery routing, one-off/cap safety and pending decision metadata.
+Current upload bundle includes revision 2, review, contract and revision 3 task;
+no separate user prompt assembly. Added offline structural checker and six
+regressions against received data, plus workflow/acceptance documentation.
+No source submission was rewritten and no story/gameplay choice approved.
+
+Pilot 001 revision 2 review: preserved the received draft and recorded original
+ID preservation, improved routing and artisan retry rules. Found 23 new null
+guard values, unresolved player-one-off/individual-cap allocation and an ambiguous
+recovery transition. Disputed-compensation trust test remains a proposal requiring
+user choice. Updated the content index/backlog; no gameplay, story approval,
+save, deployment or source-submission changes.
+
+Inspected existing persistent personalities/tastes/service memories, prisoner
+agreements/allegiance history and encounter speech. Added a design proposal,
+central content/maintenance index, reusable GPT authoring prompt and draft JSON
+contract mirroring existing race/Job/personality IDs. Proposed separate fact,
+voice and quest layers, saved novelty rolls, optional personal outcomes and
+stable once-per-player retirement keys. Root development instructions require
+registry/reference review when related content changes. No gameplay, save,
+runtime dialogue, deployment or quest-reward changes in this planning pass.
+
+
+October 8 character-life proposal refinement: conversations can establish saved
+personal paths, reveal latent facets or develop/transform explicitly open ones.
+Documented early disclosed prospective loyalty conflicts, bounded personal-chain
+budgets, explicit core closure with ongoing ordinary growth, earned personality/
+bond variations and optional male/female romance separate from platonic devotion.
+Reward contracts specify expectation, narrative payoff and proposed grant; gold
+and normal loot remain valid when appropriate. Added v0.2 blueprint contract,
+two-blueprint pilot and a single upload-ready GPT brief with an offline builder/
+catalogue drift check. Earlier v0.1 is preserved. No runtime/save/deployment change.
+`nOctober 8: animal art/audio assets preserved and integrated locally; handoff docs/art/ANIMAL_CRITTERS_V1.md. User corrected single-image generation: use 5x4 sheets for future batches. No production changes.
+
+
+### October 8 ? E-rank batch 2 and same-map radiant bear
+
+Pickpockets/Old Well/Supply Watch: twelve existing layouts reviewed, authored
+recruitable humanoid compositions, 19-28 HP/3-5 ATK budgets, preserved story
+counts and existing geometry. Normal runs: 432/371 wins/zero exceptions; bear
+entry probe: 36/34 wins/zero exceptions. Added repeatable saved 3% same-map
+independent bear with optional rewards, 5% claws and guaranteed pelt; one packed
+5?4 field-gear generation (20 icons), nine bear sounds. No prod/save changes.
+Detailed rules/limits live in E_RANK_COMBAT_AUDIT and RADIANT_ENCOUNTERS.

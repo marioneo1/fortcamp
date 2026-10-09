@@ -6,11 +6,12 @@ regular-character skill slots, all equipped gear abilities accessible without
 consuming those slots, and Champion kits deferred. Individual abilities and
 balance values below remain proposals.
 
-Current runtime publishes all twelve starting Jobs together with matching kits.
-Three skills start equipped; three more unlock at 2/5/9 successful contracts.
-The 72 implemented definitions and actual rules are documented in JOB_LOADOUTS.md.
-The 96 proposed skills below remain a larger design catalogue, not a claim that
-every ability is implemented. Champion kits, levels and advanced Jobs are deferred.
+For the current implemented roster, read [Classes at a glance](CLASSES_AT_A_GLANCE.md).
+All twelve starting Jobs are playable. There are 97 player-class skill definitions
+(Fighter has nine; the other Jobs have eight), plus the extra Road Bola technique.
+The older mechanics, progression and 96-skill proposal below are historical design
+material, not the current runtime specification. Advanced Jobs and Champion kits
+remain deferred. Full loadout rules: [Jobs and loadouts](JOB_LOADOUTS.md).
 
 ## Boundaries and progression
 

@@ -87,10 +87,10 @@ def process(source, destination, ui, melodic=False):
 
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--pack', choices=['first-pack', 'mission-melodic-v2', 'mission-outcomes-v3', 'action-expansion-v1','combat-impact-v1','fighter-contact-v1','fighter-weight-v1','fighter-earth-boom-v1','melee-families-v1','capture-net-v1','flesh-contact-v1','martial-jobs-v1','rogue-actions-v1','bard-song-v1','druid-nature-v1','summoner-spirit-v1','engineer-machinery-v1'], default='mission-outcomes-v3')
+    parser.add_argument('--pack', choices=['first-pack', 'mission-melodic-v2', 'mission-outcomes-v3', 'action-expansion-v1','combat-impact-v1','fighter-contact-v1','fighter-weight-v1','fighter-earth-boom-v1','melee-families-v1','capture-net-v1','flesh-contact-v1','martial-jobs-v1','rogue-actions-v1','bard-song-v1','druid-nature-v1','summoner-spirit-v1','bear-combat-v1','animal-combat-v1','engineer-machinery-v1'], default='mission-outcomes-v3')
     args = parser.parse_args()
     raw = ROOT / 'staging-sfx' / args.pack
-    melodic = args.pack not in {'first-pack','combat-impact-v1','fighter-contact-v1','fighter-weight-v1','fighter-earth-boom-v1','melee-families-v1','capture-net-v1','flesh-contact-v1','martial-jobs-v1','rogue-actions-v1','druid-nature-v1','summoner-spirit-v1','engineer-machinery-v1'}
+    melodic = args.pack not in {'first-pack','combat-impact-v1','fighter-contact-v1','fighter-weight-v1','fighter-earth-boom-v1','melee-families-v1','capture-net-v1','flesh-contact-v1','martial-jobs-v1','rogue-actions-v1','druid-nature-v1','summoner-spirit-v1','bear-combat-v1','animal-combat-v1','engineer-machinery-v1'}
     key = os.getenv('ELEVENLABS_API_KEY') or dotenv_values(ROOT / '.env').get('ELEVENLABS_API_KEY')
     if not key:
         raise SystemExit('ELEVENLABS_API_KEY is not configured')
@@ -110,12 +110,14 @@ def main():
     headings['bard-song-v1']='Bard Song pack'
     headings['druid-nature-v1']='Druid nature pack'
     headings['summoner-spirit-v1']='Summoner spirit pack'
+    headings['bear-combat-v1']='Bear combat pack'
+    headings['animal-combat-v1']='Animal combat pack'
     headings['engineer-machinery-v1']='Engineer machinery pack'
     section = guide.split('## ' + headings[args.pack])[1].split('\n## ')[0]
-    palette_section = section if melodic or args.pack in {'combat-impact-v1','fighter-contact-v1','fighter-weight-v1','fighter-earth-boom-v1','melee-families-v1','capture-net-v1','flesh-contact-v1','martial-jobs-v1','rogue-actions-v1','druid-nature-v1','summoner-spirit-v1','engineer-machinery-v1'} else guide
+    palette_section = section if melodic or args.pack in {'combat-impact-v1','fighter-contact-v1','fighter-weight-v1','fighter-earth-boom-v1','melee-families-v1','capture-net-v1','flesh-contact-v1','martial-jobs-v1','rogue-actions-v1','druid-nature-v1','summoner-spirit-v1','bear-combat-v1','animal-combat-v1','engineer-machinery-v1'} else guide
     palette = next(line[2:] for line in palette_section.splitlines() if line.startswith('> '))
     rows = re.findall(r'\| `([a-z_0-9]+\.wav)` \| ([\d.]+) s \| (.*?) \|', section)
-    expected_count = {'first-pack': 12, 'mission-melodic-v2': 7, 'mission-outcomes-v3': 4, 'action-expansion-v1': 18,'combat-impact-v1':4,'fighter-contact-v1':1,'fighter-weight-v1':4,'fighter-earth-boom-v1':1,'melee-families-v1':12,'capture-net-v1':3,'flesh-contact-v1':6,'martial-jobs-v1':8,'rogue-actions-v1':4,'bard-song-v1':6,'druid-nature-v1':5,'summoner-spirit-v1':6,'engineer-machinery-v1':4}[args.pack]
+    expected_count = {'first-pack': 12, 'mission-melodic-v2': 7, 'mission-outcomes-v3': 4, 'action-expansion-v1': 18,'combat-impact-v1':4,'fighter-contact-v1':1,'fighter-weight-v1':4,'fighter-earth-boom-v1':1,'melee-families-v1':12,'capture-net-v1':3,'flesh-contact-v1':6,'martial-jobs-v1':8,'rogue-actions-v1':4,'bard-song-v1':6,'druid-nature-v1':5,'summoner-spirit-v1':6,'bear-combat-v1':9,'animal-combat-v1':27,'engineer-machinery-v1':4}[args.pack]
     if len(rows) != expected_count:
         raise SystemExit(f'Expected exactly {expected_count} effects')
     raw.mkdir(parents=True, exist_ok=True)
@@ -169,7 +171,7 @@ def main():
     descriptions = {name: desc for name, _, desc in rows}
     if args.pack not in {'mission-outcomes-v3', 'action-expansion-v1'}:
         preview_names[:4] = ['mission_critical_success.wav', 'mission_success.wav', 'mission_failure.wav', 'mission_critical_failure.wav']
-    if args.pack in {'action-expansion-v1','combat-impact-v1','fighter-contact-v1','fighter-weight-v1','fighter-earth-boom-v1','melee-families-v1','capture-net-v1','flesh-contact-v1','martial-jobs-v1','rogue-actions-v1','bard-song-v1','druid-nature-v1','summoner-spirit-v1','engineer-machinery-v1'}:
+    if args.pack in {'action-expansion-v1','combat-impact-v1','fighter-contact-v1','fighter-weight-v1','fighter-earth-boom-v1','melee-families-v1','capture-net-v1','flesh-contact-v1','martial-jobs-v1','rogue-actions-v1','bard-song-v1','druid-nature-v1','summoner-spirit-v1','bear-combat-v1','animal-combat-v1','engineer-machinery-v1'}:
         preview_names = [name for name, _, _ in rows] + preview_names
     cards = ''.join(f'<article><b>{html.escape(name)}</b><p>{html.escape(descriptions.get(name, "Original action pack"))}</p>'
                     f'<audio controls preload="none" src="{name}?v={args.pack}"></audio></article>' for name in preview_names if (FINAL / name).exists())

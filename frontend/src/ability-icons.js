@@ -39,6 +39,7 @@ export function skillCategory(skill){
 }
 export const FIGHTER_ICON_ART={'job:fighter:cover':'chain-snare','job:fighter:pull':'earthbreaker','job:fighter:rally':'hold-together'};
 export function skillIcon(skill){
+  if(skill.id==='npc:bandit:road_bola')return '/assets/captor-v1/bola.png';
   if(/^job:captor:(subduing_blow|bola|hook_and_drag|abduct|restraining_hold|blitz|restraint|clean_capture)$/.test(skill.id))return `/assets/captor-v1/${skill.id.split(':').at(-1)}.png`;
   if(skill.engineer_kind)return `/assets/engineer-v2/${skill.engineer_kind}.png`;
   if(skill.id==='innate:summoner:orders')return '/assets/summoner-v1/bound_companion.png';

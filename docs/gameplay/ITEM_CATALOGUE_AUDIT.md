@@ -289,3 +289,10 @@ Cache placement shows eligibility, not an unconditional award. An authored rewar
 | Colossus Heartblood (`colossus_heartblood`) | story | Non-equipment | A crystallized drop freely given by the wounded titan after its treatment. | The Wounded Colossus: 60% / 80% critical |
 | Echoing Starstone (`echoing_starstone`) | story | Non-equipment | A hollow fragment that remembers the names of those who answered its signal. | The Signal Knows Your Name: 55% / 75% critical |
 
+
+
+October 8 field pack: 20 new illustrated items, one 5?4 generation and separate
+stable `FIELD_GEAR_V1_MANIFEST.json`; no legacy atlas cells overwritten. Six
+knuckles, three daggers, two maces, three grimoires, six clothing/accessories.
+Catalogue builder treats these IDs as already illustrated. Runtime stats and
+loot sources are in `backend/field_gear.py`; [handoff](../art/FIELD_GEAR_V1.md).

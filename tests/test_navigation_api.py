@@ -17,6 +17,20 @@ class NavigationApiTests(unittest.IsolatedAsyncioTestCase):
     def test_both_public_request_models_retain_final_position(self):
         for model in [lab.CommandRequest,CombatCommandRequest]:
             self.assertEqual(model(action='guard',position={'x':2,'y':3}).model_dump(exclude_none=True)['position'],{'x':2,'y':3})
+    def test_both_public_request_models_retain_door_intent(self):
+        for model in [lab.CommandRequest,CombatCommandRequest]:
+            data=model(action='navigate',gate_id='door',operate_gate=True,gate_operation='Open').model_dump(exclude_none=True)
+            self.assertEqual((data['gate_id'],data['operate_gate'],data['gate_operation']),('door',True,'Open'))
+    async def test_lab_door_request_walks_and_opens_with_no_second_command(self):
+        from tests.test_player_navigation import PlayerNavigationTests
+        battle,actor=PlayerNavigationTests().fixture((1,2))
+        battle['terrain'][-1]['rotation']=90
+        self.row['battle']=battle
+        with patch('backend.combat._advance_to_player'):
+            await lab.command_battle(self.sid,lab.CommandRequest(action='navigate',gate_id='door',x=2,y=2,
+                position={'x':2,'y':2},operate_gate=True,gate_operation='Open'),self.identity)
+        self.assertEqual(self.row['battle']['terrain'][-1]['state'],'opened')
+        self.assertTrue(self.row['battle']['units']['player']['acted'])
     async def test_real_lab_handler_commits_the_position_instead_of_discarding_it(self):
         node=next(p for p in self.preview['battle']['movement_tree'] if p['cost']>0)
         unit_id=self.preview['battle']['current_unit_id']

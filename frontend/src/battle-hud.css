@@ -1,0 +1,132 @@
+/* Floating, map-first HUD. Existing art and button sizes remain intact. */
+.modal-card:has(.floating-battle){padding:0!important;width:calc(100vw - 16px)!important;height:calc(100dvh - 16px);max-height:none!important;overflow:hidden!important}
+#mission-detail:has(.floating-battle){height:100%;position:relative}
+.floating-battle.layout-a{position:relative;height:100%;margin:0;isolation:isolate;overflow:hidden;border-radius:12px}
+.floating-battle .battle-map-stage{position:static!important;display:block;height:100%}
+.floating-battle .battle-viewport{position:absolute;inset:0;box-sizing:border-box;height:100%!important;max-height:none!important;border:0;border-radius:0;background:#101915}
+.floating-battle .hud-group{position:absolute;z-index:45;box-sizing:border-box;max-width:calc(100% - 24px);margin:0;padding:10px 12px;border:1px solid #b69d5b24;border-radius:10px;background:linear-gradient(120deg,#15221bd9,#101a16b3);box-shadow:0 3px 15px #0005;color:#eee4cd}
+.floating-battle .hud-group:hover{border-color:#b69d5b77}
+.floating-battle .hud-handle{display:none;touch-action:none;border:0;border-bottom:1px solid #ac956849;background:#14231bc9;color:#d7c597;width:100%;padding:4px 2px;margin:0 0 7px;font:11px/1.2 system-ui;text-align:left;cursor:grab}
+.hud-handle span{float:right}.floating-battle.hud-editing .hud-handle{display:block}.floating-battle .hud-dragging{z-index:150;outline:1px solid #e4c477}.hud-dragging .hud-handle{cursor:grabbing}
+.floating-battle [data-hud-group="title"]{width:260px}.floating-battle [data-hud-group="title"] h2{font-size:22px;line-height:1.15;margin:5px 0}
+.floating-battle .hud-turn-order{width:510px;display:block;padding-bottom:5px}.floating-battle .hud-turn-order .turn-order>b{display:none}.floating-battle .hud-turn-order .turn-order>div{padding:3px;max-height:110px}.floating-battle .hud-turn-order .turn-chip{flex-basis:68px}
+.floating-battle [data-hud-group="objectives"]{width:280px;min-width:0}.floating-battle [data-hud-group="objectives"] ul{font-size:13px}.floating-battle [data-hud-group="tools"]{width:450px;display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.floating-battle [data-hud-group="tools"] .hud-handle{flex-basis:100%}.floating-battle [data-hud-group="tools"] button:not(.hud-handle){font-size:12px;padding:6px 8px}
+.floating-battle.layout-a .dock-actor{width:320px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}.floating-battle .dock-actor>.hud-handle{flex-basis:100%}.floating-battle .active-unit-card{display:flex;flex:1;flex-direction:row;gap:10px;align-items:center}.floating-battle .active-unit-portrait{width:72px;height:72px;flex:0 0 72px}.floating-battle .battle-traits-button{width:80px;padding:12px 5px}.floating-battle .battle-traits-button small{font-size:10px}
+.floating-battle .hud-skills{width:550px;min-width:240px}.floating-battle.hud-editing .hud-skills{resize:horizontal;overflow:auto}.floating-battle .combat-hotbar{width:100%;min-width:0}.floating-battle .combat-hotbar header{flex-wrap:wrap}.floating-battle .combat-hotbar header>small{display:none}.floating-battle .hotbar-slots{gap:12px;padding-bottom:27px}.floating-battle .combat-hotbar .hotbar-slots>button{width:88px;height:88px;min-height:88px;flex:0 0 88px}
+.floating-battle .combat-status-tray{display:flex;flex-wrap:nowrap;gap:6px;padding:5px 0 2px;border-top:1px solid #bdad7830;min-height:30px;align-items:center}.floating-battle .combat-status-tray>.status-badge{width:30px;height:30px}.floating-battle .combat-status-tray .status-short-name{display:none}.floating-battle .combat-status-tray .status-count{font-size:10px}.floating-battle .effects-overflow{margin-left:auto;font:12px system-ui;white-space:nowrap;color:#e9dba8;border:1px solid #a9956277;border-radius:6px;background:#1c2c23;padding:6px}
+.floating-battle .battle-primary-panel{width:324px;align-self:auto}.floating-battle .battle-primary-panel>.eyebrow{display:none}.floating-battle .battle-primary-panel .combat-actions{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:30px 12px;padding:0 0 24px}.floating-battle .battle-primary-panel .combat-actions:has([data-combat-mode="subdue"]){grid-template-columns:repeat(4,minmax(0,1fr))!important}.floating-battle .battle-primary-panel:has([data-combat-mode="subdue"]){width:424px}
+.floating-battle .battle-action-preview{width:550px;border-top:0}.floating-battle .combat-action-help{font-size:16px;line-height:1.35;max-height:66px;overflow:auto}.floating-battle .context-action-menu{width:380px}.floating-battle .battle-lab-toolbar{width:300px;display:block;max-height:140px;overflow:auto;font-size:11px}.floating-battle .battle-lab-toolbar button{font-size:11px;margin:3px}
+.hud-guides{position:absolute;inset:0;pointer-events:none;z-index:170}.hud-guides i{position:absolute;background:#d8b96e;box-shadow:0 0 5px #fff2b4}.hud-guides .guide-x{top:0;bottom:0;width:1px}.hud-guides .guide-y{left:0;right:0;height:1px}
+.modal-card:has(.floating-battle)>.modal-close{z-index:250;right:12px;top:10px}.floating-battle [data-hud-group="tools"]{padding-right:38px}
+.floating-battle .active-unit-card>div:last-child{grid-template-columns:1fr;min-width:0}.floating-battle .active-unit-card .eyebrow{white-space:nowrap;font-size:10px}.floating-battle .active-unit-card b{overflow:hidden;text-overflow:ellipsis}.floating-battle .active-unit-card{margin:0;padding:6px}.floating-battle .combat-status-tray>.status-badge{flex-shrink:0}.floating-battle .combat-status-tray>.status-badge[hidden]{display:none}
+.floating-battle .hud-turn-order{width:max-content;max-width:min(510px,calc(100% - 24px))}.floating-battle .hud-turn-order .turn-order>div{max-width:100%}
+.hud-effects-content .effect-card-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:8px}.hud-effects-content .effect-detail-card{display:flex;align-items:flex-start;gap:8px}.hud-effects-content .effect-detail-card .status-badge{flex:0 0 36px;width:36px;height:36px}.hud-effects-content .effect-detail-card small{display:block}
+.hud-inspection-panel.hud-effects-popup{position:fixed;z-index:2300;top:25%;left:50%;transform:translateX(-50%);width:520px;max-width:calc(100vw - 24px);max-height:70dvh;box-sizing:border-box}.hud-effects-popup header{position:relative;padding-right:28px;cursor:grab}.hud-effects-popup [data-close-effects]{position:absolute;right:0;top:0;font-size:23px;padding:0 7px}.hud-effects-content{overflow:auto;max-height:50dvh}.hud-effects-content .inspect-statuses{display:grid;grid-template-columns:1fr 1fr;gap:8px}.hud-effects-content article{padding:8px;border:1px solid #9d976f44;border-radius:6px}.hud-effects-content p{font-size:13px}
+@media(max-width:1000px){.floating-battle .hud-turn-order{width:330px}.floating-battle [data-hud-group="title"]{width:210px}.floating-battle [data-hud-group="tools"]{width:300px}.floating-battle .hud-skills{width:450px}.floating-battle .dock-actor{width:260px}.floating-battle [data-hud-group="objectives"]{width:240px}}
+
+/* Skills and commands share tile geometry; effects occupy the final quarter. */
+.floating-battle{--hud-tile:88px;--hud-control-height:calc(var(--hud-tile)*2 + 110px);--hud-edit-extra:0px}
+.floating-battle.hud-editing{--hud-edit-extra:30px}
+.floating-battle.layout-a .hud-skills,.floating-battle.layout-a .battle-primary-panel{height:calc(var(--hud-control-height) + var(--hud-edit-extra));min-height:calc(var(--hud-control-height) + var(--hud-edit-extra))}
+.floating-battle.layout-a .hud-skills{width:680px;min-width:360px;display:grid;grid-template-columns:minmax(0,3fr) minmax(0,1fr);grid-template-rows:var(--hud-edit-extra) minmax(0,1fr);column-gap:12px;overflow:visible}
+.floating-battle.layout-a.hud-editing .hud-skills{overflow:hidden;resize:horizontal}
+.floating-battle.layout-a .hud-skills>.hud-handle{grid-column:1/-1;grid-row:1}
+.floating-battle.layout-a .hud-skills>.combat-hotbar{grid-column:1;grid-row:2}
+.floating-battle.layout-a .combat-hotbar header,.floating-battle.layout-a .hud-commands-header{height:28px;margin:0 0 8px;display:flex;align-items:center;gap:8px;font-size:16px;color:#e3ce93}
+.floating-battle.layout-a .hud-skills .hotbar-slots,.floating-battle.layout-a .battle-primary-panel .combat-actions{display:grid;grid-template-rows:var(--hud-tile) var(--hud-tile);grid-auto-rows:var(--hud-tile);gap:30px 10px;height:calc(var(--hud-tile)*2 + 54px);box-sizing:border-box;overflow:visible;padding:0 0 24px;margin:0;align-content:start}
+.floating-battle.layout-a .hud-skills .hotbar-slots{grid-template-columns:repeat(5,minmax(0,1fr))}
+.floating-battle.layout-a .hud-skills .hotbar-slots>button,.floating-battle.layout-a .battle-primary-panel .combat-actions>button{position:relative;box-sizing:border-box;flex:none;width:var(--hud-tile);height:var(--hud-tile);min-height:var(--hud-tile);padding:0;gap:0;border:0;border-radius:4px;background:#17201a;box-shadow:0 1px 4px #0009;overflow:visible}
+.floating-battle.layout-a .hud-skills .hotbar-slots>button>.ability-icon,.floating-battle.layout-a .battle-primary-panel .combat-actions>button>.combat-action-art{position:absolute;inset:0;width:100%;height:100%;box-sizing:border-box;transform:none;animation:none;border:2px solid var(--skill-accent,#b49c65);border-radius:4px;background-color:#121511;box-shadow:0 1px 4px #0009}
+.floating-battle.layout-a .battle-primary-panel .combat-actions>button.active,.floating-battle.layout-a .battle-primary-panel .combat-actions>button:hover:not(:disabled){outline:2px solid #fff0b3;outline-offset:2px}
+.floating-battle.layout-a .battle-primary-panel .combat-actions>button>span:not(.combat-action-art){top:calc(100% + 5px);left:-4px;right:-4px;font-size:12px;font-weight:700;line-height:14px;white-space:normal;max-height:28px}
+.floating-battle.layout-a .battle-primary-panel .combat-actions>button>kbd,.floating-battle.layout-a .hud-skills .hotbar-slots>button>kbd{position:absolute;z-index:4;top:3px;left:3px;font:12px/1.2 ui-monospace,monospace;padding:1px 3px;border:1px solid #8e977c66;border-radius:3px;background:#101811ee;color:#e1c881}
+.floating-battle.layout-a .hud-skills>.combat-status-tray{grid-column:2;grid-row:2;display:grid;grid-template-rows:28px minmax(0,1fr) 28px;gap:8px;align-items:start;min-width:0;min-height:0;height:100%;box-sizing:border-box;margin:0;padding:0 0 0 12px;border:0;border-left:1px solid #b49c6544}
+.floating-battle .status-tray-heading{font-size:12px;color:#cbbd95;align-self:center}
+.floating-battle .status-tray-icons{display:grid;grid-template-columns:repeat(auto-fill,30px);gap:6px;grid-auto-rows:30px;align-content:start;height:100%;min-height:0;overflow:hidden}
+.floating-battle .status-tray-icons>.status-badge{width:30px;height:30px}
+.floating-battle .status-tray-icons>.status-badge[hidden]{display:none}
+.floating-battle .effects-overflow{width:100%;margin:0;min-width:0;padding:4px;font-size:11px;align-self:end}
+.floating-battle .battlefield{overflow:visible}
+.effects-empty{font-size:12px;color:#aebba9}
+.floating-battle.layout-a .battle-viewport{display:block;scrollbar-width:none}
+.floating-battle .battle-viewport::-webkit-scrollbar{display:none}
+.battle-camera-space{display:grid;place-items:center;flex:none;position:relative;min-width:100%;min-height:100%}
+.floating-battle .hud-turn-order{width:max-content;max-width:calc(100% - 24px);cursor:pointer}
+.floating-battle .hud-turn-order .turn-order{display:flex;align-items:center;gap:12px;overflow:hidden;margin:0}
+.floating-battle .hud-turn-order .turn-order>div{overflow:hidden;max-height:none;gap:12px;padding:6px 3px}
+.floating-battle .hud-turn-order .turn-chip,.hud-full-turns.layout-a-header .turn-chip{flex:0 0 102px;width:102px;min-width:102px;grid-template-rows:72px auto;gap:9px;padding:6px}
+.floating-battle .hud-turn-order .turn-chip[hidden]{display:none}
+.floating-battle .hud-turn-order .turn-chip>.portrait-crop,.floating-battle .hud-turn-order .turn-chip>img,.floating-battle .hud-turn-order .turn-chip>b,.hud-full-turns.layout-a-header .turn-chip>.portrait-crop,.hud-full-turns.layout-a-header .turn-chip>img,.hud-full-turns.layout-a-header .turn-chip>b{width:54px;height:54px}
+.floating-battle .hud-turn-order .turn-chip::before,.floating-battle .hud-turn-order .turn-chip.boss::before,.hud-full-turns.layout-a-header .turn-chip::before{width:87px;height:87px;top:2px}
+.floating-battle .hud-turn-order .turn-chip small,.hud-full-turns.layout-a-header .turn-chip small{font-size:15px}
+.floating-battle .hud-turn-order .turn-chip>span:not(.portrait-crop):not(.portrait-framed){font-size:15px}
+.turn-overflow{font-size:13px;white-space:nowrap;color:#dfce9b}
+.hud-inspection-panel.hud-turns-popup{width:650px}
+.hud-turns-content{max-height:55dvh;overflow:auto}
+.hud-full-turns.layout-a-header{display:block}
+.hud-full-turns>div{display:flex;flex-wrap:wrap;gap:12px}
+.hud-turns-popup [data-close-turns]{position:absolute;right:0;top:0;font-size:23px;padding:0 7px}
+
+.hud-inspection-panel{padding:16px 20px;background:linear-gradient(145deg,#202c35f5,#10181ff5);border:1px solid #9b8270;border-radius:10px;box-shadow:0 10px 40px #000b;color:#eee5cf;pointer-events:auto}
+.hud-inspection-panel h3{margin:4px 0 8px;font-size:21px}.hud-inspection-panel header>small{font-size:11px;color:#b9c7b4;letter-spacing:1px}.hud-inspection-panel button{border:1px solid #8d8063;border-radius:5px;background:#26362e;color:#f3e9d3;cursor:pointer}.hud-inspection-panel [data-placement-handle]{touch-action:none;user-select:none}
+
+.floating-battle [data-hud-group="title"]{width:300px}
+.floating-battle [data-hud-group="title"] .battle-objectives{width:auto;min-width:0;margin:10px 0 0;padding:10px 0 0;border:0;border-top:1px solid #b49c6533;border-radius:0;background:none}
+
+/* A single compact action bar, with fixed tracks so spacing matches commands. */
+.floating-battle.layout-a .hud-skills{width:1100px;min-width:min(650px,calc(100% - 24px));grid-template-columns:var(--hud-command-width) var(--hud-skill-width) minmax(0,1fr);column-gap:0}
+.floating-battle.layout-a .hud-skills>.battle-primary-panel{grid-column:1;grid-row:2;width:auto;height:auto;min-height:0;margin:0;padding:0;border:0;background:none;box-shadow:none}
+.floating-battle.layout-a .hud-skills>.combat-hotbar{grid-column:2;grid-row:2;box-sizing:border-box;padding-left:12px;border-left:1px solid #b49c6544;margin:0}
+.floating-battle.layout-a .hud-skills>.combat-status-tray{grid-column:3}
+.floating-battle.layout-a .hud-skills .hotbar-slots{grid-template-columns:repeat(5,var(--hud-tile))}
+.floating-battle.layout-a .hud-skills .combat-actions{grid-template-columns:repeat(var(--hud-command-columns,3),var(--hud-tile))!important}
+.floating-battle.layout-a .hud-skills .combat-actions:has([data-combat-mode="subdue"]){grid-template-columns:repeat(var(--hud-command-columns,3),var(--hud-tile))!important}
+.floating-battle .hud-actor-group{width:400px}
+.floating-battle.layout-a .hud-actor-group .dock-actor{width:100%;padding:0;margin:0;border:0;background:none;box-shadow:none;flex-wrap:nowrap}
+.floating-battle .hud-actor-group .battle-action-preview{width:100%;box-sizing:border-box;margin:10px 0 0;padding:10px 0 0;border:0;border-top:1px solid #b49c6544;background:none}
+.floating-battle .hud-actor-group .combat-action-help{max-height:none;height:auto;overflow:visible;white-space:normal;overflow-wrap:anywhere;font-size:16px}
+.floating-battle [data-hud-group="tools"]{width:max-content;display:block;padding-right:38px}
+.hud-tool-buttons{display:flex;flex-wrap:nowrap;gap:6px}
+.floating-battle [data-hud-group="tools"] .hud-tool-buttons button{width:38px;height:38px;display:grid;place-items:center;padding:7px;border:1px solid #b49c6566;border-radius:6px;background:#1a2a22;color:#e3ce93}
+.hud-tool-buttons button[hidden]{display:none!important}.hud-tool-buttons svg{width:23px;height:23px}
+.floating-battle [data-hud-group="tools"] .hud-tool-buttons button:hover{background:#354638;border-color:#e3ce93}
+
+.floating-battle .hud-actor-group{height:260px}
+.floating-battle.hud-editing .hud-actor-group{height:290px}
+.floating-battle .hud-actor-group .battle-action-preview{height:145px}
+.floating-battle .hud-actor-group .combat-action-help{height:118px;font-size:16px;line-height:1.3}
+
+/* Match the map toolbar without turning Close into an extraction action. */
+.modal-card:has(.floating-battle)>#mission-close{width:38px;height:38px;top:20px;right:20px;display:grid;place-items:center;padding:0;border:1px solid #b49c6566;border-radius:6px;background:#1a2a22;color:#e3ce93;font:26px/1 system-ui;box-sizing:border-box}
+.modal-card:has(.floating-battle)>#mission-close:hover{background:#354638;border-color:#e3ce93}
+.modal-card:has(.floating-battle)>#mission-close:focus-visible{outline:2px solid #fff0b3;outline-offset:2px}
+.floating-battle [data-hud-group="tools"]{padding-right:58px}
+
+/* Shared close control for battle dialogs and draggable detail windows. */
+:is(.hud-inspection-panel,.battle-utility-dialog) header>button:is([data-close-effects],[data-close-turns],[data-close-battle-popup]),
+:is(.unit-inspect-window,.effect-inspect-window)>.unit-window-handle>button{
+ width:38px;height:38px;min-width:38px;min-height:38px;display:grid;place-items:center;box-sizing:border-box;padding:0;border:1px solid #b49c6566;border-radius:6px;background:#1a2a22;color:#e3ce93;font:26px/1 system-ui;cursor:pointer;flex-shrink:0
+}
+:is(.hud-inspection-panel,.battle-utility-dialog) header>button:is([data-close-effects],[data-close-turns],[data-close-battle-popup]):hover,
+:is(.unit-inspect-window,.effect-inspect-window)>.unit-window-handle>button:hover{background:#354638;border-color:#e3ce93}
+:is(.hud-inspection-panel,.battle-utility-dialog) header>button:is([data-close-effects],[data-close-turns],[data-close-battle-popup]):focus-visible,
+:is(.unit-inspect-window,.effect-inspect-window)>.unit-window-handle>button:focus-visible{outline:2px solid #fff0b3;outline-offset:2px}
+.hud-inspection-panel header{padding-right:48px;min-height:42px}
+
+.floating-battle.layout-a .hud-skills>.battle-primary-panel{box-sizing:border-box;padding-right:12px}
+.floating-battle.layout-a .hud-skills>.combat-hotbar{padding-right:12px}
+
+/* Tools belong to the same movable card as the title and objectives. */
+.floating-battle [data-hud-group="title"]>.battle-field-toolbar{display:block;box-sizing:border-box;width:100%;margin:10px 0 0;padding:10px 0 0;border-top:1px solid #b49c6533}
+.floating-battle [data-hud-group="title"] .hud-tool-buttons{justify-content:flex-start}
+.floating-battle [data-hud-group="title"] .hud-tool-buttons button{width:38px;height:38px;display:grid;place-items:center;padding:7px;border:1px solid #b49c6566;border-radius:6px;background:#1a2a22;color:#e3ce93}
+.floating-battle [data-hud-group="title"] .hud-tool-buttons button:hover{background:#354638;border-color:#e3ce93}
+.floating-battle [data-hud-group="title"] .hud-tool-buttons button:focus-visible{outline:2px solid #fff0b3;outline-offset:2px}
+.floating-battle .status-tray-icons>.effects-empty{grid-column:1/-1}
+
+/* Withdrawal stays in the two-row command group, away from map tools. */
+.floating-battle .context-action-menu button:disabled{opacity:.45;cursor:not-allowed}
+.floating-battle .battle-primary-panel .retreat-all{--skill-accent:#c39369}
+.floating-battle .battle-primary-panel .retreat-all.armed{--skill-accent:#e76d53}
+
+.floating-battle.layout-a .battle-primary-panel .combat-actions>.retreat-all{grid-column:auto}

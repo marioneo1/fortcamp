@@ -1,0 +1,106 @@
+{
+  "columns": 5,
+  "rows": 4,
+  "items": [
+    {
+      "id": "bear_claws",
+      "cell": 0,
+      "file": "bear_claws.png"
+    },
+    {
+      "id": "padded_handwraps",
+      "cell": 1,
+      "file": "padded_handwraps.png"
+    },
+    {
+      "id": "brass_knuckles",
+      "cell": 2,
+      "file": "brass_knuckles.png"
+    },
+    {
+      "id": "iron_knuckles",
+      "cell": 3,
+      "file": "iron_knuckles.png"
+    },
+    {
+      "id": "duelist_cestus",
+      "cell": 4,
+      "file": "duelist_cestus.png"
+    },
+    {
+      "id": "stonefist_gauntlets",
+      "cell": 5,
+      "file": "stonefist_gauntlets.png"
+    },
+    {
+      "id": "balanced_dagger",
+      "cell": 6,
+      "file": "balanced_dagger.png"
+    },
+    {
+      "id": "skinners_knife",
+      "cell": 7,
+      "file": "skinners_knife.png"
+    },
+    {
+      "id": "parrying_dagger",
+      "cell": 8,
+      "file": "parrying_dagger.png"
+    },
+    {
+      "id": "oak_war_mace",
+      "cell": 9,
+      "file": "oak_war_mace.png"
+    },
+    {
+      "id": "flanged_mace",
+      "cell": 10,
+      "file": "flanged_mace.png"
+    },
+    {
+      "id": "weathered_spellbook",
+      "cell": 11,
+      "file": "weathered_spellbook.png"
+    },
+    {
+      "id": "field_grimoire",
+      "cell": 12,
+      "file": "field_grimoire.png"
+    },
+    {
+      "id": "runebound_folio",
+      "cell": 13,
+      "file": "runebound_folio.png"
+    },
+    {
+      "id": "cloth_headband",
+      "cell": 14,
+      "file": "cloth_headband.png"
+    },
+    {
+      "id": "leather_wristguards",
+      "cell": 15,
+      "file": "leather_wristguards.png"
+    },
+    {
+      "id": "padded_leggings",
+      "cell": 16,
+      "file": "padded_leggings.png"
+    },
+    {
+      "id": "gripsole_boots",
+      "cell": 17,
+      "file": "gripsole_boots.png"
+    },
+    {
+      "id": "trappers_charm",
+      "cell": 18,
+      "file": "trappers_charm.png"
+    },
+    {
+      "id": "thick_bear_pelt",
+      "cell": 19,
+      "file": "thick_bear_pelt.png"
+    }
+  ]
+}

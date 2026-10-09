@@ -35,3 +35,5 @@ test('barrier capacity has a visible display; corpses do not have shields',()=>{
   assert.equal(protectionMarkup({condition:'dead',statuses:[{id:'barrier',amount:12}]}),'');
   assert.match(protectionMarkup({guarding:true}),/unit-guard-halo/);
 });
+
+test('combat dialogue is text, not a damage label',()=>{assert.deepEqual(feedbackText({kind:'dialogue',text:'Cover me!'}),{label:'Cover me!',icon:'',color:'#f0e3c4',value:''})});

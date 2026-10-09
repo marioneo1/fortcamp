@@ -292,6 +292,13 @@ BARD_OLD_IDS=dict(zip(('rally','discord','footwork','refrain','silence','cover')
 def eligible(character):
     return character.get('source_kind') not in {'champion','celestial'} and not character.get('temporary_mercenary')
 
+# Recruitable regional specialization; not an additional starter Job.
+SKILLS['npc:bandit:road_bola']=active('npc:bandit:road_bola','Road Bola',
+    'Throw a bola up to three cells for 50% attack damage and Hobble for two turns; cooldown three turns.',
+    [{'type':'attack','power_percent':50},{'type':'status','status':'hobbled','turns':2,'conditions':[{'type':'hit'}]}],
+    range=3,rule='ballistic',cooldown=3)
+SKILLS['npc:bandit:road_bola']['source_name']='Road Trapper'
+
 from .combat_skill_copy import summarize
 for _skill in SKILLS.values():
     summarize(_skill)

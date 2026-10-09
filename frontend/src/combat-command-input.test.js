@@ -115,3 +115,13 @@ test('spell decoding holds the UI before rendering and releasing queued input',a
  assert.equal(c.combatRequestPending,true);assert.equal(renders.length,0);
  decoded();await action;assert.equal(renders.length,1);assert.equal(c.combatRequestPending,false);
 });
+
+test('door interaction keeps its explicit approach when an earlier move is pending',async()=>{
+ const {context:c,requests:r,battle}=harness();
+ await c.sendCombat({action:'move',x:1,y:0});
+ const door=c.sendCombat({action:'navigate',gate_id:'door',x:2,y:0,position:{x:2,y:0},operate_gate:true,gate_operation:'Open'});
+ assert.equal(r.length,1);assert.deepEqual(r[0].command.position,{x:2,y:0});
+ assert.equal(r[0].command.operate_gate,true);
+ r[0].resolve({battle:battle(2,'next')});await door;
+ await new Promise(resolve=>setTimeout(resolve,120));assert.equal(r.length,1);
+});
