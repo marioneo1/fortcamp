@@ -1,5 +1,115 @@
 # E-rank combat audit
 
+## October 9: shared body migration
+
+[Current stat rules](SHARED_COMBAT_STATS.md) now govern fresh ordinary humanoids
+and recruits. Earlier HP tables below are historical authoring targets; rounded
+VIT/racial allocations can differ. Supply/worksite targets were adjusted to keep
+the 15% variation budget band. Species kits remain authored; saved battles remain.
+All exposed layouts of 14 E plus three D missions are in the
+[396-fight smoke audit](SHARED_COMBAT_STATS_AUDIT.md), with no errors/stalls.
+Capture parity is tested across all audited humanoid layouts. Support Jobs,
+other races and manual playtests remain outside this auto-play evidence.
+
+## October 9: Hedgerow preparation rework
+
+The user replaced the older defenses after the final map batch. Base allotment is
+now 12 + 4 per defender; 1-point barriers have no separate count cap, pits cost 2,
+and proximity bombs cost 3 / 2 with an Engineer. Equipped Engineer deployments
+and Rogue Caltrops are free; machine caps still apply, with one Engineer mine.
+See [current rules and validation](DEFENSE_PREPARATION.md). Enemy layouts/HP and
+keeper victory conditions are unchanged. The 32 combat samples recorded below
+precede this preparation rework and are not a fresh balance claim for the new menu.
+
+## October 9: final defense/rescue batch implemented in dev
+
+All **14 missions in this combat audit scope** now have authored opposition and
+variation coverage. This does not mean every noncombat E-rank quest has been audited.
+
+| Mission | Variations | Opposition | What changes |
+| --- | --- | --- | --- |
+| Hold the Hedgerow Watch | Northern / southern advance, split raid, staggered column | 4 × 24 HP or 5 × 20 HP Goblins | Roles, flanks and grouping; preparation and Keeper Mara protection remain. |
+| Bring the Captive Home | Halted wagon, inspection, muddy escort, changing guard | 2 × 28 HP or 3 × 20 HP Goblins | Escort count/roles, wagon and captive positions; carry out or secure the field. |
+
+Those are base encounter HP budgets before rolled general perks. Four/five-raider
+defense totals are 96/100 HP; two/three-escort rescue totals are 56/60 HP. More
+bodies have lower individual ATK. Enemies use existing Fighter/Rogue/Ranger kits,
+specialties, recruitment snapshots and wordless Goblin voice packs, not generic
+boss flags or 10–18 HP filler. No new skills or Jobs were introduced.
+
+Defense includes a visible wooden warning post using the current structure art,
+an open road, fields and wooded flanks. Keeper and post cells are excluded from
+deployment. Its actual win condition remains repel all raiders with the keeper
+alive, not an invented timed evacuation countdown. Objective text now says so.
+
+E-rank rescue now has its own `prison_rescue_e` encounter and four generated maps.
+The original **D-rank Captive Cart** and higher-rank prisoner rescue definitions
+remain unchanged. Dispatch-satchel/cartmaster story prizes do not leak into this
+E-rank allegiance mission. Extraction/carrying and field-secured rescue rules are
+shared; objective completion looks up IDs rather than assuming three objectives.
+
+Test in Battle Lab: **Hold the Hedgerow Watch** (normally two defenders) and
+**Bring the Captive Home** (normally one), Direct map test, then select each layout.
+Already-running battles retain their old roster; start a fresh test after loading
+the updated backend. No production push or live-save migration in this pass.
+
+Validation: eight-layout connectivity/nonoverlap and carried extraction checks,
+recruit kit persistence, repeatable layouts, original D-cart compatibility and
+existing battle/mission regressions. Small automated balance sample: 32 fights
+using Fighter/Barbarian/Monk/Rogue; solo rescue and paired defense, one seed per
+layout/job. **31 wins, one Rogue inspection-rescue loss, zero errors or stalls.**
+This is a smoke sample, not a claim of universal win rate. Per user direction,
+no extensive manual solo-support equalization; support/setup jobs may be weaker.
+Manual difficulty/visual review remains open.
+
+October 9 presentation pass: all currently audited humanoid layouts opt into
+Human/Goblin race/gender/personality wordless combat vocals. Three attack, hurt
+and death variants per supported identity, preserved through recruitment. Existing
+animal sounds stay separate; no encounter stat, count, story or reward changes.
+See ../art/ENEMY_VOCALS_V1.md. New voice metadata needs backend reload; saved
+audited enemies have a frontend fallback from their existing identity fields.
+
+## October 9 — prisoner batch 4 and recruit backgrounds
+
+All four variants each of Break the Rival Warband (prison_rival_e), End the Old
+Command (prison_former_e), and A Promise Proven in Battle (prison_proof_e) now
+use two authored recruitable enemies. Opposition is 48–56 total HP; variation
+ratios stay within 15%. Placement, actual usable closed doors and current timber
+structure art are retained, not replaced by generic open arenas. Access tests
+open legal doors before checking reachability; this is not a claim doors are
+already open at encounter entry. All twelve variants have nonoverlapping units,
+reachable enemy positions and no generic boss inflation. Story gating, objectives,
+reward and noncombat route definitions are unchanged.
+
+Kits: Enforcer/Trapper/Skirmisher on rival road; Warden/Bruiser and mixed
+support on former command; Bruiser/Warden/Skirmisher/Lookout at proof yard.
+See [short enemy reference](../player-reference/ENEMY_SPECIALTIES.md).
+Background perks include a no-perk outcome and modest stat tradeoffs; recruit
+snapshots preserve their actual learned skills, traits and personality. Normal
+Job starters are added as learned options, without rewriting equipped order.
+
+432 fresh Human/Fairy/Ogre starter-loadout auto fights: 385 wins, zero exceptions.
+Rival: 132/144; former: 129/144; proof: 124/144. Fighter/Barbarian 36/36 each,
+Rogue/Ranger/Monk 35/36 each, Mage 32/36, Cleric 34/36, Summoner 33/36;
+Bard/Druid 28/36, Engineer 26/36, Captor 27/36. Support/setup solo auto-play
+is weaker and remains a manual-playtest concern, not a reason to change their
+identity or claim human-tested balance. Report: data/audits/e-prison-perks-v3.json.
+An earlier discarded run exposed missing team metadata on environmental damage;
+the hook is fixed with a regression test. Do not cite the invalid v2 run.
+
+Additional regression across all 26 variants of Toll/Pickpockets/Well/Supply and
+the three worksites: 312 Human auto fights, 261 wins, zero exceptions. Engineer
+8/26 remains especially weak in auto-play; manual construction/positioning should
+be reviewed. Report: data/audits/e-background-regression-v1.json. Previous batch
+numbers below are historical results before specialty/background additions.
+
+169 backend tests, including recovery, capture starter skills, twelve-map access,
+perks and mission routing, pass. Background/general definitions are separate from
+slotted skills. New general positive/negative perk expansion is still proposed.
+Remaining E-rank audit scope: Hedgerow Watch and Bring the Captive Home. Fresh
+dev battles require a backend restart with reload off; existing encounters and
+characters are not rerolled. Production untouched; no browser playtest claimed.
+
 ## Remaining E-rank inventory, October 8
 
 User reports first-batch encounters feel good; continue three missions at a time.
@@ -332,3 +442,60 @@ of all twelve layouts confirms 24/24 Pickpockets, 28/23 Well (order can reverse)
 and 28/23 or 19/19/19 Supply. These compiled maps use current structure materials:
 fieldstone for Well, timber for Supply; Pickpockets is an outdoor road with no
 building shell. Existing shapes/layouts were retained, not fully rebuilt.
+
+## Batch 3 - October 8, 2026
+
+Implemented in dev: Timber Across the Creek (two bridge layouts), The Locked
+Tool Shed and Herbs Behind the Wall (four layouts each). These are optional
+guarded work sites: peaceful collection, the guarded-route choice, handover
+and existing rewards remain unchanged. No fresh radiant roll is added.
+
+| Mission | Layout 1 | Layout 2 | Layout 3 | Layout 4 |
+| --- | --- | --- | --- | --- |
+| Timber Creek | Guard + Sling Scavenger | 2 Pilferers + light Lookout | — | — |
+| Tool Shed | Guard + Tool Snatcher | Snarer + Sling Scavenger | Guard + Snarer | 2 Pilferers + light Lookout |
+| Herb Garden | Guard + Sling Scavenger | Snarer + Forager | 2 Foragers + light Lookout | Snarer + Sling Scavenger |
+
+All are Goblins with move four and 12% evasion; guards have 28 HP/5 ATK/one
+armor, ordinary roles 24 HP/4 ATK, light roles 17 HP/3 ATK. Total opposition
+HP stays 48–52 and combined ATK 8–9. Three-body layouts trade durability for
+numbers. Existing Fighter/Rogue/Ranger and mixed Road Bola kits survive
+recruitment. Existing bounded guardian/withdrawal/snare/ranged AI is reused;
+no new generic AI framework or starter class.
+
+Lore/geometry review: creek retains repaired crossing routes, logs and planks;
+sheds retain tool storage and damaged timber shells; garden retains herb beds,
+potting/wash furniture and limestone boundaries. Structures already use the
+current material system; no wholesale rebuild needed. All ten layouts have
+distinct legal spawn tiles and reachable opposition after opening gates.
+No enemy count is promised in the gathering descriptions. Scavenging activity
+is indicated by placement and History text, not newly animated work routines.
+
+All-layout starter-loadout Human/Fairy/Ogre simulation: **360 fights, 313 wins,
+zero exceptions**. Wins out of 30 per Job: Fighter 30, Barbarian 30, Rogue 30,
+Ranger 29, Mage 26, Cleric 28, Monk 30, Bard 25, Druid 24, Engineer 7,
+Summoner 30, Captor 24. Human 100/120, Fairy 101/120, Ogre 112/120.
+Layout win counts range 24–36/36; mean durations 7.9–10.9 rounds. The long
+tool store is the hardest automated case (24/36); prioritize it for manual
+testing. Equal stat budgets do not guarantee equivalent doorway geometry or
+single-unit auto-play. Engineer auto-construction and Druid form selection
+remain limitations, and one sample per race/Job/layout is not a balance proof.
+
+Reproduce using virtualenv Python: `tools/audit_beginner_combat.py --missions
+timber_creek tool_shed herbs_wall --all-variants --races Human Fairy Ogre
+--output data/audits/e-batch-3.json`. Focused tests cover access, recruitment,
+budget limits and peaceful choices; **135 mission/encounter/location/recruitment
+tests passed**. No frontend code or assets changed in this batch.
+Fresh battles require a backend restart when reload is off. Existing saved
+encounters remain unchanged. No production update or human playtest claimed.
+
+## General quirk integration - October 9
+Authoring now uses the shared compatible generic pool as an occasional alternative
+to a role background. About 20% of new humanoid encounter recruits remain perkless;
+rare and exceptional quirks remain possible at E-rank. HP/VIT-changing generic
+profiles are in the rare encounter tier, rather than common, to preserve ordinary
+mission variation budgets. Animals do not receive this humanoid trait roll.
+Captured recruits retain traits; ordinary generated recruits can acquire one
+optional compatible quirk. Existing characters and encounters are untouched.
+Structural tests continue checking all audited layouts and their actual HP totals.
+These checks do not replace manual playtests or claim a new full simulation audit.

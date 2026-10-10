@@ -1,4 +1,5 @@
 """Bounded equipment rules separate from additive attribute bonuses."""
+from .combat_stats import attack
 CAPS={'capture_chance':6,'carry_strength':6,'throw_range':1,'breach_damage':3,'guard_heal':4,'wounded_damage':2,'boss_damage':2}
 FLAGS={'water_walk','rubble_walk','opening_guard','lifeline'}
 
@@ -20,7 +21,7 @@ def equipped_skills(equipped,attribute,training,fallback=None,weapon=None):
         authored=item.get('combat_skill')
         if not authored or authored['id'] in seen:continue
         seen.add(authored['id']);entry=dict(authored)
-        entry.update(attack=5+attribute(entry['scaling'])//2+int(item.get('power',2))+training,
+        entry.update(attack=attack(attribute(entry['scaling']),int(item.get('power',2)),training),
                      source_name=item['name'])
         entry.setdefault('element', item.get('element'))
         entry.setdefault('on_hit', item.get('on_hit'))

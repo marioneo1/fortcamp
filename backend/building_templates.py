@@ -4,6 +4,13 @@ Room rectangles form a union footprint: shared walls disappear, concave joins
 remain closed, and doors/breaches are explicit. Furniture never chooses the plan.
 """
 BUILDINGS = {
+    'road_relay_house': {
+        'label':'Road relay office', 'family':'timber', 'floor':'shed_floor',
+        'rooms':[(0,0,7,5)], 'doors':[(0,2,'door'),(6,3,'door')],
+        'furniture':[('toll_desk',2,1),('crate_closed',4,1)],
+        'decorations':[('bound_barrels',1,3)],
+        'enemies':[(2,2),(3,2),(4,3)],
+    },
     'tool_long_store': {
         'label':'Long tool store', 'family':'timber', 'floor':'shed_floor',
         'rooms':[(0,0,8,6)], 'doors':[(0,3,'door')], 'breaches':[(7,3)],
@@ -76,6 +83,13 @@ BUILDINGS = {
 
 from .location_buildings import add_location_buildings
 add_location_buildings(BUILDINGS)
+
+# Explicit lighting coverage: room footprints exclude separately authored yards.
+# Mixed/open compounds need individual roof regions before opting in.
+for _lighting_id, _lighting_template in BUILDINGS.items():
+    _lighting_template.setdefault('roofed',
+        _lighting_id.startswith(('tool_', 'chapel_', 'armory_', 'cache_')) or
+        _lighting_id in {'road_relay_house','workshop_courtyard_pair','workshop_l_forge','workshop_repair_hall'})
 from .command_locations import add_command_buildings
 add_command_buildings(BUILDINGS)
 from .beginner_locations import add_beginner_buildings

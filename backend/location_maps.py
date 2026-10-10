@@ -39,7 +39,7 @@ MISSION_LOCATIONS = {
     'rats_storehouse':'provision_store', 'wolves_fence':'farm_clearing',
     'herbs_wall':'herb_garden', 'goblin_pickpockets':'purse_road',
     'ruined_well':'well_yard', 'supply_watch':'supply_stop',
-    'highway_ambush':'highway_cut',
+    'highway_ambush':'highway_cut', 'goblin_boar_riders':'boar_rider_route',
 }
 for _rank in 'edcbas':
     MISSION_LOCATIONS[f'prison_rival_{_rank}']='road_blockade'
@@ -247,6 +247,9 @@ def location_blueprint(location, seed):
     if location not in set(MISSION_LOCATIONS.values()):
         raise ValueError(f'Unknown authored location: {location}')
     rng = random.Random(f'location:{location}:{seed}')
+    from .d_rank_locations import LOCATIONS as D_LOCATIONS, blueprint as d_blueprint
+    if location in D_LOCATIONS:
+        return d_blueprint(location, rng.randrange(4))
     variant = rng.randrange(len(BUILDING_PLANS.get(location, [None,None])))
     from .road_locations import ROAD_SETTINGS, blueprint as road_blueprint
     if location in ROAD_SETTINGS:

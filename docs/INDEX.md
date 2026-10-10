@@ -1,5 +1,72 @@
 # Fortcamp documentation map
 
+[Technical stack brief for GPT](design/TECH_STACK_GPT_BRIEF.md): copy-paste
+architecture/dependencies, combat, assets, tooling and deployment snapshot.
+
+[Day/night lighting tester and proposal](design/DAY_NIGHT_LIGHTING_PROPOSAL.md):
+saved arrival phases, elapsed light movement on return, blue scenery grading,
+stylized directional shadows and lighting controls within Battle Lab.
+Includes roofed-room contact shadows, art-only cart filtering and stable preview sizing.
+Full phase progression during missions remains deferred.
+
+[Mission resource reward preview](design/MISSION_RESOURCE_REWARD_PREVIEW.md): proposed
+four-outcome resource comparison; awaiting UI discussion, not implemented.
+
+[Animal mounts](design/ANIMAL_MOUNTS.md): implemented Rider/boar rules, targeting,
+turn timing, art and deferred animal capture. [Short rider guide](player-reference/RIDERS.md).
+
+
+[Shared combat stats](design/SHARED_COMBAT_STATS.md): implemented formulas,
+attribute-first rank, enemy reconstruction, capture parity and deferred work.
+[Migration audit](design/SHARED_COMBAT_STATS_AUDIT.md): 396 fresh E/D fights.
+
+[Character growth proposal](design/CHARACTER_GROWTH_PROPOSAL.md): brainstorming
+for Adventurer Rank, Growth budgets, respec/rebirth and transparent stat Details;
+documents the former formula mismatch and remaining growth decisions.
+The shared 12 HP / 2 Attack migration is now implemented separately above.
+Its deferred race section records possible racial innate HP/base Attack differences.
+
+[Growth comparison](design/CHARACTER_GROWTH_COMPARISON.md): reproducible offline
+comparison of 13 E/D enemy bodies and S-stage builds, recorded before the shared
+baseline was selected. [Short progression checkpoint](player-reference/CHARACTER_GROWTH_NEXT_STEPS.md)
+summarizes implementation and deferred decisions.
+
+[Shared-stat combat trial](design/CHARACTER_GROWTH_TRIAL.md): 216 isolated paired
+fights, opening damage and survival data, [per-fight results](design/CHARACTER_GROWTH_TRIAL.csv).
+Historical pre-migration trial; lower bases were subsequently implemented with reconstruction.
+
+[D-rank combat audit](design/D_RANK_COMBAT_AUDIT.md): E-relative rank multipliers
+and the first twelve layouts for Highway Ambush, Bone Patrol and Boar-Rider Patrol.
+
+[Defense preparation](design/DEFENSE_PREPARATION.md): rebuilt point defenses,
+free equipped Engineer/Rogue deployments, pit escape and proximity explosions.
+
+[Personality audit](player-reference/PERSONALITY_AUDIT.md): 12 implemented
+personalities, 16 proposed anime/ordinary additions, and the separate voice/AI scope.
+
+[E-rank combat audit](design/E_RANK_COMBAT_AUDIT.md): all 14 missions in the current
+audit scope now covered, including four defense and four E-rank rescue layouts.
+
+[Player reference folder](player-reference/README.md): short readable summaries
+of enemy specialties, implemented recruit perks, proposals and voice progress.
+
+[Voice progress](player-reference/VOICE_PROGRESS.md): animal/specialty sounds and
+the installed 144 wordless Human/Goblin combat clips by gender and personality.
+[Vocal implementation](art/ENEMY_VOCALS_V1.md) records assets, event timing,
+recruit persistence, preloading and listening limitations.
+[Voice tester](../frontend/public/assets/sfx/voice-tester/preview.html):
+all installed Human/Goblin clips with playback, saved ratings and feedback export.
+
+[General quirks](player-reference/GENERAL_PERKS.md): implemented positive/negative
+quirks, conflict groups and rarity; generated from runtime definitions. Naturally
+Gifted is an independent bonus compatible with redistribution and luck traits.
+
+[General perk audit](player-reference/GENERAL_PERK_AUDIT.md): historical design
+review and deferred event-based ideas.
+
+[Recruit perk options](player-reference/RECRUIT_PERK_OPTIONS.md): player-readable
+historical alternatives; approved implementations are in RECRUIT_PERKS.md.
+
 [Starting race audit](design/STARTING_RACE_AUDIT.md): implemented 14 starting
 choices, 26 discovery races and two special acquisitions; existing characters preserved.
 
@@ -14,7 +81,7 @@ read it first to resume unfinished work and preserve accepted decisions.
 
 [Race-name upload brief](content/RACE_NAMES_GPT_BRIEF.md) covers all 42 current
 races in seven GPT batches; [workflow](content/RACE_NAMES_WORKFLOW.md) records
-the output folder, naming-source guidance and deferred integration.
+the output folder, naming-source guidance and implemented dev integration.
 
 Current skill click audit: [Skill targeting](design/SKILL_TARGETING_AUDIT.md)
 records the 12-Job/77-active-skill routing review, direct approach execution,
@@ -37,9 +104,9 @@ chains, earned personality variations, core-arc closure and story-matched reward
 
 Current mobile battle pass: [Combat controls](design/COMBAT_CONTROLS.md) describes compact touch tabs, swipeable action rows, mobile Battle Lab setup, pan/pinch, long-press inspection and Safari validation limits. Desktop geometry remains separate; other game screens still need a mobile pass.
 
-Current E-rank audit: [Batch audit](design/E_RANK_COMBAT_AUDIT.md) records the first three contracts, existing Fighter/Rogue enemy kits, animal pack traits, targeted Fairy/Ogre HP tuning and simulation limits. [Combat capability reference](design/COMBAT_CAPABILITY_REFERENCE.md) indexes implemented mechanics and must be maintained with combat changes.
+Current E-rank audit: [Batch audit](design/E_RANK_COMBAT_AUDIT.md) records three completed batches: rats/toll/wolves, pickpockets/well/supply, and timber/tool shed/herb garden. It includes all layouts, recruitable enemy kits, material checks and simulation limits. [Combat capability reference](design/COMBAT_CAPABILITY_REFERENCE.md) indexes implemented mechanics and must be maintained with combat changes.
 
-Current floating battle HUD trial: [Combat controls](design/COMBAT_CONTROLS.md) documents draggable groups, snapping guides, saved local layouts, resizing and effects overflow. Implemented in dev; production unchanged.
+Current floating battle HUD trial: [Combat controls](design/COMBAT_CONTROLS.md) documents draggable groups, snapping guides, saved local layouts, proportional resizing for four groups, foremost Edit Layout tools and effects overflow. Implemented in dev; production unchanged.
 
 Implemented Captor: [Captor and Resolve](design/CAPTOR_REWORK_REVIEW.md) documents separate Attack/Subdue, Resolve, eight skills, Hold ticks and unconscious recovery; [Captor art/audio](art/CAPTOR_V1.md) records generated packs and foley.
 

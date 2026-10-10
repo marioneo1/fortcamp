@@ -17,7 +17,10 @@ ROUTES = {
 
 def initialize_prisoner(p, rank='E', now=None):
  now=int(time.time()) if now is None else now
- if 'recruitment' in p:return p
+ if 'recruitment' in p:
+  from .job_loadouts import initialize
+  initialize(p['recruitment']['candidate'])
+  return p
  tier='EDCBAS'.find(rank);tier=max(0,tier)
  elite=bool(p.get('boss'));kind=p.get('kind','combatant')
  digest=hashlib.sha256(str(p.get('capture_key',p['id'])).encode()).digest()
@@ -37,6 +40,8 @@ def initialize_prisoner(p, rank='E', now=None):
  candidate.setdefault('specialty','scout' if kind=='archer' else 'fighter');candidate.setdefault('archetype_id','scout' if kind=='archer' else 'fighter')
  candidate.update(portrait_locked=bool(p.get('portrait')),portrait_source='pool' if p.get('portrait') else 'none',hp=100,max_hp=100,morale=60,loyalty=65)
  ensure_character(candidate)
+ from .job_loadouts import initialize
+ initialize(candidate)
  cost={'gold':180+120*tier+(300 if elite else 0),'wood':30+15*tier+(30 if elite else 0),'medicine':8+4*tier+(8 if elite else 0),'field_pack':1}.get(ROUTES[route][2],0)
  item_id='ironcap_buckler' if elite and p.get('race') in ('Goblin','Hobgoblin') else 'breaching_charge' if elite else 'field_pack'
  text=ROUTES[route][1]
@@ -144,4 +149,9 @@ def apply_prison_contracts(missions):
    if route!='rescue':
     TACTICAL_CONTRACTS[key]={'race':'Human','layout':'camp','faction':{'rival':'rival raiders','former':'the former warband','proof':'the occupying fighters'}[route],**({'enemy_count':2} if rank=='E' else {})}
     m.update(combat_encounter={'id':'contract:'+key},resolution_mode='tactical',objective='Defeat or subdue the opposing force and secure the field.',combat_critical_condition='Secure the field and keep every party member standing.')
+   elif rank=='E':
+    m.update(combat_encounter={'id':'prison_rescue_e','name':'Prisoner Rescue',
+                              'description':'Reach the wounded captive beside the wagon and carry them to the guild exit, or defeat the escort to secure the rescue.'},
+             resolution_mode='tactical',objective='Bring the captive home alive; capturing the escort is optional.',
+             combat_critical_condition='Rescue the captive and keep every party member standing.')
    missions[key]=m

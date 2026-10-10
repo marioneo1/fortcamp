@@ -108,6 +108,16 @@ test('melee family and chain swings remain quieter than their contact, including
 });
 
 const animalBattle={round:1,units:{rat:{species_profile:'store_rat'},wolf:{species_profile:'fence_wolf'},human:{}}};
+test('boar attack belongs to free boars; mounted damage and death still vocalize',()=>{
+ const free={units:{b:{species_profile:'saddle_boar'},r:{animal_mount_id:'b'}}};
+ const attack={type:'melee_attack',attacker_id:'b',target_id:'human',hit:true,melee_style:'bite'};
+ assert.ok(combatAudioSchedule(free,[attack]).cues.some(c=>c.name.startsWith('boar_attack_')));
+ const mounted={units:{...free.units,b:{...free.units.b,rider_id:'r'}}};
+ assert.ok(!combatAudioSchedule(mounted,[attack,{...attack,attacker_id:'r'}]).cues.some(c=>c.name.startsWith('boar_attack_')));
+ const cues=combatAudioSchedule(mounted,[{type:'combat_feedback',unit_id:'b',kind:'physical',amount:2,attack_packet:1},{type:'combat_feedback',unit_id:'b',kind:'heal',amount:2},{type:'death_burst',unit_id:'b',attack_packet:2}]).cues;
+ assert.equal(cues.filter(c=>c.name.startsWith('boar_hurt_')).length,1);
+ assert.equal(cues.filter(c=>c.name.startsWith('boar_death_')).length,1);
+});
 test('bear claws retain flesh contact but its voice and death are animal cues',()=>{
  const b={units:{bear:{species_profile:'foraging_bear'}}};
  const cues=combatAudioSchedule(b,[{type:'melee_attack',attacker_id:'bear',target_id:'human',melee_style:'slash',impact_surface:'flesh',hit:true,attack_packet:1},{type:'death_burst',unit_id:'bear',attack_packet:2}]).cues;

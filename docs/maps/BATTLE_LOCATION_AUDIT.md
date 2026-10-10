@@ -3,7 +3,7 @@
 Generated from runtime content with `.venv\Scripts\python.exe tools/audit_battle_locations.py`.
 This inventories existing tactical encounters, including combat branches of roll/story missions. It does not propose converting roll-only contracts to combat.
 
-44 contract encounter IDs use authored locations; 17 still use generic road/camp/ruin/court layouts. Prison rank copies are grouped below. Generic maps have seeded dressing but no named, mission-specific building plans.
+45 contract encounter IDs use authored locations; 16 still use generic road/camp/ruin/court layouts. Prison rank copies are grouped below. Generic maps have seeded dressing but no named, mission-specific building plans.
 
 ## Authored contract locations
 
@@ -18,8 +18,9 @@ This inventories existing tactical encounters, including combat branches of roll
 | A Road Wide Enough for Everyone | C | toll_post | 4 |
 | A Watchman’s Dispute | D | toll_post | 4 |
 | Bandit Outpost | C | raider_cache | 4 |
+| Boar-Rider Patrol | D | boar_rider_route | 4 |
 | Bone Collectors | D | graveyard | 2 |
-| Bone Patrol | D | cemetery_road | 2 |
+| Bone Patrol | D | cemetery_road | 4 |
 | Break the Rival Warband | A | road_blockade | 4 |
 | Break the Rival Warband | B | road_blockade | 4 |
 | Break the Rival Warband | C | road_blockade | 4 |
@@ -59,7 +60,6 @@ This inventories existing tactical encounters, including combat branches of roll
 | Mission | Ranks | Current fallback |
 | --- | --- | --- |
 | A Light on This Side | B | camp |
-| Boar-Rider Patrol | D | road |
 | Court of the Empty Crown | A | court |
 | Goblin Warren Purge | C | ruin |
 | Knight without a Grave | B | ruin |

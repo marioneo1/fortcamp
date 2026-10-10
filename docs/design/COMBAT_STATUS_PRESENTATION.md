@@ -1,5 +1,20 @@
 # Combat status presentation
 
+## October 9: readable Unit Details stat help
+
+Pinned stat tooltips now use one or two plain-English sentences, followed by a
+visually separated numeric formula. Attack/Armor use “÷ 2/3, rounded down” rather
+than programming operators. Shared source formatting covers both players and
+ordinary NPCs, rank and equipment, while saved formulas get a read-only notation
+cleanup. No stats or save values are recalculated by this presentation pass.
+
+Armor explains flat subtraction and percentage-DoT bypass; accuracy explains
+target-specific chance and Parry, Evasion explains the attack-type factors, and
+Rat/form/capture equipment exceptions use their real rules. Hover-following cards
+still have no stat help. Pinned tooltips escape text and avoid rebuilding identical
+content on every mouse movement. Backend/renderer checks and browser build recorded
+in WORK_STATE; exact live crash cause remains a separate diagnostic issue.
+
 October 6 Mage surface update: elemental Frozen covers the actual portrait with translucent painted ice, four stable patterns and contact-timed spreading/shattering or thawing. The old Freeze binding-tether flash is removed. Status badge placement and gameplay remain unchanged. Dedicated sheet, import and limitations: [Mage surfaces V2](../art/MAGE_SURFACES_V2.md).
 
 October 6 Ranger additions: owner-specific Quarry badges identify the owner and guaranteed accuracy; Poison shows stack counts and target-end percentage damage; see [Combat DoTs](COMBAT_DOTS.md). Pestilence, Poison Imbue and Sharpshooter have painted status art. Longshot critical feedback is labelled Critical; Rupture has its own damage label. See [Ranger rules](RANGER_REWORK_REVIEW.md) and [Ranger art](../art/RANGER_V1.md). Existing badge sizes/layout are unchanged.

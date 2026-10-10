@@ -55,6 +55,11 @@ export function createBattleLab({api, onStart, onError}) {
     const updateDescription=()=>{
       variantId=find('[data-lab-outcome]').value;
       const v=mission.variants.find(v=>v.id===variantId);
+      let radiant=find('[data-lab-radiant-row]');
+      if(!radiant){radiant=document.createElement('label');radiant.dataset.labRadiantRow='';radiant.className='lab-layout';find('.lab-encounter').after(radiant)}
+      const events=v.radiant_events||[],previous=find('[data-lab-radiant]')?.value||request?.radiant_mode||'natural';
+      radiant.innerHTML=`Radiant encounter<select data-lab-radiant><option value="natural">Natural chance</option><option value="absent">No encounter</option>${events.map(event=>`<option value="${escape(event.id)}">Force ${escape(event.name)} (${event.chance}% normally)</option>`).join('')}</select><small>${events.length?'Appears on this battlefield with its normal arrival popup; no save rewards.':'No radiant encounters are authored for this map.'}</small>`;
+      const radiantSelect=find('[data-lab-radiant]');radiantSelect.value=previous==='absent'||previous==='natural'||events.some(event=>event.id===previous)?previous:'natural';radiantSelect.disabled=!events.length;
       find('.lab-approach-help').textContent=v.description+(v.requires?' The lab bypasses the training requirement.':'');
       find('.lab-encounter').innerHTML=`<b>Encounter</b> ${escape(v.encounter_id)}${v.transition.boss?' · Stronger commander':''}${v.transition.setup?` · ${escape(title(v.transition.setup))}`:''}`;
       const presets=v.layout_presets||[],layout=find('[data-lab-layout]'),seed=find('[data-lab-seed]');
@@ -99,6 +104,7 @@ export function createBattleLab({api, onStart, onError}) {
     find('[data-lab-start]').onclick=async()=>{
       if(busy)return;busy=true;find('[data-lab-start]').disabled=true;
       const next={mission_id:mission.id,variant_id:variantId,seed:find('[data-lab-seed]').value.trim(),party_ids:partyInputs.filter(i=>i.checked).map(i=>i.dataset.labCharacter),add_helper:find('[data-lab-helper]').checked};
+      next.radiant_mode=find('[data-lab-radiant]')?.value||'natural';
       if(source.value==='jobs'){next.party_ids=[];next.test_jobs=testers.map(t=>({...t,skill_ids:[...t.skill_ids]}))}
       if(source.value==='roster'&&data.characters.length&&!next.party_ids.length){find('.lab-error').textContent='Choose at least one character.';busy=false;find('[data-lab-start]').disabled=false;return}
       try{const result=await api('/api/debug/battle-lab',{method:'POST',body:JSON.stringify(next)});request=next;dialog.close();onStart(result)}catch(error){find('.lab-error').textContent=error.message}finally{busy=false;find('[data-lab-start]').disabled=false}

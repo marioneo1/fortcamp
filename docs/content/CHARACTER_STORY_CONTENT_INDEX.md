@@ -1,20 +1,73 @@
 # Character story content index
 
 Canonical entry point for proposed character voices, personal histories and
-one-off story content. Updated October 8, 2026. **Planning only**; no content
-packs below are active, and no importer is implemented.
+one-off story content. Updated October 8, 2026. **Planning only**; no
+character-story packs below are active. Race-name content is separately implemented
+in dev and does not implement the proposed personal-story system.
 
 ## References and ownership
 
+October 9 Boar-Rider follow-up adds persistent perk ID `rider` and innate action
+IDs `innate:rider:mount` and rider-owned `innate:rider:boar_charge`; registered in backend/recruit_perks.py and
+backend/combat_mounts.py. Captured patrol recruits retain the perk and ordinary
+Job starters. No history/dialogue/story/race/quest IDs or repeat scopes changed.
+Animal capture remains deferred; see ../design/ANIMAL_MOUNTS.md.
+
+First D-rank batch: Highway Ambush, Bone Patrol and Boar-Rider Patrol retain
+their mission IDs/rewards/repeat scope and receive four tactical variations each.
+New patrol role labels reuse existing Jobs, skill and personality IDs; no new
+hidden histories, dialogue events or personal quest triggers. Recruitment keeps
+specialties and normal Job starters. Scouting describes an unaware patrol instead
+of a sleeping camp. See ../design/D_RANK_COMBAT_AUDIT.md. The authoring catalog
+has no new IDs to register; the proposed character-life system remains separate.
+
+Defense preparation v2 changes Hedgerow's preparation budget/options and reuses
+existing Engineer/Rogue skills and pit escape. It adds no Job, personality,
+history fact, story trigger or reward ID; allegiance and one-off completion scope
+are unchanged. See ../design/DEFENSE_PREPARATION.md for implemented rules.
+
+October 9 personality review: [short audit](../player-reference/PERSONALITY_AUDIT.md)
+confirms 12 implemented IDs and proposes 16 additions, including Tsundere,
+Kuudere and Dandere. Proposed IDs are not eligible for import/runtime yet; the
+existing authoring contract and generated GPT brief still use the current catalog.
+No story eligibility, one-off repeat scope, completion history or existing
+character identity is changed. Approval, runtime integration and then catalog/brief
+regeneration are separate future work; no new voice generation is implied.
+
+Final E-rank combat batch: Hedgerow Watch receives four authored raid layouts;
+Bring the Captive Home has four dedicated E-rank escort layouts instead of the
+D-cart roster. Mission IDs, allegiance/recruitment promises and completion scope
+are retained. New role labels reuse existing Jobs/skill IDs and personality IDs;
+no hidden histories, dialogue events or personal-story rewards were added.
+
+October 9 combat implementation: the eight new enemy specialties and approved
+background perks are active for newly generated audited dev encounters; see
+[enemy kits](../player-reference/ENEMY_SPECIALTIES.md) and
+[recruit perks](../player-reference/RECRUIT_PERKS.md). They use existing Jobs,
+personalities and mission origins, without adding hidden histories or dialogue
+triggers. The newly requested broad generic perk pool remains a proposal.
+
+Recruit background perk design: [selected effects and profession/quirk names](../player-reference/RECRUIT_PERK_OPTIONS.md).
+Selected combat and workplace effects are implemented in dev; unselected options
+remain proposals. No new history tags or story rewards are introduced by this work.
+
 Implemented starting-race eligibility: [audit](../design/STARTING_RACE_AUDIT.md).
 All 42 race IDs remain in authoring/name pools; no tags or acquisition rules
-changed. Seven submitted race-name files await validation and integration.
+changed. Seven submitted race-name files are validated and integrated in dev;
+see the workflow and import report. All originals remain preserved.
+
+E-rank worksite batch 3 adds recruitable Goblin Salvage Guard, Tool Snatcher,
+Goblin Forager, Worksite Pilferer/Lookout, Sling Scavenger and Garden/Worksite
+Snarer specializations using existing Fighter/Rogue/Ranger skill IDs. These
+are combat loadouts, not new Jobs, personality IDs or hidden-history facts.
+Peaceful mission routes remain available; no personal-story triggers or repeat
+scopes change. See the classes reference and E-rank audit for current kits.
 
 | Reference | Purpose |
 | --- | --- |
 | [Design proposal](../design/CHARACTER_STORIES_PROPOSAL.md) | Rules, integration points, pacing, novelty, persistence, stages |
 | [Short character overview](CHARACTER_LIFE_OVERVIEW.md) | Readable personalities, eligibility, backgrounds, stories and reward directions; keep current |
-| [Race names brief](RACE_NAMES_GPT_BRIEF.md) / [workflow](RACE_NAMES_WORKFLOW.md) | Single-upload seven-batch request for all 42 races; separate names-0.1 authoring format; not installed |
+| [Race names brief](RACE_NAMES_GPT_BRIEF.md) / [workflow](RACE_NAMES_WORKFLOW.md) | Seven-batch request for all 42 races; names-0.1 compiled into dev runtime pools; production unchanged |
 | [GPT authoring prompt](CHARACTER_STORY_AUTHORING_PROMPT.md) | Reusable writing instructions and batch requests |
 | [Single-file GPT brief](CHARACTER_LIFE_GPT_BRIEF.md) | Upload-ready instructions, two-blueprint pilot and current contract |
 | [Authoring workflow](CHARACTER_LIFE_WORKFLOW.md) | One upload, preserved submissions, structural checks, review and approval gates |
@@ -124,3 +177,12 @@ An existing skirmish may be authored at arrival. No character-history tags,
 personal-chain eligibility, new dialogue templates or once-per-player flags.
 Runtime contract: [Radiant encounters](../design/RADIANT_ENCOUNTERS.md).
 This does not implement the proposed character-life story system above.
+
+## Implemented generic quirk catalogue ? October 9
+Runtime IDs and modifiers live in backend/general_perks.py; the generated
+player-reference/GENERAL_PERKS.md lists all 61 general quirks. These are combat/
+character perks, not hidden history facts, radiant story templates or dialogue
+eligibility tags. New random rolls and standalone-perk rewards enforce the shared
+compatibility rules. Existing trait/history data is preserved. No story repeat
+scope or authoring contract was changed; deferred personal-story grants still
+require review against the current runtime catalogue.

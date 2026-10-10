@@ -7,6 +7,20 @@ from unittest.mock import patch,MagicMock
 from tools import run_profile
 
 class RunnerFailureLoggingTests(unittest.TestCase):
+    def test_frontend_failure_names_the_service_and_pid_without_blame_on_api(self):
+        with TemporaryDirectory() as temp:
+            api=SimpleNamespace(pid=123,stdout=StringIO('API running\n'),poll=lambda:None,returncode=None,
+                                send_signal=lambda _:None,wait=lambda timeout:0)
+            frontend=SimpleNamespace(pid=456,stdout=StringIO(''),poll=lambda:3221226505,
+                                     returncode=3221226505,wait=lambda timeout:3221226505)
+            sock=MagicMock();sock.__enter__.return_value.connect_ex.return_value=1
+            with patch.object(run_profile,'ROOT',Path(temp)),patch.object(run_profile,'profile_config',return_value=({},Path(temp),[65000,65001])),patch.object(run_profile,'conflicting_application',return_value=False),patch.object(run_profile.socket,'socket',return_value=sock),patch.object(run_profile.subprocess,'Popen',side_effect=[api,frontend]),patch('sys.argv',['run_profile','dev']),patch('sys.stdout',StringIO()):
+                with self.assertRaises(SystemExit):run_profile.main()
+            text=(Path(temp)/'data/logs/dev-latest.log').read_text()
+            self.assertIn('Started API: PID 123',text)
+            self.assertIn('frontend (Vite/npm) process stopped unexpectedly (PID 456, exit 3221226505',text)
+            self.assertNotIn('API process stopped unexpectedly',text)
+
     def test_abnormal_child_exit_preserves_output_and_returns_failure_for_batch_pause(self):
         with TemporaryDirectory() as temp:
             child=SimpleNamespace(stdout=StringIO('Traceback: simulated child failure\n'),poll=lambda:7,returncode=7,wait=lambda timeout:7)

@@ -32,5 +32,9 @@ class Settings:
     mission_time_scale: float = max(0.01, float(os.getenv("MISSION_TIME_SCALE", "1.0")))
     game_debug_mode: bool = _bool("GAME_DEBUG_MODE", False)
 
+    @property
+    def mission_pool_seconds(self) -> int:
+        return 5 * 60 if self.environment.lower() in {'dev', 'dev-discord'} else 30 * 60
+
 
 settings = Settings()

@@ -61,6 +61,8 @@ export function sizeBattleMap(viewport,{width,height,fit,zoom}){
   viewport._cameraWidth=viewport.clientWidth;viewport._cameraHeight=availableHeight;
   const pixels=frame?.pixels??(fit?fitMapWidth(width,height,viewport.clientWidth-4,availableHeight-4):width*72*zoom);
   field.style.width=`${pixels}px`;field.style.minWidth='0';
+  field.style.setProperty('--map-status-size',`${Math.min(36,pixels/width*.22)}px`);
+  field.style.setProperty('--lighting-cell-size',`${pixels/width}px`);
   if(frame){space.style.width=`${frame.width}px`;space.style.height=`${frame.height}px`;centerBattleMap(viewport);viewport.scrollLeft+=offset.x;viewport.scrollTop+=offset.y;viewport._cameraReady=true}
   else if(fit){viewport.scrollTop=0;viewport.scrollLeft=0}
 }

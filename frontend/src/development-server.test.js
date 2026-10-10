@@ -26,7 +26,7 @@ test('source dev serves CSS and API with a socket-free reload client',async()=>{
   await writeFile(join(root,'game.js'),'import "./style.css";window.gameLoaded=true;');
   await writeFile(join(root,'style.css'),'.game{color:red}');
   const config=configure({mode:'development'});
-  server=await createServer({...config,configFile:false,root,optimizeDeps:{noDiscovery:true,include:[]},server:{...config.server,port:0,proxy:{'/api':{target:`http://127.0.0.1:${api.address().port}`,changeOrigin:false}}}});await server.listen();
+  server=await createServer({...config,configFile:false,root,optimizeDeps:{noDiscovery:true,include:[]},server:{...config.server,port:0,strictPort:false,proxy:{'/api':{target:`http://127.0.0.1:${api.address().port}`,changeOrigin:false}}}});await server.listen();
   const origin=`http://127.0.0.1:${server.httpServer.address().port}`;
   const html=await (await fetch(origin)).text();assert.match(html,/Dev game/);
   const client=await (await fetch(origin+'/@vite/client')).text();assert.match(client,/export function updateStyle/);assert.match(client,/export function createHotContext/);assert.doesNotMatch(client,/WebSocket|location\.reload|transport\.connect/);

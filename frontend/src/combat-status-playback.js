@@ -12,14 +12,17 @@ export function statusPlaybackPlan(previous,battle,timeline){
  });
 }
 export function animateStatusPlayback(previous,battle,timeline,tokenFor,escape){
+ const presented=Object.fromEntries(Object.entries(battle.units||{}).map(([id,u])=>[id,{...u,statuses:previous?.units?.[id]?.statuses||[]} ]));
  for(const plan of statusPlaybackPlan(previous,battle,timeline)){
   const token=tokenFor(plan.id);if(!token)continue;
   const generation=Symbol();token.statusPlaybackGeneration=generation;
   const paint=(statuses,final=false)=>{
    if(!token.isConnected||token.statusPlaybackGeneration!==generation)return;
    token.presentationStatuses=final?null:statuses;
-   token.querySelector('.status-row')?.remove();
-   token.insertAdjacentHTML('beforeend',mapStatusMarkup({...battle.units[plan.id],alive:true,conscious:true,statuses},battle.status_definitions,escape));
+   presented[plan.id]={...battle.units[plan.id],alive:true,conscious:true,statuses};
+   const owner=presented[plan.id].rider_id||plan.id,display=tokenFor(owner)||token;
+   display.querySelector('.status-row')?.remove();
+   display.insertAdjacentHTML('beforeend',mapStatusMarkup(presented[owner]||presented[plan.id],battle.status_definitions,escape,presented));
    const tip=document.getElementById('combat-unit-inspect');if(tip){tip.hidden=true;tip.dataset.inspectKey=''}
   };
   paint(plan.initial);

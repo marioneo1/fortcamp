@@ -299,6 +299,9 @@ SKILLS['npc:bandit:road_bola']=active('npc:bandit:road_bola','Road Bola',
     range=3,rule='ballistic',cooldown=3)
 SKILLS['npc:bandit:road_bola']['source_name']='Road Trapper'
 
+from .enemy_specialties import register as register_specialties
+register_specialties(active, passive, SKILLS)
+
 from .combat_skill_copy import summarize
 for _skill in SKILLS.values():
     summarize(_skill)
@@ -403,6 +406,11 @@ def initialize(character):
             character['bard_kit_version']=1
         job=JOBS.get(character.get('job_id'))
         if job:
+            # Authored captives may arrive with a specialty instead of a complete
+            # starter list. Learning a baseline never changes equipped slots.
+            for key in job['starter_skills']:
+                if key not in character['learned_skills']:
+                    character['learned_skills'].append(key)
             for unlock in job['unlocks']:
                 if character['job_practice']>=unlock['contracts'] and unlock['skill_id'] not in character['learned_skills']:
                     character['learned_skills'].append(unlock['skill_id'])

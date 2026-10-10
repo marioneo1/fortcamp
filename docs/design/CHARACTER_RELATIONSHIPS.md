@@ -1,5 +1,12 @@
 # Character relationships: foundation and staged design
 
+October 9 audit: runtime still has 12 personality IDs. Anime archetypes are
+missing; [the short audit](../player-reference/PERSONALITY_AUDIT.md) proposes
+16 additions for 28 total. These are **not implemented IDs**. Social expression
+and tactical policy should be separate; the seven existing combat policies can
+be shared by characters with different ways of speaking and relating to others.
+Existing saved identities are preserved; no automatic rerolls or added voice packs.
+
 ## October 2 conversation workspace
 
 Conversation now has a portrait/personality sidebar, loyalty meter and independent-action chance, a scrollable dialogue area, and four topic buttons with brief explanations. Keep up to eight exchanges per character for this browser session; this is not persistent chat history or an AI dialogue service. Polling preserves the reading position, last chosen topic and meal drawer. Rapid repeated clicks issue only one pending request. A late reply cannot switch the screen back to a previously selected companion. The meal drawer shows prepared quantities, discovered preferences and the next gift time; unavailable meals, cooldowns and away characters disable the relevant actions. Service Record remains in its own tab. Existing authored responses, tastes, loyalty gains and gift rules are unchanged.

@@ -1,4 +1,13 @@
 const clamp=(v,max)=>Math.max(0,Math.min(Math.max(0,max),v));
+// Resize the complete panel, preserving its internal tracks and proportions.
+export function hudScale(requested,size,bounds){
+ const value=Number.isFinite(Number(requested))?Number(requested):1;
+ return Math.min(Math.max(.5,Math.min(1.5,value)),Math.max(.1,(bounds.width-8)/Math.max(1,size.width)),Math.max(.1,(bounds.height-8)/Math.max(1,size.height)));
+}
+export function resizeHudScale(initial,dx,dy,size,bounds){
+ const delta=(dx*size.width+dy*size.height)/(size.width**2+size.height**2);
+ return hudScale(initial+delta,size,bounds);
+}
 export function snapHud(rect,others,bounds,threshold=8){
  const result={x:rect.x,y:rect.y,guides:[]};
  for(const [axis,size,total] of [['x','width',bounds.width],['y','height',bounds.height]]){

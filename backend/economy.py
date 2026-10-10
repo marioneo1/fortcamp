@@ -91,6 +91,9 @@ def settle(state,now=None):
             track=JOBS[key][1];rank=PERK_LEVELS.index(character.get('perks',{}).get(track,'none'))
             level=max((b.get('level',1) for b in state.get('buildings',[]) if PRODUCERS.get(b['type'])==key),default=0)
             rates[key]+=JOBS[key][2]/len(targets)*(1+.15*rank)*(1+.3*level)
+            from .recruit_perks import PRODUCTION
+            if key in PRODUCTION and any(b.get('type') in PRODUCERS and PRODUCERS[b['type']]==key and character['id'] in b.get('assigned',[]) for b in state.get('buildings',[])) and PRODUCTION[key] in character.get('traits',[]):
+                rates[key]+=1
             practice(character,track,hours*2/len(targets))
     fractions=production['fractions']
     for key,rate in rates.items():

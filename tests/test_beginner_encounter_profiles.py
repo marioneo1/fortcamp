@@ -107,7 +107,9 @@ class BeginnerEncounterProfileTests(unittest.TestCase):
             self.assertEqual(candidate['equipped_skills'], unit['recruitable_snapshot']['equipped_skills'])
             actives, passives, _ = snapshot(candidate)
             self.assertEqual([s['id'] for s in actives], [s['id'] for s in unit['skills']])
-            self.assertEqual([s['id'] for s in passives], [s['id'] for s in unit['passives']])
+            self.assertEqual([s['id'] for s in passives],
+                             [s['id'] for s in unit['passives'] if not s['id'].startswith('background:')])
+            self.assertEqual(candidate['traits'],unit['origin_perks'])
 
     def test_enforcer_actually_uses_driving_strike(self):
         battle = self.battle('roadside_toll')
@@ -115,6 +117,9 @@ class BeginnerEncounterProfileTests(unittest.TestCase):
         unit = battle['units']['contract_enemy_0']
         target = battle['units']['player']
         unit.update(x=5, y=5)
+        # The approved Shakedown addition is normally preferred; test Driving
+        # Strike's actual displacement while that heavier technique is cooling.
+        unit['ability_state']={'npc:bandit:shakedown':{'ready_at':999}}
         target.update(x=4, y=5)
         battle['units']['contract_enemy_1'].update(x=12, y=10)
         battle.update(turn_order=[unit['id'], target['id'], 'contract_enemy_1'], turn_index=0)

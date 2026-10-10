@@ -1,6 +1,7 @@
 """Deterministic tactical combat engine for Fortcamp's first battle encounter."""
 from __future__ import annotations
 from . import combat_dots as dots
+from . import combat_lighting
 
 import random
 from .relationships import ensure_character, independence_check, independent_chance, personality_profile
@@ -13,12 +14,14 @@ from .tactical_contracts import TACTICAL_CONTRACTS
 from .location_maps import MISSION_LOCATIONS
 from .wall_boundaries import crossed_walls, can_operate_gate, gate_controls
 from .portraits import choose_pool_portrait, portrait_pool_key
-from .races import race_gameplay, generated_genders
+from .races import RACE_CATALOG, race_gameplay, generated_genders
+from .character_names import generate_name, name_rng
 from .perk_effects import modifiers
 from .equipment_rules import collect_rules,equipped_skills
-from .combat_pacing import enemy_budget
+from .combat_pacing import enemy_budget, scale_unit
 from .combat_supplies import sync_supplies, remaining_uses
 from . import combat_conditions as conditions
+from . import enemy_specialties as specialties
 from . import concealment
 from . import combat_abilities as abilities
 from . import combat_tactics as tactics
@@ -26,9 +29,12 @@ from . import combat_spaces as spaces
 from . import combat_entities as entities
 from . import combat_summoner as summoner
 from . import combat_engineer as engineer
+from . import combat_mounts as mounts
+from . import combat_defense as defense
 from . import combat_captor as captor
 from . import combat_martial as martial
 from .combat_feedback import record as feedback
+from . import recruit_perks as backgrounds
 from .combat_melee import weapon_style, attack_style, capture_style, armor_material, impact_surface
 from . import combat_monk as monk
 from . import combat_ranger as ranger
@@ -42,6 +48,11 @@ from . import combat_encounter_ai as encounter_ai
 
 
 STATUS_DEFINITIONS = {
+    'intimidated':{'name':'Intimidated','icon':'!','description':'Deals 15% less damage through the next turn.'},
+    'feigned_death':{'name':'Playing Dead','icon':'Z','description':'Enemies prefer other targets until you act; attacks and area damage can still hit you.'},
+    'sword_exposed':{'name':'Sword Opening','icon':'S','description':'Takes 25% more direct damage from sword weapons through the next target turn; other weapons and damage over time are unaffected.'},
+    'tag_team_power':{'name':'Tag Team','icon':'+25%','description':'Deals 25% more direct damage through the next personal turn; only the swap user receives this bonus.'},
+    'heel_wound':{'name':'Heel Wound','icon':'H','description':'Through the next turn, each new tile farther from the cut adds one Bleed stack and triggers current Bleed damage without consuming it. Backtracking does not charge the same distance twice.'},
     'druid_rejuvenation':{'name':'Rejuvenation','icon':'+','description':'Restores 10% maximum HP at each of the next three turn starts.'},
     'living_armor':{'name':'Living Armor','icon':'+','description':'Take 25% less damage from all sources and heal at turn start. Nature’s Persistence improves duration, healing and retaliation.'},
     'cleric_rest':{'name':'Resting','icon':'Z','description':'Takes 75% more damage from all sources. Completed resting turns heal 10% maximum HP and recover healing charges. Direct HP damage, movement, another skill or control ends Rest.'},
@@ -117,10 +128,11 @@ LARGE_OBJECT_FOOTPRINTS = {
 }
 
 
-def _goblin_chieftain_identity(rng: random.Random) -> tuple[str, str, dict]:
+def _goblin_chieftain_identity(rng: random.Random, *, expanded=True, used_names=()) -> tuple[str, str, dict]:
     profile = RECRUIT_PROFILES["goblin_boss"]
     genders = list(profile.get("genders", ["male", "female"]))
     preferred_gender = rng.choice(genders)
+    # Preserve the caller's seeded combat sequence; expanded names use a fork.
     chief_name = f"{rng.choice(profile['first_names'])} {rng.choice(profile['last_names'])}"
     ordered_genders = [preferred_gender, *(gender for gender in genders if gender != preferred_gender)]
     portrait = {"portrait": "", "portrait_thumbnail": "", "portrait_pool": ""}
@@ -134,10 +146,12 @@ def _goblin_chieftain_identity(rng: random.Random) -> tuple[str, str, dict]:
             break
         if gender == preferred_gender:
             portrait = candidate
+    if expanded:
+        chief_name = generate_name("Goblin", selected_gender, name_rng(rng), leader=True, used_names=used_names)
     return chief_name, selected_gender, portrait
 
 
-def _goblin_npc_identity(seed: str, unit_id: str, archetype: str = "fighter") -> dict:
+def _goblin_npc_identity(seed: str, unit_id: str, archetype: str = "fighter", *, used_names=(), leader=False) -> dict:
     rng = random.Random(f"{seed}:{unit_id}")
     profile = RECRUIT_PROFILES["goblin"]
     preferred_gender = rng.choice(profile.get("genders", ["male", "female"]))
@@ -151,12 +165,12 @@ def _goblin_npc_identity(seed: str, unit_id: str, archetype: str = "fighter") ->
         if gender == preferred_gender:
             portrait = candidate
     return {
-        "name": f"{rng.choice(profile['first_names'])} {rng.choice(profile['last_names'])}",
+        "name": generate_name("Goblin", selected_gender, name_rng(rng), leader=leader, used_names=used_names),
         "gender": selected_gender, **portrait,
     }
 
 
-def _captive_cart_identities(seed: str) -> tuple[dict, dict]:
+def _captive_cart_identities(seed: str, *, expanded=True) -> tuple[dict, dict]:
     courier_rng = random.Random(f"{seed}:courier")
     courier_first = ["Lysa", "Mara", "Tessa", "Nell", "Orin", "Dain", "Sella", "Corin"]
     courier_last = ["Vale", "Reed", "Ashdown", "Morrow", "Fen", "Dale", "Grey", "Hale"]
@@ -174,9 +188,11 @@ def _captive_cart_identities(seed: str) -> tuple[dict, dict]:
         "name": f"Courier {courier_rng.choice(courier_first)} {courier_rng.choice(courier_last)}",
         "gender": courier_gender, **courier_portrait,
     }
+    if expanded:
+        courier['name'] = 'Courier ' + generate_name("Human", courier_gender, name_rng(courier_rng))
 
     cartmaster_rng = random.Random(f"{seed}:cartmaster")
-    cartmaster_name, cartmaster_gender, cartmaster_portrait = _goblin_chieftain_identity(cartmaster_rng)
+    cartmaster_name, cartmaster_gender, cartmaster_portrait = _goblin_chieftain_identity(cartmaster_rng, expanded=expanded)
     cartmaster = {
         "name": f"Cartmaster {cartmaster_name}", "gender": cartmaster_gender, **cartmaster_portrait,
     }
@@ -209,6 +225,7 @@ def _ensure_battle_schema(battle: dict) -> None:
                 for skill in unit.get('skills',[]): skill['nonlethal'] = False
                 if unit.get('special'): unit['special']['nonlethal'] = False
         captor.normalize(unit)
+        mounts.ensure_skill(unit)
         unit.setdefault("statuses", [])
         unit.setdefault("conscious", bool(unit.get("alive", True)))
         unit.setdefault("condition", "active" if unit.get("alive", True) else "dead")
@@ -261,7 +278,7 @@ def _ensure_battle_schema(battle: dict) -> None:
         chief = battle.get("units", {}).get("gob_chief")
         if chief and chief.get("name") == "Rattle-Crown":
             identity_rng = random.Random(battle.get("seed", "legacy-goblin-warcamp"))
-            chief_name, gender, portrait = _goblin_chieftain_identity(identity_rng)
+            chief_name, gender, portrait = _goblin_chieftain_identity(identity_rng, expanded=False)
             chief.update({
                 "name": chief_name, "gender": gender, "race": "Goblin",
                 "portrait": portrait.get("portrait_thumbnail") or portrait.get("portrait", ""),
@@ -287,7 +304,7 @@ def _ensure_battle_schema(battle: dict) -> None:
         courier = battle.get("units", {}).get("captive_courier")
         cartmaster = battle.get("units", {}).get("cartmaster_vrak")
         if courier and cartmaster and (courier.get("name") == "Courier Lysa" or cartmaster.get("name") == "Cartmaster Vrak"):
-            courier_identity, cartmaster_identity = _captive_cart_identities(battle.get("seed", "legacy-captive-cart"))
+            courier_identity, cartmaster_identity = _captive_cart_identities(battle.get("seed", "legacy-captive-cart"), expanded=False)
             old_names = {"Courier Lysa": courier_identity["name"], "Cartmaster Vrak": cartmaster_identity["name"]}
             courier.update({
                 "name": courier_identity["name"], "gender": courier_identity["gender"], "race": "Human",
@@ -335,7 +352,10 @@ def _race_weight(race: str) -> int:
     return 3
 
 
-def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
+def _player_unit(state: dict, character: dict, x: int, y: int, battle_seed=None) -> dict:
+    from . import combat_stats as body_stats
+    from .general_perks import battle_character
+    character, attribute_roll = battle_character(character, battle_seed)
     weapon = _equipped_weapon(state, character)
     scaling = weapon.get("weapon_scaling", "str")
     weapon_type = weapon.get("weapon_type", "unarmed")
@@ -356,7 +376,7 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
     granted_skill = skill_item.get("combat_skill")
     if granted_skill:
         special = deepcopy(granted_skill)
-        special["attack"] = 5 + _effective_attribute(state, character, special["scaling"]) // 2 + int(skill_item.get("power", 2))
+        special["attack"] = body_stats.attack(_effective_attribute(state, character, special["scaling"]), int(skill_item.get("power", 2)))
         special.setdefault("element", skill_item.get("element"))
         special.setdefault("on_hit", deepcopy(skill_item.get("on_hit")))
     capture_weapon = deepcopy(weapon.get('capture_weapon'))
@@ -382,6 +402,7 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
                            'elevation_rule': 'physical_care', 'description': 'One shared technique use per battle. Range 1: restore 8 + half INT HP and stop Bleed. Physical treatment works while muted; cannot revive.'})
     from .job_loadouts import snapshot as snapshot_loadout, JOBS
     job_skills, job_passives, job_modifiers = snapshot_loadout(character)
+    job_passives.extend(backgrounds.traits({'traits':list(_equipped_tags_and_perks(state,character)[1])}))
     skills = abilities.snapshot(skills + job_skills, _effective_attribute(state, character, 'int'))
     special = skills[0] if skills else None
     rules=collect_rules(equipped)
@@ -390,34 +411,45 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
     perks = modifiers(state,character,ITEMS,'combat')
     if job_modifiers.get('capture_chance'):
         perks['capture_chance']=perks.get('capture_chance',0)+job_modifiers['capture_chance']
-    base_hp = 24 + vit * 4
-    max_hp = max(8, round(base_hp * float(racial["hp_multiplier"])) + int(racial["hp_bonus"])) + perks.get('hp',0)
+    max_hp = body_stats.health(vit, racial, perks.get('hp',0))
+    rank_help = body_stats.rank_explanation(character)
+    stat_sources = body_stats.sources(
+        {key:_effective_attribute(state,character,key) for key in body_stats.ATTRIBUTE_NAMES},
+        race, 'str' if capture_weapon else scaling,
+        0 if capture_weapon else int(weapon.get('power',0)),
+        0 if capture_weapon else combat_training, perks.get('hp',0),
+        perks.get('armor',0), job_modifiers.get('armor',0))
+    stat_sources['Attack'] += '; ' + rank_help
+    if character.get('job_id')=='ranger' and ranged:
+        attack_range=max(1,attack_range+perks.get('ranged_range',0))
     return {
         "id": character["id"], "name": character.get("name", "Adventurer"), "team": "player",
         "x": x, "y": y, "hp": max_hp, "max_hp": max_hp,
         "armor_material": armor_material(next((i for i in equipped if i.get("slot")=="body"),{})),
-        "armor": max(0, vit // 3 + int(racial["armor_bonus"])) + perks.get('armor',0) + job_modifiers.get('armor',0),
-        "move": max(2, min(8, 3 + (1 if agi >= 8 else 0) + int(racial["move_bonus"]) + perks.get('move',0))),
+        "armor": body_stats.armor(vit, racial, perks.get('armor',0) + job_modifiers.get('armor',0)),
+        "move": max(1, min(8, 3 + (1 if agi >= 8 else 0) + int(racial["move_bonus"]) + perks.get('move',0))),
         "initiative": 10 + agi + int(racial["initiative_bonus"]) + perks.get('initiative',0), "attack_range": attack_range,
-        "evasion": int(racial["evasion"]) + perks.get('evasion',0) + job_modifiers.get('evasion',0), "movement_type": racial["movement_type"],
-        "displacement_resistance": job_modifiers.get('knockback_resistance',0),
+        "evasion": max(0,int(racial["evasion"]) + perks.get('evasion',0) + job_modifiers.get('evasion',0)), "movement_type": racial["movement_type"],
+        "displacement_resistance": max(job_modifiers.get('knockback_resistance',0),perks.get('displacement_resistance',0)),
+        "battle_attribute_roll": attribute_roll,
         "job_id": character.get('job_id'), "passives": job_passives,
         "skill_slot_order": list(character.get('equipped_skills',[])),
         "job_description": (character.get('combat_specialization', '') + ': ' if character.get('combat_specialization') else '') + JOBS.get(character.get('job_id'),{}).get('description',''),
         "martial_version":1, "fury":0, "fury_cap":5 if character.get('job_id')=='barbarian' else 0,
         "perk_modifiers":perks,
         "stat_sources":{
-            'Attack':f"5 base + {scaling_value}//2 {scaling.upper()} + {int(weapon.get('power',0))} weapon power + {combat_training} combat training" if not capture_weapon else 'Lethal unarmed attack: 5 + STR // 2. Subdue uses separate capture-tool Resolve power.',
-            'Armor':f"max(0, {vit}//3 VIT + {int(racial['armor_bonus'])} racial) + {perks.get('armor',0)} perks/equipment + {job_modifiers.get('armor',0)} Job",
-            'Health':f"max(8, round((24 + {vit} VIT × 4) × {racial['hp_multiplier']} racial) + {racial['hp_bonus']} racial) + {perks.get('hp',0)} perks/equipment",
-            'Initiative':f"10 base + {agi} AGI + {int(racial['initiative_bonus'])} racial + {perks.get('initiative',0)} perks/equipment",
-            'Evasion':f"{int(racial['evasion'])} racial + {perks.get('evasion',0)} perks/equipment + {job_modifiers.get('evasion',0)} Job",
+            **stat_sources,
+            'Movement':f"3 + {1 if agi >= 8 else 0} agility bonus (AGI {agi}; needs 8) + {int(racial['move_bonus'])} racial + {perks.get('move',0)} equipment/perks, limited to 1–8 = {max(1,min(8,3+(1 if agi>=8 else 0)+int(racial['move_bonus'])+perks.get('move',0)))}",
+            'Initiative':f"10 + AGI {agi} + {int(racial['initiative_bonus'])} racial + {perks.get('initiative',0)} equipment/perks = {10+agi+int(racial['initiative_bonus'])+perks.get('initiative',0)}",
+            'Evasion':f"{int(racial['evasion'])} racial + {perks.get('evasion',0)} equipment/perks + {job_modifiers.get('evasion',0)} Job = {max(0,int(racial['evasion'])+perks.get('evasion',0)+job_modifiers.get('evasion',0))}",
         },
         "racial_resistances": sorted(set(racial["resistances"])|set(rules['resistances'])), "racial_weaknesses": list(racial["weaknesses"]),
         "gear_rules":rules,
         "race": race, "race_summary": racial["summary"],
         "strength": strength, "agility": agi, "intelligence": _effective_attribute(state, character, 'int'), "weight": _race_weight(character.get("race", "human")),
-        "attack": 5 + strength//2 if capture_weapon else 5 + scaling_value // 2 + int(weapon.get("power", 0)) + combat_training,
+        "attack": body_stats.attack(strength) if capture_weapon else body_stats.attack(scaling_value, int(weapon.get("power", 0)), combat_training),
+        "adventurer_rank":body_stats.adventurer_rank(character), "combat_stat_version":2,
+        "attributes":{key:_effective_attribute(state, character, key) for key in body_stats.ATTRIBUTE_NAMES},
         "capture_weapon": capture_weapon,
         "capture_attack_version":1 if capture_weapon else 0,
         "melee_style":"fist" if capture_weapon else weapon_style(weapon),
@@ -441,6 +473,7 @@ def _player_unit(state: dict, character: dict, x: int, y: int) -> dict:
         "statuses": ([{'id':'lifeline_ready'}] if rules.get('lifeline') else []), "carrying": None, "carrying_object": None, "carried_by": None, "panicked": False, "fled": False,
         "loyalty": ensure_character(character)["loyalty"],
         "personality_id": character["personality_id"],
+        "combat_voice_key": character.get("combat_voice_key"),
         "personality_override": deepcopy(character.get("personality_override", {})),
         "combat_record": {"kills":0,"subdues":0,"times_defeated":0,"total_damage":0,"combat_turns":0,"highest_turn_damage":0},
         "turn_damage": 0,
@@ -486,15 +519,18 @@ def create_goblin_warcamp_battle(state: dict, party_ids: list[str], seed: str, d
     characters = {character["id"]: character for character in state.get("characters", [])}
     starts = [(1, 7), (2, 7), (0, 7), (3, 7)]
     units = {
-        character_id: _player_unit(state, characters[character_id], *starts[index])
+        character_id: _player_unit(state, characters[character_id], *starts[index], battle_seed=seed)
         for index, character_id in enumerate(party_ids)
     }
     rng = random.Random(seed)
-    chief_name, chief_gender, chief_portrait = _goblin_chieftain_identity(rng)
+    chief_name, chief_gender, chief_portrait = _goblin_chieftain_identity(rng, used_names=[u['name'] for u in units.values()])
     chief_portrait["gender"] = chief_gender
-    guard_identity = _goblin_npc_identity(seed, "gob_guard")
-    archer_identity = _goblin_npc_identity(seed, "gob_archer", "scout")
-    horn_identity = _goblin_npc_identity(seed, "gob_horn")
+    used_names = [u['name'] for u in units.values()] + [chief_name]
+    guard_identity = _goblin_npc_identity(seed, "gob_guard", used_names=used_names)
+    used_names.append(guard_identity['name'])
+    archer_identity = _goblin_npc_identity(seed, "gob_archer", "scout", used_names=used_names)
+    used_names.append(archer_identity['name'])
+    horn_identity = _goblin_npc_identity(seed, "gob_horn", used_names=used_names)
     enemies = [
         _enemy("gob_chief", chief_name, "chieftain", 4, 1, chief_portrait),
         _enemy("gob_guard", guard_identity["name"], "raider", 3, 2, guard_identity),
@@ -511,6 +547,10 @@ def create_goblin_warcamp_battle(state: dict, party_ids: list[str], seed: str, d
         enemy.update(hp=hp, max_hp=hp, armor=armor, attack=attack)
         if enemy["kind"] == "chieftain":
             enemy.update(boss=True, move=4, strength=14)
+    from .combat_body import rebuild as rebuild_body
+    for enemy in enemies:
+        enemy['perk_battle_seed']=seed
+        rebuild_body(enemy,'D')
     units.update({unit["id"]: unit for unit in enemies})
     order = sorted(units, key=lambda uid: (-(units[uid]["initiative"] + rng.random()), uid))
     battle = {
@@ -546,7 +586,7 @@ def create_captive_cart_battle(state: dict, party_ids: list[str], seed: str, def
     characters = {character["id"]: character for character in state.get("characters", [])}
     starts = [(1, 4), (1, 5), (0, 4), (0, 5)]
     units = {
-        character_id: _player_unit(state, characters[character_id], *starts[index])
+        character_id: _player_unit(state, characters[character_id], *starts[index], battle_seed=seed)
         for index, character_id in enumerate(party_ids)
     }
     courier_identity, cartmaster_identity = _captive_cart_identities(seed)
@@ -563,15 +603,22 @@ def create_captive_cart_battle(state: dict, party_ids: list[str], seed: str, def
         "kind": "cartmaster", "boss": True, "hp": 24, "max_hp": 24,
         "armor": 2, "attack": 6, "strength": 9, "capture_role": "live_target",
     })
-    guard_one = _goblin_npc_identity(seed, "cart_guard_1")
-    guard_two = _goblin_npc_identity(seed, "cart_guard_2")
-    cart_archer = _goblin_npc_identity(seed, "cart_archer", "scout")
+    used_names = [u['name'] for u in units.values()] + [courier_name,cartmaster_name]
+    guard_one = _goblin_npc_identity(seed, "cart_guard_1", used_names=used_names)
+    used_names.append(guard_one['name'])
+    guard_two = _goblin_npc_identity(seed, "cart_guard_2", used_names=used_names)
+    used_names.append(guard_two['name'])
+    cart_archer = _goblin_npc_identity(seed, "cart_archer", "scout", used_names=used_names)
     enemies = [
         cartmaster,
         _enemy("cart_guard_1", guard_one["name"], "raider", 6, 2, guard_one),
         _enemy("cart_guard_2", guard_two["name"], "raider", 6, 5, guard_two),
         _enemy("cart_archer", cart_archer["name"], "archer", 8, 2, cart_archer),
     ]
+    from .combat_body import rebuild as rebuild_body
+    for enemy in enemies:
+        enemy['perk_battle_seed']=seed
+        rebuild_body(enemy,'E')
     units.update({unit["id"]: unit for unit in [courier, *enemies]})
     rng = random.Random(seed)
     active_ids = [unit_id for unit_id, unit in units.items() if unit["team"] != "neutral"]
@@ -605,6 +652,44 @@ def create_captive_cart_battle(state: dict, party_ids: list[str], seed: str, def
     return battle
 
 
+def create_prison_rescue_battle(state: dict, party_ids: list[str], seed: str, defer_start: bool = False) -> dict:
+    """Reuse extraction rules, not the D-rank cart's roster or story rewards."""
+    battle = create_captive_cart_battle(state, party_ids, seed, defer_start=True)
+    board = compile_generated_battle_map('prison_rescue_e', seed)
+    players = {cid: battle['units'][cid] for cid in party_ids}
+    for player, tile in zip(players.values(), board['spawn_zones']['player']):
+        player.update(x=tile['x'], y=tile['y'])
+    captive = battle['units']['captive_courier']
+    captive.update(board['captive_position'])
+    units = {**players, captive['id']: captive}
+    for index, tile in enumerate(board['spawn_zones']['enemy']):
+        uid = 'cartmaster_vrak' if index == 0 else f'escort_{index}'
+        identity = _goblin_npc_identity(seed, uid, 'fighter', used_names=[u['name'] for u in units.values()])
+        unit = _enemy(uid, identity['name'], 'raider', tile['x'], tile['y'], identity)
+        unit['encounter_variation'] = board['map_variation']
+        encounter_profiles.author('prison_rescue_e', unit, index)
+        from .combat_body import rebuild as rebuild_body
+        unit['perk_battle_seed']=seed
+        rebuild_body(unit,'E')
+        units[uid] = unit
+    rng = random.Random(seed)
+    order = sorted([*party_ids, *(uid for uid, unit in units.items() if unit['team'] == 'enemy')],
+                   key=lambda uid: (-(units[uid]['initiative'] + rng.random()), uid))
+    description = encounter_profiles.setup('prison_rescue_e', board['map_variation'])['description']
+    battle.update(board)
+    battle.update(encounter_id='prison_rescue_e', name='Bring the Captive Home', units=units,
+                  turn_order=order, objects={}, objectives=[
+                      {'id':'rescue_courier','name':f"Extract {captive['name']} alive",'required':True,'complete':False}],
+                  victory_description='The captive is safe; withdraw or finish securing the road.',
+                  victory_log=f"{captive['name']} is safe. The promise is fulfilled.",
+                  completion_log='The guild returns with the rescued captive.',
+                  continue_log='The guild stays to secure the remaining escort.',
+                  log=[description + f" Carry {captive['name']} to the guild exit, or defeat the escort to secure the rescue."])
+    if not defer_start:
+        _advance_to_player(battle)
+    return battle
+
+
 def create_smoke_signals_battle(state: dict, party_ids: list[str], seed: str, defer_start: bool = False) -> dict:
     """Create the combat branch of the E-rank hedgerow investigation."""
     map_data = compile_generated_battle_map("hedgerow_signal_site", seed)
@@ -612,12 +697,15 @@ def create_smoke_signals_battle(state: dict, party_ids: list[str], seed: str, de
     player_starts = [(entry["x"], entry["y"]) for entry in map_data["spawn_zones"]["player"]]
     enemy_starts = [(entry["x"], entry["y"]) for entry in map_data["spawn_zones"]["enemy"]]
     units = {
-        character_id: _player_unit(state, characters[character_id], *player_starts[index])
+        character_id: _player_unit(state, characters[character_id], *player_starts[index], battle_seed=seed)
         for index, character_id in enumerate(party_ids)
     }
-    leader_identity = _goblin_npc_identity(seed, "signal_captain", "scout")
-    runner_identity = _goblin_npc_identity(seed, "signal_runner", "scout")
-    knife_identity = _goblin_npc_identity(seed, "hedgerow_knife")
+    used_names = [u['name'] for u in units.values()]
+    leader_identity = _goblin_npc_identity(seed, "signal_captain", "scout", leader=True, used_names=used_names)
+    used_names.append(leader_identity['name'])
+    runner_identity = _goblin_npc_identity(seed, "signal_runner", "scout", used_names=used_names)
+    used_names.append(runner_identity['name'])
+    knife_identity = _goblin_npc_identity(seed, "hedgerow_knife", used_names=used_names)
     captain = _enemy("signal_captain", leader_identity["name"], "archer", *enemy_starts[4], leader_identity)
     captain.update({"boss": True, "hp": 18, "max_hp": 18, "attack": 5, "capture_role": "signal_leader"})
     enemies = [
@@ -625,6 +713,10 @@ def create_smoke_signals_battle(state: dict, party_ids: list[str], seed: str, de
         _enemy("signal_runner", runner_identity["name"], "archer", *enemy_starts[1], runner_identity),
         _enemy("hedgerow_knife", knife_identity["name"], "raider", *enemy_starts[7], knife_identity),
     ]
+    from .combat_body import rebuild as rebuild_body
+    for enemy in enemies:
+        enemy['perk_battle_seed']=seed
+        rebuild_body(enemy,'E')
     units.update({unit["id"]: unit for unit in enemies})
     rng = random.Random(seed)
     order = sorted(units, key=lambda uid: (-(units[uid]["initiative"] + rng.random()), uid))
@@ -678,7 +770,7 @@ def create_frontier_watch_defense_battle(state: dict, party_ids: list[str], seed
     starts = [(entry["x"], entry["y"]) for entry in map_data["spawn_zones"]["player"]]
     enemy_starts = [(entry["x"], entry["y"]) for entry in map_data["spawn_zones"]["enemy"]]
     units = {
-        character_id: _player_unit(state, characters[character_id], *starts[index])
+        character_id: _player_unit(state, characters[character_id], *starts[index], battle_seed=seed)
         for index, character_id in enumerate(party_ids)
     }
     objective = map_data["objective_position"]
@@ -695,39 +787,26 @@ def create_frontier_watch_defense_battle(state: dict, party_ids: list[str], seed
     }
     units[keeper["id"]] = keeper
 
-    enemy_count = min(7, max(4, len(party_ids) + 2))
+    enemy_count = len(enemy_starts)
     enemy_kinds = ["raider", "raider", "archer", "raider", "archer", "horncaller", "raider"]
     for index in range(enemy_count):
         unit_id = f"watch_raider_{index + 1}"
-        identity = _goblin_npc_identity(seed, unit_id, "scout" if enemy_kinds[index] == "archer" else "fighter")
+        identity = _goblin_npc_identity(seed, unit_id, "scout" if enemy_kinds[index] == "archer" else "fighter", used_names=[u['name'] for u in units.values()])
         enemy = _enemy(unit_id, identity["name"], enemy_kinds[index], *enemy_starts[index], identity)
+        enemy['encounter_variation'] = map_data['map_variation']
+        encounter_profiles.author('frontier_watch_defense', enemy, index)
+        from .combat_body import rebuild as rebuild_body
+        enemy['perk_battle_seed']=seed
+        rebuild_body(enemy,'E')
         units[unit_id] = enemy
 
-    available = [
-        {"id": "barricade", "name": "Wooden Barricade", "cost": 2, "limit": 2,
-         "description": "Blocks movement and sight until attackers destroy its 12 HP."},
-        {"id": "spike_trap", "name": "Spike Trap", "cost": 1, "limit": 3,
-         "description": "Hidden until an enemy enters its tile, then deals 4 damage."},
-    ]
-    base_budget = 4 + len(party_ids) * 2
+    available = defense.options(units)
+    base_budget = 12 + len(party_ids) * 4
     defense_bonus = min(3, sum(max(0, int(race_gameplay(characters[cid].get("race", "Human"))["form_bonuses"].get("defense", 0))) for cid in party_ids))
-    all_tags: set[str] = set()
-    all_perks: set[str] = set()
-    for character_id in party_ids:
-        tags, perks = _equipped_tags_and_perks(state, characters[character_id])
-        all_tags.update(tags); all_perks.update(perks)
-    if "Kobold" in {characters[cid].get("race") for cid in party_ids} or "trapper" in all_perks or "trapping_gear" in all_tags:
-        available.append({
-            "id": "snare_trap", "name": "Iron-Jaw Snare", "cost": 2, "limit": 2,
-            "description": "Deals 2 damage and stops an enemy's next movement. Unlocked by a Kobold, Trapper, or trapping gear.",
-        })
-    if "engineer" in all_perks or "construction_gear" in all_tags or "field_fortifier" in all_perks:
-        available.append({
-            "id": "watch_platform", "name": "Raised Watch Platform", "cost": 3, "limit": 1,
-            "description": "Adds two levels of elevation for a ranged firing position. Unlocked by an Engineer or construction gear.",
-        })
-    gear_bonus = 2 if "defense_gear" in all_tags or "field_fortifier" in all_perks else 0
-    budget = base_budget + defense_bonus + gear_bonus
+    gear_bonus = 2 if any('defense_gear' in _equipped_tags_and_perks(state, characters[cid])[0] or 'field_fortifier' in _equipped_tags_and_perks(state, characters[cid])[1] for cid in party_ids) else 0
+    gear_bonus += 1 if any('trapping_gear' in _equipped_tags_and_perks(state, characters[cid])[0] or 'trapper' in _equipped_tags_and_perks(state, characters[cid])[1] for cid in party_ids) else 0
+    background_bonus = sum(backgrounds.has(characters[cid], 'fast_builder') for cid in party_ids)
+    budget = base_budget + defense_bonus + gear_bonus + background_bonus
     rng = random.Random(seed)
     order_ids = [*party_ids, *(unit_id for unit_id in units if units[unit_id]["team"] == "enemy")]
     order = sorted(order_ids, key=lambda uid: (-(units[uid]["initiative"] + rng.random()), uid))
@@ -743,13 +822,14 @@ def create_frontier_watch_defense_battle(state: dict, party_ids: list[str], seed
         "battle_won": False, "decision_pending": False, "victory_phase": None,
         "battlefield_secured": False, "auto_looted_ids": [], "retreat_all": False,
         "preparation": {
-            "budget": budget, "remaining": budget, "base_budget": base_budget,
-            "race_bonus": defense_bonus, "gear_bonus": gear_bonus,
+            "version": 2, "budget": budget, "remaining": budget, "base_budget": base_budget,
+            "race_bonus": defense_bonus, "gear_bonus": gear_bonus, "background_bonus":background_bonus,
             "zone": map_data["preparation_zone"], "deployment_zone": map_data["deployment_zone"],
             "available": available, "placements": [],
         },
         "log": [
-            f"Scouts give the guild time to prepare the Hedgerow Watch. Place defenses and deploy the party before the raiders arrive. Preparation budget: {budget}."
+            f"Scouts give the guild time to prepare the Hedgerow Watch. Place defenses and deploy the party before the raiders arrive. Preparation budget: {budget}.",
+            encounter_profiles.setup('frontier_watch_defense', map_data['map_variation'])['description'],
         ],
         "seed": seed, "action_count": 0,
     }
@@ -761,14 +841,14 @@ def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission
     location = MISSION_LOCATIONS.get(mission_id)
     board = compile_generated_battle_map(f"location_{location}" if location else f"contract_{spec['layout']}", seed)
     characters = {c["id"]: c for c in state["characters"]}
-    units = {cid: _player_unit(state, characters[cid], tile["x"], tile["y"])
+    units = {cid: _player_unit(state, characters[cid], tile["x"], tile["y"], battle_seed=seed)
              for cid, tile in zip(party_ids, board["spawn_zones"]["player"])}
     tier = {"E":0,"D":0,"C":1,"B":2,"A":3,"S":4}[mission["rank"]]
     count = min(8, spec.get('enemy_count',3 + tier + (1 if tier else 0)))
     rng = random.Random(f"contract:{seed}")
     race = race_override or spec["race"]
     racial = race_gameplay(race)
-    used_names = set()
+    used_names = {unit['name'] for unit in units.values()}
     encounter_setup = encounter_profiles.setup(mission_id, board.get('map_variation', 1))
     clear_tiles = None
     if encounter_setup and encounter_setup['formation'] == 'outside':
@@ -781,16 +861,20 @@ def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission
     for index, tile in enumerate(deployments[:count]):
         uid = f"contract_enemy_{index}"
         kind = "chieftain" if index == 0 else "archer" if index % 3 == 0 else "raider"
+        if mission_id in encounter_profiles.D_IDS:
+            role=encounter_profiles.D_ROSTERS[mission_id][int(board['map_variation'])-1][index]
+            kind='archer' if 'lookout' in role else 'chieftain' if index==0 else 'raider'
         if race in {"Goblin", "Hobgoblin"}:
-            identity = _goblin_npc_identity(seed, uid, "scout" if kind == "archer" else "fighter")
+            identity = _goblin_npc_identity(seed, uid, "scout" if kind == "archer" else "fighter", used_names=used_names, leader=index == 0)
             name = identity["name"]
         else:
             gender = rng.choice(generated_genders(race))
+            # Preserve legacy seeded draws; actual humanoid names come from race pools.
             name = rng.choice(("Tarin","Nessa","Rovan","Mira","Kellan","Sera","Veyra","Darin")) + " " + rng.choice(("Hale","Voss","Carrow","Fen","Rook","Vale"))
             identity = choose_pool_portrait(portrait_pool_key(race,gender,"scout" if kind == "archer" else "fighter", special=index == 0),rng) or {}
             identity["gender"] = gender
-        if name in used_names:
-            name += " " + ("Ash","Reed","Iron","Thorn","Flint","Oak","Stone","Moss")[index]
+        if race in RACE_CATALOG:
+            name = generate_name(race, identity['gender'], random.Random(f"{seed}:{uid}:name"), leader=index == 0, used_names=used_names)
         used_names.add(name)
         if race == "Hobgoblin":
             identity = {**choose_pool_portrait(portrait_pool_key(race,identity.get("gender","male"),"scout" if kind == "archer" else "fighter"),rng), "gender":identity.get("gender","male")}
@@ -808,11 +892,14 @@ def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission
             "weapon":"Short Bow" if kind == "archer" else "Chapel Blade" if race == "Undead" else "Raider Spear",
             "corpse_item":"short_bow" if kind == "archer" else "rusty_knife",
             "corpse_item_chance":35 if index == 0 else 25})
-        if mission_id == "goblin_chieftain":
-            # The B-rank Redoubt is a trained warband, not a D-rank camp patrol.
-            hp = 112 if index == 0 else 40
-            unit.update(hp=hp, max_hp=hp, armor=4 if index == 0 else 2,
-                        attack=17 if index == 0 else 10)
+        unit.update(agility=5,intelligence=4,dexterity=5,vitality=4,luck=4)
+        scale_unit(unit,mission['rank'],fields=('strength','agility','intelligence','dexterity','vitality','luck'))
+        if mission_id == 'goblin_chieftain':
+            # Match the Warcamp commander's veteran role baseline, then apply B.
+            # A generic patrol leader must not make the B boss weaker than D.
+            hp=55 if index==0 else 22
+            unit.update(hp=hp,max_hp=hp,armor=2 if index==0 else 1,attack=9 if index==0 else 6)
+            scale_unit(unit,mission['rank'],fields=('hp','max_hp','armor','attack'))
         rank_index = ['E', 'D', 'C', 'B', 'A', 'S'].index(mission['rank'])
         if not spec.get('rookie') and not spec.get('creature'):
             unit['corpse_gold'] = ((4 + rank_index * 3, 8 + rank_index * 5) if index == 0
@@ -830,7 +917,10 @@ def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission
             unit['corpse_gold']=(0,0)
         unit['encounter_seed']=seed
         unit['encounter_variation']=board.get('map_variation', 1)
+        unit['perk_battle_seed']=seed
         encounter_profiles.author(mission_id, unit, index)
+        from .combat_body import rebuild as rebuild_body
+        rebuild_body(unit, mission['rank'])
         if index in board.get('ambush_enemy_indices', []):
             unit['bush_ambusher'] = True
         units[uid] = unit
@@ -846,6 +936,7 @@ def create_contract_battle(state: dict, party_ids: list[str], seed: str, mission
         "battlefield_secured":False,"auto_looted_ids":[],"retreat_all":False,
         "log":[f"{mission['description']} The {spec['faction']} hold the far approach. The guild can withdraw through the western approach."],
         "seed":seed,"action_count":0}
+    mounts.setup(return_battle)
     if encounter_setup:
         return_battle['encounter_setup'] = encounter_setup
         return_battle['log'].append(encounter_setup['description'])
@@ -878,17 +969,19 @@ def _check_contract_end(battle: dict) -> None:
                       outcome=_victory_outcome(battle) if objective and escaped else "failure" if escaped else "critical_failure")
 
 
-def create_battle(state: dict, party_ids: list[str], seed: str, encounter_id: str, defer_start: bool = False) -> dict:
+def create_battle(state: dict, party_ids: list[str], seed: str, encounter_id: str, defer_start: bool = False, *, radiant_mode: str = 'natural') -> dict:
     if encounter_id.startswith("contract:"):
         from . import combat_radiant
         battle = create_contract_battle(state, party_ids, seed, encounter_id.split(":", 1)[1], defer_start=True)
-        combat_radiant.prepare(battle)
+        combat_radiant.prepare(battle, radiant_mode)
         if not defer_start:_advance_to_player(battle)
         sync_supplies(battle, state)
+        combat_lighting.initialize(battle)
         return battle
     factories = {
         "goblin_warcamp": create_goblin_warcamp_battle,
         "goblin_captive_cart": create_captive_cart_battle,
+        "prison_rescue_e": create_prison_rescue_battle,
         "goblin_smoke_signals": create_smoke_signals_battle,
         "frontier_watch_defense": create_frontier_watch_defense_battle,
     }
@@ -896,6 +989,7 @@ def create_battle(state: dict, party_ids: list[str], seed: str, encounter_id: st
         raise ValueError(f"Tactical encounter {encounter_id!r} is not implemented")
     battle = factories[encounter_id](state, party_ids, seed) if encounter_id == "frontier_watch_defense" else factories[encounter_id](state, party_ids, seed, defer_start=defer_start)
     sync_supplies(battle, state)
+    combat_lighting.initialize(battle)
     return battle
 
 
@@ -971,7 +1065,7 @@ def _blocked(
     if any(tile["x"] == x and tile["y"] == y and tile.get("impassable") for tile in battle.get("elevation", [])):
         return True
     return any(
-        unit["id"] != ignore_unit and _combat_active(unit)
+        unit["id"] != ignore_unit and not mounts.linked(battle,ignore_unit,unit["id"]) and _combat_active(unit)
         and not (battle.get('units', {}).get(ignore_unit, {}).get('team') == 'player' and concealment.unseen(unit))
         and unit["x"] == x and unit["y"] == y
         for unit in battle["units"].values()
@@ -980,19 +1074,20 @@ def _blocked(
 
 def _movement_limit(unit: dict) -> int:
     if unit.get('captor_hold') or unit.get('captor_held_by'):return 0
-    if unit.get('mounted_machine') or unit.get('construction') or unit.get('engineer_interrupted'):return 0
+    if unit.get('mounted_machine') or unit.get('construction') or unit.get('engineer_interrupted') or unit.get('mount_interrupted'):return 0
     if unit.get('summoner_movement_locked'):return 0
     if bard.locked(unit):return 0
-    if unit.get('stationary'):return 0
+    if unit.get('stationary') or unit.get('mount_disabled') and unit.get('animal_mount_id'):return 0
     if conditions.has(unit, 'freeze') or conditions.has(unit, 'bind') or conditions.has(unit,'pit_trapped') or unit.get('paralyzed_move'):
         return 0
     penalty = int(unit.get("carried_payload_penalty", 2 if unit.get("carrying") else 0))
-    movement=max(1, int(unit["move"]) + (3 if captor.status(unit,'captor_blitz') else 0) + monk.movement_bonus(unit) - penalty - (2 if conditions.has(unit, 'slow') else 0))
+    movement=max(1, int(unit["move"]) + (int(unit.get("mount_movement_bonus",1)) if unit.get("animal_mount_id") else 0) + (3 if captor.status(unit,'captor_blitz') else 0) + monk.movement_bonus(unit) - penalty - (2 if conditions.has(unit, 'slow') else 0))
     if unit.get('cleric_smite_movement') == unit.get('ability_activation',0):movement=min(movement,1)
     movement=max(1,movement//2) if conditions.has(unit,'hobbled') else movement
     hobble=captor.status(unit,'hobbled')
     if hobble and hobble.get('movement_cap'):movement=min(movement,hobble['movement_cap'])
-    return min(movement,unit.get('druid_move_remaining',movement))
+    spent=unit.get('door_movement_spent',0) if unit.get('door_movement_activation')==unit.get('ability_activation',0) else 0
+    return min(max(0,movement-spent),unit.get('druid_move_remaining',movement))
 
 
 def _carry_penalty(unit: dict, weight: int) -> int:
@@ -1126,6 +1221,8 @@ def _attack_hits(battle: dict, attacker: dict, target: dict, rule: str, skill=No
 
 
 def _can_attack(battle: dict, attacker: dict, target: dict, attack_range: int | None = None, range_shape='diamond') -> bool:
+    if attacker.get('defense_pit') and conditions.has(attacker,'pit_trapped'):
+        return False
     if attacker.get('team') == 'player' and concealment.unseen(target):
         return False
     reach = int(attack_range if attack_range is not None else attacker["attack_range"])
@@ -1157,8 +1254,12 @@ def _react_after_attack(battle,attacker,target,hit,rule):
 
 
 def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal',ability=None,reaction=False,defer_reaction=False):
+    if not ability:
+        battle.get('units',{}).get(attacker['id'],attacker).pop('unarmed_perk_spent',None)
+    backgrounds.clear_ruse(attacker)
     original=target
-    if attacker.get('engineer_interrupted') and not reaction:return target,False,0,{'chance':0,'damage_bonus':0},100
+    sweep=specialties.extra_targets(battle,attacker,target,ability,reaction) if intent=='lethal' else []
+    if (attacker.get('engineer_interrupted') or attacker.get('mount_interrupted')) and not reaction:return target,False,0,{'chance':0,'damage_bonus':0},100
     target=engineer.route_target(battle,attacker,target,{**attacker,**({'engineer_area':True} if any(e.get('type') in {'area_attack','leap_attack','dash_attack'} for e in (ability or {}).get('effects',[])) else {})})
     cleric.stop_rest(attacker)
     if not reaction and intent=='lethal' and not (ability or {}).get('skip_intercept'):
@@ -1168,6 +1269,7 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
             concealment.reveal(battle,target)
             battle['log'].append(f"{target['name']} intercepts the attack on {original['name']}.")
     hit,preview,roll=_attack_hits(battle,attacker,target,rule,ability)
+    mounts.face(battle,attacker,attacker,target)
     events=battle.setdefault('animation_events',[])
     begin=len(events)
     damage=_deal_damage(battle,attacker,target,bonus+preview['damage_bonus'],pierce,intent,ability=ability) if hit else 0
@@ -1180,11 +1282,17 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
                        'from':{'x':attacker['x'],'y':attacker['y']},'to':{'x':target['x'],'y':target['y']},
                        'hit':hit,'target_condition':target.get('condition'),'contact_ms':280})
         style='stab'
+    elif (ability or {}).get('npc_kind')=='goliath_shot':
+        specialties.effect(battle,target,'stone',from_point={'x':attacker['x'],'y':attacker['y']})
+        events[-1]['attack_event']=True
+        events[-1]['attacker_id']=attacker['id']
     elif (ability or {}).get('id')=='npc:bandit:road_bola':
         events.append({'type':'net_cast','attacker_id':attacker['id'],'target_id':target['id'],'from':{'x':attacker['x'],'y':attacker['y']},'to':{'x':target['x'],'y':target['y']},'hit':hit})
     else:_record_melee_animation(battle,attacker,target,hit,rule,style)
     for event in events[begin:]:
         event['impact_surface']=surface
+        if event.get('type')=='melee_attack' and (ability or {}).get('npc_kind')=='parting_cut':
+            event['parting_cut']=True
         if event.get('type')=='melee_attack' and event.get('bite_count',1)>1:
             event.update(contact_ms=event['bite_count']*180-80,attack_duration=event['bite_count']*180)
     battle['attack_serial']=battle.get('attack_serial',0)+1
@@ -1199,10 +1307,11 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
             event.update(melee_style=style,impact_surface=surface,impact_direction={'x':target['x']-attacker['x'],'y':target['y']-attacker['y']})
     if target is not original:
         feedback(battle,target,'intercept',attack_packet=packet,before_contact=True)
-    if reaction:
+    if reaction and not battle.get('background_extra_attack'):
         feedback(battle,attacker,'counter',attack_packet=packet,before_contact=True)
     if not reaction and intent=='lethal':conditions.remove(battle['units'].get(attacker['id'],attacker),'rally_power')
     if hit and intent=='lethal':
+        specialties.landed(battle,attacker,target,ability,packet)
         cleric.weapon_hit(battle,attacker,target,ability,packet)
         cleric.exorcist(battle,attacker,target,packet)
         druid.landed(battle,attacker,target,packet,damage)
@@ -1210,10 +1319,21 @@ def _perform_attack(battle,attacker,target,rule,bonus=0,pierce=0,intent='lethal'
         ranger.poison(battle,attacker,target,1,packet)
         conditions.remove(battle['units'].get(attacker['id'],attacker),'poison_imbue')
     if not reaction and not defer_reaction and intent=='lethal':_react_after_attack(battle,attacker,target,hit,rule)
+    if sweep and _combat_active(attacker):
+        attacker['specialty_sweep']=True
+        try:
+            specialties.effect(battle,attacker,'cornered_fury',packet)
+            _record_sound(battle,'specialty_cornered_fury')
+            for enemy in sweep:
+                if not _combat_active(attacker):break
+                if _combat_active(enemy):_perform_attack(battle,attacker,enemy,rule,bonus,pierce,intent,ability,defer_reaction=defer_reaction)
+        finally:attacker.pop('specialty_sweep',None)
+    backgrounds.after_attack(battle,attacker,target,hit,damage,reaction)
     return target,hit,damage,preview,roll
 
 
 def _strike_preview(battle,actor,target,rule,reach,skill=None):
+    if skill and skill.get('npc_kind'):skill=specialties.adapt(battle,actor,target,skill)
     if skill and skill.get('mage_kind'):return mage.preview(battle,actor,target,skill)
     if skill and skill.get('ranger_kind'):return ranger.preview(battle,actor,target,skill)
     target=engineer.route_target(battle,actor,target,{**actor,**({'engineer_area':True} if skill and any(e.get('type') in {'area_attack','leap_attack','dash_attack'} for e in skill.get('effects',[])) else {})})
@@ -1334,7 +1454,12 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
     if path:
         target['exit_ready']=False
         mage.check_channel(battle,target)
+        animal=target if target.get('boar_mount') else mounts.mount(battle,target)
+        facing=animal.get('mount_facing') if animal else None
         _record_movement(battle,target,start,path)
+        if animal:
+            if facing is None:animal.pop('mount_facing',None)
+            else:animal['mount_facing']=facing
         battle['animation_events'][-1]['forced']=True
         movement_event=battle['animation_events'][-1]
         battle['log'].append(f"{target['name']} is {'pushed' if effect['mode']=='push' else 'pulled'} {len(path)} cell{'s' if len(path)!=1 else ''}.")
@@ -1348,7 +1473,9 @@ def _apply_displacement(battle,actor,target,effect,original_damage=None,attack_p
             target['lost_in_pit']=True
         elif hazard and _combat_active(target) and target.get('movement_type')!='flying':
             kind=tactics.pit_kind(hazard)
-            if kind=='lethal':
+            if hazard.get('prepared_pit'):
+                defense.pit_entry(battle,target)
+            elif kind=='lethal':
                 carried_id=target.get('carrying');object_id=target.get('carrying_object')
                 source={**actor,'attack':target['max_hp']*100,'status_tick':True,'environmental_fall':True,'element':None,'on_hit':None,'weapon':'a lethal fall'}
                 _deal_damage(battle,source,target)
@@ -1416,7 +1543,7 @@ def _pit_exits(battle,unit):
 def _climb_out(battle,unit,destination):
     if unit.get('acted') or destination not in _pit_exits(battle,unit):raise ValueError('Choose an adjacent safe cell to climb out')
     start=(unit['x'],unit['y']);_commit_player_movement(battle,unit)
-    conditions.remove(unit,'pit_trapped');unit.update(x=destination[0],y=destination[1],acted=True,exit_ready=False)
+    conditions.remove(unit,'pit_trapped');unit.pop('defense_pit',None);unit.update(x=destination[0],y=destination[1],acted=True,exit_ready=False)
     if unit.get('carrying') in battle['units']:battle['units'][unit['carrying']].update(x=destination[0],y=destination[1])
     _record_movement(battle,unit,start,[destination]);_apply_tile_entry(battle,unit)
     battle['log'].append(f"{unit['name']} climbs out of the pit.")
@@ -1509,8 +1636,14 @@ def _approach_path(battle, unit, destination, reachable, parents):
             for x,y in _reposition_route(battle, unit, destination, reachable)]
 
 
-def _commit_player_movement(battle: dict, unit: dict) -> None:
+def _commit_player_movement(battle: dict, unit: dict, *, spend_movement: bool = False) -> None:
     origin = unit.get("movement_origin")
+    if spend_movement and origin:
+        activation=unit.get('ability_activation',0)
+        previous=unit.get('door_movement_spent',0) if unit.get('door_movement_activation')==activation else 0
+        path=unit.get('movement_path') or []
+        unit['door_movement_spent']=previous+(int(path[-1].get('cost',0)) if path else 0)
+        unit['door_movement_activation']=activation
     if origin and (int(origin["x"]), int(origin["y"])) != (unit["x"], unit["y"]):
         battle["log"].append(f"{unit['name']} takes position at {unit['x'] + 1},{unit['y'] + 1}.")
     if origin and unit.get('movement_path'):
@@ -1697,7 +1830,7 @@ def _trigger_zones(battle, unit, event, only_zone=None):
 
 def _apply_zone_route(battle,unit,path):
     """Consequences run only after a real route commits, never during preview."""
-    if not battle.get('zones') and not battle.get('engineer_hazards') and not any(u.get('captor_hold') for u in battle['units'].values()):return
+    if not battle.get('zones') and not battle.get('engineer_hazards') and not any(t.get('prepared_pit') for t in battle.get('terrain', [])) and not conditions.has(unit,'heel_wound') and not any(u.get('captor_hold') for u in battle['units'].values()):return
     destination=(unit['x'],unit['y'])
     events=battle.setdefault('animation_events',[])
     route_event=next((e for e in reversed(events) if e.get('type')=='movement'
@@ -1709,14 +1842,17 @@ def _apply_zone_route(battle,unit,path):
         if unit.get('zone_location')==[x,y]:continue
         unit.update(x=x,y=y,zone_location=[x,y])
         before=len(events)
+        mounts.entry(battle,unit)
         _trigger_zones(battle,unit,'entry')
+        specialties.entry(battle,unit)
         engineer.entry(battle,unit)
+        defense.pit_entry(battle,unit)
         captor.cleanup(battle)
         if route_event is not None:
             for event in events[before:]:
                 if event.get('type')=='combat_feedback':
                     event.update(ground_route_id=route_event['ground_route_id'],ground_step=step)
-        if not _combat_active(unit) or unit.get('engineer_interrupted'):
+        if not _combat_active(unit) or unit.get('engineer_interrupted') or unit.get('mount_interrupted'):
             if route_event is not None:route_event['points']=route_event['points'][:step+1]
             return
     unit['x'],unit['y']=destination
@@ -1724,8 +1860,12 @@ def _apply_zone_route(battle,unit,path):
 
 def _apply_tile_entry(battle: dict, unit: dict) -> None:
     """Resolve immediate effects from the tile where a committed move ends."""
+    mounts.entry(battle,unit)
+    backgrounds.movement(battle,unit)
     ranger.committed_move(unit)
+    specialties.entry(battle,unit)
     engineer.entry(battle,unit)
+    defense.pit_entry(battle,unit)
     if battle.get('zones'):
         position=[unit['x'],unit['y']]
         old=unit.get('zone_location')
@@ -1791,14 +1931,14 @@ def _current_unit(battle: dict, activate: bool = True) -> dict | None:
                 battle["log"].append("After twenty rounds, the exhausted party can no longer hold its position and is forced to retreat.")
                 return None
         unit = battle["units"].get(order[battle["turn_index"]])
-        if unit and _combat_active(unit):
+        if unit and _combat_active(unit) and not unit.get("rider_id"):
             stamp = [battle["round"], battle["turn_index"]]
             if unit.get("status_activation") != stamp:
                 unit["status_activation"] = stamp
                 if unit.get('ability_version'):
                     abilities.start_activation(unit, stamp)
                     unit['entity_budget_spent']=0
-                unit.pop('rogue_walk_locked',None);unit['quick_actions_used']=0
+                unit.pop('rogue_walk_locked',None);unit.pop('mount_interrupted',None);unit['quick_actions_used']=0
                 martial.start_activation(battle, unit)
                 monk.start_activation(battle, unit)
                 ranger.start(unit)
@@ -1807,6 +1947,7 @@ def _current_unit(battle: dict, activate: bool = True) -> dict | None:
                     spaces.expire_zones(battle,unit)
                     unit['zone_location']=[unit['x'],unit['y']]
                     _trigger_zones(battle,unit,'start')
+                mounts.start(battle,unit,stamp)
                 conditions.start_activation(battle, unit)
                 cleric.start(battle, unit)
                 druid.start(battle, unit)
@@ -1833,13 +1974,17 @@ def _current_unit(battle: dict, activate: bool = True) -> dict | None:
 def _spawn_reinforcements(battle: dict) -> None:
     if battle.get("reinforcements_spawned"):
         return
-    first = _goblin_npc_identity(battle.get("seed", "battle"), "gob_reinforce_1")
-    second = _goblin_npc_identity(battle.get("seed", "battle"), "gob_reinforce_2")
+    used_names = [unit['name'] for unit in battle['units'].values()]
+    first = _goblin_npc_identity(battle.get("seed", "battle"), "gob_reinforce_1", used_names=used_names)
+    second = _goblin_npc_identity(battle.get("seed", "battle"), "gob_reinforce_2", used_names=[*used_names,first['name']])
     spawned = [
         _enemy("gob_reinforce_1", first["name"], "reinforcement", 0, 1, first),
         _enemy("gob_reinforce_2", second["name"], "reinforcement", 7, 4, second),
     ]
     for unit in spawned:
+        from .combat_body import rebuild as rebuild_body
+        unit['perk_battle_seed']=battle.get('seed')
+        rebuild_body(unit,'D')
         if not _blocked(battle, unit["x"], unit["y"]):
             battle["units"][unit["id"]] = unit
             battle["turn_order"].append(unit["id"])
@@ -1854,7 +1999,10 @@ def _wake_ambush(battle: dict, target: dict | None = None) -> None:
     battle.pop("ambush_sleep_until_round", None)
     for unit in battle["units"].values():
         unit["statuses"] = [s for s in unit.get("statuses", []) if s.get("id") != "ambush_sleep"]
-    battle["log"].append("The attack wakes the whole camp." if target is not None else "The camp wakes. The ambush preparation window has ended.")
+    if battle.get('ambush_unaware'):
+        battle['log'].append('The attack alerts the whole patrol.' if target is not None else 'The patrol notices the party. The ambush preparation window has ended.')
+    else:
+        battle["log"].append("The attack wakes the whole camp." if target is not None else "The camp wakes. The ambush preparation window has ended.")
 
 
 def _effective_armor(unit):
@@ -1875,6 +2023,9 @@ def _damage_before_barrier(battle,attacker,target,bonus=0,armor_pierce=0,intent=
     power = attacker['attack'] if attacker.get('percent_dot') else int(attacker['attack']) if attacker.get('status_tick') else martial.attack_power(attacker)
     power = round(power * encounter_profiles.attack_percent(battle, attacker, target) / 100)
     damage = max(1, power + bonus - armor)
+    if not attacker.get('status_tick'):
+        if conditions.has(attacker,'tag_team_power'):damage=round(damage*1.25)
+        if attacker.get('weapon_type')=='sword' and conditions.has(target,'sword_exposed'):damage=round(damage*1.25)
     if conditions.has(attacker, 'berserk') and not attacker.get('status_tick'):
         damage += 3
     if conditions.has(target, 'freeze') and not any(s.get('elemental_freeze') for s in target.get('statuses',[]) if s['id']=='freeze') and not attacker.get('status_tick'):
@@ -1925,6 +2076,13 @@ def _damage_before_barrier(battle,attacker,target,bonus=0,armor_pierce=0,intent=
     if druid.form(attacker)=='rat' and not attacker.get('status_tick') and not attacker.get('druid_wall_attack'):
         return 1
     damage=encounter_ai.modify_damage(attacker,target,damage)
+    damage*=backgrounds.damage_factor(attacker)
+    from .general_perks import incoming
+    owner=battle.get('units',{}).get(attacker.get('id'),attacker)
+    if not attacker.get('status_tick') and not attacker.get('capture_only') and attacker.get('weapon_type')=='unarmed' and attacker.get('attack_elevation_rule')=='melee' and not owner.get('unarmed_perk_spent'):
+        damage+=owner.get('perk_modifiers',{}).get('unarmed_bonus',0)
+    damage=incoming(target,attacker,damage)
+    damage=mounts.incoming(target,damage)
     return max(0,round(damage))
 
 
@@ -1944,6 +2102,11 @@ def _deal_damage(
                     "element": ability.get("element", attacker.get("element")),
                     "on_hit": ability.get("on_hit", attacker.get("on_hit")),"weapon":ability.get('source_name',attacker.get('weapon',''))}
     damage = _damage_before_barrier(battle,attacker,target,bonus,armor_pierce,intent) if resolved_damage is None else max(0,resolved_damage)
+    if resolved_damage is not None and not (ability or {}).get('perk_damage_resolved'):
+        from .general_perks import incoming
+        damage=max(0,round(mounts.incoming(target,incoming(target,attacker,damage))))
+    if not attacker.get('status_tick') and not attacker.get('capture_only') and attacker.get('weapon_type')=='unarmed' and attacker.get('attack_elevation_rule')=='melee' and source_unit:
+        source_unit['unarmed_perk_spent']=True
     if (ability or {}).get('ranger_crit'):damage*=2
     if druid.form(attacker)=='rat' and not attacker.get('status_tick') and not attacker.get('druid_wall_attack'):
         damage=1
@@ -2054,6 +2217,8 @@ def _deal_damage(
         facts["times_defeated"]=facts.get("times_defeated",0)+1
         battle.setdefault("animation_events",[]).append({"type":"death_burst" if target["condition"]=='dead' else 'knockout',
             "unit_id":target["id"],"x":target["x"],"y":target["y"],"race":target.get("race","Human")})
+    mounts.defeat(battle,target)
+    backgrounds.after_damage(battle,attacker,target,previous_hp,damage)
     if not attacker.get('cleric_component'):monk.landed_attack(battle,attacker)
     return damage
 
@@ -2202,9 +2367,11 @@ def _check_captive_cart_end(battle: dict) -> None:
         and (cartmaster.get("extracted") or battle.get("battlefield_secured"))
     )
     satchel_complete = bool(satchel and satchel.get("state") == "extracted")
-    battle["objectives"][0]["complete"] = rescue_complete
-    battle["objectives"][1]["complete"] = capture_complete
-    battle["objectives"][2]["complete"] = satchel_complete
+    completion = {'rescue_courier': rescue_complete, 'capture_cartmaster': capture_complete,
+                  'recover_satchel': satchel_complete}
+    for objective in battle['objectives']:
+        if objective['id'] in completion:
+            objective['complete'] = completion[objective['id']]
     if courier and not courier.get("alive"):
         battle["status"] = "complete"
         battle["outcome"] = "critical_failure"
@@ -2292,6 +2459,7 @@ def _check_end(battle: dict) -> None:
 
 
 def _check_end_rules(battle: dict) -> None:
+    mounts.cleanup(battle)
     entities.cleanup(battle,_combat_active)
     summoner.cleanup(battle)
     captor.cleanup(battle)
@@ -2300,7 +2468,7 @@ def _check_end_rules(battle: dict) -> None:
     druid.cleanup(battle)
     if battle.get('mercenary_interlude') or battle.get("encounter_id", "").startswith("contract:"):
         _check_contract_end(battle)
-    elif battle.get("encounter_id") == "goblin_captive_cart":
+    elif battle.get("encounter_id") in {"goblin_captive_cart", "prison_rescue_e"}:
         _check_captive_cart_end(battle)
     elif battle.get("encounter_id") == "goblin_smoke_signals":
         _check_smoke_signals_end(battle)
@@ -2328,6 +2496,9 @@ def _finish_turn(battle: dict) -> None:
     index = int(battle.get("turn_index", 0))
     unit = battle["units"].get(order[index]) if index < len(order) else None
     if unit:
+        backgrounds.clear_ruse(unit)
+        backgrounds.finish(battle,unit)
+        mounts.finish(battle,unit)
         _tick_gear_statuses(battle, unit)
         _finish_entities(battle,unit)
         captor.finish(battle,unit)
@@ -2392,6 +2563,12 @@ def _search_brush(battle, unit):
 
 
 def _record_movement(battle: dict, unit: dict, start: tuple[int, int], path: list[tuple[int, int]]) -> None:
+    mounts.sync(battle,unit)
+    partner_id=unit.get('animal_mount_id') or unit.get('rider_id')
+    if path and partner_id:
+        animal=unit if unit.get('boar_mount') else battle['units'].get(partner_id,{})
+        dx,dy=path[-1][0]-start[0],path[-1][1]-start[1]
+        animal['mount_facing']=('s' if dy>0 else 'n') if abs(dy)>=abs(dx) else ('e' if dx>0 else 'w')
     if not path:
         return
     battle.setdefault("animation_events", []).append({
@@ -2400,6 +2577,7 @@ def _record_movement(battle: dict, unit: dict, start: tuple[int, int], path: lis
         "points": [{"x": start[0], "y": start[1]}] + [{"x": x, "y": y} for x, y in path],
         "extracted": False,
         "concealed": concealment.unseen(unit),
+        **({"mount_partner_id":partner_id} if partner_id else {}),
     })
 
 
@@ -2434,7 +2612,7 @@ def _record_melee_animation(battle: dict, attacker: dict, target: dict, hit: boo
 
 
 def _route_with_gates(battle, unit, goals):
-    """Compare walking detours with routes that spend an activation opening a door."""
+    """Compare walking detours with routes through freely operated doors."""
     if not goals:return [],{},{}
     gates = {cell: tile for tile in battle.get('terrain', [])
              if tile.get('kind') == 'gate' and not tile.get('destroyed') and tile.get('state') != 'opened'
@@ -2449,8 +2627,7 @@ def _route_with_gates(battle, unit, goals):
         if cell in goals:goal=cell;break
         for nx,ny in ((x+1,y),(x-1,y),(x,y+1),(x,y-1)):
             if not _can_step(planning,x,y,nx,ny,unit):continue
-            crossing = any(t.get('kind') == 'gate' for t in crossed_walls(battle, (x,y), (nx,ny)))
-            candidate=cost+_step_cost(planning,x,y,nx,ny,unit)+(max(1,_movement_limit(unit)) if (nx,ny) in gates or crossing else 0)
+            candidate=cost+_step_cost(planning,x,y,nx,ny,unit)
             if candidate>=costs.get((nx,ny),10**9):continue
             costs[(nx,ny)]=candidate;parents[(nx,ny)]=cell;heapq.heappush(queue,(candidate,nx,ny))
     if goal is None:return [],costs,gates
@@ -2495,7 +2672,7 @@ def _operate_navigation_gate(battle,unit,gate,destination):
     origin=unit.get('movement_origin')
     if origin and unit.get('movement_path') and not destination.get('position'):
         _record_movement(battle,unit,(origin['x'],origin['y']),[(p['x'],p['y']) for p in unit['movement_path']])
-    _commit_player_movement(battle,unit)
+    _commit_player_movement(battle,unit,spend_movement=True)
     if not _combat_active(unit) or not can_operate_gate(unit,gate) or unit.get('forced_skip') or unit.get('engineer_interrupted') or any(conditions.has(unit,s) for s in ('stun','freeze','sleep')):
         return battle_view(battle)
     _interact(battle,unit,gate['id'])
@@ -2554,8 +2731,10 @@ def _move_toward(battle: dict, unit: dict, target: dict) -> None:
         return
     start = (unit["x"], unit["y"])
     path, costs, gates = _route_with_gates(battle,unit,_pursuit_goals(battle,unit,target))
-    # Stop beside the first closed gate; the next activation can operate it.
+    # Reach a closed gate, operate it for free, then spend only the remaining
+    # movement through it. The once-per-activation rule bounds continuation.
     first_gate=next((i for i,p in enumerate(path) if p in gates),len(path))
+    gate=gates[path[first_gate]] if first_gate<len(path) else None
     path=path[:first_gate]
     if path:
         reachable_path = _scout_path(battle, unit, [point for point in path if costs[point] <= _movement_limit(unit)])
@@ -2568,6 +2747,13 @@ def _move_toward(battle: dict, unit: dict, target: dict) -> None:
             _apply_zone_route(battle,unit,reachable_path)
             _apply_tile_entry(battle,unit)
             bard.refresh(battle, unit)
+    if gate and not _door_used(unit) and _combat_active(unit) and can_operate_gate(unit,gate) and not unit.get('forced_skip') and not unit.get('engineer_interrupted') and not any(conditions.has(unit,s) for s in ('stun','freeze','sleep')):
+        activation=unit.get('ability_activation',0)
+        previous=unit.get('door_movement_spent',0) if unit.get('door_movement_activation')==activation else 0
+        unit['door_movement_spent']=previous+costs.get((unit['x'],unit['y']),0)
+        unit['door_movement_activation']=activation
+        _operate_ai_gate(battle,unit,gate)
+        if not unit.get('acted') and (gate.get('state')=='opened' or gate.get('destroyed')) and _movement_limit(unit)>0:_move_toward(battle,unit,target)
 
 
 def _move_to_nearest_tile(battle: dict, unit: dict, destinations: list[dict]) -> None:
@@ -2664,8 +2850,12 @@ def _flee_turn(battle: dict, unit: dict) -> None:
         path,_,gates=_route_with_gates(battle,unit,exits)
         gate_index=next((i for i,p in enumerate(path) if p in gates),None)
         if gate_index==0:
-            _interact(battle,unit,gates[path[0]]['id'])
-            return
+            if _door_used(unit):
+                _guard(battle,unit);unit['acted']=True;_finish_turn(battle);return
+            _operate_ai_gate(battle,unit,gates[path[0]])
+            if unit.get('acted'):_finish_turn(battle);return
+            path,_,gates=_route_with_gates(battle,unit,exits)
+            gate_index=next((i for i,p in enumerate(path) if p in gates),None)
         if gate_index is not None:
             x,y=path[gate_index-1]
             tiles=[{'x':x,'y':y}]
@@ -2716,13 +2906,18 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
     if _pit_exits(battle,unit):
         _climb_out(battle,unit,_pit_exits(battle,unit)[0]);_finish_turn(battle);return
     if any(s.get("id") == "ambush_sleep" for s in unit.get("statuses", [])):
-        battle["log"].append(f"{unit['name']} is still asleep.")
+        battle["log"].append(f"{unit['name']} has not noticed the party." if battle.get('ambush_unaware') else f"{unit['name']} is still asleep.")
         _finish_turn(battle)
         return
+    if unit.get('defense_pit') and conditions.has(unit,'pit_trapped'):
+        _guard(battle,unit);_finish_turn(battle);return
     if unit.get('forced_skip') or unit.get('captor_held_by'):
         battle['log'].append(f"{unit['name']} cannot act this turn.")
         _finish_turn(battle)
         return
+    mounts.auto(battle,unit)
+    if unit.get('mount_interrupted'):
+        _finish_turn(battle);return
     if unit.get("panicked"):
         _flee_turn(battle, unit)
         return
@@ -2741,7 +2936,7 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
         targets = _living(battle,'enemy')
     else:
         targets = _living(battle,'player') + [u for u in _living(battle,'enemy') if u.get('mercenary_hostile_all') and u['id']!=unit['id']]
-    targets = conditions.hostile_units(battle, unit, _living(battle))
+    targets = backgrounds.prefer_targets(conditions.hostile_units(battle, unit, _living(battle)))
     forced_target = bard.forced_target(battle, unit)
     if forced_target:
         # Jeering Verse is a hard deliberate-target restriction. Keep the
@@ -2789,11 +2984,12 @@ def _enemy_turn(battle: dict, unit: dict) -> None:
             _finish_turn(battle)
             return
         battle['ambush_sprung'] = True
-    if _auto_open_gate(battle, unit, target):
-        return
+    _auto_open_gate(battle, unit, target)
+    if unit.get('acted'):_finish_turn(battle);return
     snared = int(unit.get("snared_until_round", 0)) >= int(battle.get("round", 1))
     if not _can_attack(battle, unit, target) and not snared:
         _move_toward(battle, unit, target)
+        if unit.get('acted'):_finish_turn(battle);return
         # A walking approach may enter Song of Peace. Re-check at the
         # attack boundary so the unit can finish its movement but cannot
         # initiate a new attack from inside the zone.
@@ -3131,7 +3327,7 @@ def _perform_monk_attack(battle,actor,target,skill,effect):
         hit,preview,roll=_attack_hits(battle,actor,target,skill['elevation_rule'],skill)
         battle['attack_serial']+=1;last=battle['attack_serial'];begin=len(events)
         # Generic proc attempts belong to the first landed punch only.
-        technique={**skill,'on_hit':actor.get('on_hit') if landed==0 else None}
+        technique={**skill,'on_hit':actor.get('on_hit') if landed==0 else None,'perk_damage_resolved':True}
         exposure=next((s.get('stacks',0) for s in target.get('statuses',[]) if s['id']=='palm_exposure'),0)
         slice_damage=round(budget*(1+guard_amp+.1*exposure)/(1+guard_amp+.1*initial_exposure)) if skill['id'].endswith(':rapid_palm') else budget
         damage=_deal_damage(battle,actor,target,ability=technique,resolved_damage=slice_damage) if hit else 0
@@ -3157,9 +3353,13 @@ def _perform_monk_attack(battle,actor,target,skill,effect):
 
 def _resolve_ability(battle, actor, target, skill):
     """Apply a snapshotted ordered ability through the existing combat primitives."""
+    if skill.get('mount_kind')=='boar_charge':return mounts.charge(battle,actor,target,skill)
     if not abilities.availability(actor,skill)['available']:
         raise ValueError(abilities.availability(actor,skill)['reason'])
     abilities.validate(skill)
+    actor.pop('unarmed_perk_spent',None)
+    if skill.get('npc_kind')=='tag_team':return specialties.tag_team(battle,actor,target,skill)
+    if skill.get('npc_kind'):skill=specialties.adapt(battle,actor,target,skill)
     if skill.get('summoner_kind'):raise ValueError('Summoner skills require their placement/target confirmation')
     if not skill.get('cleric_kind'):cleric.stop_rest(actor)
     if skill.get('cleric_kind'):return cleric.execute(battle,actor,target,skill)
@@ -3206,7 +3406,7 @@ def _resolve_ability(battle, actor, target, skill):
             raise ValueError('No legal ground for this zone')
     _commit_player_movement(battle, actor)
     if skill.get('rogue_kind') in {'cheap_shot','exploit_weakness'}:skill=rogue.attack_skill(battle,actor,_interceptor(battle,actor,target,skill['range']),skill,skill.get('rogue_thrown',False))
-    if not _combat_active(actor) or actor.get('engineer_interrupted'):
+    if not _combat_active(actor) or actor.get('engineer_interrupted') or actor.get('mount_interrupted'):
         actor['acted']=True
         return {'interrupted':True}
     last_damage=None;attack_packet=None
@@ -3270,7 +3470,7 @@ def _resolve_ability(battle, actor, target, skill):
         actor.update(x=target['x'],y=target['y'],exit_ready=False,moved=True)
         battle.setdefault('animation_events',[]).append({'type':'movement','unit_id':actor['id'],'points':[start,{'x':actor['x'],'y':actor['y']}],'leap':True})
         _apply_tile_entry(battle,actor)
-        if not _combat_active(actor) or actor.get('engineer_interrupted'):
+        if not _combat_active(actor) or actor.get('engineer_interrupted') or actor.get('mount_interrupted'):
             actor['acted']=True
             return {'interrupted':True}
         cells=_area_cells(battle,actor,effect['radius'])
@@ -3297,7 +3497,12 @@ def _resolve_ability(battle, actor, target, skill):
                 event.update(attack_packet=child,impact_origin_packet=packet,impact_offset=offset)
             battle['log'].append(f"{actor['name']} lands {skill['name']} on {enemy['name']} for {damage} damage." if hit else f"{enemy['name']} avoids {skill['name']}.")
             if hit:impacts.append((ring,enemy,damage,child,offset))
+        displaced_bodies=set()
         for ring,enemy,damage,child,offset in impacts:
+            if enemy['id'] in displaced_bodies:continue
+            partner=enemy.get('animal_mount_id') or enemy.get('rider_id')
+            displaced_bodies.add(enemy['id'])
+            if partner:displaced_bodies.add(partner)
             push_begin=len(battle['animation_events'])
             _apply_displacement(battle,actor,enemy,{'mode':'push','distance':effect['inner_push'] if ring<=1 else effect['outer_push'],'collision_stun':effect.get('collision_stun',False)},damage,child)
             for event in battle['animation_events'][push_begin:]:
@@ -3328,7 +3533,12 @@ def _resolve_ability(battle, actor, target, skill):
             for event in battle['animation_events'][begin:]:event.update(attack_packet=child,impact_origin_packet=packet,impact_offset=offset)
             if hit:impacts.append((enemy,damage,child,offset))
             battle['log'].append(f"{actor['name']} hits {enemy['name']} with Groundbreaker for {damage} damage." if hit else f"{enemy['name']} avoids Groundbreaker.")
+        displaced_bodies=set()
         for enemy,damage,child,offset in impacts:
+            if enemy['id'] in displaced_bodies:continue
+            partner=enemy.get('animal_mount_id') or enemy.get('rider_id')
+            displaced_bodies.add(enemy['id'])
+            if partner:displaced_bodies.add(partner)
             begin=len(battle['animation_events'])
             _apply_displacement(battle,actor,enemy,{'mode':'push','distance':1},damage,child)
             for event in battle['animation_events'][begin:]:event.update(attack_packet=child,impact_origin_packet=packet,impact_offset=offset)
@@ -3389,6 +3599,7 @@ def _resolve_ability(battle, actor, target, skill):
             feedback(battle,target,'status',status_id=sid,**({'attack_packet':attack_packet} if attack_packet is not None else {}))
     result=abilities.resolve(skill,target,{'attack':attack,'heal':heal,'cleanse':cleanse,'guard':guard,'status':status,
         'barrier':barrier,'mark':mark,'displace':displace,'zone':zone,'form':form,'deploy':deploy,'leap_attack':leap_attack,'area_attack':area_attack,'dash_attack':dash_attack})
+    if any(e['type'] in {'leap_attack','dash_attack'} for e in skill.get('effects',[])):backgrounds.movement(battle,actor)
     abilities.spend(actor,skill)
     if skill.get('combo_kind'):monk.complete_technique(battle,actor,target,skill,result.get('hits',0),attack_packet)
     if skill['id'] in {'job:fighter:brace','job:fighter:second_wind'}:
@@ -3396,6 +3607,8 @@ def _resolve_ability(battle, actor, target, skill):
     if skill.get('fury_gain'):martial.gain_fury(battle,actor,skill['fury_gain'])
     for unit in battle['units'].values():martial.flush(battle,unit)
     if result.get('attacked'):_react_after_attack(battle,actor,target,result['hit'],skill['elevation_rule'])
+    if skill.get('npc_kind')=='parting_cut' and result.get('attacked'):
+        specialties.retreat(battle,actor,target,attack_packet)
     if skill['target']=='ally' and not result.get('area_attack'):
         details=[f"{result.get('healing',0)} HP restored"] if result.get('healing') else []
         if skill.get('cleanses'):details.append('harmful effects treated')
@@ -3563,12 +3776,12 @@ def _auto_commanded_entity(battle,owner,tactic):
 def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
     if not unit.get('forced_skip') and _pit_exits(battle,unit):
         _climb_out(battle,unit,_pit_exits(battle,unit)[0]);_finish_turn(battle);return
-    enemies = _visible_enemies(battle)
+    enemies = backgrounds.prefer_targets(_visible_enemies(battle))
     forced=bard.forced_target(battle, unit)
     if forced:
         enemies=[forced]
-    if enemies and _auto_open_gate(battle, unit, min(enemies, key=lambda u: _distance(unit, u))):
-        return
+    if enemies:_auto_open_gate(battle, unit, min(enemies, key=lambda u: _distance(unit, u)))
+    if unit.get('acted'):_finish_turn(battle);return
     if battle.get('ambush_sleep_until_round'):
         target = next((u for u in _visible_enemies(battle) if u.get('boss') or u.get('kind') == 'chieftain'), None)
         if target:
@@ -3647,8 +3860,15 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
     if not pursuing_objective and ranger.auto(battle,unit,targets):
         _finish_turn(battle);return
     if not pursuing_objective and _auto_monk_turn(battle,unit,targets,tactic):return
+    boar_charge=next((s for s in unit.get('skills',[]) if s.get('mount_kind')=='boar_charge'),None)
+    if not pursuing_objective and not unit.get('capture_weapon') and bard.can_attack(unit) and boar_charge and abilities.availability(unit,boar_charge)['available']:
+        options=[(mounts.charge_route(battle,unit,target),target) for target in targets]
+        options=[(route,target) for route,target in options if route is not None]
+        if options:
+            _,target=max(options,key=lambda row:row[0][1])
+            mounts.charge(battle,unit,target,boar_charge);_finish_turn(battle);return
     available_skills=[s for s in (unit.get('skills') or ([unit['special']] if unit.get('special') else []))
-                      if not s.get('summoner_kind') and not s.get('druid_kind') and not s.get('engineer_kind') and not s.get('quick_action') and s.get('rogue_kind') not in rogue.UTILITY and abilities.availability(unit,s)['available'] and s.get('target') != 'ally' and not _leap_skill(s) and not _dash_skill(s) and not (conditions.has(unit, 'mute') and s['elevation_rule'] in {'ignore', 'line_of_effect'})]
+                      if not s.get('mount_kind') and not s.get('summoner_kind') and not s.get('druid_kind') and not s.get('engineer_kind') and not s.get('quick_action') and s.get('rogue_kind') not in rogue.UTILITY and abilities.availability(unit,s)['available'] and s.get('target') != 'ally' and not _leap_skill(s) and not _dash_skill(s) and not (conditions.has(unit, 'mute') and s['elevation_rule'] in {'ignore', 'line_of_effect'})]
     if conditions.has(unit, 'mute') and unit['attack_elevation_rule'] in {'ignore','line_of_effect'} and not available_skills:
         _guard(battle, unit)
         unit['acted'] = True
@@ -3715,19 +3935,38 @@ def _player_auto_turn(battle: dict, unit: dict, tactic: str) -> None:
     _finish_turn(battle)
 
 
+def _door_used(unit):
+    return unit.get('door_interacted_activation') == unit.get('ability_activation',0)
+
+
+def _ordinary_animal(unit):
+    return unit.get('species_profile') in {'store_rat','fence_wolf','saddle_boar','foraging_bear'} or (
+        unit.get('creature') and str(unit.get('race','')).lower() in {'rat','wolf','boar','bear'})
+
+
+def _operate_ai_gate(battle,unit,gate):
+    if _ordinary_animal(unit):
+        if not unit.get('acted') and bard.can_attack(unit) and gate.get('destructible') and not gate.get('destroyed'):
+            _damage_terrain(battle,unit,gate['id'])
+            unit['acted']=True
+    else:
+        _interact(battle,unit,gate['id'])
+
+
 def _auto_open_gate(battle, unit, target):
+    if _door_used(unit):return False
     if _can_attack(battle,unit,target):return False
     # A pursuit goal can already be the current cell, across an edge-mounted
     # door. The route is then empty, but the door still needs opening.
     for gate in crossed_walls(battle,(unit['x'],unit['y']),(target['x'],target['y']),sight=True):
         if gate.get('kind')=='gate' and not gate.get('destroyed') and gate.get('state')!='opened' and can_operate_gate(unit,gate):
-            _interact(battle,unit,gate['id']);return True
+            _operate_ai_gate(battle,unit,gate);return True
     if not any(t.get('kind')=='gate' and not t.get('destroyed') and t.get('state')!='opened'
                and can_operate_gate(unit,t) for t in battle.get('terrain',[])):
         return False
     path,_,gates=_route_with_gates(battle,unit,_pursuit_goals(battle,unit,target))
     if path and path[0] in gates:
-        _interact(battle,unit,gates[path[0]]['id'])
+        _operate_ai_gate(battle,unit,gates[path[0]])
         return True
     return False
 
@@ -3735,18 +3974,20 @@ def _auto_open_gate(battle, unit, target):
 def _interact(battle: dict, unit: dict, object_id: str) -> None:
     gate = next((t for t in battle.get('terrain', []) if t.get('id') == object_id and t.get('kind') == 'gate' and not t.get('destroyed')), None)
     if gate:
+        if _ordinary_animal(unit):raise ValueError('Animals cannot operate doors')
         if not can_operate_gate(unit, gate):
             raise ValueError('Move next to the gate before operating it')
         closing = gate.get('state') == 'opened'
         if closing and not gate.get('edge_wall') and any(u.get('conscious', True) and not u.get('extracted') and not u.get('carried_by')
                            and (u['x'], u['y']) in occupied_tiles(gate) for u in battle['units'].values()):
             raise ValueError('Someone is standing in the gate')
+        if _door_used(unit):
+            raise ValueError('You can operate a door only once per activation')
         gate.update(state='closed' if closing else 'opened', blocking=closing, blocks_sight=closing,
                     sprite=gate['closed_sprite'] if closing else gate['open_sprite'])
         battle['log'].append(f"{unit['name']} {'closes' if closing else 'opens'} {gate['name']}.")
         _record_sound(battle, 'cage_open')
-        unit['acted'] = True
-        _finish_turn(battle)
+        unit['door_interacted_activation'] = unit.get('ability_activation',0)
         return
     obj = battle["objects"].get(object_id)
     if not obj or _distance_to_entity(unit, obj) != 1:
@@ -3984,12 +4225,12 @@ def _context_actions(battle: dict, unit: dict) -> list[dict]:
                 'description':'Climb into this adjacent safe cell. Uses the main action.','cost':'Main action',
                 'command':{'action':'climb_out','x':x,'y':y}})
         for gate in battle.get('terrain', []):
-            if gate.get('kind') != 'gate' or gate.get('destroyed') or not can_operate_gate(unit, gate):
+            if gate.get('kind') != 'gate' or gate.get('destroyed') or not can_operate_gate(unit, gate) or _door_used(unit):
                 continue
             verb = 'Close' if gate.get('state') == 'opened' else 'Open'
             actions.append({'id': f"gate:{gate['id']}", 'label': f"{verb} {gate['name']}", 'target': gate['name'],
-                            'description': f'{verb} the passage. Uses the main action and ends this activation. Gates can also be attacked.',
-                            'cost': 'Main action', 'hotkey': 'I', 'command': {'action':'interact','target_id':gate['id']}})
+                            'description': f'{verb} the passage for free; once per activation. Gates can also be attacked.',
+                            'cost': 'Free interaction', 'hotkey': 'I', 'command': {'action':'interact','target_id':gate['id']}})
         for obj in battle.get("objects", {}).values():
             if _distance_to_entity(unit, obj) != 1:
                 continue
@@ -4080,11 +4321,12 @@ def _door_controls(battle, unit):
         destination=min(approaches,key=lambda p:abs(p['x']-unit['x'])+abs(p['y']-unit['y'])) if unit else approaches[0]
         adjacent = bool(unit and can_operate_gate(unit, gate))
         reason = ('Someone is standing in the doorway.' if blocked else
-                  "Wait for your character's turn." if not available else '')
+                  "Wait for your character's turn." if not available else
+                  'Door interaction already used this activation.' if _door_used(unit) else '')
         controls.append({**center, 'approaches':approaches, 'gate_id': gate['id'], 'operation': operation,
                 'label': f"{operation} {gate.get('name', 'Door')}",
-                'help': reason or (f'{operation} door. Uses your action.' if adjacent else
-                                  'Walk to the nearest reachable side, then open or close. Uses your action on arrival.'),
+                'help': reason or (f'{operation} door for free; once per activation.' if adjacent else
+                                  'Walk to the nearest reachable side, then open or close for free; once per activation.'),
                 'disabled': bool(reason),
                 'command': {'action': 'interact', 'target_id': gate['id']} if adjacent else
                            {'action': 'navigate', 'gate_id':gate['id'], **destination}})
@@ -4092,10 +4334,12 @@ def _door_controls(battle, unit):
 
 
 def battle_view(battle: dict) -> dict:
+    lighting = combat_lighting.presentation(battle)
     # First sightings are persistent. Presentation must not start an activation,
     # but must keep a revealed enemy visible after it returns to cover.
     concealment.refresh(battle)
     view = deepcopy(battle)
+    view['lighting'] = lighting
     _ensure_battle_schema(view)
     view['zones']=spaces.presentation(view)+mage.presentation(view)
     view['presentation_zones']=bard.presentation(view)
@@ -4143,6 +4387,11 @@ def battle_view(battle: dict) -> dict:
         for field in ('portrait','portrait_full','portrait_thumbnail'):
             if unit.get(field):unit[field] = version_pool_url(unit[field])
         unit['portrait_frame'] = resolve_frame(unit)
+        spent={'cunning_trapper':'defeat_trap_used','intimidating':'example_used','sly_survivor':'ruse_used',
+               'opportunistic_leader':'leader_used','defiant':'defiant_used','poison_tolerant':'poison_tolerance_used'}
+        for trait in unit.get('passives',[]):
+            key=trait.get('id','').removeprefix('background:')
+            if key in spent and unit.get(spent[key]):trait['description']+=' Used this battle.'
         druid.presentation(unit)
         summoner.presentation(view,unit)
         engineer.presentation(view,unit)
@@ -4167,6 +4416,9 @@ def battle_view(battle: dict) -> dict:
             unit['statuses'].append({'id':'deployment','owner_name':owner.get('name','Owner'),
                 'policy':unit['policy'],'ready':unit['deployed_at']<owner.get('ability_activation',0),
                 'stationary':unit.get('stationary',False)})
+        if unit.get('animal_mount_id') or unit.get('rider_id'):
+            unit['statuses'].append({'id':'animal_mounted','name':'Mounted','description':
+                'Rider and boar take 25% less damage; rider gains +1 movement. '+mounts.FALL_DESCRIPTION})
         for choice in unit.get('skills',[]):
             choice['availability']=abilities.availability(unit,choice)
         if unit.get('special'):
@@ -4213,7 +4465,7 @@ def battle_view(battle: dict) -> dict:
                        if (nx,ny) in reachable and _can_step(battle,x,y,nx,ny,current)]}
             for (x, y), parent in parents.items()
         ]
-        if view.get('zones') or view.get('engineer_hazards'):
+        if view.get('zones') or view.get('engineer_hazards') or conditions.has(current,'heel_wound'):
             from .combat_hazard_preview import forecast as hazard_forecast
             for node in view['movement_tree']:
                 warning = hazard_forecast(view, current, _movement_path(parents, reachable, (node['x'], node['y'])),
@@ -4241,7 +4493,7 @@ def battle_view(battle: dict) -> dict:
         hint=battle.get('navigation_hint') or {}
         if hint.get('unit_id')==current['id'] and hint.get('round')==battle['round']:
             gate=next((t for t in view.get('terrain',[]) if t.get('id')==hint.get('gate_id') and not t.get('destroyed') and t.get('state')!='opened'),None)
-            if gate and can_operate_gate(current,gate):
+            if gate and can_operate_gate(current,gate) and not _door_used(current):
                 view['navigation_prompt']={'x':gate['x'],'y':gate['y'],'label':f"Open {gate.get('name','Door')}",'command':{'action':'interact','target_id':gate['id']}}
 
         view["carry_targets"] = [
@@ -4271,6 +4523,24 @@ def battle_view(battle: dict) -> dict:
         if mage_view is not view:mage_view.update(_mage_preview_cells={},_mage_preview_paths={})
         for choice in current.get('skills',[]):
             entries={}
+            if choice.get('mount_kind'):
+                entries=mounts.previews(view,current,choice)
+                view['skill_previews'][choice['id']]=entries
+                if choice['id']==(skill or {}).get('id'):
+                    for row in view['attack_previews'].values():row['skill']=None
+                    for target_id,row in entries.items():view['attack_previews'].setdefault(target_id,{})['skill']=row
+                continue
+            if choice.get('npc_kind')=='tag_team':
+                if abilities.availability(current,choice)['available']:
+                    entries={u['id']:{'chance':100,'damage_on_hit':0,'swap':True,
+                        'crossed_targets':[e['id'] for e in conditions.hostile_units(view,current,view['units'].values())
+                            if (e['x'],e['y']) in specialties.crossing(view,current,u)]}
+                        for u in view['units'].values() if specialties.swap_legal(view,current,u)}
+                view['skill_previews'][choice['id']]=entries
+                if choice['id']==(skill or {}).get('id'):
+                    for row in view['attack_previews'].values():row['skill']=None
+                    for target_id,row in entries.items():view['attack_previews'].setdefault(target_id,{})['skill']=row
+                continue
             if choice.get('captor_kind'):
                 entries=captor.previews(view,current,choice,reachable,parents)
                 view['skill_previews'][choice['id']]=entries
@@ -4438,6 +4708,10 @@ def battle_view(battle: dict) -> dict:
         view["terrain_attack_previews"] = {}
         view["throw_profile"] = None
     view["status_definitions"] = STATUS_DEFINITIONS
+    if view.get('ambush_unaware'):
+        view['status_definitions']={**STATUS_DEFINITIONS,'ambush_sleep':{
+            'name':'Unaware Patrol','icon':'Zz',
+            'description':'Unaware for the opening three rounds; any attack alerts the whole patrol, even on a miss.'}}
     view["log"] = view["log"][-30:]
     for unit in view['units'].values():
         monk.view(unit,view)
@@ -4460,6 +4734,8 @@ def _placement_definition(preparation: dict, placement_id: str) -> dict:
 
 
 def _place_prepared_defense(battle: dict, command: dict) -> None:
+    if battle["preparation"].get("version") == 2:
+        return defense.place(battle, command)
     preparation = battle["preparation"]
     placement_id = str(command.get("placement_id", ""))
     definition = _placement_definition(preparation, placement_id)
@@ -4509,6 +4785,8 @@ def _place_prepared_defense(battle: dict, command: dict) -> None:
 
 
 def _remove_prepared_defense(battle: dict, command: dict) -> None:
+    if battle["preparation"].get("version") == 2:
+        return defense.remove(battle, command)
     preparation = battle["preparation"]
     target_id = str(command.get("target_id", ""))
     placement = next((row for row in preparation.get("placements", []) if row.get("id") == target_id), None)
@@ -4524,7 +4802,7 @@ def _remove_prepared_defense(battle: dict, command: dict) -> None:
 def _deploy_prepared_unit(battle: dict, command: dict) -> None:
     preparation = battle["preparation"]
     unit = battle.get("units", {}).get(str(command.get("target_id", "")))
-    if not unit or unit.get("team") != "player" or unit.get("defense_objective"):
+    if not unit or unit.get("team") != "player" or unit.get("defense_objective") or unit.get('temporary'):
         raise ValueError("Choose a guild character to deploy")
     x, y = int(command.get("x", -1)), int(command.get("y", -1))
     if (x, y) not in _preparation_cell_set(preparation, "deployment_zone"):
@@ -4660,6 +4938,11 @@ def apply_player_command(battle: dict, command: dict) -> dict:
     if conditions.has(unit,'disarm') and action in {'attack','subdue'}:raise ValueError('Disarm prevents weapon attacks')
     if unit.get('captor_held_by'):raise ValueError('Restrained: wait for release or interference')
     if unit.get('captor_hold') and action not in {'guard','end_turn'} and not (selected_skill and selected_skill.get('captor_kind')=='restraining_hold'):raise ValueError('Release Hold before acting')
+    if selected_skill and selected_skill.get('mount_kind'):
+        mounts.command(battle,unit,selected_skill,command)
+        if selected_skill['mount_kind']=='boar_charge':_finish_turn(battle)
+        concealment.refresh(battle);_check_end(battle);_advance_to_player(battle);battle['action_count']+=1
+        return battle_view(battle)
     if selected_skill and selected_skill.get('captor_kind'):
         if captor.command(battle,unit,selected_skill,command):_finish_turn(battle)
         concealment.refresh(battle);_check_end(battle);_advance_to_player(battle);battle['action_count']+=1
@@ -4704,6 +4987,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         return battle_view(battle)
     if selected_skill and selected_skill.get('rogue_kind') in rogue.UTILITY:
         rogue.utility_command(battle,unit,selected_skill,command)
+        if unit.get('acted'):_finish_turn(battle);_advance_to_player(battle)
         concealment.refresh(battle);_check_end(battle);battle['action_count']+=1
         return battle_view(battle)
     if command.get('knife_skill_id'):
@@ -4718,7 +5002,10 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         _resolve_ability(battle,unit,target,adapted)
         _finish_turn(battle);concealment.refresh(battle);_check_end(battle);_advance_to_player(battle);battle['action_count']+=1
         return battle_view(battle)
-    if action in {'summon_move','summon_attack','operate_turret','dismiss_summon'}:
+    if selected_skill and selected_skill.get('npc_kind')=='tag_team':
+        target=battle['units'].get(command.get('target_id'))
+        _resolve_ability(battle,unit,target,selected_skill)
+    elif action in {'summon_move','summon_attack','operate_turret','dismiss_summon'}:
         _entity_command(battle,unit,command)
     elif selected_skill and selected_skill.get('bard_kind'):
         abilities.validate(selected_skill)
@@ -4853,7 +5140,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
             if not _can_attack(battle, unit, target, attack_range):
                 raise ValueError("Target is outside attack range")
             _commit_player_movement(battle, unit)
-            if unit.get('engineer_interrupted'):
+            if unit.get('engineer_interrupted') or unit.get('mount_interrupted'):
                 unit['acted']=True;_finish_turn(battle);_advance_to_player(battle);battle['action_count']+=1
                 return battle_view(battle)
             if not bard.can_attack(unit):
@@ -4942,7 +5229,7 @@ def apply_player_command(battle: dict, command: dict) -> dict:
         obj = battle["objects"].get(object_id) or next((t for t in battle.get('terrain', []) if t.get('id') == object_id and t.get('kind') == 'gate'), None)
         if not obj or (not can_operate_gate(unit, obj) if obj.get('kind') == 'gate' else _distance_to_entity(unit, obj) != 1):
             raise ValueError("Move next to that object before interacting")
-        _commit_player_movement(battle, unit)
+        _commit_player_movement(battle, unit,spend_movement=obj.get('kind')=='gate')
         _interact(battle, unit, object_id)
         _advance_to_player(battle)
         battle["action_count"] += 1

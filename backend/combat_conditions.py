@@ -21,7 +21,8 @@ def innate_resistances(unit):
 def resistance(unit,sid):
     if sid=='poison' and (sid in unit.get('racial_resistances',[]) or unit.get('race') in {'Undead','Revenant','Banshee','Golem','Automaton'}):return 100
     racial=50 if sid in unit.get('racial_resistances',[]) else 0
-    return max(racial,max(0,min(100,int(innate_resistances(unit).get(sid,0)))))
+    return max(racial,max(0,min(100,int(innate_resistances(unit).get(sid,0)))),
+               max(0,min(100,int(unit.get('perk_modifiers',{}).get(f'{sid}_resistance',0)))))
 
 def status_chance(unit,sid,base=100):
     if sid=='burn':return round(base)  # Burn resistance reduces damage, never application.
@@ -73,6 +74,11 @@ def add_stack(unit,sid,turns,source):
     if sid not in {'bleed','hobbled','poison','burn'}:raise ValueError('Unsupported stacked status')
     status=next((s for s in unit.get('statuses',[]) if s['id']==sid),None)
     if sid in dots.PERCENT:
+        if sid=='poison':
+            from .recruit_perks import has as background_has
+            if background_has(unit,'poison_tolerant') and not unit.get('poison_tolerance_used'):
+                unit['poison_tolerance_used']=True
+                return False
         if status is None:
             status={'id':sid,'layers':[],'source_id':source.get('id'),'source_name':source.get('name','')}
             unit.setdefault('statuses',[]).append(status)

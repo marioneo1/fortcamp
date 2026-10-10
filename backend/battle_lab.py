@@ -24,12 +24,14 @@ from .building_showcase import FAMILIES, presets as material_presets
 from .battle_maps import compile_generated_battle_map
 from .job_loadouts import JOBS, public_catalog
 from .starter_equipment import STARTING_ROLES
+from .combat_radiant import ELIGIBLE as RADIANT_ELIGIBLE
+from . import combat_lighting
 
 router = APIRouter(prefix='/api/debug/battle-lab')
 _sessions = {}
 TTL = 3600
 MAX_SESSIONS = 64
-SUPPORTED = {'goblin_warcamp', 'goblin_captive_cart', 'goblin_smoke_signals', 'frontier_watch_defense'}
+SUPPORTED = {'goblin_warcamp', 'goblin_captive_cart', 'goblin_smoke_signals', 'frontier_watch_defense', 'prison_rescue_e'}
 
 
 def authorize(identity):
@@ -59,10 +61,20 @@ def layout_presets(encounter):
     """Find repeatable seeds using the actual map selector, per encounter, not mission."""
     if encounter.startswith('showcase:'):
         return material_presets(encounter.removeprefix('showcase:'))
+    if encounter in {'frontier_watch_defense', 'prison_rescue_e'}:
+        found = {}
+        for index in range(100):
+            seed = f'layout-{index}'
+            board = compile_generated_battle_map(encounter, seed)
+            found.setdefault(board['map_variation'], {'id':board['template_id'], 'label':board['template_label'], 'seed':seed})
+            if len(found) == 4:
+                break
+        return [found[key] for key in sorted(found)]
     mid=encounter.removeprefix('contract:')
     location=MISSION_LOCATIONS.get(mid) if encounter.startswith('contract:') else None
     if not location:return []
-    expected=len(BUILDING_PLANS.get(location,[None,None]));found={}
+    from .d_rank_locations import LOCATIONS as D_LOCATIONS
+    expected=4 if location in D_LOCATIONS else len(BUILDING_PLANS.get(location,[None,None]));found={}
     for index in range(100):
         seed=f'layout-{index}'
         board=location_blueprint(location,seed)
@@ -103,6 +115,8 @@ def catalogue():
             continue
         for variant in variants:
             variant['layout_presets']=deepcopy(layout_presets(variant['encounter_id']))
+            variant['radiant_events'] = ([{'id':'bear','name':'Foraging bear','chance':3}]
+                if variant['encounter_id'].removeprefix('contract:') in RADIANT_ELIGIBLE else [])
         event = mission.get('event') or 'general'
         source = MISSION_EVENTS.get(event, {}).get('name', event.replace('_', ' ').title())
         if mission.get('chain_only') or mission.get('trigger_only'):
@@ -144,6 +158,8 @@ def session_view(sid, row, snapshot=None):
     if snapshot is None:
         snapshot=cached[1] if cached and cached[0] is row['battle'] else battle_view(row['battle'])
     row['_view']=(row['battle'],snapshot)
+    # Cached combat presentation is reusable; its clock sample must be fresh.
+    snapshot={**snapshot, 'lighting':combat_lighting.presentation(row['battle'])}
     return {'session_id': sid, 'mission': row['mission'], 'variant': row['variant'],
             'seed': row['seed'], 'battle': snapshot}
 
@@ -156,6 +172,7 @@ class JobTester(BaseModel):
 
 
 class StartRequest(BaseModel):
+    radiant_mode: Literal['natural', 'absent', 'bear'] = 'natural'
     mission_id: str
     variant_id: str = 'direct'
     seed: str = Field(default='battle-test-1', min_length=1, max_length=100)
@@ -223,7 +240,9 @@ def start_session(identity, request, saved_state):
         party = [*party, helper['id']]
     # Real roster stats/gear are copied; their availability and health in the save are untouched.
     showcase=variant['encounter_id'].startswith('showcase:')
-    battle = create_battle(state, party, request.seed, 'contract:tool_shed' if showcase else variant['encounter_id'], defer_start=True)
+    if request.radiant_mode == 'bear' and variant['encounter_id'].removeprefix('contract:') not in RADIANT_ELIGIBLE:
+        raise HTTPException(400, 'This map has no eligible foraging bear encounter')
+    battle = create_battle(state, party, request.seed, 'contract:tool_shed' if showcase else variant['encounter_id'], defer_start=True, radiant_mode=request.radiant_mode)
     if showcase:
         family=variant['encounter_id'].removeprefix('showcase:')
         board=compile_generated_battle_map('showcase_'+family,request.seed)

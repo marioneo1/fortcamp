@@ -72,6 +72,9 @@ class GoblinBossBalanceTests(unittest.TestCase):
         state = new_game({'name': 'Tank', 'attributes': {'str': 9, 'dex': 9, 'agi': 8, 'vit': 9},
                           'perks': {'combat': 'skilled'}})
         tank = state['characters'][0]
+        # This is a D-rank boss encounter; attribute-first progression applies
+        # to the prepared party as well as its opposition.
+        tank['adventurer_rank'] = 'D'
         archer = deepcopy(tank)
         archer.update(id='archer', name='Archer', is_player=False, loyalty=100)
         state['characters'].append(archer)

@@ -1,4 +1,23 @@
-export const COMBAT_MOTION={contact:185,melee:400,recoil:170,netContact:320,netDuration:560,collisionMove:420,collisionContact:220,collisionHold:70,collisionRecoil:240,collisionRest:100,stationaryBounce:320,stationaryContact:100,collapse:440};
+export const COMBAT_MOTION={contact:185,melee:400,partingSkid:360,recoil:170,netContact:320,netDuration:560,collisionMove:420,collisionContact:220,collisionHold:70,collisionRecoil:240,collisionRest:100,stationaryBounce:320,stationaryContact:100,collapse:440};
+// A single approach/contact/retreat pose: no neutral return between slash and skid.
+export function partingCutFrames(from,target,destination,unit,cw,ch,scale=1){
+  const duration=COMBAT_MOTION.contact+COMBAT_MOTION.partingSkid;
+  const x=(from.x-unit.x)*cw,y=(from.y-unit.y)*ch;
+  const dx=Math.sign(target.x-from.x)*cw*.44,dy=Math.sign(target.y-from.y)*ch*.44;
+  const endX=(destination.x-unit.x)*cw,endY=(destination.y-unit.y)*ch;
+  const side=dx<0?-1:1;
+  const pose=(px,py,s,angle,offset,easing='linear')=>({transform:`translate(${px}px,${py}px) scale(${scale*s}) rotate(${angle}deg)`,offset,easing});
+  return [pose(x,y,1,0,0),pose(x-dx*.08,y-dy*.08,.99,-8*side,.16),
+    pose(x+dx,y+dy,1.035,10*side,COMBAT_MOTION.contact/duration,'cubic-bezier(.12,.65,.25,1)'),
+    pose(endX+(x-endX)*.12,endY+(y-endY)*.12,.97,-7*side,(COMBAT_MOTION.contact+210)/duration,'ease-out'),
+    pose(endX,endY,.99,-3*side,.92,'ease-out'),pose(endX,endY,1,0,1)];
+}
+export function skidBackFrames(points,unit,cw,ch,scale=1){
+  const from=points[0],to=points.at(-1),dx=(to.x-from.x)*cw,dy=(to.y-from.y)*ch;
+  const x=(from.x-unit.x)*cw,y=(from.y-unit.y)*ch;
+  const pose=(p,s,angle,offset,easing='linear')=>({transform:`translate(${x+dx*p}px,${y+dy*p}px) scale(${scale*s}) rotate(${angle}deg)`,offset,easing});
+  return [pose(0,1,0,0,'cubic-bezier(.12,.65,.25,1)'),pose(.88,.97,-7,.6,'ease-out'),pose(1,.99,-3,.9),pose(1,1,0,1)];
+}
 export function meleeFrames(dx,dy,scale=1){
   return [{transform:`translate(0,0) scale(${scale})`,offset:0},
     {transform:`translate(${-dx*.12}px,${-dy*.12}px) scale(${scale*.98})`,offset:.22},

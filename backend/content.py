@@ -1187,11 +1187,11 @@ for _mission_id, _mission in MISSION_TEMPLATES.items():
 STANDALONE_PERKS.update({
     "trapper": {
         "name": "Trapper", "description": "Builds field snares and reads likely enemy approaches.",
-        "effect": "Unlocks Iron-Jaw Snares during defense preparation.",
+        "effect": "Adds 1 defense preparation point for the party.",
     },
     "field_fortifier": {
         "name": "Field Fortifier", "description": "Turns carried tools into useful cover under time pressure.",
-        "effect": "Adds preparation budget and unlocks raised firing platforms.",
+        "effect": "Adds 2 defense preparation points for the party.",
     },
 })
 ITEMS.update({
@@ -1204,7 +1204,7 @@ ITEMS.update({
         "name": "Hedgerow Engineer's Kit", "slot": "accessory",
         "tags": ["defense_gear", "construction_gear"], "bonuses": {"building": 3, "survival": 1},
         "attribute_bonuses": {"int": 1}, "granted_perks": ["field_fortifier"], "rarity": "rare",
-        "description": "Compact braces and tools that add 2 preparation points and unlock a raised firing platform in defense battles.",
+        "description": "Compact braces and tools that add 2 preparation points in defense battles.",
     },
 })
 MISSION_TEMPLATES["hedgerow_terms"] = {
@@ -1233,6 +1233,7 @@ MISSION_TEMPLATES["hedgerow_terms"] = {
 }
 MISSION_TEMPLATES["hedgerow_watch_defense"] = {
     "name": "Hold the Hedgerow Watch",
+    "objective": "Protect Keeper Mara Fen and defeat or subdue the raiding party.",
     "description": "Keeper Mara Fen asks the guild to hold a warning post long enough for nearby farms to evacuate before a warhost raiding party arrives.",
     "rank": "E", "stat": "combat", "difficulty": 11, "party_size": 2, "pays_gold": True,
     "mission_form": "defense",
@@ -1242,7 +1243,7 @@ MISSION_TEMPLATES["hedgerow_watch_defense"] = {
     "claim_requirements": [],
     "visible_hints": [
         "You will deploy the party and build basic defenses before initiative begins.",
-        "Kobolds, Engineers, construction gear, and trapping gear add preparation options.",
+        "Engineers and Rogues can prepare their equipped deployments for free; other defenses use preparation points.",
         "Critical Success requires the keeper to remain unharmed and every guild defender to remain standing.",
     ],
     "combat_critical_condition": "Keep Mara unharmed and finish with every guild defender standing.",
@@ -1275,6 +1276,8 @@ from .mission_refinement import apply_mission_refinement
 apply_mission_refinement(MISSION_TEMPLATES)
 from .tactical_contracts import apply_tactical_contracts
 apply_tactical_contracts(MISSION_TEMPLATES)
+from .recruit_perks import DEFINITIONS as ORIGIN_DEFINITIONS
+STANDALONE_PERKS.update({key:{'name':name,'description':description,'effect':description} for key,(name,description) in ORIGIN_DEFINITIONS.items()})
 from .perk_effects import annotate_perks
 annotate_perks(STANDALONE_PERKS)
 from .mission_storylines import apply_storylines

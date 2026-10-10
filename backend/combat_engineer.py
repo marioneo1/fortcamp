@@ -3,6 +3,7 @@ from copy import deepcopy
 import math
 from . import combat_conditions as conditions, combat_entities as entities
 from .combat_feedback import record as feedback
+from .combat_bard import attack_skill
 
 KINDS={'sentry_turret','heavy_emplacement','man_the_guns','overclock','scuttle_protocol','proximity_charge','dynamite','rapid_assembly'}
 BUILDS={'sentry_turret':(3,2),'heavy_emplacement':(1,3)}
@@ -15,6 +16,7 @@ def mounted(b,a):
 
 def restriction(a,s):
  k=s.get('engineer_kind')
+ if a.get('defense_pit') and conditions.has(a,'pit_trapped') and attack_skill(s):return 'Climb out of the trap pit before attacking'
  if a.get('engineer_disrupted')==clock(a) and k in {'dynamite','scuttle_protocol'}:return 'Mine disruption prevents offensive actions this turn'
  if not k:return 'Exit the emplacement before using character skills' if a.get('mounted_machine') else None
  if a.get('mounted_machine') and k not in {'man_the_guns','overclock','scuttle_protocol'}:return 'Exit the emplacement first'
@@ -66,7 +68,7 @@ def area_hit(b,source,cells,packet=None):
  """Only actual damaging areas detonate mines; ranged targeting never selects them."""
  occupied={(p['x'],p['y']) for p in cells}
  for h in list(b.get('engineer_hazards',[])):
-  if h['kind']=='mine' and (h['x'],h['y']) in occupied:detonate(b,h,packet)
+  if (h['kind']=='mine' or h.get('proximity_trigger')) and (h['x'],h['y']) in occupied:detonate(b,h,packet)
 
 def exits(b,a,u):
  from . import combat as c
@@ -165,7 +167,7 @@ def command(b,a,s,cmd):
    if not c._can_attack(b,a,p,3):raise ValueError('Choose a visible tile within three cells')
   elif p not in (mine_placement(b,a) if k=='proximity_charge' else placement(b,a)):raise ValueError('Choose empty ground outside enemy mine trigger range' if k=='proximity_charge' else 'Choose an empty visible ground tile within two cells')
   if k in BUILDS and len([u for u in machines(b,a) if u['machine_kind']==k])>=BUILDS[k][0]:raise ValueError('All deployment slots are occupied')
-  if k=='proximity_charge' and sum(h['kind']=='mine' and h['owner_id']==a['id'] for h in b.get('engineer_hazards',[]))>=2:raise ValueError('Two Proximity Charges are already armed')
+  if k=='proximity_charge' and sum(h['kind']=='mine' and h['owner_id']==a['id'] for h in b.get('engineer_hazards',[]))>=a.get('defense_mine_limit',2):raise ValueError('All Proximity Charge slots are occupied')
  if k=='man_the_guns':
   u=mounted(b,a)
   if u:
@@ -259,7 +261,7 @@ def start(b,a):
   u=mounted(b,a)
   if u:destroy(b,u,'breaks after Overclock')
  for h in list(b.get('engineer_hazards',[])):
-  if h['kind']=='dynamite' and (h['owner_id']==a['id'] and h['expires_at']<=clock(a) or not c._combat_active(b['units'].get(h['owner_id'],{})) and b.get('round',1)>h.get('placed_round',1)):detonate(b,h)
+  if h['kind']=='dynamite' and not h.get('proximity_trigger') and (h['owner_id']==a['id'] and h['expires_at']<=clock(a) or not c._combat_active(b['units'].get(h['owner_id'],{})) and b.get('round',1)>h.get('placed_round',1)):detonate(b,h)
 
 
 def finish(b,a):
@@ -290,7 +292,7 @@ def detonate(b,h,origin_packet=None):
  b['engineer_hazards'].remove(h)
  a=b['units'].get(h['owner_id'])
  if not a:return
- if h['kind']=='dynamite':ready(a,'dynamite',1)
+ if h['kind']=='dynamite' and not h.get('proximity_trigger'):ready(a,'dynamite',1)
  packet=c.druid.visual(b,a,'engineer_explosion','engineer_mine' if h['kind']=='mine' else 'engineer_explosion',h)
  for event in b['animation_events']:
   if event.get('attack_packet')==packet:
@@ -305,7 +307,8 @@ def detonate(b,h,origin_packet=None):
    origin=h.get('throw_origin',a) if (t['x'],t['y'])==(h['x'],h['y']) else h
    push={**a,'x':origin['x'],'y':origin['y']}
    c._apply_displacement(b,push,t,{'mode':'push','distance':1,'collision_damage':True},damage,packet)
-   if c._combat_active(t) and not c.mage.status(b,a,t,'stun',1,75,packet) and conditions.resistance(t,'hobbled')<100:
+   if h.get('proximity_trigger'):t['engineer_interrupted']=True
+   if not h.get('proximity_trigger') and c._combat_active(t) and not c.mage.status(b,a,t,'stun',1,75,packet) and conditions.resistance(t,'hobbled')<100:
     conditions.apply(t,'hobbled',1,a);feedback(b,t,'status',status_id='hobbled',attack_packet=packet)
   else:
    # Mine disruption explicitly bypasses chance resistance; immunity still matters.
@@ -325,7 +328,7 @@ def entry(b,u):
  u['engineer_location']=location
  if u.get('temporary') and u.get('engineer_machine'):return
  for h in list(b.get('engineer_hazards',[])):
-  if h['kind']=='mine' and max(abs(u['x']-h['x']),abs(u['y']-h['y']))<=1 and not c.rogue.trap_expert(u):detonate(b,h)
+  if (h['kind']=='mine' or h.get('proximity_trigger')) and max(abs(u['x']-h['x']),abs(u['y']-h['y']))<=1 and c._line_of_sight(b,h,u) and not c.rogue.trap_expert(u):detonate(b,h)
 
 
 def presentation(b,a):

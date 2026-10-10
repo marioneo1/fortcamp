@@ -12,6 +12,101 @@ class PlayerNavigationTests(unittest.TestCase):
         b['terrain']=[{'id':f'wall{y}','name':'Wall','kind':'wall','x':3,'y':y,'blocking':True,'destructible':True,'hp':30,'max_hp':30} for y in range(b['height']) if y not in (2,4)]
         b['terrain'].append({'id':'door','name':'Workshop Door','kind':'gate','x':3,'y':2,'blocking':True,'destructible':True,'hp':30,'max_hp':30,'state':'closed','closed_sprite':'closed','open_sprite':'open','sprite':'closed'})
         return b,a
+    def test_door_is_free_once_per_activation_and_movement_remains_available(self):
+        from backend import combat
+        b,a=self.fixture((2,2));a['ability_activation']=1
+        before_index=b['turn_index']
+        apply_player_command(b,{'action':'interact','target_id':'door'})
+        self.assertFalse(a['acted']);self.assertEqual(b['turn_index'],before_index)
+        self.assertTrue(battle_view(b)['door_controls'][0]['disabled'])
+        with self.assertRaisesRegex(ValueError,'once per activation'):
+            combat._interact(b,a,'door')
+        apply_player_command(b,{'action':'move','x':3,'y':2})
+        self.assertEqual((a['x'],a['y']),(3,2));self.assertFalse(a['acted'])
+        a.update(x=2,y=2,ability_activation=a.get('ability_activation',0)+1)
+        combat._interact(b,a,'door')
+        self.assertEqual(b['terrain'][-1]['state'],'closed')
+
+    def test_door_commits_approach_cost_without_refilling_movement(self):
+        for navigate in (False,True):
+            b,a=self.fixture((1,2),move=3)
+            b['terrain'][-1]['rotation']=90
+            with patch('backend.combat._advance_to_player'):
+                if navigate:
+                    view=apply_player_command(b,{'action':'navigate','gate_id':'door','x':2,'y':2,'operate_gate':True,'gate_operation':'Open'})
+                else:
+                    apply_player_command(b,{'action':'move','x':2,'y':2})
+                    view=apply_player_command(b,{'action':'interact','target_id':'door'})
+                self.assertEqual(view['movement_allowance'],2)
+                self.assertNotIn('movement_origin',a)
+                self.assertFalse(a['acted'])
+                apply_player_command(b,{'action':'move','x':4,'y':2})
+                with self.assertRaises(ValueError):
+                    apply_player_command(b,{'action':'move','x':5,'y':2})
+            a['ability_activation']=a.get('ability_activation',0)+1
+            a.pop('movement_origin',None);a.pop('movement_path',None)
+            self.assertEqual(battle_view(b)['movement_allowance'],3)
+
+    def test_door_spends_terrain_cost_and_can_leave_zero_movement(self):
+        b,a=self.fixture((1,2),move=2)
+        b['terrain'].append({'id':'mud','kind':'mud','x':2,'y':2,'movement_cost':2,'blocking':False})
+        with patch('backend.combat._advance_to_player'):
+            apply_player_command(b,{'action':'move','x':2,'y':2})
+            view=apply_player_command(b,{'action':'interact','target_id':'door'})
+        self.assertEqual(view['movement_allowance'],0)
+        self.assertFalse(a['acted'])
+        self.assertEqual(b['terrain'][-2]['state'],'opened')
+
+    def test_enemy_opens_door_and_attacks_in_same_activation(self):
+        from backend import combat
+        from copy import deepcopy
+        b,a=self.fixture((2,2));a.update(team='enemy',ability_activation=1,attack_range=1,attack_elevation_rule='melee',skills=[],special=None,passives=[],job_id='fighter');b['terrain'][-1].update(rotation=90,blocks_sight=True)
+        target=deepcopy(a);target.update(id='target',team='player',x=4,y=2,hp=100,max_hp=100)
+        b['units']={a['id']:a,target['id']:target};b['turn_order']=[a['id'],'target'];b['turn_index']=0
+        with patch('backend.combat._attack_hits',return_value=(True,{'damage_bonus':0,'chance':100},1)):
+            combat._enemy_turn(b,a)
+        self.assertEqual(b['terrain'][-1]['state'],'opened')
+        self.assertLess(target['hp'],100)
+
+    def test_animals_break_closed_doors_and_end_turn_before_pursuing(self):
+        from backend import combat
+        from copy import deepcopy
+        for profile in ('fence_wolf','store_rat','foraging_bear','saddle_boar'):
+            for position in ((1,2),(2,2)):
+                for hp in (1,100):
+                    b,a=self.fixture(position,move=3)
+                    a.update(team='enemy',ability_activation=1,attack_range=1,attack_elevation_rule='melee',skills=[],special=None,passives=[],job_id='fighter',species_profile=profile)
+                    gate=b['terrain'][-1];gate.update(rotation=90,blocks_sight=True,hp=hp,max_hp=hp)
+                    target=deepcopy(a);target.update(id='target',team='player',species_profile=None,x=4,y=2,hp=100,max_hp=100)
+                    b['units']={a['id']:a,'target':target};b['turn_order']=[a['id'],'target'];b['turn_index']=0
+                    combat._enemy_turn(b,a)
+                    self.assertEqual(gate['state'],'closed')
+                    self.assertLess(gate['hp'],hp)
+                    self.assertEqual(a['x'],2)
+                    self.assertEqual(target['hp'],100)
+                    self.assertEqual(b['turn_index'],1)
+                    if gate.get('destroyed'):
+                        a.update(acted=False,ability_activation=2);b['turn_index']=0
+                        with patch('backend.combat._attack_hits',return_value=(True,{'damage_bonus':0,'chance':100},1)):
+                            combat._enemy_turn(b,a)
+                        self.assertLess(target['hp'],100)
+
+    def test_wolf_resumes_normal_pursuit_when_someone_opens_door(self):
+        from backend import combat
+        from copy import deepcopy
+        b,a=self.fixture((2,2),move=3)
+        a.update(team='enemy',ability_activation=1,attack_range=1,attack_elevation_rule='melee',skills=[],special=None,passives=[],job_id='fighter',species_profile='fence_wolf')
+        gate=b['terrain'][-1];gate.update(rotation=90)
+        target=deepcopy(a);target.update(id='target',team='player',species_profile=None,x=4,y=2,hp=100,max_hp=100)
+        b['units']={a['id']:a,'target':target};b['turn_order']=[a['id'],'target'];b['turn_index']=0
+        with self.assertRaisesRegex(ValueError,'Animals cannot'):
+            combat._interact(b,a,'door')
+        gate.update(state='opened',blocking=False,blocks_sight=False)
+        with patch('backend.combat._attack_hits',return_value=(True,{'damage_bonus':0,'chance':100},1)):
+            combat._enemy_turn(b,a)
+        self.assertLess(target['hp'],100)
+        self.assertEqual(gate['hp'],30)
+
     def navigate(self,b,x,y):
         with patch('backend.combat._advance_to_player'):
             return apply_player_command(b,{'action':'navigate','x':x,'y':y})
@@ -33,7 +128,7 @@ class PlayerNavigationTests(unittest.TestCase):
                     apply_player_command(b,{'action':'navigate','gate_id':'door','x':2,'y':2,
                         'operate_gate':True,'gate_operation':'Close' if opened else 'Open'})
                 self.assertEqual(gate['state'],'closed' if opened else 'opened')
-                self.assertTrue(a['acted'])
+                self.assertFalse(a['acted'])
                 kinds=[e['type'] for e in b['animation_events']]
                 self.assertIn('movement',kinds)
 
@@ -47,11 +142,11 @@ class PlayerNavigationTests(unittest.TestCase):
         b,a=self.fixture((1,2));gate=b['terrain'][-1];gate['rotation']=90
         with patch('backend.combat._advance_to_player'):
             apply_player_command(b,{'action':'navigate','gate_id':'door','x':2,'y':2,'position':{'x':2,'y':2},'operate_gate':True,'gate_operation':'Open'})
-        self.assertEqual(gate['state'],'opened');self.assertTrue(a['acted'])
+        self.assertEqual(gate['state'],'opened');self.assertFalse(a['acted'])
 
     def test_hazard_interruption_prevents_automatic_operation(self):
         b,a=self.fixture((1,2));gate=b['terrain'][-1];gate['rotation']=90
-        def interrupted(*args):a['engineer_interrupted']=True
+        def interrupted(*args,**kwargs):a['engineer_interrupted']=True
         with patch('backend.combat._commit_player_movement',side_effect=interrupted):
             apply_player_command(b,{'action':'navigate','gate_id':'door','x':2,'y':2,
                 'operate_gate':True,'gate_operation':'Open'})

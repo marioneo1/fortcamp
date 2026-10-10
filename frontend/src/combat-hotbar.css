@@ -18,6 +18,8 @@
 #combat-unit-window{padding:0!important;width:min(680px,calc(100vw - 20px))!important;max-height:calc(100dvh - 16px);overflow:hidden}
 #combat-unit-window .inspect-stat-help{display:none!important}
 #combat-stat-tooltip{position:fixed;z-index:17000;pointer-events:none;width:300px;max-width:calc(100vw - 20px);padding:14px;background:#0c1712;border:1px solid #bfa36c;border-radius:8px;color:#eee;font-size:14px;line-height:1.5;box-shadow:0 6px 20px #000b}
+#combat-stat-tooltip p{margin:0}
+#combat-stat-tooltip .combat-stat-formula{margin-top:10px;padding-top:10px;border-top:1px solid #bfa36c55;color:#dfd3aa;font-size:13px;overflow-wrap:anywhere}
 .unit-window-handle button{background:#142019;color:#ead7ac;border:1px solid #9d8959;border-radius:5px}
 
 /* Hover is a bounded tactical summary; right-click opens the full inspector. */

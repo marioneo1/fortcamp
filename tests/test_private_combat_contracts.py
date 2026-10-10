@@ -19,7 +19,10 @@ class TacticalContractTests(unittest.TestCase):
                 encounter=MISSION_TEMPLATES[mission_id].get('combat_encounter',{'id':'contract:'+mission_id})['id']
                 battle=create_battle(state,['player'],mission_id,encounter)
                 self.assertEqual(battle,create_battle(state,['player'],mission_id,encounter))
-                self.assertTrue(all(u['race']==TACTICAL_CONTRACTS[mission_id]['race'] for u in battle['units'].values() if u['team']=='enemy'))
+                for unit in battle['units'].values():
+                    if unit['team']!='enemy':continue
+                    self.assertEqual(unit['race'],'Beast' if unit.get('boar_mount') else TACTICAL_CONTRACTS[mission_id]['race'])
+                    if unit.get('boar_mount'):self.assertEqual(mission_id,'goblin_boar_riders')
                 result=auto_resolve(battle,max_steps=80)
                 self.assertIn(result['status'],('active','complete'))
                 if result['status']=='active':

@@ -1,4 +1,5 @@
 import {caltropsArtwork} from './caltrops-art.js';
+import {triplineArtwork} from './enemy-specialty-effects.js';
 import {scorchedArtwork} from './mage-surfaces.js';
 export function mergeScorchedZones(zones){
  const fire=(zones||[]).filter(z=>z.kind==='scorched');if(!fire.length)return zones||[];
@@ -45,8 +46,9 @@ export function zoneOverlay(zones,escape){
     }
     if(['scorched','fire_wall'].includes(zone.kind))artwork=scorchedArtwork(zone,x,y,w,h,clip);
     if(zone.kind==='caltrops')artwork=caltropsArtwork(zone.cells,x,y,clip);
+    if(zone.kind==='tripline')artwork=triplineArtwork(zone,x,y);
     const description=`${zone.name} | ${zone.owner_name} | ${zone.remaining} owner activations | ${zone.description}`;
-    return `<div class="battle-zone painted-zone zone-${escape(zone.kind)}" style="grid-column:${x+1};grid-row:${y+1};grid-column-end:span ${w};grid-row-end:span ${h}" title="${escape(description)}" aria-label="${escape(description)}"><svg viewBox="0 0 ${w*100} ${h*100}" preserveAspectRatio="none" aria-hidden="true"><defs><clipPath id="${clip}">${rects}</clipPath></defs><g clip-path="url(#${clip})">${artwork}<path d="${boundary}" class="zone-boundary"/></g></svg></div>`;
+    return `<div class="battle-zone painted-zone zone-${escape(zone.kind)}" style="grid-column:${x+1};grid-row:${y+1};grid-column-end:span ${w};grid-row-end:span ${h}" title="${escape(description)}" aria-label="${escape(description)}"><svg viewBox="0 0 ${w*100} ${h*100}" preserveAspectRatio="none" aria-hidden="true"><defs><clipPath id="${clip}">${rects}</clipPath></defs><g clip-path="url(#${clip})">${artwork}${zone.kind==='tripline'?'':`<path d="${boundary}" class="zone-boundary"/>`}</g></svg></div>`;
   }).join('');
 }
 export function zoneCellHelp(zones,x,y){

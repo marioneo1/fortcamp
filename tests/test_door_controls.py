@@ -44,6 +44,7 @@ class DoorControlTests(unittest.TestCase):
                     _interact(battle, actor, 'door')
                 self.assertEqual((actor['x'],actor['y']), position)
                 actor['acted'] = False
+                actor['ability_activation']=actor.get('ability_activation',0)+1
             self.assertEqual(gate['state'], 'closed')
 
     def test_far_control_offers_both_sides_and_never_auto_operates(self):

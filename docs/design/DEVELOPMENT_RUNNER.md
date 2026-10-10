@@ -16,6 +16,20 @@ The reported browser-only refresh had no corresponding crash/restart in the avai
 
 ## Logs
 
+October 9 investigation: `dev-discord-latest.log` stopped at 11:13:34 with exit
+3221226505 (0xC0000409), followed by clean API shutdown at 11:13:37. The preceding
+Battle Lab commands returned 200; no Python traceback/fatal stack was recorded.
+The clean shutdown suggests another runner-owned service may have failed first,
+but the old log lacks service/PID attribution, so neither frontend versus API nor
+the failing native module is proven. No relevant current crash dump/event was
+found in the checked Windows application events/local crash-dump folder.
+
+The runner now records service labels and PIDs at startup and abnormal exit,
+plus hexadecimal Windows status codes. This adds attribution, not a crash fix or
+automatic recovery; no loading/reload policy was changed. Future native exits may
+still need a process dump for the precise cause. Microsoft documents 0xC0000409 as
+the [fast-fail exception](https://learn.microsoft.com/en-us/cpp/intrinsics/fastfail).
+
 Combined backend/frontend output remains visible and is timestamped in `data/logs/dev-discord-latest.log`. Local-only dev uses `dev-latest.log`. Before overwriting latest at a new launch, the runner preserves it under a timestamped filename in the same directory. Logs are local and ignored by Git. Python fault handling is enabled for diagnostic output when supported; native termination may still emit no traceback.
 
 Unexpected service exit prints its code, stops only this runner's services and returns failure; the batch window pauses. Ctrl+C is a normal shutdown. The runner does not automatically restart failed services or reload the game. Timestamped logs can distinguish API failure from an ordinary browser reload, but cannot prove the reason for a browser-only event without browser evidence.
@@ -46,3 +60,11 @@ port 9229 and local fixtures on port 8766; the scripts do not hardcode a profile
 The running dev-discord session was verified to use Vite source mode, auto_reload=false, with no built-preview switch. The Unit details refinement did not change the launcher, API polling or asset-loading strategy. Read-only asset probes confirmed existing no-store headers; however, Chrome reused an identical decoded image within the same document with no second HTTP response, so no-store alone was not established as the cause of repeated delays. Cache policy remains unchanged. The isolated fixture cannot establish timings in the user's live Discord/browser session.
 
 Inspector redraws now preserve unchanged DOM; see COMBAT_STATUS_PRESENTATION.md. tools/combat_loading_browser_qa.mjs profiles fixture rendering and History; --live-assets optionally performs two read-only image loads from localhost:5174, never authenticated APIs or saves. Restart the normal steady-mode dev launcher to load changed source; no automatic restart was performed during an active user session.
+
+## Dev mission-board refresh
+
+October 8: dev/dev-discord profiles refresh the public mission board every five
+minutes. Production and standalone profiles remain at thirty minutes. Pool slot,
+expiry, forced-refresh lifetime and browser countdown share the same backend
+setting. Restart the dev runner when automatic reload is off. Existing claimed
+missions are not cancelled or reset by this timing change.

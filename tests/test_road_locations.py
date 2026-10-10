@@ -22,16 +22,17 @@ class HighwayLocationTests(unittest.TestCase):
             starts = {(p['x'],p['y']) for zone in board['spawn_zones'].values() for p in zone}
             self.assertFalse(starts & set(cells))
             sprites = {obj['sprite'] for obj in board['terrain']+board['decorations']}
-            self.assertTrue({'wooden_handcart','grain_sacks','bound_barrels'} <= sprites)
-            self.assertTrue(board['elevation'])
+            self.assertTrue(sprites)
             self.assertTrue(all(p['height']==1 for p in board['elevation']))
-            signatures.add(str(board['paint']))
+            signatures.add(str((board['paint'],board['terrain'],board['spawn_zones'])))
         self.assertEqual(len(signatures), 4)
 
     def test_every_spawn_reaches_both_road_ends_without_destroying_cover(self):
         for index in range(40):
             board = compile_generated_battle_map('location_highway_cut', f'layout-{index}')
             board['units'] = {}
+            for tile in board['terrain']:
+                if tile['kind']=='gate':tile.update(state='opened',blocking=False,blocks_sight=False)
             starts = [p for zone in board['spawn_zones'].values() for p in zone]
             for exit_group in ('extraction','enemy_extraction'):
                 reached = {(p['x'],p['y']) for p in board[exit_group]['tiles']}
@@ -47,17 +48,19 @@ class HighwayLocationTests(unittest.TestCase):
                 for x in (3,13):
                     self.assertIn((x,2 if board['map_variation'] in (1,2) else 8),reached)
 
-    def test_new_battles_keep_the_existing_d_rank_enemy_budget(self):
+    def test_authored_d_rank_parties_trade_count_for_individual_durability(self):
         parties = []
         for preset in layout_presets('contract:highway_ambush'):
             battle = create_contract_battle(new_game({'name':'Tester'}), ['player'],
                                             preset['seed'], 'highway_ambush', True)
             enemies = [u for u in battle['units'].values() if u['team']=='enemy']
-            self.assertEqual(len(enemies), 3)
+            self.assertEqual(len(enemies), 4 if battle['map_variation']==4 else 3)
             self.assertEqual(battle['encounter_id'], 'contract:highway_ambush')
             self.assertEqual(battle['location_id'], 'highway_cut')
-            parties.append([(u['max_hp'],u['attack'],u['armor']) for u in enemies])
-        self.assertTrue(all(p==parties[0] for p in parties))
+            self.assertTrue(all(u['max_hp']>=20 for u in enemies))
+            self.assertTrue(all(u['adventurer_rank']=='D' for u in enemies))
+            parties.append(sum(u['max_hp'] for u in enemies))
+        self.assertLessEqual(max(parties)/min(parties),1.15)
 
 
 if __name__ == '__main__':

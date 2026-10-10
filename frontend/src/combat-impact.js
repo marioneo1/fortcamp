@@ -1,17 +1,17 @@
 import {COMBAT_MOTION} from './combat-animation.js';
 // Shared contact markers for sound, visible contact, recoil and feedback.
-export function movementDuration(event){return event.teleport?420:event.preview_settle?Math.max(80,Math.min(350,event.duration||220)):event.dash?Math.max(180,(event.points?.length-1||1)*110):event.leap?420:event.forced?(event.collision?COMBAT_MOTION.collisionMove:220):Math.max(220,Math.min(850,Math.max(1,(event.points||[]).length-1)*155))}
+export function movementDuration(event){return event.skid_back?COMBAT_MOTION.partingSkid:event.teleport?420:event.preview_settle?Math.max(80,Math.min(350,event.duration||220)):event.dash?Math.max(180,(event.points?.length-1||1)*110):event.leap?420:event.forced?(event.collision?COMBAT_MOTION.collisionMove:220):Math.max(220,Math.min(850,Math.max(1,(event.points||[]).length-1)*155))}
 export function impactTimeline(events){
   // Defeat facts can precede their lethal hit's displacement in server order.
   // Resolve the body's push/rebound first, then collapse at its final cell.
   events=events.slice();
-  for(const defeat of events.filter(e=>['death_burst','knockout'].includes(e.type))){
+  for(const defeat of events.filter(e=>['death_burst','knockout','mount_fall','mount_release'].includes(e.type))){
     const at=events.indexOf(defeat);
     const end=events.findLastIndex(e=>e.attack_packet!=null&&e.attack_packet===defeat.attack_packet&&
       (e.type==='movement'&&e.forced||e.type==='collision_recoil'));
     if(end>at){events.splice(at,1);events.splice(end,0,defeat)}
   }
-  let cursor=0;const packets=new Map(),groundRoutes=new Map();
+  let cursor=0;const packets=new Map(),groundRoutes=new Map(),mountTransitions=new Map();
   const collisions=new Map(events.filter(e=>e.type==='collision_recoil').map(e=>[`${e.attack_packet}:${e.unit_id}`,e]));
   return events.map(event=>{
     if(event.type==='movement'&&event.forced)event={...event,collision:collisions.get(`${event.attack_packet}:${event.unit_id}`)};
@@ -39,16 +39,20 @@ export function impactTimeline(events){
       duration=650;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='rogue_knife'||event.type==='druid_lash'){duration=500;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='rogue_effect'){duration=event.from?0:320;cursor=Math.max(cursor,start+duration);
+    }else if(['mount_fall','mount_release'].includes(event.type)){
+      if(packet)start=packet.recovery;
+      duration=260;mountTransitions.set(`${key}:${event.unit_id}`,start);
+      cursor=Math.max(cursor,start+duration);
     }else if(event.type==='rat_merge'){
       duration=400;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='martial_effect'){
-      duration=event.skill==='engineer_dynamite_throw'?700:560;cursor=Math.max(cursor,start+duration);
+      duration=event.skill==='specialty_parting_cut'?250:event.skill==='specialty_retreat'?COMBAT_MOTION.partingSkid:event.skill==='engineer_dynamite_throw'?700:560;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='net_cast'){
       duration=COMBAT_MOTION.netDuration;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='chain_attack'){
       duration=400;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='melee_attack'){
-      duration=(event.attack_duration||400)+90;cursor=Math.max(cursor,start+duration);
+      duration=(event.parting_retreat?COMBAT_MOTION.contact+COMBAT_MOTION.partingSkid:event.attack_duration||400)+90;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='monk_technique'){
       duration=event.duration||500;cursor=Math.max(cursor,start+duration);
     }else if(event.type==='sound'){
@@ -69,6 +73,7 @@ export function impactTimeline(events){
       // Text can linger while the next unit acts; it does not hold up the turn.
       const ground=groundRoutes.get(event.ground_route_id);
       if(ground)start=ground.start+ground.duration*Math.min(ground.steps,event.ground_step)/ground.steps;
+      if(mountTransitions.has(`${key}:${event.unit_id}`))start=mountTransitions.get(`${key}:${event.unit_id}`);
       duration=900;if(!packet&&!ground)cursor+=100;
     }
     return {event,start,duration};

@@ -1,5 +1,58 @@
 # Combat controls and targeting
 
+## October 9: free doorway interactions
+
+Opening/closing a door is free and preserves the main action and unspent movement.
+Operating a door commits the approach movement: its terrain-adjusted cost is
+deducted from the activation budget. Remaining movement starts from the doorway;
+it cannot reclaim the committed approach or refill the budget. Zero remaining
+movement still permits a legal attack/main action. The next activation restores
+the normal movement allowance; saved activation/cost fields preserve this on reload.
+Each unit may operate one door per activation (a single shared door-interaction
+allowance, not one allowance per doorway); humanoid enemies use the same rule. The saved
+activation counter prevents repeat operations after reload and naturally permits
+another operation on the unit's next activation. Occupied closure, adjacency,
+legal approaches, movement costs, and interruption still apply. Captive pens,
+alarms and other objective interactions retain their existing action costs.
+
+Ordinary animals (rats, wolves, bears and boars) cannot operate doors. When a
+closed destructible door blocks pursuit, they approach and attack its terrain HP
+using their normal attack. This spends their main action and ends their activation,
+even if the door is destroyed; they resume pursuit next activation. If another
+unit opens it, they resume ordinary pursuit without a persistent door fixation.
+Intelligent/humanoid units and Druid forms are not classified as ordinary animals.
+
+Humanoid AI no longer ends its activation merely for opening a door. Pursuit can continue
+after reaching a closed door mid-activation: the approach cost is deducted,
+the door opens, and only the remaining movement is used beyond it. Authored
+bandit encounter AI follows this rule too. Opening with zero remaining
+movement does not grant another move; a second closed door waits until the next
+activation. Hazard/control interruption still prevents further pursuit.
+Fleeing can continue toward extraction. Route planning no
+longer charges a full activation penalty for an openable door. Used door controls
+show the once-per-activation restriction and suppress extra Open prompts.
+Focused door/navigation/wall and gate/pursuit checks: 28 backend tests pass.
+
+## October 9: proportional panel resizing
+
+Implemented in dev: Edit Layout exposes one resize corner on the battle
+(title/objectives/tools), Acting Now/action, turn-order, and combined commands /
+skills / effects groups. Dragging scales the entire group uniformly; keyboard
+arrows also resize (Shift for fine steps). Saved layout v1 accepts independent
+scale per group; existing positions and skill widths survive. No saved scale
+means the existing size. Reset restores the previously approved defaults.
+Normal resize range is 50-150%, constrained to the available viewport. Internal
+tracks, two-row controls, text, icons and separators retain their proportions;
+this replaces the skills-only native width resize. The title/tools group stays
+above every other floating group, including during editing, keeping Edit Layout
+reachable. Smaller windows clamp groups into view. Existing touch-specific layout
+is retained and ignores desktop transforms; no mobile interaction redesign.
+
+Validation: actual isolated browser checks keyboard and pointer resizing, uniform
+aspect ratio, redraw persistence, reset, and Edit Layout hit-testing with all other
+panels overlapping it at 1440 / 900 / 600px. All 440 frontend tests and build pass.
+No live browser storage, game saves, dev restart or release modified.
+
 ## October 8: extend direct targeting to skills and Subdue
 
 The shared unit handler now executes the selected skill or Subdue with its
@@ -26,7 +79,7 @@ it does not expand weapon reach.
 Clicking a distant door icon now means approach and perform the displayed Open or
 Close action on arrival in the same request. Nearby approaches retain immediate
 movement preview. Insufficient movement or discovery/hazard interruption stops
-without operating; reaching the door consumes the normal main action. Stale Open
+without operating; reaching the door now uses the free once-per-activation interaction. Stale Open
 intent cannot accidentally close an already-open door. Both public request models
 now retain gate ID and operation intent (previously unrecognized fields were
 discarded). Plain floor navigation remains movement-only.
@@ -388,7 +441,7 @@ so equal-distance open entrances win. Closed-door shortcuts are also marked in
 the view when a longer open detour happens to fit the movement budget. This uses
 existing walls, terrain costs, elevation and occupancy. The route stops at the
 last legal reachable tile or beside its first closed door. It never opens doors
-automatically or grants extra movement. Door operation remains a main action.
+automatically or grants extra movement. Door operation is now free, once per unit activation (October 9 refinement).
 A painted-hand Open Door button appears by a closed door when it can be operated.
 Opening it removes the prompt. Multi-turn navigation is not an automatic order;
 the player chooses again on the next activation.

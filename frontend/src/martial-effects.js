@@ -1,4 +1,5 @@
 import {emitCaptorEffect} from './captor-ui.js';
+import {emitSpecialtyEffect} from './enemy-specialty-effects.js';
 import {emitEngineerEffect} from './engineer-ui.js';
 // Alpha-sprite effects follow resolved packets; no second combat simulation.
 import {emitDruidForm} from './druid-effects.js';
@@ -12,6 +13,7 @@ export function martialAuraMarkup(unit){
  return `${ids.has('brace_defense')?'<span class="martial-aura brace-aura" aria-hidden="true"><img src="/assets/martial-jobs-v1/protection-3.png" alt=""></span>':''}${ids.has('death_defiance')?'<span class="martial-aura defiance-aura" aria-hidden="true"><img src="/assets/martial-jobs-v1/force-3.png" alt=""></span>':''}`;
 }
 export function emitMartialEffect(field,event,battle,delay){
+ if(emitSpecialtyEffect(field,event,battle,delay))return;
  if(emitCaptorEffect(field,event,battle,delay))return;
  if(emitEngineerEffect(field,event,battle,delay))return;
  if(emitSummonerEffect(field,event,battle,delay))return;

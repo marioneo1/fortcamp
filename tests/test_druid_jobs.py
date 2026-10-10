@@ -230,5 +230,6 @@ class DruidTests(unittest.TestCase):
   b,a,t=self.fixture();t['armor']=10;c.conditions.apply(t,'armor_fracture',2,a)
   v=c.battle_view(b);inspected=v['units'][t['id']]
   self.assertEqual(inspected['effective_armor'],7)
-  self.assertIn('Against 20 power: 13 damage',explanations(inspected)['Armor'])
+  self.assertIn('20 attack power becomes 13 damage',explanations(inspected)['Armor'])
+  self.assertIn('10 − 3 = 7',explanations(inspected)['Armor'])
   self.assertNotIn('stat_explanations',t)

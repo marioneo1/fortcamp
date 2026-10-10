@@ -15,7 +15,8 @@ def main():
         mission=MISSION_TEMPLATES[mid]
         location=MISSION_LOCATIONS.get(mid)
         if location:
-            count=len(BUILDING_PLANS.get(location,[None,None]))
+            from backend.d_rank_locations import LOCATIONS as D_LOCATIONS
+            count=4 if location in D_LOCATIONS else len(BUILDING_PLANS.get(location,[None,None]))
             authored.append((mission['name'],mission['rank'],location,count))
         else:
             key=(mission['name'],spec['layout'])

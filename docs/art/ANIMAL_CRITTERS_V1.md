@@ -46,3 +46,19 @@ Reimport without generation:
 `.venv/Scripts/python.exe tools/import_animal_portraits.py staging-portraits/animal-critters-v1`.
 Sound generator reruns reuse sources:
 `.venv/Scripts/python.exe tools/generate_sfx_pack.py --pack animal-combat-v1`.
+
+## Boar combat vocals (October 9)
+
+Nine generated ElevenLabs clips: attack / hurt / death, three variants each.
+Runtime assets: `assets/sfx/boar_{attack,hurt,death}_{1,2,3}.wav`.
+Sources and per-clip prompts/metrics: `staging-sfx/boar-combat-v1/manifest.json`;
+reruns of `tools/generate_boar_sfx.py` reuse original MP3s without rebilling.
+Listening page: `/assets/sfx/preview-boar-combat-v1.html`.
+
+Saddle-boar species uses stable animal identity. Free boars vocalize on attacks
+alongside normal contact foley; mounted rider attacks do not add boar cries.
+Actual damage to either free or mounted boars can trigger hurt (including DoTs);
+healing/status application/zero damage cannot. Lethal packets use death instead
+of an additional hurt cue, scheduled at collapse rather than final saved state.
+All nine outputs are nonempty mono 48kHz with zero clipped output samples.
+Listening approval remains unclaimed; generated audio installed in dev.

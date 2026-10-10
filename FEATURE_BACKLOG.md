@@ -1,5 +1,288 @@
 # Fortcamp feature backlog
 
+Mounted boar reticle enlarged another 15% at user request (147.2% token span);
+artwork/hitbox unchanged. Build passes.
+
+Mounted boar targeting marker restored/enlarged using existing reticle art;
+rider portrait marker retained, corpses/support targeting excluded. Browser
+checks pass; no targeting/hitbox changes. See ANIMAL_MOUNTS.md.
+
+Animal door behavior implemented: ordinary rats/wolves/bears/boars attack closed
+destructible doors instead of opening them. One normal attack ends the turn,
+including destruction; normal pursuit resumes next turn/when opened externally.
+Humanoid free opening preserved. 37 door/navigation/encounter tests pass.
+
+Enemy door continuation fixed: wolves/authored bandits no longer stop on free
+door opening; pursuit can approach/open/continue within its remaining budget.
+One-door limit and hazard interruption preserved. 36 targeted tests pass.
+
+Door movement budget regression fixed: free door operation commits approach
+terrain cost, preserves only unspent movement and main action, resets naturally
+next activation. Both direct interact and navigation/open covered by 23 passing
+door/navigation checks. Other skill action costs remain unchanged. Broader suites
+have unrelated legacy zone fixture/lighting initialization assertion failures.
+
+Lighting rollout/consolidation: ordinary maps use saved arrival lighting;
+Battle Lab toolbar absorbs lighting controls, separate hub entry removed.
+Overrides reset outside tests. Reverted single-cell pseudo-art conversion that
+could create map-sized terrain artwork; preserve original backgrounds and omit
+single-cell palisade generated shadows on HP labels. Multi-cell shadows retained.
+444 frontend tests, 10 backend checks, build and Warcamp/lab browser checks pass.
+Physical roof/window occlusion, full in-mission phase cycling and Safari profiling
+remain deferred. No restart/push.
+
+Warcamp palisade HP shadow fixed on single-cell painted terrain path: art-only
+filtering now covers both single/multi-cell props; HP badge box shadow removed.
+Actual Warcamp browser regression checks pass; no art regeneration/combat changes.
+
+Rotated art shadow correction and mounted boar shadows implemented; painted
+palisades omit extra generic contact halo. Parting Cut retreats preserve attack
+facing. 444 frontend tests/build and real-map browser checks pass. Roof/window
+occlusion remains deferred; roofed rooms keep stationary contact shadows.
+
+Wall/cart shadow stability: removed painted palisade fallback tile shadows;
+multi-cell art alone receives lighting/shadows, not HP labels. Camera final cell
+size drives stable offsets across preview redraws; cloned clock samples preserve
+elapsed time. Actual Promise Proven yard/cart browser checks, 444 frontend tests
+and build pass. Roofed interiors use contact shadows; real roof occlusion and
+interior lighting remain deferred. No combat changes.
+
+Prop lighting follow-up: shorter directional shadows for selected raised props,
+roofed-room footprint detection for stationary indoor shadows (not floor texture),
+explicit roof flags/region extension for future compounds. Painted wagon legacy
+box shadow/border removed; prison cart crop unchanged. Interior room color/local
+lights and roof-region authoring for mixed/open compounds remain deferred.
+
+October 9 lighting follow-up: saved arrival-phase lighting now applies to combat
+maps, gentle real-time drift includes absence/rejoin and stays within phase.
+Shared blue color grade covers overflowing foliage; stylized directional shadows
+on larger props can be compared in Lighting Lab. Fresh clock despite lab caching;
+no balance changes. Deferred: interior lighting/story-time authoring audit,
+open-map full phase progression and native Safari performance review.
+
+October 9: consolidated dev-only labs launcher and Lighting Lab visual tester
+implemented, existing outdoor/building maps reused. Draggable preview presets,
+scrubber, fast cycle, optional bounded fire glow, original restored on close.
+Radiant Battle Lab natural/off/force controls follow actual map eligibility,
+preserve normal arrival popup and isolate saves. See docs/design/BATTLE_LAB.md
+and DAY_NIGHT_LIGHTING_PROPOSAL.md. Deferred: server-clock day/night rollout,
+interior-aware illumination, moving spell lights and native iPhone Safari profiling.
+
+Boar facing follow-up: smooth shortest-angle rotation under upright rider,
+per movement step/attack; shared bounce retained. Corrected source crop bounds
+for right-facing snout and corpse (neighboring feet removed), versioned assets.
+See docs/design/ANIMAL_MOUNTS.md and tools/import_boar_mount_atlas.py.
+
+Mounted visual refinement: rider 75% standard size; fixed boar art, paired
+walking/attacks/recoil/knockback and one shared map effects row. Separate HP
+and status rules retained. Browser motion checks, 436 frontend / 25 backend
+tests and build pass. See docs/design/ANIMAL_MOUNTS.md.
+
+October 9 follow-up implemented: species-neutral Rider help, rider-owned Boar
+Charge (1.25/1.5/1.75/2x by 1-4 cardinal cells; four-cell hit attempts Stun;
+main action, 3-turn cooldown). Mount loss uses 25% hard / 50% rough / 25% safe,
+with damage based on mount max HP. See ANIMAL_MOUNTS.md for details.
+
+## October 9: Boar-Rider mounts
+
+Implemented in dev; see docs/design/ANIMAL_MOUNTS.md. Separate HP and targets,
+Rider perk survives recruitment, Quick innate Mount/Dismount, +1 movement, 25%
+reduction for both; mount loss rolls 25% hard / 50% rough / 25% safe.
+Hard deals half mount max HP + Stun, rough quarter + Hobble (one turn). One overhead atlas and portrait
+overlay. Animal capture, roster mount persistence and other species deferred.
+Optional damage sharing has not been selected; current damage stays on the aimed
+body. Patrol smoke fights complete without loops; player balance review next.
+
+Follow-up regression maintenance: full backend suite has eleven unrelated failures
+confirmed with all mount hooks disabled: six bush-ambush expectations, one removed
+Mage zone fixture, three legacy capture fixtures/mocks, and old 120-second E-rank
+recovery expectation. Current recovery is intentionally 60 seconds. Inspect these
+separately; do not restore old gameplay merely to satisfy stale assertions.
+
+
+## October 9: Tripline strip and female attack auditions
+
+Tripline now draws one rope across the 1×3 strip, clips the stray atlas border and
+omits the extra zone outline. Both orientations checked in an isolated browser
+fixture; gameplay/placement unchanged. Existing art reused without new generation.
+
+Approved female revisions installed; all144 voices available in one tester.
+Sources consolidated, old auditions moved out of active folders. See docs/art/ENEMY_VOCALS_V1.md.
+
+## October 9: Unit Details readability and native crash diagnostics
+
+Implemented concise stat help with separate numeric formulas, readable division/
+rounding, rank/gear sources and real Armor/accuracy/form exceptions. No calculation
+changes; cursor-following hover stays noninteractive. Current references:
+docs/design/COMBAT_STATUS_PRESENTATION.md and SHARED_COMBAT_STATS.md.
+
+Crash investigation: latest log shows 0xC0000409 without a traceback, then clean
+API shutdown. Exact failing process/module not proven by the old combined log.
+Runner now records service, PID and hex exit status. No speculative loading-system
+change/restart. Remaining: next reproduction with process attribution/dump evidence.
+
+## October 9: shared combat-stat migration implemented
+
+Ordinary allied/NPC HP and Attack share 12/2 fixed bases and attribute-first rank.
+Fresh enemy allocations/gear reconstructed; captures retain raw allocation + rank.
+Legacy saves are not rewritten. Canonical: docs/design/SHARED_COMBAT_STATS.md.
+113 focused backend checks, 32 frontend checks and build pass; 396 E/D auto-fights
+recorded separately. Wider suite still has reproduced preexisting fixture failures.
+
+Next: user fresh-battle/manual tests, then personal rank promotion/Growth/rebirth
+implementation when scoped. Rebirth costs/unlocks, allocation cost curve and growth
+rewards remain proposals. Racial innate HP/base Attack and weapon overhaul remain
+parked; no new racial bonuses now. Historical reports retained rather than overwritten.
+
+## Historical October 9 growth investigation (proposal-stage notes)
+
+Deferred race audit: user wants possible higher innate HP/base Attack for some
+races. Neutral 12/2 baseline permits racial differences; exact bonuses and their
+interaction with existing HP multipliers remain undecided. Canonical deferred
+note in CHARACTER_GROWTH_PROPOSAL.md. No race rebalance this pass.
+Future documentation consolidation: separate current decisions, player summaries
+and historical proposals/trial evidence; preserve references and deferred requests.
+
+Latest decision: user delegates baseline choice; select shared 12 HP / 2 Attack
+fixed bases, 4× effective VIT / half scaling attribute plus applicable gear,
+training, racial/perk contributions. Attribute-first rank once. This supersedes
+earlier candidate-only wording. Zero-base sensitivity calculated, not simulated.
+Decision only: no blanket player stat change or save migration. Implement shared
+calculation, coherent enemy bodies/equipment/role armor and stat explanations
+together, then validate wider races/manual play. Rebirth/growth details pending.
+
+Small combat trial completed: tools/trial_character_growth.py, canonical results
+docs/design/CHARACTER_GROWTH_TRIAL.md/CSV. 216 fights, zero stalls/errors; eight
+focused accounting/isolation tests pass. Current 69/72 wins; shared 24/5 bases
+56/72; shared 12/2 bases 64/72. Recommend 12/2 as the next reconstruction
+candidate, not a shipped formula. Restore coherent enemy gear/role armor and
+review wider races/manual play before runtime migration. No class balance changes;
+all eight lower-base losses are Ranger auto-play. No server/save/prod changes.
+
+Offline comparison now implemented: tools/compare_character_growth.py produces
+docs/design/CHARACTER_GROWTH_COMPARISON.md from 13 live-preview profiles and 24
+S-stage allocation examples. Four tests pass. User-facing checkpoint in
+docs/player-reference/CHARACTER_GROWTH_NEXT_STEPS.md. Select shared fixed bases
+through a controlled player/enemy trial before migrating encounters. Current
+player bases and the lower-base experiment have consequential different effects;
+neither new progression nor formula change is live.
+
+User wants early recruits viable in endgame, paid redistribution, Growth grades
+and rebirth alongside personal combat rank. Current authored enemy HP/attack do
+not follow player-derived formulas; recruitment recomputes allied values. Creator
+has 36-point full allowance with linear costs; D captured attributes are already
+scaled. See docs/design/CHARACTER_GROWTH_PROPOSAL.md. Decide formula parity,
+rank placement, budget/caps and rebirth requirements before implementing UI or
+migrations. Preserve existing encounter outputs; no gameplay changes this pass.
+Follow-up: below-E catch-up and retained Adventurer Rank confirmed; +4–6 growth
+and attribute-first scaling favored tentatively. Explore increasing allocation
+costs only beyond current creator ceiling; equipment compatibility/recommendations
+and build-defining weapon-hit effects parked for a separate item audit.
+
+## October 9: defense preparation rebuilt
+
+Implemented user's replacement rules in new defenses: larger Hedgerow allotment,
+uncapped 1-point barricades/palisades/walls, 2-point enemy trap pits with main-action
+escape, proximity bombs at 3 points / 2 with an Engineer, free equipped Job
+deployments. Turret caps shared with combat; one Engineer mine. Rogue strips
+rotate, coexist and use normal caltrop effects. Removals refund points/slots and
+clean up actual units/zones/hazards; placement previews and route bomb warnings added.
+Validation: 232 backend / 427 frontend checks and build pass; manual visual review
+open. Existing saves retain legacy preparation; fresh battles use v2. Alarm reveal
+tripwire is a proposal only. No production push or dev restart in this pass.
+
+## October 9: first D-rank batch
+
+Implemented E-relative combat-stat policy (E 1.0× through S 2.5×), replacing
+generic rank jumps. First D batch: Highway Ambush, Bone Patrol, Boar-Rider Patrol,
+four authored variations each with coherent role kits and bounded HP budgets.
+See docs/design/D_RANK_COMBAT_AUDIT.md. Manual difficulty/visual feedback remains;
+final smoke sample: 48 completed paired martial fights, 46 wins / 2 losses,
+no errors/stalls; map/rank/recruit and relevant regression checks pass.
+Other D missions and bespoke bosses await audit. Higher ranks have the new
+generic policy, not a completed map/balance review. No production deployment.
+
+## October 9: final E-rank maps and personality audit
+
+Implemented four Hedgerow Watch defense layouts and four dedicated E-rank
+Bring the Captive Home rescue layouts, with recruitable Goblin kits, existing
+voices, visible warning post and corrected objective text. Original D-cart and
+higher rescue tiers unchanged. All 14 missions in the current combat-audit scope
+are covered; this does not include every noncombat E-rank contract.
+Validation: 194 relevant backend tests pass; 32 automated martial combat samples
+yield 31 wins/one loss with no errors/stalls. Manual map/difficulty review pending;
+do not spend extensive effort equalizing solo support play (user decision).
+
+Personality audit: 12 runtime profiles, no anime archetypes; proposal adds 16 for
+28 total. See docs/player-reference/PERSONALITY_AUDIT.md. Expansion is deferred
+pending user review, including separating social personality from shared tactical
+policies, preserving existing identities and refreshing the authoring catalog/brief
+only after implementation. Four encountered profiles have voices; avoid speculative
+generation of every race/gender/personality combination.
+
+## October 9: wordless enemy vocals and Parting Cut motion
+
+User approved wordless SFX direction. Implemented 144 Human/Goblin clips across
+male/female × four encountered personalities, three attack/hurt/death variations
+each. Lighter feminine Goblin delivery; approved male pilot reused. Opt-in authored
+enemies and recruits, saved identity fallback, timed death/hurt and multi-hit rate
+limits, background decoded audio warmup. No combat numbers changed. Full listening
+review and exact timbre consistency remain manual; SFX is not a cloned speaker.
+See docs/art/ENEMY_VOCALS_V1.md; all originals/prompts/metrics retained.
+Validation: 25 relevant backend checks, 424 frontend checks and build pass.
+Bandit male/female auditions now assembled from the installed Human clips with
+--audition (no API calls). The two maps remaining at that checkpoint are now
+implemented in the final batch above; manual player review remains open.
+
+Continuous slash-to-skid presentation implemented; physical scuff/dust, contact
+sound timing and ordered counter/displacement fallback. No combat numbers changed.
+Earlier spoken Voice Design demos are retained as superseded experiments.
+Eleven backend / 27 focused frontend checks and build pass; manual feel review pending.
+Single-image Tripline and a dedicated compact Perks section remain proposals.
+
+## October 9: recruit specialties, backgrounds and prisoner E-rank pass
+
+Implemented eight additional enemy skill definitions, normal Job starter learning
+on recruitment, selected profession/quirk perks with zero-perk enemies, matching
+production bonuses, defense preparation and first-stack Poison protection.
+Rank recovery is E/D/C/B/A/S = 1/5/10/30/60/120 minutes; probability unchanged.
+User references: docs/player-reference/README.md. Wider positive/negative trait
+pool is proposal-only in GENERAL_PERK_AUDIT.md; review before coding it.
+
+Prisoner rival/former/proof: twelve layouts, 432 simulated fights, 385 wins,
+zero exceptions. Old affected maps: 312 additional Human cases, 261 wins,
+zero exceptions. Manual review remains for solo support/setup Jobs, especially
+Engineer; next map audits are Hedgerow Watch and Bring the Captive Home.
+Eight generated skill icons/twelve effects from one 5x4 atlas and nine physical
+sound effects installed. Humanoid voice packs remain planned, not generated.
+No production changes or dev restart in this pass.
+
+## October 8: E-rank worksite batch 3
+
+All ten Timber Creek / Tool Shed / Herb Garden layouts now use recruitable
+Goblin Fighter/Rogue/Ranger specializations and modest count/formation changes.
+Peaceful choices and rewards retained; no new global race or skill system.
+360 simulated fights: 313 wins, zero exceptions; 135 backend tests pass. Manual testing needed for the
+long tool store and weaker Engineer auto-construction/Druid form decisions.
+Next: Hedgerow defense and prisoner-linked maps, preserving special objectives.
+See docs/design/E_RANK_COMBAT_AUDIT.md; dev only, fresh battles after restart.
+
+## October 8: dev mission-board refresh
+
+Dev profiles now use a five-minute public pool refresh; production retains thirty
+minutes. API countdown no longer hardcodes 1800 seconds. Eighteen onboarding/
+profile tests pass; backend restart required when dev reload is off.
+
+
+## October 8: expanded race names integrated in dev
+
+Seven submitted batches accepted across all 42 races. Cached compiled name pools
+now drive new generic/racial recruits, humanoid contract enemies, goblin chiefs,
+reinforcements and captive-cart people. Gender/leader pools, clan-first formats,
+local full-name uniqueness and explicit context gates for titles/epithets work.
+Existing identities and seeded stat/loot streams retained; animals unchanged.
+Production untouched. See docs/content/RACE_NAMES_WORKFLOW.md and import report.
+
 ## October 8: starting race eligibility implemented
 
 Approved 14 starting races enforced in creator/API using one backend policy.
@@ -59,7 +342,7 @@ Fixed shared header dragging swallowing Close clicks. Standardized battle-window
 
 Implemented merged Command | Skills | Effects with matching tile gaps, a fixed character/Traits/description card, concise base-Job active action summaries and a single icon toolbar. Increased zoomed right-drag clearance; fit bounds unchanged. Full broader tooltip/prose audit remains separate. Validated all authored summaries fit the fixed card, plus browser drag/resize/queue/effects and camera checks; production unchanged.
 
-October 8 HUD iteration: implemented non-scrolling two-row skills with right-quarter wrapped effects, commands standardized to skill tile styling/sizing, Objectives grouped under title, 120px bounded fitted-camera adjustment and 96px centered margins with battlefield label clipping removed. Native resize persists even when changing tile height moves the release target. Continued layout/opacity feedback remains welcome; no production rollout.
+October 8 HUD iteration: implemented non-scrolling two-row skills with right-quarter wrapped effects, commands standardized to skill tile styling/sizing, Objectives grouped under title, 120px bounded fitted-camera adjustment and 96px centered margins with battlefield label clipping moved out of active folders. Native resize persists even when changing tile height moves the release target. Continued layout/opacity feedback remains welcome; no production rollout.
 
 October 8 HUD follow-up implemented in dev: always-visible movable effects row, matching two-row skills/commands, 50% larger turn-order cards with non-clickable overflow label and clickable draggable full-order window, edge-label camera margin and bounded fitted-map panning with explicit Center map. Browser-local saved positions retained; numerical camera margins/layout defaults remain open to player feedback.
 
@@ -1451,3 +1734,154 @@ See docs/design/CHARACTER_STORIES_PROPOSAL.md.
 - Withdrawal follow-up: removed Guard tile, added conditional 25% Guard wording
   to End Turn, six standard commands in 3x2 (capture gear adds Subdue in 4x2).
   Fixed legacy Retreat All full-row span; actual browser layout checks pass.
+
+## October 9 - general quirk pool
+Implemented in dev: 61 general quirks, opposing-pair/exclusive-profile checks,
+rank-independent rarity including one-in-a-million Naturally Gifted (+1 all six
+attributes), seeded per-battle random attribute, DoT-damage resistance, status
+resistance, unarmed action budget, Ranger weapon range and mission-gold bonus.
+Existing traits stay unchanged; no production changes. Readable catalog is
+runtime-generated via tools/build_general_perk_reference.py (--check).
+User correction: Naturally Gifted is independent of redistribution/luck groups
+and can coexist with those traits; its rarity and duplicate protection remain.
+Validation: 352 backend tests passed; generated reference and diff checks pass.
+Deferred: event-based Patient/Light Sleeper/Fidgety/Easily Winded/Tender-Hearted/
+Cold-Blooded/Reliable ideas, optional richer trait icons, manual review of rare
+trait combinations. No claim that NPC/Job AI was reworked in this pass.
+## October 9: approved female voices installed; cleanup completed
+
+Future voice generation: use approved female martial/exertion attack direction
+for all new identities, adapted by race/gender/personality. Human male attacks
+accepted as-is for now; no immediate replacement task. See SFX_GENERATION_GUIDE.
+
+Follow-up: fixed tester hardcoded female labels on male rows; now-playing includes
+gender. All144 file/hash mappings verified; no combat routing or audio changes.
+Browser QA now checks rendered gender labels and male/female playback URLs.
+
+48 revised clips installed; other96 unchanged. Reviewed Goblin pain/death set
+shared across female personalities, attack variants distinct. One voice tester
+with saved ratings/export. Approved sources retained; failed source history
+archived; obsolete auditions/generation scripts/QA folders moved out of active folders. No new
+paid generation, no production changes. Further voice packs remain deferred.
+
+Mount layering follow-up: generic walking/attack/hit styles gave both bodies
+the same raised layer, letting the later DOM boar cover the portrait. Explicit
+ordered layers now keep rider above mount during idle, hover and every motion.
+Browser playback checks both aligned centers and rider-above-boar layers.
+Facing/crop update passes all 437 frontend tests and browser checks; build passes.
+
+Overhead-pose correction: rotate the top-left north-facing overhead boar, not
+the side-biased east pose. Isolate its full silhouette with corrected crop
+bounds (remove neighboring artifact). Keep existing 96%-cell mount container
+and 75% rider; no extra shrink requested. No walking sprites. Death sprite
+uses a -90-degree basis correction to share the overhead facing convention.
+
+Boar scale correction: tightening source crops removed transparent padding and
+made the animal appear larger. Render its artwork at 80% of the mount container
+(10% inset per side), for both living and dead poses; keep rider at 75% standard
+size. Hit targets, paired motion, facing and combat mechanics are unchanged.
+
+Boar head/rear clipping root cause: generic `.battle-token img` used cover and
+overrode the earlier mount contain rule at equal specificity. Mount image now
+uses an explicit scoped `object-fit: contain !important`; size remains unchanged.
+Browser fixture loads generic character CSS after mount CSS to reproduce actual
+cascade, checking computed contain/no clipping as well as motion/layering.
+
+Final containment/proportion correction: remove the temporary 10%-per-side
+art inset now that cover clipping is fixed. Full contained overhead silhouette
+uses the original 96%-cell footprint, extending beyond the 75% rider frame.
+Keep explicit contain, clean crop, shared motion and ordered layers.
+
+Mounted readability: target reticle stays within the rider frame instead of
+covering the animal outline; animal art sits 12% lower beneath the portrait.
+This constant art offset does not alter paired token motion or unit coordinates.
+
+Current mounted presentation: boar artwork is centered again (remove downward
+offset) and 25% larger than its previous contained image, behind the unchanged
+75% rider. Attack facing now persists on the actual mount, so redraws after an
+unrelated player action do not revert it to a prior walking direction. Forced
+displacement preserves facing. Own walking/attacks still deliberately turn it.
+No walking sprites or combat balance changes.
+
+## October 9: zoom, facing and lethal shockwave follow-up
+
+Implemented: map effect badges scale with cell width (22%, capped at 36 px),
+including smaller counts; no fixed minimum row width. HUD/detail icons unchanged.
+Stationary mount redraws preserve the continuous visual angle when the saved
+facing is unchanged; playback only resets facing for the mount's own walk/attack.
+Mounted deaths persist `mounted_death`: overhead corpse only if mounted at defeat;
+free/dismounted animals retain their portrait corpse. Corpse layers remain beneath
+living units, including hover and motion styles. Existing unflagged corpses use
+portrait presentation; a fresh fight exercises both death contexts.
+
+Earthbreaker and Groundbreaker still damage both mounted bodies, but displace a
+surviving linked pair once per shockwave. Lethal AoE bodies with separate routes
+animate independently. Mount fall/release waits for its packet's displacement;
+collision feedback cannot overwrite an ongoing paired push. Browser QA exposed
+and fixed overlapping collision/movement frames that previously caused an invalid
+Web Animation timeline. No general animation framework or skill balance changes.
+
+Validation: 65 targeted backend tests (mounts, Fighter presentation, D-rank),
+438 frontend tests and build pass. Isolated browser fixture uses real lethal
+Earthbreaker events: body remains at source before contact, then pushes/collapses;
+checks paired motion, corpse layer, zoom badge sizing and continuous facing redraw.
+QA processes stopped. No dev restart or release push.
+
+
+## October 9: proportional panel resizing
+
+Implemented in dev: Edit Layout exposes one resize corner on the battle
+(title/objectives/tools), Acting Now/action, turn-order, and combined commands /
+skills / effects groups. Dragging scales the entire group uniformly; keyboard
+arrows also resize (Shift for fine steps). Saved layout v1 accepts independent
+scale per group; existing positions and skill widths survive. No saved scale
+means the existing size. Reset restores the previously approved defaults.
+Normal resize range is 50-150%, constrained to the available viewport. Internal
+tracks, two-row controls, text, icons and separators retain their proportions;
+this replaces the skills-only native width resize. The title/tools group stays
+above every other floating group, including during editing, keeping Edit Layout
+reachable. Smaller windows clamp groups into view. Existing touch-specific layout
+is retained and ignores desktop transforms; no mobile interaction redesign.
+
+Validation: actual isolated browser checks keyboard and pointer resizing, uniform
+aspect ratio, redraw persistence, reset, and Edit Layout hit-testing with all other
+panels overlapping it at 1440 / 900 / 600px. All 440 frontend tests and build pass.
+No live browser storage, game saves, dev restart or release modified.
+
+
+## Boar combat vocals (October 9)
+
+Nine generated ElevenLabs clips: attack / hurt / death, three variants each.
+Runtime assets: `assets/sfx/boar_{attack,hurt,death}_{1,2,3}.wav`.
+Sources and per-clip prompts/metrics: `staging-sfx/boar-combat-v1/manifest.json`;
+reruns of `tools/generate_boar_sfx.py` reuse original MP3s without rebilling.
+Listening page: `/assets/sfx/preview-boar-combat-v1.html`.
+
+Saddle-boar species uses stable animal identity. Free boars vocalize on attacks
+alongside normal contact foley; mounted rider attacks do not add boar cries.
+Actual damage to either free or mounted boars can trigger hurt (including DoTs);
+healing/status application/zero damage cannot. Lethal packets use death instead
+of an additional hurt cue, scheduled at collapse rather than final saved state.
+All nine outputs are nonempty mono 48kHz with zero clipped output samples.
+Listening approval remains unclaimed; generated audio installed in dev.
+
+## October 9: free doorway interactions
+
+Opening/closing a door is free and preserves the main action and unspent movement.
+Each unit may operate one door per activation (a single shared door-interaction
+allowance, not one allowance per doorway); enemies use the same rule. The saved
+activation counter prevents repeat operations after reload and naturally permits
+another operation on the unit's next activation. Occupied closure, adjacency,
+legal approaches, movement costs, and interruption still apply. Captive pens,
+alarms and other objective interactions retain their existing action costs.
+
+AI no longer ends its activation merely for opening a door. Pursuit can continue
+into movement/attack; fleeing can continue toward extraction. Route planning no
+longer charges a full activation penalty for an openable door. Used door controls
+show the once-per-activation restriction and suppress extra Open prompts.
+Focused door/navigation/wall and gate/pursuit checks: 28 backend tests pass.
+
+
+Mission resource rewards: proposal documented in docs/design/MISSION_RESOURCE_REWARD_PREVIEW.md; do not implement display before requested UI discussion.
+
+Day/night lighting: proposed 30-minute day/night windows, documented in docs/design/DAY_NIGHT_LIGHTING_PROPOSAL.md. Review outdoor/interior previews before rollout; no gameplay changes or runtime implementation yet. Resource preview remains parked.

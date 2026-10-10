@@ -55,6 +55,15 @@ def apply_storylines(missions):
             mission['decision_scene']=deepcopy(APPROACH)
             mission['resolution_mode']='choices → tactical'
             mission['bodyguard_slots']=max(0,min(1,4-mission['party_size']))
+    for mid in ('highway_ambush','bone_patrol','goblin_boar_riders'):
+        choice=missions[mid]['decision_scene']['nodes']['approach']['choices']['scout']
+        choice['label']='Scout the patrol route'
+        choice['description']='Survival check: gain three rounds to position before the patrol notices you; any attack alerts everyone. Failure gives the patrol the first move; a critical failure strengthens its leader.'
+        choice['success']['text']={
+            'highway_ambush':'The scouts find a blind approach behind the road watchers. The first attack will alert the whole band.',
+            'bone_patrol':'The scouts time their approach between the dead’s patrol circuits. The first attack will rouse the whole procession.',
+            'goblin_boar_riders':'The scouts follow the riders’ message route and approach while they exchange supplies. The first attack will alert every rider.',
+        }[mid]
     for mission_id,encounter in {'flooded_underpass':'contract:bone_patrol','restless_graves':'contract:undead_death_knight','goblin_supply_carts':'goblin_warcamp'}.items():
         missions[mission_id]['critical_failure_encounter']={'battle':encounter,'text':'The expedition goes badly wrong. Armed opposition cuts off the return route; the party must fight or escape.'}
         missions[mission_id]['bodyguard_slots']=max(0,min(1,4-missions[mission_id]['party_size']))

@@ -78,7 +78,9 @@ class LocationMapTests(unittest.TestCase):
                             if p not in blocked|seen and _can_step(walking,x,y,*p,{'id':'walker'}):
                                 seen.add(p);queue.append(p)
                     self.assertTrue(seen&exits,(location,spawn))
-            self.assertEqual(variants,set(range(1,len(BUILDING_PLANS.get(location,[None,None]))+1)),location)
+            from backend.d_rank_locations import LOCATIONS as D_LOCATIONS
+            count=4 if location in D_LOCATIONS else len(BUILDING_PLANS.get(location,[None,None]))
+            self.assertEqual(variants,set(range(1,count+1)),location)
 
     def test_river_is_continuous_and_bridge_is_walkable_floor(self):
         board=compile_generated_battle_map('location_broken_creek_bridge','bridge')
@@ -108,13 +110,14 @@ class LocationMapTests(unittest.TestCase):
               'blocking':True,'blocks_sight':True,'open_sprite':'open','closed_sprite':'closed'}
         battle['terrain'].append(gate);battle['void_tiles']=[]
         self.assertTrue(_auto_open_gate(battle,enemy,target))
-        self.assertEqual(gate['state'],'opened');self.assertTrue(enemy['acted'])
+        self.assertEqual(gate['state'],'opened');self.assertFalse(enemy['acted'])
         gate.update(state='closed',blocking=True,blocks_sight=True)
         enemy.update(x=7,y=4,acted=False,moved=False)
         _move_toward(battle,enemy,target)
         self.assertEqual((enemy['x'],enemy['y']),(5,4))
         self.assertEqual(gate['state'],'closed') # cannot walk through a shut door
         battle['enemy_extraction']={'name':'Road','tiles':[{'x':0,'y':4}]}
+        enemy['ability_activation']=enemy.get('ability_activation',0)+1
         _flee_turn(battle,enemy)
         self.assertEqual(gate['state'],'opened') # panicked units can escape an enclosed room too
         gate.update(state='closed',blocking=True,blocks_sight=True)
@@ -186,6 +189,7 @@ class LocationMapTests(unittest.TestCase):
         occupant=battle['units']['contract_enemy_0'];occupant.update(x=gx,y=gy)
         with self.assertRaisesRegex(ValueError,'standing'):_interact(battle,player,gate['id'])
         occupant.update(x=gx+2,y=gy)
+        player['ability_activation']=player.get('ability_activation',0)+1
         _interact(battle,player,gate['id']);self.assertTrue(gate['blocking'])
         player['attack']=100
         _damage_terrain(battle,player,gate['id'])

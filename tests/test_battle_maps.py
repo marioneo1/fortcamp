@@ -84,11 +84,11 @@ class BattleMapAuthoringTests(unittest.TestCase):
         state = new_game({"name": "Defender", "race": "Kobold", "traits": ["engineer"], "attributes": {"str": 7, "vit": 7}})
         battle = create_frontier_watch_defense_battle(state, ["player"], "watch-prep")
         self.assertEqual(battle["status"], "preparing")
-        self.assertIn("snare_trap", {entry["id"] for entry in battle["preparation"]["available"]})
-        self.assertIn("watch_platform", {entry["id"] for entry in battle["preparation"]["available"]})
+        self.assertIn("pit", {entry["id"] for entry in battle["preparation"]["available"]})
+        self.assertNotIn("snare_trap", {entry["id"] for entry in battle["preparation"]["available"]})
         starting_budget = battle["preparation"]["remaining"]
         destination = battle["preparation"]["zone"][0]
-        apply_player_command(battle, {"action": "place_defense", "placement_id": "spike_trap", **destination})
+        apply_player_command(battle, {"action": "place_defense", "placement_id": "barricade", **destination})
         placement = battle["preparation"]["placements"][0]
         self.assertEqual(battle["preparation"]["remaining"], starting_budget - 1)
         apply_player_command(battle, {"action": "remove_defense", "target_id": placement["id"]})

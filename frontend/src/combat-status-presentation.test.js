@@ -10,6 +10,16 @@ test('Cleric regeneration shows remaining healing ticks with its new matching ic
  assert.equal(visual.count,2);assert.match(visual.image,/cleric-v1\/sanctuary.png/);
 });
 const defs={stun:{name:'Stun',description:'Cannot act during the next activation.'},poison:{name:'Poison',description:'Takes damage each activation.'},rally_power:{name:'Attack boost',description:'Next attack +25%.'}};
+test('mounted pair uses one map effects row with actual body owners and no duplicated identical effects',()=>{
+ const rider={id:'r',animal_mount_id:'b',statuses:[{id:'stun',turns:1}]};
+ const boar={id:'b',boar_mount:true,rider_id:'r',statuses:[{id:'stun',turns:1},{id:'poison',stacks:2}]};
+ const html=mapStatusMarkup(rider,defs,esc,{r:rider,b:boar});
+ assert.equal((html.match(/data-unit-status="stun"/g)||[]).length,1);
+ assert.match(html,/data-status-unit="b"/);
+ assert.equal(mapStatusMarkup(boar,defs,esc,{r:rider,b:boar}),'');
+ const emptyRider={...rider,statuses:[]};
+ assert.match(mapStatusMarkup(emptyRider,defs,esc,{b:boar}),/data-unit-status="poison"/);
+});
 test('effects tray stays available to position even with no active effects',()=>{
  const tray=statusTrayMarkup({id:'a',statuses:[]},defs,esc);
  assert.match(tray,/No active effects/);assert.match(tray,/data-all-effects/);

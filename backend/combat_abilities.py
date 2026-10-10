@@ -52,7 +52,7 @@ def validate(skill):
     _integer(cost['cooldown'], 0, 20)
     if cost['charges'] is not None:
         _integer(cost['charges'], 1, 20)
-    if not cost['cooldown'] and cost['charges'] is None and not skill.get('fury_cost') and skill.get('druid_kind') not in {'prowler','bulwark','rat'} and skill.get('ranger_kind') not in {'mark_quarry','poison_attack'} and skill.get('cleric_kind') != 'rest' and skill.get('summoner_kind') != 'overload' and not skill.get('engineer_kind') and skill.get('captor_kind')!='subduing_blow':
+    if not cost['cooldown'] and cost['charges'] is None and skill.get('id')!='npc:bandit:parting_cut' and not skill.get('fury_cost') and skill.get('druid_kind') not in {'prowler','bulwark','rat'} and skill.get('ranger_kind') not in {'mark_quarry','poison_attack'} and skill.get('cleric_kind') != 'rest' and skill.get('summoner_kind') != 'overload' and not skill.get('engineer_kind') and skill.get('captor_kind')!='subduing_blow':
         raise ValueError('Ability must have a cooldown or charge limit')
     if 'fury_cost' in skill:_integer(skill['fury_cost'],1,5)
     if 'fury_gain' in skill:_integer(skill['fury_gain'],1,2)
@@ -226,6 +226,9 @@ def availability(unit, skill):
                 'reason':'Main action already used' if unit.get('acted') else 'Shared technique use spent' if unit.get('special_used') else None}
     special=summoner.availability(unit,skill)
     if special is not None:return special
+    from .combat_mounts import restriction as mount_restriction
+    mount_reason=mount_restriction(unit,skill)
+    if mount_reason:return {'available':False,'reason':mount_reason}
     state=unit.get('ability_state',{}).get(skill['id'],{})
     charges=skill['cost']['charges']
     if charges is not None and state.get('uses',0)>=charges:
@@ -242,6 +245,8 @@ def availability(unit, skill):
 
 
 def spend(unit, skill):
+    from .recruit_perks import clear_ruse
+    clear_ruse(unit)
     if not availability(unit,skill)['available']:
         raise ValueError(availability(unit,skill)['reason'])
     if not skill.get('ability_version'):

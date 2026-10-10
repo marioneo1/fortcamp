@@ -5,13 +5,13 @@ ELIGIBLE = frozenset({'goblin_pickpockets','ruined_well','supply_watch'})
 BEAR_ID = 'radiant_foraging_bear'
 
 
-def prepare(battle):
+def prepare(battle, mode='natural'):
     mission = battle.get('encounter_id','').removeprefix('contract:')
     if mission not in ELIGIBLE or 'radiant_encounter' in battle:
         return
     roll = random.Random(f"{battle['seed']}:radiant:foraging_bear:v1").randint(1,100)
     battle['radiant_encounter'] = {'id':'radiant:foraging_bear','roll':roll,'chance':3,'state':'absent'}
-    if roll > 3:
+    if mode == 'absent' or (mode != 'bear' and roll > 3):
         return
     from . import combat as c
     party = c._living(battle,'player')

@@ -1,4 +1,4 @@
-import {snapHud,hudPosition} from './battle-hud-geometry.js';
+import {snapHud,hudPosition,hudScale,resizeHudScale} from './battle-hud-geometry.js';
 import {MOBILE_BATTLE_QUERY} from './battle-touch.js';
 import './battle-hud.css';
 import './battle-mobile.css';
@@ -18,7 +18,7 @@ export function floatingBattleMarkup(fragment){
  const field=root.querySelector('.battlefield'),space=document.createElement('div');space.className='battle-camera-space';field.before(space);space.append(field);
  const header=fragment.querySelector('.layout-a-header'),dock=root.querySelector('.battle-command-dock');
  const groups=[];
- const group=(node,id,label)=>{if(!node)return;node.classList.add('hud-group');node.dataset.hudGroup=id;node.insertAdjacentHTML('afterbegin',`<button class="hud-handle" data-hud-handle="${id}" aria-label="Move ${label}" title="Drag to move; arrow keys adjust position">${label}<span aria-hidden="true">&#x283f;</span></button>`);groups.push(node)};
+ const group=(node,id,label)=>{if(!node)return;node.classList.add('hud-group');node.dataset.hudGroup=id;node.insertAdjacentHTML('afterbegin',`<button class="hud-handle" data-hud-handle="${id}" aria-label="Move ${label}" title="Drag to move; arrow keys adjust position">${label}<span aria-hidden="true">&#x283f;</span></button>`);if(['title','actor','turns','skills'].includes(id))node.insertAdjacentHTML('beforeend',`<button class="hud-resize-handle" data-hud-resize="${id}" aria-label="Resize ${label}" title="Drag to resize; arrow keys adjust size">&#x2922;</button>`);groups.push(node)};
  header.firstElementChild.append(header.querySelector('.battle-objectives'));
  const titleGroup=header.firstElementChild;group(titleGroup,'title','Battle, objectives & tools');
  const turn=header.querySelector('.turn-order'),turnWrap=document.createElement('div');turnWrap.className='hud-turn-order layout-a-header';turnWrap.append(turn);turn.insertAdjacentHTML('beforeend','<span class="turn-overflow" hidden></span>');turnWrap.tabIndex=0;turnWrap.setAttribute('role','button');turnWrap.setAttribute('aria-label','Inspect full turn order');turnWrap.title='Click to inspect the full turn order';group(turnWrap,'turns','Turn order');
@@ -70,24 +70,25 @@ export function mountBattleHud(host,{openEffects,effectsKey,effectsMarkup,onCanc
   skills.style.setProperty('--hud-skill-width',`${5*tile+40+25}px`);
  };
 
- const store=node=>{const b=size(),r=node.getBoundingClientRect(),o=root.getBoundingClientRect();saved[node.dataset.hudGroup]={x:clamp(r.left-o.left,b.width-r.width)/Math.max(1,b.width-r.width),y:clamp(r.top-o.top,b.height-r.height)/Math.max(1,b.height-r.height),...(node.dataset.hudGroup==='skills'?{width:r.width}:{})};save()};
+ const store=node=>{const b=size(),r=node.getBoundingClientRect(),o=root.getBoundingClientRect();saved[node.dataset.hudGroup]={x:clamp(r.left-o.left,b.width-r.width)/Math.max(1,b.width-r.width),y:clamp(r.top-o.top,b.height-r.height)/Math.max(1,b.height-r.height),...(['title','actor','turns','skills'].includes(node.dataset.hudGroup)?{scale:Number(node.dataset.hudScale)||1}:{}),...(node.dataset.hudGroup==='skills'?{width:node.offsetWidth}:{})};save()};
  const turns=root.querySelector('.hud-turn-order');
  const turnContent=()=>{const list=turns.querySelector('.turn-order>div').cloneNode(true);list.querySelectorAll('[hidden]').forEach(n=>n.hidden=false);return list.outerHTML};
  const trimTurns=()=>{const chips=[...turns.querySelectorAll('.turn-chip')],count=Math.min(10,Math.max(1,Math.floor((root.clientWidth-130)/114))),more=turns.querySelector('.turn-overflow');chips.forEach((chip,i)=>chip.hidden=i>=count);more.hidden=chips.length<=count;more.textContent=`+${chips.length-count} more`;const full=document.querySelector('.hud-turns-content');if(full)full.innerHTML=turnContent()};
  const place=()=>{
-  if(window.matchMedia(MOBILE_BATTLE_QUERY).matches){trimEffects();return}
+  if(window.matchMedia(MOBILE_BATTLE_QUERY).matches){groups.forEach(n=>{n.style.transform='';n.style.removeProperty('--hud-panel-scale')});trimEffects();return}
   const skillPanel=root.querySelector('.hud-skills');skillPanel.style.width=`${Math.min(Math.max(650,saved.skills?.width||defaults.skills.width),root.clientWidth-24)}px`;
   syncControls();trimTurns();
   const b=size(),actor=groups.find(n=>n.dataset.hudGroup==='actor');
   for(const node of groups){
    const id=node.dataset.hudGroup,stored=saved[id];
+   const scale=hudScale(stored?.scale??1,{width:node.offsetWidth,height:node.offsetHeight},b);node.dataset.hudScale=String(scale);node.style.setProperty('--hud-panel-scale',String(scale));node.style.transform=`scale(${scale})`;
    const r=node.getBoundingClientRect(),p=hudPosition(stored,r,b,defaults[id]);
    if(!stored){
     if(id==='turns'&&(b.width<1150||turns.querySelectorAll('.turn-chip:not([hidden])').length>4))p.y=(root.querySelector('[data-hud-group="title"]')?.offsetHeight||90)+12;
    }
    node.style.left=`${p.x}px`;node.style.top=`${p.y}px`;
   }
-  if(actor&&!saved.actor){const bar=skillPanel.getBoundingClientRect(),card=actor.getBoundingClientRect();if(card.left<bar.right&&card.right>bar.left&&card.top<bar.bottom&&card.bottom>bar.top)actor.style.top=`${clamp(parseFloat(skillPanel.style.top)-actor.offsetHeight-12,b.height-actor.offsetHeight)}px`}
+  if(actor&&!saved.actor){const bar=skillPanel.getBoundingClientRect(),card=actor.getBoundingClientRect();if(card.left<bar.right&&card.right>bar.left&&card.top<bar.bottom&&card.bottom>bar.top)actor.style.top=`${clamp(parseFloat(skillPanel.style.top)-card.height-12,b.height-card.height)}px`}
 
  };
 
@@ -117,11 +118,27 @@ export function mountBattleHud(host,{openEffects,effectsKey,effectsMarkup,onCanc
  mobileSync();
  window.matchMedia(MOBILE_BATTLE_QUERY).addEventListener('change',place,{signal});
  turns.addEventListener('click',openTurns,{signal});turns.addEventListener('keydown',e=>{if(e.target===turns&&['Enter',' '].includes(e.key)){e.preventDefault();e.stopPropagation();openTurns()}},{signal});
- // Native resizing can move the corner away from the release target as tiles scale.
+ // Resize uniformly, rather than squeezing text and icons into new proportions.
  let resizing=null;
- root.addEventListener('pointerdown',e=>{const n=e.target.closest('.hud-skills');if(!editing||!n||e.button!==0)return;const r=n.getBoundingClientRect();if(e.clientX>=r.right-16&&e.clientY>=r.bottom-16)resizing=n},{signal});
- document.addEventListener('pointerup',()=>{if(resizing){store(resizing);resizing=null;place();trimEffects()}},{signal});
- document.addEventListener('pointercancel',()=>{resizing=null},{signal});
+ root.addEventListener('pointerdown',e=>{
+  const handle=e.target.closest('[data-hud-resize]');if(!editing||!handle||e.button!==0)return;
+  const node=handle.closest('.hud-group');resizing={node,id:e.pointerId,x:e.clientX,y:e.clientY,scale:Number(node.dataset.hudScale)||1,size:{width:node.offsetWidth,height:node.offsetHeight}};
+  handle.setPointerCapture(e.pointerId);node.classList.add('hud-resizing');e.preventDefault();e.stopPropagation();
+ },{signal});
+ root.addEventListener('pointermove',e=>{
+  if(!resizing||resizing.id!==e.pointerId)return;
+  const {node,scale,x,y,size:base}=resizing,next=resizeHudScale(scale,e.clientX-x,e.clientY-y,base,size());
+  node.dataset.hudScale=String(next);node.style.setProperty('--hud-panel-scale',String(next));node.style.transform=`scale(${next})`;
+  const r=node.getBoundingClientRect();node.style.left=`${clamp(parseFloat(node.style.left)||0,root.clientWidth-r.width)}px`;node.style.top=`${clamp(parseFloat(node.style.top)||0,root.clientHeight-r.height)}px`;
+  e.preventDefault();e.stopPropagation();
+ },{signal});
+ const finishResize=()=>{if(!resizing)return;store(resizing.node);resizing.node.classList.remove('hud-resizing');resizing=null;place();trimEffects()};
+ root.addEventListener('pointerup',finishResize,{signal});root.addEventListener('pointercancel',finishResize,{signal});root.addEventListener('lostpointercapture',finishResize,{signal});
+ root.addEventListener('keydown',e=>{
+  const handle=e.target.closest('[data-hud-resize]');if(!editing||!handle||!['ArrowLeft','ArrowRight','ArrowUp','ArrowDown'].includes(e.key))return;
+  const node=handle.closest('.hud-group'),step=e.shiftKey?.01:.05,next=hudScale((Number(node.dataset.hudScale)||1)+(['ArrowRight','ArrowUp'].includes(e.key)?step:-step),{width:node.offsetWidth,height:node.offsetHeight},size());
+  node.dataset.hudScale=String(next);node.style.transform=`scale(${next})`;node.style.setProperty('--hud-panel-scale',String(next));store(node);place();e.preventDefault();e.stopPropagation();
+ },{signal});
  observer=new ResizeObserver(entries=>{if(entries.some(e=>e.target===root))place();else syncControls();trimEffects()});observer.observe(root);const skillGroup=root.querySelector('.hud-skills');if(skillGroup)observer.observe(skillGroup);edit();trimEffects();
 }
 

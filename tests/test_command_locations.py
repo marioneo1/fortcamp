@@ -30,7 +30,9 @@ class CommandLocationTests(unittest.TestCase):
             command=next(t for t in battle['building_templates'] if t['id']=='command_house_1')
             x,y=command['anchor']
             self.assertTrue(x<boss['x']<x+4 and y<boss['y']<y+4)
-            self.assertEqual(boss['hp'],112)
+            self.assertEqual(boss['adventurer_rank'], 'B')
+            self.assertEqual(boss['rank_scaling']['method'], 'attributes_once')
+            self.assertTrue(84 <= boss['hp'] <= 110)
             self.assertTrue(any(t['id'].startswith('inner_command_gate') for t in battle['terrain']))
             self.assertTrue(any(t['id'].startswith('outer_camp_gate') for t in battle['terrain']))
 

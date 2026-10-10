@@ -197,7 +197,7 @@ def add_unit(battle, state, offer, team, rng, corpse=False, rogue=False):
     iid = 'guest_' + offer['id']
     preview['inventory'].append({'instance_id':iid,'item_id':offer['weapon']})
     c['equipment']['weapon'] = iid
-    unit = _player_unit(preview,c,x,y)
+    unit = _player_unit(preview,c,x,y,battle_seed=battle.get('seed'))
     unit.update(team=team, mercenary_id=offer['id'], mercenary_guest=True,
                 mercenary_hostile=rogue, mercenary_hostile_all=rogue, boss=rogue, player_avatar=False,
                 loyalty=100, corpse_item=None, corpse_item_chance=0, corpse_gold=(0,0))
@@ -257,7 +257,7 @@ def betrayal_battle(state, party_ids, traitors, seed):
     for index, mid in enumerate(traitors):
         tile = spawn[index % len(spawn)]
         c = next(c for c in state['characters'] if c['id']==mid)
-        u = _player_unit(state,c,tile['x'],tile['y'])
+        u = _player_unit(state,c,tile['x'],tile['y'],battle_seed=seed)
         u.update(team='enemy',mercenary_id=mid,mercenary_hostile=True,mercenary_hostile_all=False,
                  corpse_item=None,corpse_item_chance=0,corpse_gold=(0,0),loyalty=100)
         battle['units'][mid] = u

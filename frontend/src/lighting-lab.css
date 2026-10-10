@@ -1,0 +1,44 @@
+.map-lighting-defs{position:absolute;width:0;height:0;pointer-events:none;overflow:hidden}
+.battlefield.map-lit .battle-cell,.battlefield.map-lit .battle-elevation{filter:url('#battle-light-grade')}
+.battlefield.terrain-style-custom-painted.map-lit .has-prop-art{--scenery-filter:url('#battle-light-grade') drop-shadow(2px 4px 3px #0006);filter:var(--scenery-filter)}
+.battlefield.terrain-style-custom-painted.map-lit.map-sun-shadows .lighting-large-prop{--scenery-filter:url('#battle-light-grade') drop-shadow(var(--prop-shadow-x,var(--sun-shadow-x,5px)) var(--prop-shadow-y,var(--sun-shadow-y,7px)) 3px #07112465)}
+.battlefield.terrain-style-custom-painted.map-lit.map-sun-shadows .lighting-small-prop{--scenery-filter:url('#battle-light-grade') drop-shadow(calc(var(--prop-shadow-x,var(--sun-shadow-x,5px)) * .45) calc(var(--prop-shadow-y,var(--sun-shadow-y,7px)) * .45) 2px #07112450)}
+.battlefield.terrain-style-custom-painted.map-lit.map-sun-shadows .has-prop-art.lighting-indoor-prop{--scenery-filter:url('#battle-light-grade') drop-shadow(1px 2px 3px #10101445)}
+.battlefield.terrain-style-custom-painted .wagon.has-prop-art,.battlefield.terrain-style-custom-painted .palisade.has-prop-art{box-shadow:none;border-width:0}
+.battlefield.terrain-style-custom-painted.map-lit .has-prop-art.destroyed{--scenery-filter:url('#battle-light-grade') grayscale(.18) drop-shadow(2px 3px 2px #0006)}
+/* Filter only the artwork, excluding HP labels and other child UI. */
+.battlefield.terrain-style-custom-painted .multi-cell-asset.has-prop-art{filter:none!important}
+.battlefield.terrain-style-custom-painted .multi-cell-asset.has-prop-art::before{filter:drop-shadow(2px 4px 3px #0006)}
+.battlefield.terrain-style-custom-painted.map-lit .multi-cell-asset.has-prop-art::before{filter:var(--scenery-filter)}
+.battlefield.terrain-style-custom-painted .has-prop-art .terrain-hp{box-shadow:none;z-index:1}
+/* Painted fence art already has contact shading; avoid another rotated halo. */
+.battlefield.terrain-style-custom-painted .palisade.has-prop-art::before{filter:none}
+.battlefield.terrain-style-custom-painted.map-lit .palisade.has-prop-art{--scenery-filter:url('#battle-light-grade')}
+.battlefield.terrain-style-custom-painted.map-lit.map-sun-shadows .palisade.has-prop-art.multi-cell-asset.lighting-large-prop:not(.lighting-indoor-prop){--scenery-filter:url('#battle-light-grade') drop-shadow(var(--prop-shadow-x) var(--prop-shadow-y) 2px #07112450)}
+.battlefield.map-lit.map-sun-shadows .boar-prop:not(.dead) .boar-shadow{filter:drop-shadow(var(--sun-shadow-x) var(--sun-shadow-y) 2px #07112465)}
+.lighting-preview-lights{position:absolute;inset:0;z-index:4;pointer-events:none;border-radius:inherit}
+.lighting-preview-lights{mix-blend-mode:screen}
+.lighting-lab-panel{position:fixed;right:18px;top:90px;z-index:240;width:310px;max-width:calc(100vw - 24px);padding:14px;border:1px solid #776447;border-radius:12px;background:#171c20f5;color:#e6ddcb;box-shadow:0 12px 35px #0008;font-size:13px}
+.lighting-lab-panel[hidden]{display:none}
+.lighting-lab-panel header{display:flex;justify-content:space-between;align-items:center;cursor:move;touch-action:none}
+.lighting-lab-panel h3{margin:3px 0;font-size:18px}
+.lighting-lab-panel small{color:#b6ad9e;font-size:11px;line-height:1.5}
+.lighting-lab-panel p{line-height:1.45;min-height:38px}
+.lighting-lab-panel button,.dev-tools-panel button{padding:8px 10px;border:1px solid #655a48;border-radius:7px;background:#292e30;color:#f0e3cc;cursor:pointer;font:inherit}
+.lighting-lab-panel button:hover,.dev-tools-panel button:hover{border-color:#d1ad67;background:#343b3d}
+.lighting-lab-panel header button,.dev-tools-panel header button{min-width:34px;font-size:19px}
+.lighting-presets{display:grid;grid-template-columns:repeat(4,1fr);gap:5px;margin-bottom:15px}
+.lighting-lab-panel label{display:block;line-height:1.6}
+.lighting-lab-panel output{float:right;color:#e6bd71}
+.lighting-lab-panel input[type=range]{width:100%;accent-color:#d8b77b;margin:8px 0}
+.lighting-options,.lighting-lab-panel footer{display:flex;gap:12px;flex-wrap:wrap;margin:10px 0}
+.lighting-lab-panel button[aria-pressed=true]{border-color:#d8b77b;color:#ffd993}
+.dev-tools-panel{width:min(540px,calc(100vw - 24px));max-height:85vh;overflow:auto;border:1px solid #776447;border-radius:14px;background:#171c20;color:#e6ddcb;padding:20px;box-shadow:0 20px 70px #000b}
+.dev-tools-panel::backdrop{background:#0008}
+.dev-tools-panel header{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.dev-tools-panel h2{margin:0;font-size:23px}
+.dev-tools-panel p{color:#bdb5a6;line-height:1.5;font-size:13px}
+.dev-tools-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.dev-tools-grid button{text-align:left;display:grid;gap:6px;padding:14px}
+.dev-tools-grid span{color:#bdb5a6;font-size:12px;line-height:1.45}
+@media(max-width:600px){.lighting-lab-panel{top:12px;right:12px;font-size:12px}.dev-tools-grid{grid-template-columns:1fr}}

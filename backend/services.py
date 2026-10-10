@@ -12,6 +12,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm.attributes import set_committed_value
 
 from .combat import apply_player_command, auto_resolve, auto_step, battle_view, create_battle
+from . import combat_lighting
 from .content import MISSION_EVENTS, MISSION_RANKS, MISSION_TEMPLATES
 from .game import (
     analyze_mission, mission_rank, mission_rank_unlocked, new_game, normalize_state,
@@ -26,7 +27,7 @@ from .prison_recruitment import initialize_prisoner
 from .economy import POINT_COST
 from .combat import _advance_to_player
 
-POOL_SECONDS = 30 * 60
+POOL_SECONDS = settings.mission_pool_seconds
 _pool_locks: dict[str, asyncio.Lock] = {}
 _player_locks: dict[tuple[str, str], asyncio.Lock] = {}
 _debug_pool_overrides: dict[str, dict] = {}
@@ -755,7 +756,7 @@ async def debug_start_battle(
     session: AsyncSession, guild_id: str, user_id: str, display_name: str, encounter_id: str,
 ) -> MissionInstance:
     """Create or resume a requirement-free implemented battle for testing."""
-    if encounter_id not in {"goblin_warcamp", "goblin_captive_cart", "goblin_smoke_signals", "frontier_watch_defense"}:
+    if encounter_id not in {"goblin_warcamp", "goblin_captive_cart", "goblin_smoke_signals", "frontier_watch_defense", "prison_rescue_e"}:
         raise ValueError("Unknown debug battle")
     template_id = "hedgerow_watch_defense" if encounter_id == "frontier_watch_defense" else encounter_id
     key = (guild_id, user_id)
@@ -857,6 +858,7 @@ async def get_battle_instance(
     player = await get_player(session, guild_id, user_id)
     from .combat_supplies import sync_supplies
     sync_supplies(battle, player.state)
+    combat_lighting.initialize(battle, now=mission.claimed_at)
     return battle_view(battle)
 
 
@@ -1460,6 +1462,7 @@ async def _update_battle_instance(
     from .combat_supplies import sync_supplies
     sync_supplies(battle, player.state)
     supplies_before = set(battle.get('supplies_used', []))
+    combat_lighting.initialize(battle, now=mission.claimed_at)
     if resolve_all:
         view = auto_resolve(battle, auto or "balanced")
     elif auto:

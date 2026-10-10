@@ -57,6 +57,7 @@ class WallBoundaryTests(unittest.TestCase):
         with patch('backend.combat._finish_turn'):
             self.assertTrue(_auto_open_gate(self.battle,self.actor,target))
             self.assertTrue(_can_step(self.battle,2,2,2,1,self.actor))
+            self.actor['ability_activation']=self.actor.get('ability_activation',0)+1
             _interact(self.battle,self.actor,'edge')
         self.assertEqual(self.wall['state'],'closed') # an interior occupant does not jam it
         self.assertFalse(_can_step(self.battle,2,2,2,1,self.actor))

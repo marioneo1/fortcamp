@@ -7,6 +7,17 @@ from backend.economy import camp_action
 from backend.main import CharacterCreate
 
 class SoloOnboardingTests(unittest.TestCase):
+    def test_mission_refresh_is_five_minutes_only_in_development(self):
+        from backend.settings import Settings
+        from backend.services import POOL_SECONDS, pool_slot, settings
+        for profile in ('dev', 'dev-discord'):
+            self.assertEqual(Settings(environment=profile).mission_pool_seconds, 300)
+        for profile in ('release', 'prod', 'production', 'stable', 'standalone'):
+            self.assertEqual(Settings(environment=profile).mission_pool_seconds, 1800)
+        self.assertEqual(POOL_SECONDS, settings.mission_pool_seconds)
+        self.assertEqual(pool_slot(POOL_SECONDS * 10 + POOL_SECONDS - 1), POOL_SECONDS * 10)
+        self.assertEqual(pool_slot(POOL_SECONDS * 11), POOL_SECONDS * 11)
+
     def test_starter_api_defaults_to_a_job_and_rejects_retired_medic(self):
         self.assertEqual(CharacterCreate().starting_role,'fighter')
         for job in ('captor','summoner','cleric','rogue'):

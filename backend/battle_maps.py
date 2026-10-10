@@ -202,6 +202,8 @@ def generated_scenario_blueprint(scenario: str, seed: str) -> dict:
         return _contract_blueprint(scenario.removeprefix("contract_"), seed)
     if scenario == "frontier_watch_defense":
         return _frontier_watch_defense_blueprint(seed)
+    if scenario == "prison_rescue_e":
+        return _prison_rescue_blueprint(seed)
     if scenario != "hedgerow_signal_site":
         raise ValueError(f"Unknown generated scenario: {scenario}")
     rng = random.Random(f"map:{scenario}:{seed}")
@@ -270,7 +272,14 @@ def _frontier_watch_defense_blueprint(seed: str) -> dict:
     """
     rng = random.Random(f"map:frontier_watch_defense:{seed}")
     width, height = 14, 10
-    road_y = rng.choice((4, 5))
+    variation = rng.randrange(4)
+    road_y = 4 + variation % 2
+    formations = [
+        [(11, 2), (12, 3), (11, 5), (12, 6)],
+        [(11, 6), (12, 7), (11, 3), (12, 2)],
+        [(11, 2), (12, 3), (11, 5), (12, 6), (13, 7)],
+        [(11, 5), (12, 4), (12, 6), (13, 3), (13, 7)],
+    ]
     # The central road and both staging areas must stay open regardless of
     # decorative rolls. Preparation may deliberately close parts of them.
     reserved = {
@@ -295,6 +304,11 @@ def _frontier_watch_defense_blueprint(seed: str) -> dict:
         }
         for index, (x, y) in enumerate(blocking_cells, 1)
     ]
+    terrain.append({"id": "keeper_watchpost", "name": "Warning Post", "x": 3, "y": road_y - 2,
+                    "kind": "watchtower", "sprite": "structure:wooden_watch_platform",
+                    "blocking": True, "blocks_sight": False, "destructible": True,
+                    "hp": 20, "max_hp": 20, "armor": 1, "destroyed_kind": "rubble",
+                    "destroyed_sprite": "cut_log_pile", "destroyed_movement_cost": 2})
     decorations = [
         {
             "id": f"watch_dressing_{index}", "name": "Frontier Growth", "x": x, "y": y,
@@ -308,9 +322,12 @@ def _frontier_watch_defense_blueprint(seed: str) -> dict:
     ]
     deployment_zone = [
         {"x": x, "y": y} for x in range(1, 5) for y in range(2, 8)
+        if (x, y) not in {(3, road_y - 2), (2, road_y)}
     ]
     return {
         "name": "Hedgerow Watch", "theme": "frontier-defense",
+        "map_variation": variation + 1, "template_id": f"watch_advance_{variation + 1}",
+        "template_label": ["Northern advance", "Southern advance", "Split raiding party", "Staggered road column"][variation],
         "width": width, "height": height, "default_ground": "grass",
         "paint": [
             {"material": "dirt", "rect": [0, road_y - 1, width, 3]},
@@ -327,12 +344,33 @@ def _frontier_watch_defense_blueprint(seed: str) -> dict:
         "enemy_extraction": {"name": "Eastern Tree Line", "tiles": [{"x": width - 1, "y": y} for y in range(1, 9)]},
         "spawn_zones": {
             "player": deployment_zone,
-            "enemy": [{"x": x, "y": y} for x in range(11, 14) for y in range(1, 9)],
+            "enemy": [{"x": x, "y": y} for x, y in formations[variation]],
         },
         "preparation_zone": preparation_zone,
         "deployment_zone": deployment_zone,
         "objective_position": {"x": 2, "y": road_y},
     }
+
+
+def _prison_rescue_blueprint(seed: str) -> dict:
+    """E-rank prisoner escort; deliberately separate from the D-rank cart."""
+    variation = random.Random(f"map:prison_rescue_e:{seed}").randrange(4)
+    board = deepcopy(BATTLE_MAPS["captive_cart_road"])
+    wagon = deepcopy(next(t for t in board["terrain"] if t["id"] == "cart_body"))
+    wagon.update(x=7, y=2 + variation % 2)
+    captive = {"x": 6, "y": 3 + variation % 2}
+    formations = [[(6, 2), (7, 4)], [(5, 3), (7, 2)],
+                  [(5, 2), (6, 4), (8, 4)], [(5, 3), (6, 2), (8, 2)]]
+    board.update(name="Captive Escort Road", theme="prison-rescue",
+                 map_variation=variation + 1, template_id=f"captive_escort_{variation + 1}",
+                 template_label=["Halted wagon", "Roadside inspection", "Escort at the muddy stretch", "Changing the guard"][variation],
+                 terrain=[wagon], elevation=[], decorations=[
+                     {"id": "rescue_tree_north", "name": "Roadside Tree", "x": 3, "y": 0, "sprite": "oak_tree"},
+                     {"id": "rescue_tree_south", "name": "Roadside Tree", "x": 3, "y": 6, "sprite": "pine_tree"}],
+                 captive_position=captive,
+                 spawn_zones={"player": [{"x": 1, "y": 3}, {"x": 1, "y": 4}, {"x": 0, "y": 3}, {"x": 0, "y": 4}],
+                              "enemy": [{"x": x, "y": y} for x, y in formations[variation]]})
+    return board
 
 
 def compile_generated_battle_map(scenario: str, seed: str) -> dict:

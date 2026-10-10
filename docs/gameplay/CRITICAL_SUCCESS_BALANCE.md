@@ -1,5 +1,11 @@
 # Critical success and progression
 
+October 9 dev recovery: critical failure still selects one party member for
+incapacitation. Recovery now depends on mission rank: E 1 minute, D 5 minutes,
+C 10 minutes, B 30 minutes, A 1 hour, S 2 hours. Infirmary/tent/field labels remain
+but do not override these timers. Existing running recovery timestamps stay intact.
+This changes recovery duration, not critical-failure or injury probability.
+
 Ordinary success pays normal contract rewards and rolls normal loot. Mission-specific discoveries remain available on ordinary success; critical bonuses improve their chances without guaranteeing an item. This pass changes rolled critical odds, not item drop rates.
 
 ## Soft caps and exceptional mastery
@@ -40,6 +46,6 @@ Combat bonus objectives still earn critical success deterministically. These are
 
 ## Pacing and scope
 
-Pools refresh every 30 minutes. E/D cost one claim point, C two, B three, A four and S five. Two opening waves provide five points apiece; free-for-all adds three plus upgrades and ten extra while solo. Lower-rank exclusive drops give developed teams a reason to revisit. A/S have an earlier soft-cap boost because players get fewer attempts.
+Production pools refresh every 30 minutes; dev playtesting uses five minutes. E/D cost one claim point, C two, B three, A four and S five. Two opening waves provide five points apiece; free-for-all adds three plus upgrades and ten extra while solo. Lower-rank exclusive drops give developed teams a reason to revisit. A/S have an earlier soft-cap boost because players get fewer attempts.
 
 Existing accepted missions resolve using this curve when finished; completed results stay unchanged. Saved lineup analyses may show earlier odds until refreshed. The resolver and current previews share one classifier. Normal reward scaling and drop tables remain unchanged. Future dedicated perks/items/consumables may break stat-only limits through an explicit separate mechanic; this pass does not invent those overrides. Review actual trial completion frequencies before further tuning.

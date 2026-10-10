@@ -1,7 +1,7 @@
 const ART='/assets/combat-navigation-v1/';
 export function movementHazardMarkup(warning,escape){
  if(!warning)return '';
- const names={burn:'Burn',bleed:'Bleed',poison:'Poison',hobbled:'Hobble',bind:'Bind'};
+ const names={burn:'Burn',bleed:'Bleed',poison:'Poison',hobbled:'Hobble',bind:'Bind',proximity_blast:'Explosion: pushes one cell and stops this path'};
  const effects=Object.entries(warning.effects||{}).map(([id,e])=>id==='engineer_disruption'?'Mine: stops movement and interrupts attacks':`${escape(names[id]||id)} ${e.chance<100?'up to ':''}+${e.stacks}${e.chance<100?` (${e.chance}% per entry)`:''}${['bleed','poison'].includes(id)?' &middot; hurts at turn end':id==='burn'?' &middot; also ticks at turn end':''}`);
  return `<img src="${ART}hazard.png" alt=""><div><strong>${warning.lethal?'Lethal route risk':warning.damage?`${warning.uncertain?'Up to ':''}${warning.damage} HP damage on this path`:'Hazards on this path'}</strong>${effects.map(text=>`<span>${text}</span>`).join('')}<small>Final path from START &middot; applied when you commit an action</small></div>`;
 }

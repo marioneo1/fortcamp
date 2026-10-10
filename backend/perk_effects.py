@@ -44,16 +44,24 @@ PERK_EFFECTS = {
     'void_sight':{'combat':{'accuracy':5}},
     'stormbound':{'combat':{'initiative':2},'capabilities':{'magic':1}},
 }
+from .recruit_perks import DEFINITIONS as ORIGIN_DEFINITIONS
+PERK_EFFECTS.update({key:{'combat':{key:1}} for key in ORIGIN_DEFINITIONS})
+from .recruit_perks import ATTRIBUTES as ORIGIN_ATTRIBUTES
+PERK_EFFECTS.update({key:{'attributes':value} for key,value in ORIGIN_ATTRIBUTES.items()})
+from .general_perks import EFFECTS as GENERAL_EFFECTS
+PERK_EFFECTS.update(GENERAL_EFFECTS)
+
 COMBAT_LABELS={'move':'movement','initiative':'initiative','armor':'armor','hp':'maximum HP','evasion':'evasion (percentage points)','accuracy':'accuracy (percentage points)','regeneration':'HP restored each new round','damage_goblin':'damage against Goblinoids','damage_deathless':'damage against Deathless','melee_damage':'melee damage','magic_reduction':'% less incoming magic damage','capture_chance':'capture chance (percentage points)'}
 
 def annotate_perks(definitions):
     for key,effects in PERK_EFFECTS.items():
         if key not in definitions:continue
         definition=definitions[key];definition['modifiers']=deepcopy(effects)
+        if key in ORIGIN_DEFINITIONS:continue
         parts=[f'+{value} {stat.upper()}' for stat,value in effects.get('attributes',{}).items()]
         parts += [f'+{value} {stat} capability' for stat,value in effects.get('capabilities',{}).items()]
         parts += [f'{value}% less incoming magic damage' if stat=='magic_reduction' else f'+{value} {COMBAT_LABELS[stat]}' for stat,value in effects.get('combat',{}).items()]
-        definition['effect']='. '.join(parts)+'. '+definition['effect']
+        if key not in ORIGIN_DEFINITIONS:definition['effect']='. '.join(parts)+'. '+definition['effect']
 
 def character_perks(state,character,items):
     found=set(character.get('traits',[]));inventory={i['instance_id']:i for i in state.get('inventory',[])}
@@ -65,4 +73,4 @@ def modifiers(state,character,items,section):
     for perk in sorted(character_perks(state,character,items)):
         for key,value in PERK_EFFECTS.get(perk,{}).get(section,{}).items():totals[key]=totals.get(key,0)+value
     caps={'move':2,'armor':3,'evasion':12,'accuracy':15,'magic_reduction':40,'regeneration':4,'hp':15,'initiative':6,'damage_goblin':3,'damage_deathless':3,'melee_damage':2}
-    return {key:min(value,caps.get(key,4)) for key,value in totals.items()}
+    return {key:min(value,100 if key.endswith(('_resistance','_damage_reduction')) or key=='displacement_resistance' else caps.get(key,4)) for key,value in totals.items()}

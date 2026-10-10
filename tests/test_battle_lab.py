@@ -78,8 +78,10 @@ class BattleLabTests(unittest.TestCase):
     def test_save_and_roster_are_unchanged_and_seed_is_repeatable(self):
         self.state['characters'][0]['status'] = 'mission'
         snapshot = deepcopy(self.state)
-        first = self.start()['battle']
-        second = self.start()['battle']
+        # Seed fixes encounter content; arrival lighting also depends on real time.
+        with patch('backend.combat_lighting.time', return_value=720):
+            first = self.start()['battle']
+            second = self.start()['battle']
         self.assertEqual(first, second)
         self.assertEqual(self.state, snapshot)
         self.assertEqual(len(self.state['characters']), 1)

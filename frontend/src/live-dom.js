@@ -12,6 +12,12 @@ function key(node){
 }
 function compatible(a,b){return a?.nodeType===b.nodeType&&(b.nodeType!==1||a.tagName===b.tagName)}
 function attributes(node,fresh){
+  // A continuous visual angle can differ from its canonical saved direction.
+  // Unrelated redraws must not rotate a stationary mount back to that angle.
+  if(node.classList.contains('boar-body')&&node.dataset.mountFacing===fresh.dataset.mountFacing){
+    const angle=node.style.getPropertyValue('--mount-angle');
+    if(angle)fresh.style.setProperty('--mount-angle',angle);
+  }
   for(const attr of [...node.attributes])if(!fresh.hasAttribute(attr.name)&&!(node.tagName==='DIALOG'&&attr.name==='open'))node.removeAttribute(attr.name);
   for(const attr of fresh.attributes){
     let value=attr.value;

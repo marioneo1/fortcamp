@@ -145,11 +145,14 @@ def auto(battle,unit,targets,forced_target=None):
     if bandit and c._distance(unit,target)<=3:
         say(battle,unit,{'guardian':'Watch the flanks. Stay behind me.','strategist':'Keep them where we want them.','opportunist':'That one looks easy.'}.get(unit.get('personality_id'),'Keep close.'),'engage')
     if bandit:
+        from .enemy_specialties import auto as specialty_auto
+        if specialty_auto(battle,unit,target):return True
         if unit.get('job_id')=='ranger' and c.ranger.auto(battle,unit,targets):return True
         snare=next((s for s in unit.get('skills',[]) if s['id']=='npc:bandit:road_bola' and c.abilities.availability(unit,s)['available'] and c._can_attack(battle,unit,target,s['range'])),None)
         if snare and not conditions.has(target,'hobbled'):
             c._resolve_ability(battle,unit,target,snare);unit['acted']=True;return True
-    if c._auto_open_gate(battle,unit,target):return 'finished'
+    c._auto_open_gate(battle,unit,target)
+    if unit.get('acted'):return True
     if int(unit.get('snared_until_round',0))>=int(battle.get('round',1)):
         strike(battle,unit,target);return True
     if profile=='fence_wolf' and not c.bard.locked(unit):
@@ -162,15 +165,16 @@ def auto(battle,unit,targets,forced_target=None):
             dest=max(legal,key=flank);c._move_to_nearest_tile(battle,unit,[{'x':dest[0],'y':dest[1]}])
         elif not c._can_attack(battle,unit,target):c._move_toward(battle,unit,target)
     elif not c._can_attack(battle,unit,target):c._move_toward(battle,unit,target)
-    if not active(unit) or unit.get('forced_skip') or unit.get('engineer_interrupted') or not c.bard.can_attack(unit):return True
+    if unit.get('acted') or not active(unit) or unit.get('forced_skip') or unit.get('engineer_interrupted') or not c.bard.can_attack(unit):return True
     if bandit:
+        if specialty_auto(battle,unit,target):return True
         snare=next((s for s in unit.get('skills',[]) if s['id']=='npc:bandit:road_bola' and c.abilities.availability(unit,s)['available'] and c._can_attack(battle,unit,target,s['range'])),None)
         if snare and not conditions.has(target,'hobbled'):
             say(battle,unit,'Hold still. This road is ours.','snare');c._resolve_ability(battle,unit,target,snare);unit['acted']=True;return True
         if unit.get('job_id')=='rogue' and c._auto_rogue_turn(battle,unit,[target]):
             # Rogue's helper owns finish_turn; signal that to the caller.
             return 'finished'
-        technique=next((s for s in unit.get('skills',[]) if s['id']=='job:fighter:bash' and c.abilities.availability(unit,s)['available'] and c._can_attack(battle,unit,target,s['range'])),None)
+        technique=next((s for s in unit.get('skills',[]) if s['id'] in {'job:fighter:bash','job:barbarian:reckless_blow'} and c.abilities.availability(unit,s)['available'] and c._can_attack(battle,unit,target,s['range'])),None)
         if technique:c._resolve_ability(battle,unit,target,technique);unit['acted']=True;return True
     strike(battle,unit,target)
     return True

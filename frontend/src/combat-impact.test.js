@@ -37,3 +37,14 @@ test('barrier capacity has a visible display; corpses do not have shields',()=>{
 });
 
 test('combat dialogue is text, not a damage label',()=>{assert.deepEqual(feedbackText({kind:'dialogue',text:'Cover me!'}),{label:'Cover me!',icon:'',color:'#f0e3c4',value:''})});
+
+test('mount fall waits for the lethal shockwave displacement',()=>{
+ const rows=impactTimeline([
+  {type:'ground_impact',attack_packet:1},
+  {type:'death_burst',unit_id:'b',attack_packet:2,impact_origin_packet:1,impact_offset:133},
+  {type:'mount_fall',unit_id:'r',mount_id:'b',attack_packet:2,impact_origin_packet:1,impact_offset:133},
+  {type:'movement',unit_id:'b',attack_packet:2,impact_origin_packet:1,impact_offset:133,forced:true,points:[{x:4,y:2},{x:6,y:2}]}
+ ]);
+ const move=rows.find(r=>r.event.type==='movement');
+ for(const row of rows.filter(r=>['mount_fall','death_burst'].includes(r.event.type)))assert.ok(row.start>=move.start+move.duration);
+});

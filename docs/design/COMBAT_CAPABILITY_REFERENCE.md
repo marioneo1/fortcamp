@@ -1,5 +1,74 @@
 # Combat capability reference
 
+Ordinary rats/wolves/bears/boars cannot operate doors: blocked pursuit attacks
+destructible door HP and consumes the normal action. Destruction still ends the
+animal's activation; next activation resumes pursuit. Open doors require no
+special animal behavior. Druid forms/humanoids retain normal door operation.
+
+Door operation: free once per unit activation, including humanoid enemies; preserves
+unspent normal movement/main action. Door use commits the preview's terrain cost,
+so movement cannot refill from the doorway. AI may continue pursuit/attack/flee afterward.
+Other objective interactions keep their action costs. See COMBAT_CONTROLS.md.
+Authored bandit AI no longer stops on free door operation. Pursuit may
+approach/open/continue in one activation, retaining its remaining movement budget
+and the one-door-per-activation limit.
+
+October 9 mounted shockwaves: Earthbreaker/Groundbreaker damage rider and mount
+independently but move a surviving linked pair once per cast. Lethal separate
+routes play independently before collapse/fall. Corpse representation records
+whether the animal died mounted. See ANIMAL_MOUNTS.md for presentation details.
+
+October 9 real boar mounts: persistent Rider perk, innate Mount/Dismount, separate
+HP/targets, +1 movement, 25% reduction to both bodies. Mount loss: 25% hard
+(half mount max HP + Stun), 50% rough (quarter + Hobble), 25% safe; one-turn control. Mounted boar shares movement/hazards and status timing,
+skips its autonomous turn; fresh Boar-Rider Patrol layouts use real animals.
+See [Animal mounts](ANIMAL_MOUNTS.md); animal capture/other species deferred.
+
+
+Tripline presentation refinement October 9: one painted rope spans its complete
+1×3 footprint, with two endpoints, no extra boundary outline and no atlas-edge
+artifact. Orientation and single-use crossing behavior remain. Approved female
+Human attacks and Goblin attacks/hurt/death are installed. One final voice tester;
+superseded auditions archived. Gameplay and event timing remain unchanged.
+See art/ENEMY_SPECIALTIES_V1.md and art/ENEMY_VOCALS_V1.md via the documentation index.
+
+October 9 shared-stat migration: ordinary HP uses 12 + 4×VIT; weapon Attack uses
+2 + half its scaling attribute + power/training, with existing race/gear/perks.
+Adventurer E–S scales allocations once at 1.0/1.3/1.6/1.9/2.2/2.5; bonuses
+apply afterward, not another multiplier on completed combat values. Fresh
+humanoids are rebuilt around encounter targets; captures persist raw allocations
+and rank. Saved battles/legacy recruits are not inferred or unscaled. Species,
+summons, machinery and form exceptions remain explicit. See [current rules](SHARED_COMBAT_STATS.md),
+[D audit](D_RANK_COMBAT_AUDIT.md) and [396-fight audit](SHARED_COMBAT_STATS_AUDIT.md).
+
+Defense preparation v2 replaces the spike/snare/platform menu with uncapped
+point-funded barriers, enemy trap pits, proximity explosives and free equipped
+Engineer/Rogue deployments sharing their normal caps. Existing pit Climb Out,
+machine ownership, caltrop zones and explosion/displacement pipelines are reused.
+See [current defense rules](DEFENSE_PREPARATION.md); legacy saved defenses remain compatible.
+
+October 9 final E-rank batch: `frontier_watch_defense` and `prison_rescue_e`
+have four reproducible Battle Lab layouts each, authored Goblin kits and
+recruit/voice identity. Defense preserves preparation/keeper objectives; E-rank
+rescue shares carry/extraction rules without inheriting the D-cart difficulty or
+dispatch prizes. The original D-cart and higher-tier rescue contracts are intact.
+See [E-rank audit](E_RANK_COMBAT_AUDIT.md) for budgets and validation scope.
+
+Audited Human/Goblin enemies now have opt-in wordless attack/hurt/death vocals
+by race, gender and personality (three variations each). Captured identities
+persist on recruits. Shared event timing preserves weapon impacts and prevents
+early death sounds; this changes presentation, not combat balance. See
+[vocal implementation](../art/ENEMY_VOCALS_V1.md) and [short progress](../player-reference/VOICE_PROGRESS.md).
+
+October 9 dev extension: nine recruitable enemy definitions (Road Bola plus
+Tripline, Shakedown, Parting Cut, Ankle Bite, Goliath Shot, Tag Team, Cornered Fury,
+Heel Cut). See [short kit reference](../player-reference/ENEMY_SPECIALTIES.md).
+Captures retain specialties and learn normal Job starters; equipped slots stay
+unchanged. [Recruit backgrounds](../player-reference/RECRUIT_PERKS.md) add bounded
+event-driven effects, matching-workplace production, first-stack Poison rejection,
+defense preparation and modest attribute tradeoffs. Wider general traits remain
+proposals. Perks persist across recruitment and do not occupy skill slots.
+
 Maintained alongside combat changes. This is an index of implemented tools for
 encounter design, not a list of promises or a second skill catalogue. Exact skill
 definitions live in `backend/job_loadouts.py`; individual rework documents record
@@ -152,3 +221,52 @@ required contract clearance, optional recovered pelt/5% claws. Existing targetin
 and corpse pipeline retained. Details: [Radiant encounters](RADIANT_ENCOUNTERS.md).
 20 new field items use ordinary stat/scaling rules, including DEX/STR knuckles;
 no new generic on-hit multiplier or Job redesign.
+
+## E-rank worksite batch 3
+
+Timber Across the Creek (two layouts), The Locked Tool Shed and Herbs Behind
+the Wall (four layouts each) now use scoped Goblin Fighter/Rogue/Ranger kits.
+Two ordinary scavengers or three lighter scavengers guard the optional route;
+peaceful collection and postcombat handover remain unchanged. Guard 28 HP/5 ATK,
+ordinary 24 HP/4 ATK, light 17 HP/3 ATK; all move four and have 12% evasion.
+Existing Driving Strike/Intercept, Cheap Shot/Crippling Cut, Mark Quarry/Longshot
+and mixed Road Bola/Cheap Shot are retained on recruitment. No new skill IDs,
+global racial changes, personal-story eligibility or new radiant events.
+See the E-rank audit for layout rosters, simulations and limitations.
+
+## Generic personal quirks - October 9
+61 runtime definitions in backend/general_perks.py supplement the 16 selected
+backgrounds. Central conflict groups enforce one constitution tier, one
+redistribution profile and no opposing stat/resistance pairs on new rolls/grants.
+Rarity has no level/rank gate; Naturally Gifted has a 0.0001% opening roll and
++1 to STR/DEX/AGI/VIT/INT/LUK. It is an independent bonus, compatible with
+redistribution and luck traits; duplicate copies are blocked. NPC HP/VIT profiles
+are rare to keep ordinary encounters near their authored budgets.
+Combat integrates permanent attribute/stat modifiers, a seeded temporary
+battle-start attribute overlay, Ranger bow/crossbow range, per-action unarmed
+flat damage, displacement resistance, status-application resistance, damage-only
+DoT resistance and final all-source mitigation. Existing control resistance
+uses the maximum, not addition. DoT traits do not prevent application. Precomputed
+Monk hit budgets apply perk mitigation once. Enterprising awards +1 per actual
+party bearer only when mission settlement awards positive gold. No rerolls of
+existing saves; no new skills, classes, stories or racial rebalance.
+Readable generated catalog: ../player-reference/GENERAL_PERKS.md.
+Validation: 352 backend tests pass, including perk conflict/rate boundaries,
+save-stable rolls, actual DoT damage, shared unarmed budgets, single application
+of precomputed Monk mitigation, recruitment and existing map budgets. Reference
+generator --check passes; manual balancing of rare combinations remains.
+
+## October 9 follow-up: rider-owned Boar Charge
+
+Rider now describes allied mounts, with species bonuses/techniques. Only boars
+are currently available. Mounting a boar adds `innate:rider:boar_charge` to the
+rider without consuming an equipped slot; dismount or mount loss removes it.
+Boar Charge uses a main action, three-activation cooldown and a clear cardinal
+line. Starting target distance 1/2/3/4 gives 1.25/1.5/1.75/2.0 times rider attack
+power, stopping adjacent. Only a landed four-cell hit attempts one-turn Stun;
+normal Stun resistance applies. Approach hazards resolve on both bodies and
+can stop the charge. This is dedicated skill movement, not a normal movement
+refill. Existing walking/strike presentation is reused. AI chooses a legal
+straight charge before its ordinary attack; no new animal AI framework.
+Targeted mount/D-rank checks cover tiers, shared movement, blockers, miss,
+immunity, dismount, save/fall outcomes and hazard interruption.

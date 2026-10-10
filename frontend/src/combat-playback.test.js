@@ -2,7 +2,21 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import {composeMotion,poseFrames,walkingFrames,createPlaybackGate,needsPlaybackLock,playbackDuration,departureGhostPlans} from './combat-playback.js';
 import {impactTimeline} from './combat-impact.js';
-import {recoilFrames} from './combat-animation.js';
+import {recoilFrames,partingCutFrames,COMBAT_MOTION} from './combat-animation.js';
+
+test('Parting Cut advances to contact then skids to its final cell before the next actor',()=>{
+ const from={x:5,y:5},target={x:6,y:5},destination={x:4,y:5};
+ const frames=partingCutFrames(from,target,destination,destination,100,100);
+ assert.match(frames[0].transform,/translate\(100px,0px\)/);
+ assert.match(frames[2].transform,/translate\(144px,0px\)/);
+ assert.match(frames.at(-1).transform,/translate\(0px,0px\)/);
+ assert.ok(frames.every((f,i)=>!i||f.offset>frames[i-1].offset));
+ const rows=impactTimeline([{type:'melee_attack',attack_packet:1,parting_retreat:destination},
+  {type:'movement',attack_packet:1,skid_back:true,parting_cut:true,points:[from,destination]},
+  {type:'melee_attack',attack_packet:2}]);
+ assert.equal(rows[1].start,COMBAT_MOTION.contact);
+ assert.ok(rows[2].start>=COMBAT_MOTION.contact+COMBAT_MOTION.partingSkid);
+});
 
 test('dismissed summons stay represented until their late killing contact, without duplicate dissolve ghosts',()=>{
  const previous={units:{w:{id:'w',alive:true,hp:1,condition:'active',summoner_creature:true}}};
@@ -157,4 +171,18 @@ test('rat merging keeps the departing body until the merge and blocks subsequent
  const rows=impactTimeline(events);
  assert.ok(rows[1].start>=rows[0].start+rows[0].duration);
  assert.ok(rows[2].start>=rows[1].start+400);
+});
+
+
+test('mount loss preserves saddle portrait until the killing contact and delays fall feedback',()=>{
+ const before={id:'rider',alive:true,hp:30,animal_mount_id:'boar',x:2,y:2};
+ const events=[{type:'melee_attack',attack_packet:7},{type:'death_burst',unit_id:'boar',attack_packet:7},
+  {type:'mount_fall',unit_id:'rider',mount_id:'boar',attack_packet:7,unit_snapshot:before},
+  {type:'combat_feedback',unit_id:'rider',kind:'fall',attack_packet:7}];
+ const timeline=impactTimeline(events);
+ const fall=timeline.find(r=>r.event.type==='mount_fall');
+ assert.ok(fall.start>=COMBAT_MOTION.contact);
+ assert.equal(timeline.at(-1).start,fall.start);
+ const plans=departureGhostPlans({units:{rider:{...before,animal_mount_id:null}}},{units:{rider:{...before,animal_mount_id:null}}},timeline);
+ assert.equal(plans.find(r=>r.event.unit_id==='rider').before.animal_mount_id,'boar');
 });

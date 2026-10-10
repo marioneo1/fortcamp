@@ -1,0 +1,44 @@
+{
+  "sources": [
+    {
+      "file": "race_names_001.json",
+      "sha256": "361dc42188777f06444c5afa4f7ab56261cc6e11b23b6e99bb8e1a1fe1c6d4e2"
+    },
+    {
+      "file": "race_names_002.json",
+      "sha256": "609a29778c0f70499b65914ca4524955a096b22aec6840ef89e172910c24d298"
+    },
+    {
+      "file": "race_names_003.json",
+      "sha256": "d6e914f51adf86b2e36f89023e2d41ceb7d50a2216094347a828b82a2084a973"
+    },
+    {
+      "file": "race_names_004.json",
+      "sha256": "fd10c3b5a0776cf4f85bbc946537805fe8e87d6aacbc63cb546af07d24e5e21e"
+    },
+    {
+      "file": "race_names_005.json",
+      "sha256": "d9eca578deb4f27f95507848b245e1502608459499e7ea93e888046609dbb93e"
+    },
+    {
+      "file": "race_names_006.json",
+      "sha256": "42c8a937f76a2b69b072303ff2c2ba4ca1f0c5ab88a87b6bf38b9f17cb5cc5ce"
+    },
+    {
+      "file": "race_names_007.json",
+      "sha256": "8cbdd282d3d830e2c1adb36e7dccdcb3c3b19ae5ec79334c2fa750d64a90e52c"
+    }
+  ],
+  "races": 42,
+  "totals": {
+    "given_names": 5840,
+    "leader_given_names": 1008,
+    "second_names": 1680
+  },
+  "removed": [],
+  "errors": [],
+  "warnings": [],
+  "cross_race_overlap": {},
+  "source_note": "Submitted style/source claims retained as author metadata, not independently verified D&D lore.",
+  "context_policy": "Titles/epithets require explicit matching known context; ordinary integration uses context-free formats."
+}

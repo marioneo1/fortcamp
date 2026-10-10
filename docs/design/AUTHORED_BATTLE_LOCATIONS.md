@@ -1,5 +1,11 @@
 # Authored battle locations
 
+October 9 first D-rank audit: Highway Ambush (`highway_cut`), Bone Patrol
+(`cemetery_road`) and Boar-Rider Patrol (`boar_rider_route`) now have four
+authored plans and opposition variations each. Roads, grave processions and
+cavalry staging use current boundary materials; a reusable two-door relay office
+replaces a chapel-shaped stand-in. See [D-rank audit](D_RANK_COMBAT_AUDIT.md).
+
 ## October 3: Highway Ambush
 
 Implemented in dev: Highway Ambush (D-rank) now uses `highway_cut` instead of

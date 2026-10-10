@@ -38,6 +38,7 @@ from .appearance import has_appearance, sanitize_appearance, tagged_appearance
 from .portrait_framing import portrait_key, resolve_frame
 from .models import GuildConfig, MissionInstance, PlayerState
 from .services import (
+    POOL_SECONDS,
     active_pool_slot, analyze_instance, available_chain_missions, claim_instance, create_player, debug_complete_instance,
     debug_resolve_now_instance,
     debug_start_battle, debug_start_goblin_battle, ensure_pool,
@@ -913,7 +914,7 @@ async def mission_pool(identity: IdentityDep):
             active_players=registered_players
     current_slot = active_pool_slot(identity.guild_id)
     return {
-        "pool_slot": current_slot, "next_refresh": missions[0].spawned_at+1800 if missions else pool_slot()+1800,
+        "pool_slot": current_slot, "next_refresh": missions[0].spawned_at+POOL_SECONDS if missions else pool_slot()+POOL_SECONDS,
         "rank": viewer_rank, "registered_players": registered_players,
         "active_players":active_players,
         "budget":claim_budget(player.state if player else {},current_slot,missions[0].spawned_at if missions else pool_slot()),

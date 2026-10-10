@@ -114,6 +114,8 @@ def main():
         for command in commands:
             child=subprocess.Popen(command,cwd=cwd,env=env,creationflags=subprocess.CREATE_NEW_PROCESS_GROUP,stdout=subprocess.PIPE,stderr=subprocess.STDOUT,text=True,encoding='utf-8',errors='replace',bufsize=1)
             children.append(child)
+            service='API' if len(children)==1 else 'frontend (Vite/npm)'
+            log.write(f'Started {service}: PID {getattr(child,"pid","unknown")}\n');log.flush()
             thread=threading.Thread(target=relay_output,args=(child,log,lock),daemon=True)
             thread.start();threads.append(thread)
         next_conflict_check=time.monotonic()+5
@@ -125,7 +127,9 @@ def main():
         stopped=next((child for child in children if child.poll() is not None),None)
         if stopped:
             exit_code=stopped.returncode or 1
-            message=f'Fortcamp process stopped unexpectedly (exit {stopped.returncode}). See {log_path}.\n'
+            service='API' if children.index(stopped)==0 else 'frontend (Vite/npm)'
+            native=f'; Windows status 0x{stopped.returncode & 0xffffffff:08X}' if os.name=='nt' and abs(stopped.returncode)>255 else ''
+            message=f'Fortcamp {service} process stopped unexpectedly (PID {getattr(stopped,"pid","unknown")}, exit {stopped.returncode}{native}). See {log_path}.\n'
             with lock:log.write(message);log.flush()
             print(message,flush=True)
     except KeyboardInterrupt:pass

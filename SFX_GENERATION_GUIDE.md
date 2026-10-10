@@ -1,5 +1,24 @@
 # Fortcamp Sound Effects Guide
 
+## Wordless humanoid vocals, October 9
+
+Future attack standard: follow the approved female martial/exertion approach,
+adapted to each race/gender/personality. Strong projected proactive strike effort,
+immediate onset and short decisive voiced cutoff; no coughs, pain gasps, hesitation,
+cheering, moans or withering voice. Reference installed approved female attacks;
+do not reuse their audio as male voices. Small audition first, expansion after
+review. Human male attacks are accepted for now despite user criticism; no
+regeneration/replacement requested. Preserve current installed files.
+
+Approved144 wordless clips installed in enemy-vocals-v1 (96 unchanged) and
+enemy-vocals-female-v2 (48 revisions). Human female attacks and Goblin female
+attacks/pain/death reviewed by user. Goblin pain/death shares reviewed six-clip
+set across female personalities. No unreviewed variants generated during cleanup.
+One tester: assets/sfx/voice-tester/preview.html. Exact originals/approved WAVs
+retained in staging-sfx/enemy-vocals-approved, restored offline by
+tools/rebuild_enemy_vocals.py; no API calls. Historical generation sources and
+requests archived separately. See docs/art/ENEMY_VOCALS_V1.md.
+
 ## Captor foley, October 7
 
 Four ElevenLabs clips use tools/generate_captor_sfx.py, with original MP3s/reports in staging-sfx/captor-v1 and runtime WAVs in frontend/public/assets/sfx. See docs/art/CAPTOR_V1.md. Existing net Subdue sound is reused.

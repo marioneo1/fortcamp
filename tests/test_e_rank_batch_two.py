@@ -42,7 +42,9 @@ class BatchTwoTests(unittest.TestCase):
                 totals.append(sum(u['hp'] for u in es))
                 names=' '.join(t.get('name','') for t in b['terrain']+b.get('decorations',[]))
                 self.assertIn({'goblin_pickpockets':'Dropped Purse','ruined_well':'Old Village Well','supply_watch':'Grain Sacks'}[mid],names)
-                if b['map_variation'] in (2,4) and mid=='supply_watch':self.assertEqual(sum(u['attack'] for u in es),9)
+                if b['map_variation'] in (2,4) and mid=='supply_watch':
+                    self.assertGreaterEqual(sum(u['attack'] for u in es),6)
+                    self.assertLessEqual(sum(u['attack'] for u in es),12)
             self.assertLessEqual(max(totals)/min(totals),1.15)
 
     def test_recruited_roles_preserve_skills_and_personality(self):

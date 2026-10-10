@@ -1,4 +1,7 @@
+import {mountedAnimal,mountedCorpse,mountMarkup,motionPartner,pairedMotionFrames,mountAngle,turnMount} from './mount-art.js';
+import './mount-art.css';
 import {actionSummary} from './combat-action-summary.js';
+import {rankedAttribute} from './combat-stat-rules.js';
 import {bindBattleTouch} from './battle-touch.js';
 import {floatingBattleMarkup,mountBattleHud,openHudEffects,closeHudEffects,closeHudTurns} from './battle-hud.js';
 import {statusListMarkup} from './combat-status-presentation.js';
@@ -7,6 +10,7 @@ import './captor.css';
 import {mountEngineer,resetEngineerPlacement,engineerHazardsMarkup,animateEngineerHazards} from './engineer-ui.js';
 import './engineer.css';
 import {bindMovementHazards} from './combat-hazard-preview.js';
+import {preparationPreview} from './defense-preparation.js';
 import {mountSummoner,resetSummonerPlacement} from './summoner-ui.js';
 import './summoner.css';
 import {warmMageBattle,prepareMagePlayback} from './mage-assets.js';
@@ -33,6 +37,7 @@ import {doorControlsMarkup,bindDoorControls} from './battle-door-controls.js';
 import {mapStatusMarkup,statusTrayMarkup,stunMarkup,stunOnsets} from './combat-status-presentation.js';
 import './combat-status-presentation.css';
 import {combatAudioSchedule} from './combat-audio.js';
+import {VOCAL_FILES,battleVocalFiles} from './enemy-vocals.js';
 import {statusDetails,tacticalPreviewText} from './combat-status-ui.js';
 import {zoneOverlay,zoneCellHelp} from './combat-spaces-ui.js';
 import {openConstruction} from './construction-ui.js';
@@ -45,6 +50,8 @@ import {structuralLayout,structuralConnectors,wallArtStyle} from './building-joi
 import buildingGeometry from './building-art-geometry.json';
 import './location-map-art.css';
 import {createBattleLab} from './battle-lab.js';
+import {createDevTools} from './dev-tools.js';
+import {createLightingLab} from './lighting-lab.js';
 import {paintedObjectSprite,paintedTerrainSprite,paintedDestroyedTerrainSprite} from './map-object-art.js';
 import {overheadPropStyle} from './map-prop-art.js';
 import {propArtScale,propVisualSpan} from './map-prop-sizing.js';
@@ -71,7 +78,7 @@ import {mountRelationships,mountServiceRecord} from './relationship-ui.js';
 import {createCombatEffects} from './combat-effects.js';
 import './combat-effects.css';
 import {impactTimeline,createImpactFeedback,protectionMarkup} from './combat-impact.js';
-import {COMBAT_MOTION,recoilFrames,weaponAttackFrames,weaponHitFrames,collisionFrames,collisionRecipientFrames,collapseFrames,collapsePlacement} from './combat-animation.js';
+import {COMBAT_MOTION,recoilFrames,weaponAttackFrames,weaponHitFrames,partingCutFrames,skidBackFrames,collisionFrames,collisionRecipientFrames,collapseFrames,collapsePlacement} from './combat-animation.js';
 import {composeMotion,poseFrames,walkingFrames,playbackDuration,needsPlaybackLock,createPlaybackGate,departureGhostPlans} from './combat-playback.js';
 const combatPlayback=createPlaybackGate();
 const combatPlaybackKey=()=>`${activeBattleMissionId}:${activeBattleView?.encounter_id}:${activeBattleView?.seed}`;
@@ -247,8 +254,11 @@ function fmtDuration(s){s=Math.max(0,Math.floor(s));if(s<60)return `${s}s`;if(s<
 function countdown(ts){return fmtDuration(Math.max(0,Math.ceil(Number(ts)-Date.now()/1000)))}
 function characterStatus(c){return c.status==='incapacitated'?`Recovering in ${c.recovery_location||'camp'} · ${countdown(c.recovers_at||0)}`:title(c.status)}
 function debugEnabled(){return !!(appConfig?.debug_mode && (identity?.guild_admin || appConfig?.dev_bypass_auth))}
+function developerToolsEnabled(){return debugEnabled()&&!['prod','production','release','stable'].includes((appConfig.environment||'').toLowerCase())}
 let activeBattleLabSessionId=null, activeLabMetadata=null;
 const battleLab=createBattleLab({api:(...args)=>rawApi(...args),onError:message=>toast(message),onStart:openLabBattle});
+const lightingLab=createLightingLab({openBattleLab:()=>battleLab.open()});
+const devTools=createDevTools({battle:()=>battleLab.open(),portraits:()=>openPortraitLab({api:rawApi,src:portraitSrc,esc,onSaved:()=>refreshDynamic(true),onError:error=>toast(error.message)}),walls:()=>launchConstruction(true)});
 function battleEndpoint(suffix='',missionId=activeBattleMissionId){return activeBattleLabSessionId?`/api/debug/battle-lab/${activeBattleLabSessionId}${suffix}`:`/api/missions/${missionId}/battle${suffix}`}
 function openLabBattle(data){
   latestMovement.clear();activeBattleLabSessionId=data.session_id;activeLabMetadata=data;
@@ -259,6 +269,9 @@ function openLabBattle(data){
 }
 function labToolbar(b){if(!activeBattleLabSessionId)return '';return `<div class="battle-lab-toolbar"><div><b>BATTLE LAB - ${b.material_showcase?'MATERIAL TEST':esc(activeLabMetadata.mission.rank)+' Rank'} - ${esc(activeLabMetadata.mission.name)}</b><small>${esc(activeLabMetadata.mission.source)} - ${esc(activeLabMetadata.variant.label)} - ${esc(title(activeLabMetadata.variant.outcome))} - Seed: ${esc(activeLabMetadata.seed)}${b.location_id||b.material_showcase?` - ${esc(title(b.template_id||b.location_id))} - Variant ${b.map_variation} - ${b.width} x ${b.height}`:''}</small>${b.material_showcase?`<details class="lab-pieces"><summary>Pieces in this layout (${b.material_showcase.pieces.length}/16)</summary><small>${b.material_showcase.pieces.map(p=>esc(title(p))).join(' / ')}</small><small>${esc(b.material_showcase.notes)}</small></details>`:''}${b.status==='complete'?`<small class="lab-complete">Test finished: ${esc(title(b.outcome||'complete'))}. No save changes.</small>`:''}</div><button data-lab-restart>Restart Same Test</button><button data-lab-return>Choose Another Map</button></div>`}
 function bindLabToolbar(){
+  const toolbar=$('.battle-lab-toolbar');
+  if(toolbar&&developerToolsEnabled()&&!toolbar.querySelector('[data-dev-launcher]')){const button=document.createElement('button');button.dataset.devLauncher='';button.textContent='Developer Tools';button.onclick=()=>devTools.open();toolbar.append(button)}
+  if(toolbar&&developerToolsEnabled()&&!toolbar.querySelector('[data-lab-lighting]')){const button=document.createElement('button');button.dataset.labLighting='';button.textContent='Lighting';button.onclick=()=>lightingLab.open();toolbar.append(button)}
   const restart=$('[data-lab-restart]');if(restart)restart.onclick=()=>{if(combatRequestPending){toast('Wait for the current action to finish');return}battleLab.restart()};
   const back=$('[data-lab-return]');if(back)back.onclick=()=>{if(combatRequestPending){toast('Wait for the current action to finish');return}latestMovement.clear();activeBattleView=null;$('#mission-modal').classList.add('hidden');syncMusic();battleLab.open()};
 }
@@ -280,6 +293,7 @@ for(const name of ['bard_jeering_verse','bard_cue_strike','bard_accelerando','ba
 const unavailableSfx=new Set();
 for(const species of ['rat','wolf'])for(const action of ['attack','bite','hurt','death',...(species==='rat'?['swarm']:[])])for(let i=1;i<=3;i++)sfxFiles[`${species}_${action}_${i}`]=`${species}_${action}_${i}.wav`;
 for(const action of ['attack','hurt','death'])for(let i=1;i<=3;i++)sfxFiles[`bear_${action}_${i}`]=`bear_${action}_${i}.wav`;
+for(const action of ['attack','hurt','death'])for(let i=1;i<=3;i++)sfxFiles[`boar_${action}_${i}`]=`boar_${action}_${i}.wav`;
 const decodedSfx=new Map(),decodingSfx=new Map();
 for(const name of ['burn_tick','poison_tick','barrier_absorb','collision_hit'])sfxFiles[name]=`${name}.wav`;
 sfxFiles.collision_hit='body_collision.wav';
@@ -287,26 +301,39 @@ for(const name of ['captor_bola','captor_drag','captor_hold','captor_blitz','eng
 for(const name of ['summoner_conjure','summoner_transposition','summoner_projection','summoner_sacrifice','summoner_overload','summoner_life_pact'])sfxFiles[name]=`${name}.wav`;
 for(const name of ['druid_prowler','druid_bulwark','druid_rat','druid_growth','druid_vine_lash'])sfxFiles[name]=`${name}.wav`;
 for(const name of ['rogue_shadowstep','rogue_backflip','rogue_caltrops','rogue_knife_throw'])sfxFiles[name]=`${name}.wav`;
+for(const kind of ['tripline_set','tripline_snap','shakedown','parting_cut','ankle_bite','goliath_shot','tag_team','heel_cut','cornered_fury'])sfxFiles[`specialty_${kind}`]=`specialty_${kind}.wav`;
 for(const name of ['earthbreaker_launch','earthbreaker_land','earthbreaker_crater','body_into_body','body_into_wall'])sfxFiles[name]=`${name}.wav`;
 for(const style of ['slash','hack','crush','blunt','fist','stab'])for(const phase of ['swing','hit'])sfxFiles[`melee_${style}_${phase}`]=`melee_${style}_${phase}.wav`;
 for(const style of ['slash','hack','crush','blunt','fist','stab'])sfxFiles[`melee_${style}_flesh`]=`melee_${style}_flesh.wav`;
 for(const phase of ['cast','cinch','slip'])sfxFiles[`capture_net_${phase}`]=`capture_net_${phase}.wav`;
+Object.assign(sfxFiles,VOCAL_FILES);
+const warmedVocalFiles=new Set();
+function warmBattleVocals(battle){
+  if(!audioMixer.volume('battle'))return;
+  for(const name of Object.keys(battleVocalFiles(battle))){
+    if(warmedVocalFiles.has(name))continue;warmedVocalFiles.add(name);
+    loadSfxBuffer(name).catch(()=>warmedVocalFiles.delete(name));
+  }
+}
+async function loadSfxBuffer(name){
+  const ctx=ensureAudio();if(!ctx)return null;
+  if(decodedSfx.has(name))return decodedSfx.get(name);
+  let loading=decodingSfx.get(name);
+  if(!loading){
+    loading=fetch(`/assets/sfx/${sfxFiles[name]}?v=${name.startsWith('vocal_')?'20261009-vocals-v1':'20261006-bard-audio'}`).then(response=>{
+      if(!response.ok)throw new Error(`SFX ${response.status}`);
+      return response.arrayBuffer();
+    }).then(data=>ctx.decodeAudioData(data)).then(buffer=>{decodedSfx.set(name,buffer);return buffer})
+      .finally(()=>decodingSfx.delete(name));
+    decodingSfx.set(name,loading);
+  }
+  return loading;
+}
 async function playBufferedSfx(name,volume){
   const ctx=ensureAudio();
   if(!ctx||audioMixer.volume(audioCategory(name),volume)===0)return;
   try{
-    let buffer=decodedSfx.get(name);
-    if(!buffer){
-      let loading=decodingSfx.get(name);
-      if(!loading){
-        loading=fetch(`/assets/sfx/${sfxFiles[name]}?v=20261006-bard-audio`).then(response=>{
-          if(!response.ok)throw new Error(`SFX ${response.status}`);
-          return response.arrayBuffer();
-        }).then(data=>ctx.decodeAudioData(data));
-        decodingSfx.set(name,loading);
-      }
-      buffer=await loading;decodedSfx.set(name,buffer);decodingSfx.delete(name);
-    }
+    const buffer=await loadSfxBuffer(name);if(!buffer)return;
     if(ctx.state==='suspended')await ctx.resume();
     const source=ctx.createBufferSource(),gain=ctx.createGain();
     gain.gain.value=audioMixer.volume(audioCategory(name),volume);source.buffer=buffer;source.connect(gain);gain.connect(ctx.destination);source.start();
@@ -316,7 +343,8 @@ function playSfx(name,volume=.5,delay=0,fallback=null){
   const run=()=>{
     if(!sfxFiles[name]||unavailableSfx.has(name)){fallback?.();return}
     if(audioMixer.volume(audioCategory(name),volume)===0)return;
-    const audio=new Audio(`/assets/sfx/${sfxFiles[name]}?v=${name==='earthbreaker_land'?'20261005-landing-dry-v3':'20260930-actions-v1'}`);audio.preload='auto';
+    if(name.startsWith('vocal_')&&ensureAudio()){playBufferedSfx(name,volume);return}
+    const audio=new Audio(`/assets/sfx/${sfxFiles[name]}?v=${name.startsWith('vocal_')?'20261009-vocals-v1':name==='earthbreaker_land'?'20261005-landing-dry-v3':'20260930-actions-v1'}`);audio.preload='auto';
     const release=audioMixer.track(audio,audioCategory(name),volume);
     audio.play().catch(error=>{release();if(error.name==='NotAllowedError')playBufferedSfx(name,volume);else{unavailableSfx.add(name);fallback?.()}});
   };
@@ -354,9 +382,10 @@ function playWalkingSounds(battle,unit,points,duration,delay=0){
   }
 }
 function playBattleSounds(battle,events=battle?.animation_events||[]){
+  warmBattleVocals(battle);
   const schedule=combatAudioSchedule(battle,events);
   for(const cue of schedule.cues)playSfx(cue.name,cue.volume,cue.delay);
-  for(const {event,start,duration} of impactTimeline(events))if(event.type==='movement'&&!event.forced&&!event.leap)
+  for(const {event,start,duration} of impactTimeline(events))if(event.type==='movement'&&!event.forced&&!event.leap&&!event.skid_back)
     playWalkingSounds(battle,battle.units?.[event.unit_id],event.points||[],duration,start);
   return schedule.duration;
 }
@@ -525,10 +554,11 @@ function renderMissions(){
   syncRegionalTheme();
   eventBanner.className=`event-banner guild-board-event event-${event.theme||'general'}`;stableBoardHTML(eventBanner,eventHeader(event));syncContractNavigation();
   const debugBox=$('#debug-pool-controls');debugBox.classList.toggle('hidden',!debugEnabled());
+  const devLauncher=$('#debug-dev-tools');devLauncher.classList.toggle('hidden',!developerToolsEnabled());devLauncher.onclick=()=>devTools.open();
   if(debugEnabled()&&!$('#debug-pool-event').options.length){$('#debug-pool-event').innerHTML=Object.entries(content.mission_events).map(([id,e])=>`<option value="${id}">${esc(e.name)}</option>`).join('');$('#debug-force-refresh').onclick=async()=>{const btn=$('#debug-force-refresh');btn.disabled=true;try{const d=await rawApi('/api/debug/missions/refresh',{method:'POST',body:JSON.stringify({event_id:$('#debug-pool-event').value})});toast(`Forced ${d.event.name}`);await refreshDynamic(true)}catch(err){toast(err.message)}finally{btn.disabled=false}}}
   if(debugEnabled())$('#debug-battle-lab').onclick=()=>battleLab.open();
   const wallLabEnabled=debugEnabled()&&!['prod','production','release','stable'].includes((appConfig.environment||'').toLowerCase());
-  $('#debug-wall-kit-lab').classList.toggle('hidden',!wallLabEnabled);if(wallLabEnabled)$('#debug-wall-kit-lab').onclick=()=>launchConstruction(true);
+  $('#debug-wall-kit-lab').classList.add('hidden');if(wallLabEnabled)$('#debug-wall-kit-lab').onclick=()=>launchConstruction(true);
   if(debugEnabled())$('#debug-portrait-lab').onclick=()=>openPortraitLab({api:rawApi,src:portraitSrc,esc,onSaved:()=>refreshDynamic(true),onError:error=>toast(error.message)});
   const ranks=content.mission_ranks||['E','D','C','B','A','S'],viewerIndex=ranks.indexOf(pool.rank);
   const rankFilter=$('#board-rank'),formFilter=$('#board-form');
@@ -600,7 +630,7 @@ async function debugCompleteMission(missionId,outcome,selection={party_ids:[],ro
 
 function perkLevel(c,track){return c.perks?.[track]||'none'}
 function perkRank(c,track){return (content.perk_levels||['none','basic','skilled','expert','master']).indexOf(perkLevel(c,track))}
-function effectiveAttribute(c,attribute){let n=c.attributes?.[attribute]??5;Object.values(c.equipment||{}).forEach(id=>{const item=itemByInstance(id);if(item)n+=item.attribute_bonuses?.[attribute]||0});Object.entries(content.perk_tracks||{}).forEach(([track,d])=>{if(d.attribute_bonus===attribute&&perkRank(c,track)>=1)n++});if(c.mercenary_weapon)n+=content.items[c.mercenary_weapon]?.attribute_bonuses?.[attribute]||0;return n+(perkModifiers(c,Object.values(c.equipment||{}).map(itemByInstance),content.standalone_perks,'attributes')[attribute]||0)}
+function effectiveAttribute(c,attribute){let n=rankedAttribute(c.attributes?.[attribute]??5,c.adventurer_rank,content.combat_stat_rules?.rank_percent);Object.values(c.equipment||{}).forEach(id=>{const item=itemByInstance(id);if(item)n+=item.attribute_bonuses?.[attribute]||0});Object.entries(content.perk_tracks||{}).forEach(([track,d])=>{if(d.attribute_bonus===attribute&&perkRank(c,track)>=1)n++});if(c.mercenary_weapon)n+=content.items[c.mercenary_weapon]?.attribute_bonuses?.[attribute]||0;return Math.max(1,n+(perkModifiers(c,Object.values(c.equipment||{}).map(itemByInstance),content.standalone_perks,'attributes')[attribute]||0))}
 function combatMetrics(c){
   const weapon=c.mercenary_weapon?content.items[c.mercenary_weapon]:itemByInstance(c.equipment?.weapon),scaling=weapon?.weapon_scaling||'str';
   return {constitution:effectiveAttribute(c,'vit'),dps:weapon?.capture_weapon?0:effectiveAttribute(c,scaling)+(weapon?.power||0)+Math.floor(effectiveStat(c,'combat')/2),dps_attribute:scaling,weapon:weapon?.name||'Unarmed'};
@@ -694,11 +724,11 @@ function combatActionArt(name){return `<span class="combat-action-art action-${n
 function battleToken(unit,current,battle,stunDelay=0){
   if(unit.mounted_machine)return '';
   if(unit.lost_in_pit||(unit.temporary&&unit.condition==='dismissed'))return '';
-  const face=isTurret(unit)?turretMarkup(unit,battle):unit.portrait?framedImage(portraitSrc(unit.portrait),unit.portrait_frame,esc):`<span>${initials(unit.name)}</span>`;
+  const face=(mountedAnimal(unit)||mountedCorpse(unit))?mountMarkup(unit):isTurret(unit)?turretMarkup(unit,battle):unit.portrait?framedImage(portraitSrc(unit.portrait),unit.portrait_frame,esc):`<span>${initials(unit.name)}</span>`;
   const boss=unit.boss||unit.kind==='chieftain';
   const height=battle.elevation?.find(tile=>tile.x===unit.x&&tile.y===unit.y)?.height||0,preview=battle.attack_previews?.[unit.id]?.[selectedCombatAction];
   const accuracy=preview?.support?` · Ability available${preview.heal?` · restores up to ${preview.heal} HP`:''}`:preview?.setup_only?' · Effect available · see ability conditions':preview?` · ${preview.chance}% ${preview.capture?'capture chance':'accuracy'}${preview.damage_bonus?` · +${preview.damage_bonus} height damage`:''}`:'';
-  const statuses=mapStatusMarkup(unit,battle.status_definitions,esc);
+  const statuses=mapStatusMarkup(unit,battle.status_definitions,esc,battle.units);
   const condition=unit.condition||(!unit.alive?'dead':'active'),bodyLabel=isTurret(unit)?'':condition==='unconscious'?'UNCONSCIOUS':condition==='dead'?'CORPSE':'';
   const throwTarget=(battle.throw_profile?.target_ids||[]).includes(unit.id);
   const special=battle.units?.[battle.current_unit_id]?.special;
@@ -708,7 +738,7 @@ function battleToken(unit,current,battle,stunDelay=0){
   const cueSelectingAlly=cue&&!bardCueAllyId;
   const targeting=unit.alive&&unit.conscious!==false&&!unit.extracted&&!unit.carried_by&&['attack','subdue','skill','throw'].includes(selectedCombatAction)&&(song?unit.id===battle.current_unit_id:(cue?(cueSelectingAlly?unit.team==='player':unit.team==='enemy'):(support?unit.team==='player':unit.team==='enemy'))),validTarget=selectedCombatAction==='throw'?throwTarget:song?unit.id===battle.current_unit_id:cue?(cueSelectingAlly?unit.team==='player':unit.team==='enemy'):!!preview;
   const occupiedAbove=condition!=='active'&&Object.values(battle.units||{}).some(other=>other.id!==unit.id&&other.x===unit.x&&other.y===unit.y&&other.alive&&other.conscious!==false&&!other.extracted&&!other.carried_by);
-  return `<button class="battle-token ${isTurret(unit)?'turret-prop':''} ${unit.team} ${unit.wildlife_hostile_all?'independent-wildlife':''} ${current?'current':''} ${boss?'boss':''} ${throwTarget?'throw-target':''} ${targeting?(validTarget?'valid-target':'invalid-target'):''} ${unit.extracted?'extracted':''} ${unit.carried_by?'carried':''} ${occupiedAbove?'body-under-unit':''} ${condition}" data-battle-unit="${unit.id}" style="grid-column:${unit.x+1};grid-row:${unit.y+1}" title="${esc(unit.name)} · ${unit.hp}/${unit.max_hp} HP · ${title(condition)} · elevation ${height}${boss?' · BOSS':''}${targeting?validTarget?' · valid target':' · out of range or line of sight':''}${throwTarget?` · ${battle.throw_profile.damage} throw damage`:''}${accuracy}${tacticalPreviewText(preview)?` | ${esc(tacticalPreviewText(preview))}`:''}">${boss?'<strong class="boss-label">BOSS</strong>':''}${height?`<strong class="height-badge">▲${height}</strong>`:''}${face}${protectionMarkup(unit)}${martialAuraMarkup(unit)}${monkAuraMarkup(unit)}${stunMarkup(unit,stunDelay)}${mageStatusMarkup(unit)}${condition==='active'?`<i><b>${unit.hp}</b><small>HP</small></i>`:''}${furyMarkup(unit,{compact:true})}${unit.team==='enemy'&&!unit.temporary&&(unit.resolve<unit.max_resolve||battle.units?.[battle.current_unit_id]?.job_id==='captor'||selectedCombatAction==='subdue')?`<div class="captor-resolve"><meter min="0" max="${unit.max_resolve}" value="${unit.resolve}"></meter><small>${unit.capture_ready?'CAPTURE READY':`${unit.resolve} RES`}</small></div>`:''}${bodyLabel?`<em class="body-label">${condition==='dead'?'† CORPSE':'ZZZ · UNCONSCIOUS'}</em>`:''}${statuses}</button>`;
+  return `<button class="battle-token ${isTurret(unit)?'turret-prop':''} ${mountedAnimal(unit)||mountedCorpse(unit)?'boar-prop':''} ${unit.animal_mount_id?'mounted-rider':''} ${unit.team} ${unit.wildlife_hostile_all?'independent-wildlife':''} ${current?'current':''} ${boss?'boss':''} ${throwTarget?'throw-target':''} ${targeting?(validTarget?'valid-target':'invalid-target'):''} ${unit.extracted?'extracted':''} ${unit.carried_by?'carried':''} ${occupiedAbove?'body-under-unit':''} ${condition}" data-battle-unit="${unit.id}" style="grid-column:${unit.x+1};grid-row:${unit.y+1}" title="${esc(unit.name)} · ${unit.hp}/${unit.max_hp} HP · ${title(condition)} · elevation ${height}${boss?' · BOSS':''}${targeting?validTarget?' · valid target':' · out of range or line of sight':''}${throwTarget?` · ${battle.throw_profile.damage} throw damage`:''}${accuracy}${tacticalPreviewText(preview)?` | ${esc(tacticalPreviewText(preview))}`:''}">${boss?'<strong class="boss-label">BOSS</strong>':''}${height?`<strong class="height-badge">▲${height}</strong>`:''}${face}${protectionMarkup(unit)}${martialAuraMarkup(unit)}${monkAuraMarkup(unit)}${stunMarkup(unit,stunDelay)}${mageStatusMarkup(unit)}${condition==='active'?`<i><b>${unit.hp}</b><small>HP</small></i>`:''}${furyMarkup(unit,{compact:true})}${unit.team==='enemy'&&!unit.temporary&&(unit.resolve<unit.max_resolve||battle.units?.[battle.current_unit_id]?.job_id==='captor'||selectedCombatAction==='subdue')?`<div class="captor-resolve"><meter min="0" max="${unit.max_resolve}" value="${unit.resolve}"></meter><small>${unit.capture_ready?'CAPTURE READY':`${unit.resolve} RES`}</small></div>`:''}${bodyLabel?`<em class="body-label">${condition==='dead'?'† CORPSE':'ZZZ · UNCONSCIOUS'}</em>`:''}${statuses}</button>`;
 }
 
 function tileActionsForBattle(b,x,y){
@@ -772,6 +802,9 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       if(offsets.has(event.unit_id))continue;
       const token=field.querySelector(`[data-battle-unit="${CSS.escape(event.unit_id)}"]`);
       if(token)offsets.set(event.unit_id,restartWalking(token,movingPositions.get(event.unit_id)));
+      const partnerId=event.mount_partner_id||previous.units?.[event.unit_id]?.animal_mount_id||previous.units?.[event.unit_id]?.rider_id;
+      const partnerToken=partnerId&&field.querySelector(`[data-battle-unit="${CSS.escape(partnerId)}"]`);
+      if(partnerToken&&!offsets.has(partnerId))offsets.set(partnerId,restartWalking(partnerToken,movingPositions.get(partnerId)));
     }
     for(const {event,before,start,duration} of departureGhostPlans(previous,battle,timeline)){
       const finalToken=field.querySelector(`[data-battle-unit="${CSS.escape(event.unit_id)}"]`);
@@ -781,6 +814,9 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       // Measure the final corpse pose, not its inherited CSS transition halfway through.
       const bodyTransition=finalToken?.style.transition;if(finalToken)finalToken.style.transition='none';
       ghosts.set(event.unit_id,{ghost,finalToken,bodyTransition,placement:{...collapsePlacement(ghost.getBoundingClientRect(),(finalToken||ghost).getBoundingClientRect()),scale:finalToken?parseFloat(getComputedStyle(finalToken).width)/parseFloat(getComputedStyle(ghost).width):1}});
+      if(['mount_fall','mount_release'].includes(event.type))setTimeout(()=>{
+        ghost.remove();if(finalToken)finalToken.style.visibility='';ghosts.delete(event.unit_id);
+      },start);
       if(event.type==='rat_merge')setTimeout(()=>{
         if(!ghost.isConnected)return;
         const dx=(event.to.x-event.x)*cellWidth,dy=(event.to.y-event.y)*cellHeight;
@@ -792,6 +828,15 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       },start+180);
     }
     const tokenFor=id=>ghosts.get(id)?.ghost||field.querySelector(`[data-battle-unit="${CSS.escape(id)}"]`);
+    for(const animal of Object.values(previous.units||{}))if(animal.boar_mount&&animationEvents.some(e=>e.type==='movement'&&!e.forced&&(e.unit_id===animal.id||e.mount_partner_id===animal.id)||e.type==='melee_attack'&&(e.attacker_id===animal.id||e.attacker_id===animal.rider_id))){
+      const body=tokenFor(animal.id)?.querySelector('.boar-body');
+      if(body){body.style.transition='none';body.style.setProperty('--mount-angle',`${mountAngle(animal.mount_facing)}deg`);body.getBoundingClientRect();body.style.transition=''}
+    }
+    const faceMount=(id,dx,dy,at)=>{
+      const unit=battle.units?.[id],partner=motionPartner(id,previous,battle,timeline,at);
+      const animalId=unit?.boar_mount?id:partner;
+      if(battle.units?.[animalId]?.boar_mount)setTimeout(()=>turnMount(tokenFor(animalId),dx,dy),at);
+    };
     const cancelPose=id=>{
       const token=tokenFor(id);
       if(!token||(!token.classList.contains('is-attacking')&&!token.classList.contains('is-hit')))return;
@@ -810,9 +855,22 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
     if(iceDuration>playbackDuration(timeline)){combatPlayback.hold(combatPlaybackKey(),iceDuration);updatePlaybackControls()}
     animateScorchedTransitions(previous,timeline,field);
     const motions=new Map();
-    const queueMotion=(token,frames,options,className,onFinish=()=>{})=>{
+    const addMotion=(token,segment)=>{
       if(!motions.has(token))motions.set(token,[]);
-      motions.get(token).push({frames,...options,className,onFinish});
+      const rows=motions.get(token);
+      // AoE may hit both bodies at the same contact; the pair recoils once.
+      if((token.classList.contains('mounted-rider')||token.classList.contains('boar-prop'))&&rows.some(s=>s.delay===segment.delay&&s.duration===segment.duration&&s.className===segment.className))return;
+      rows.push(segment);
+    };
+    const queueMotion=(token,frames,options,className,onFinish=()=>{})=>{
+      const id=token.dataset.battleUnit?.replace(/^transition-/,''),unit=battle.units?.[id];
+      const anchor=t=>({x:Number(t.style.gridColumn)-1,y:Number(t.style.gridRow)-1});
+      addMotion(token,{frames:unit?pairedMotionFrames(frames,unit,anchor(token),cellWidth,cellHeight):frames,...options,className,onFinish});
+      const partnerId=options.mountPair===false?null:motionPartner(id,previous,battle,timeline,options.delay||0);
+      const partnerToken=partnerId&&tokenFor(partnerId),partner=battle.units?.[partnerId];
+      if(partnerToken&&unit&&partner){
+        addMotion(partnerToken,{frames:pairedMotionFrames(frames,unit,anchor(partnerToken),cellWidth,cellHeight),...options,className,onFinish:()=>{}});
+      }
     };
     const animatedUnits=new Set();
     playBattleSounds(battle,animationEvents);
@@ -872,7 +930,8 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
         }
         const bystander=battle.units?.[event.bystander_id],other=event.bystander_id&&tokenFor(event.bystander_id);
         if(other&&bystander){
-          const alreadyMoving=timeline.some(r=>r.event.type==='movement'&&r.event.unit_id===bystander.id&&r.start<delay+COMBAT_MOTION.collisionRecoil&&r.start+r.duration>delay);
+          const movingPartner=motionPartner(bystander.id,previous,battle,timeline,delay);
+          const alreadyMoving=timeline.some(r=>r.event.type==='movement'&&[bystander.id,movingPartner].includes(r.event.unit_id)&&r.start<delay+COMBAT_MOTION.collisionRecoil&&r.start+r.duration>=delay);
           if(alreadyMoving){
             // Preserve an overlapping shockwave push; collision still flashes at contact.
             const flash=other.animate([{filter:'brightness(1)'},{filter:'brightness(1.65)'},{filter:'brightness(1)'}],{duration:COMBAT_MOTION.recoil,delay,fill:'none'});
@@ -887,10 +946,12 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
         if(!attacker||!target||!attackerToken)return;
         cancelPose(event.attacker_id);cancelPose(event.target_id);
         const from=event.from||attacker,to=event.to||target;
+        faceMount(event.attacker_id,to.x-from.x,to.y-from.y,delay);
         const dx=Math.sign(to.x-from.x)*cellWidth*.42,dy=Math.sign(to.y-from.y)*cellHeight*.42;
         const attackerScale=attacker.id===battle.current_unit_id?1.15:1,targetScale=target.id===battle.current_unit_id?1.15:1;
         const bites=Math.max(1,Math.min(3,event.bite_count||1));
-        for(let bite=0;bite<bites;bite++)queueMotion(attackerToken,poseFrames(weaponAttackFrames(event.melee_style,dx,dy,attackerScale),from,attacker,cellWidth,cellHeight),{duration:bites>1?180:event.attack_duration||COMBAT_MOTION.melee,delay:delay+bite*180},'is-attacking');
+        if(event.parting_retreat)queueMotion(attackerToken,partingCutFrames(from,to,event.parting_retreat,attacker,cellWidth,cellHeight,attackerScale),{duration:COMBAT_MOTION.contact+COMBAT_MOTION.partingSkid,delay},'is-attacking');
+        else for(let bite=0;bite<bites;bite++)queueMotion(attackerToken,poseFrames(weaponAttackFrames(event.melee_style,dx,dy,attackerScale),from,attacker,cellWidth,cellHeight),{duration:bites>1?180:event.attack_duration||COMBAT_MOTION.melee,delay:delay+bite*180},'is-attacking');
         const displaced=animationEvents.some(e=>['movement','collision_recoil'].includes(e.type)&&e.unit_id===event.target_id&&e.attack_packet===event.attack_packet&&(e.forced||e.type==='collision_recoil'));
         if(event.hit&&!displaced&&targetToken&&event.target_kind!=='terrain'){
           queueMotion(targetToken,poseFrames(weaponHitFrames(event.melee_style,Math.sign(to.x-from.x)*cellWidth*.12,Math.sign(to.y-from.y)*cellHeight*.12,targetScale),to,target,cellWidth,cellHeight),{duration:COMBAT_MOTION.recoil,delay:delay+(event.contact_ms??COMBAT_MOTION.contact)},'is-hit');
@@ -899,16 +960,23 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
       }
       const unit=battle.units?.[event.unit_id],points=event.points||[],token=tokenFor(event.unit_id);
       if(!unit||!token||!points.length)return;
+      if(!event.forced&&!event.skid_back)for(let step=1;step<points.length;step++)faceMount(unit.id,points[step].x-points[step-1].x,points[step].y-points[step-1].y,delay+plannedDuration*(step-1)/(points.length-1));
+      if(event.parting_cut&&event.skid_back)return; // Already in the slash's continuous token motion.
       const offset=animatedUnits.has(unit.id)?null:offsets.get(unit.id);animatedUnits.add(unit.id);
       const baseScale=unit.id===battle.current_unit_id?1.15:1;
       let frames=[];
       if(event.teleport){const from=points[0],to=points.at(-1),pose=p=>`translate(${(p.x-unit.x)*cellWidth}px,${(p.y-unit.y)*cellHeight}px) scale(${baseScale})`;frames=[{transform:pose(from),opacity:1,offset:0},{transform:pose(from),opacity:0,offset:.4},{transform:pose(to),opacity:0,offset:.5},{transform:pose(to),opacity:1,offset:1}]}
       else if(event.leap){const from=points[0],to=points.at(-1);frames=[{transform:`translate(${(from.x-unit.x)*cellWidth}px,${(from.y-unit.y)*cellHeight}px) scale(${baseScale})`,offset:0},{transform:`translate(${((from.x+to.x)/2-unit.x)*cellWidth}px,${((from.y+to.y)/2-unit.y)*cellHeight-cellHeight*.8}px) scale(${baseScale*1.08})`,offset:.5},{transform:`translate(${(to.x-unit.x)*cellWidth}px,${(to.y-unit.y)*cellHeight}px) scale(${baseScale*.94})`,offset:.94},{transform:`translate(${(to.x-unit.x)*cellWidth}px,${(to.y-unit.y)*cellHeight}px) scale(${baseScale})`,offset:1}]}
+      else if(event.skid_back)frames=skidBackFrames(points,unit,cellWidth,cellHeight,baseScale);
       else if(event.collision)frames=collisionFrames(points,unit,event.collision.toward,cellWidth,cellHeight,baseScale);
       else frames=walkingFrames(points,unit,cellWidth,cellHeight,baseScale,event.extracted,event.forced||event.dash?'slide':'walk');
       if(offset)frames[0].transform=`translate(${offset.x}px,${offset.y}px) scale(${baseScale})`;
       token.classList.remove('extracted');
-      queueMotion(token,frames,{duration:plannedDuration,delay},'is-walking',()=>{if(event.extracted)token.classList.add('extracted')});
+      // A lethal AoE can unlink the bodies and give each its own displacement.
+      // Do not replay the rider's route on top of the boar's separate route.
+      const partner=motionPartner(unit.id,previous,battle,timeline,delay);
+      const separatePush=event.forced&&animationEvents.some(e=>e.type==='movement'&&e.forced&&e.unit_id===partner&&e.impact_origin_packet!=null&&e.impact_origin_packet===event.impact_origin_packet);
+      queueMotion(token,frames,{duration:plannedDuration,delay,mountPair:!event.mount_boarding&&!separatePush},'is-walking',()=>{if(event.extracted)token.classList.add('extracted')});
     });
     for(const [token,segments] of motions){
       const {frames,duration}=composeMotion(segments);
@@ -919,6 +987,7 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
     return;
   }
   Object.values(battle.units||{}).forEach(unit=>{
+    if(unit.rider_id)return; // Rider drives the entire mounted visual, including live movement previews.
     const before=previous.units?.[unit.id];
     if(!before||before.x===unit.x&&before.y===unit.y)return;
     const token=field.querySelector(`[data-battle-unit="${CSS.escape(unit.id)}"]`);if(!token)return;
@@ -946,6 +1015,13 @@ function animateBattleMovement(previous,battle,durationFloor=260,movingPositions
     playWalkingSounds(battle,unit,points,duration);
     const animation=token.animate(frames,{duration,easing:instantPreview?'linear':'ease-in-out'});
     trackBattleAnimation(token,animation,'is-walking');
+    const partner=unit.animal_mount_id&&battle.units?.[unit.animal_mount_id],partnerToken=partner&&field.querySelector(`[data-battle-unit="${CSS.escape(partner.id)}"]`);
+    if(partnerToken){
+      restartWalking(partnerToken,movingPositions.get(partner.id));
+      const paired=partnerToken.animate(pairedMotionFrames(frames,unit,partner,cellWidth,cellHeight),{duration,easing:instantPreview?'linear':'ease-in-out'});
+      trackBattleAnimation(partnerToken,paired,'is-walking');
+      for(let step=1;step<points.length;step++)setTimeout(()=>turnMount(partnerToken,points[step].x-points[step-1].x,points[step].y-points[step-1].y),duration*(step-1)/(points.length-1));
+    }
   });
 }
 function renderBattlePreparation(b){
@@ -964,18 +1040,36 @@ function renderBattlePreparation(b){
   const placedIds=new Set((prep.placements||[]).map(row=>row.id));
   const terrain=(b.terrain||[]).map(t=>{const sprite=t.destroyed?paintedDestroyedTerrainSprite(t):paintedTerrainSprite(t),layout=mapAssetLayout({...t,sprite}),placed=placedIds.has(t.id);return `<button class="battle-terrain ${t.kind} ${t.state||''} ${sprite?'has-prop-art':''} ${layout.className} ${sprite?.startsWith('structure:')?'prop-structure':''} ${placed?'prepared-defense':''}" ${placed?`data-prep-remove="${esc(t.id)}"`: 'disabled'} style="${layout.style};${paintedPropStyle(layout.sprite||sprite)}" title="${esc(t.name||title(t.kind))}${placed?' · click to remove and refund':''}">${t.hp?`<span class="terrain-hp">${t.hp}/${t.max_hp}</span>`:''}</button>`}).join('');
   const units=Object.values(b.units).map(u=>battleToken(u,false,b)).join('');
-  const party=Object.values(b.units).filter(u=>u.team==='player'&&!u.defense_objective);
-  const options=(prep.available||[]).map(option=>{const used=(prep.placements||[]).filter(row=>row.type===option.id).length,disabled=prep.remaining<option.cost||used>=option.limit;return `<button class="prep-option ${selectedPreparation.mode==='defense'&&selectedPreparation.id===option.id?'active':''}" data-prep-defense="${esc(option.id)}" ${disabled?'disabled':''} title="${esc(option.description)}"><b>${esc(option.name)}</b><span>${option.cost} points · ${used}/${option.limit}</span><small>${esc(option.description)}</small></button>`}).join('');
+  const party=Object.values(b.units).filter(u=>u.team==='player'&&!u.defense_objective&&!u.temporary);
+  const selectedOption=(prep.available||[]).find(o=>o.id===selectedPreparation.id);
+  const options=(prep.available||[]).map(option=>{const used=(prep.placements||[]).filter(row=>row.type===option.id).length,disabled=prep.remaining<option.cost||(option.limit!=null&&used>=option.limit);return `<button class="prep-option ${selectedPreparation.mode==='defense'&&selectedPreparation.id===option.id?'active':''}" data-prep-defense="${esc(option.id)}" ${disabled?'disabled':''} title="${esc(option.description)}"><b>${esc(option.name)}</b><span>${option.cost===0?'Free':option.cost+' point'+(option.cost===1?'':'s')}${option.limit!=null?' ? '+used+'/'+option.limit:''}${option.owner_name?' ? '+esc(option.owner_name):''}</span><small>${esc(option.description)}</small></button>`}).join('');
+  const placedExtras=(prep.placements||[]).filter(row=>row.hazard_id||row.zone_id||row.unit_id).map(row=>`<button class="battle-terrain prepared-defense ${row.zone_id?'':'has-prop-art'}" data-prep-remove="${esc(row.id)}" style="grid-column:${row.x+1};grid-row:${row.y+1};z-index:35;background-color:transparent;${row.hazard_id?'background-image:url(/assets/engineer-v1/'+(row.type.endsWith('proximity_charge')?'mine':'dynamite')+'.png);background-size:contain;background-repeat:no-repeat;background-position:center;':''}" title="${esc(row.name)} ? click to remove"><span>${row.zone_id||row.unit_id?'?':''}</span></button>`).join('');
+  const rotate=selectedOption?.deploy_kind==='caltrops'?`<button id="prep-rotate"><kbd>R</kbd> Rotate ? ${selectedPreparation.vertical?'Vertical':'Horizontal'}</button>`:'';
+
   const deployButtons=party.map(unit=>`<button class="prep-unit ${selectedPreparation.mode==='deploy'&&selectedPreparation.id===unit.id?'active':''}" data-prep-unit="${unit.id}"><b>${esc(unit.name)}</b><span>Position ${unit.x+1},${unit.y+1}</span></button>`).join('');
   const bonus=[];if(prep.race_bonus)bonus.push(`+${prep.race_bonus} race`);if(prep.gear_bonus)bonus.push(`+${prep.gear_bonus} equipment`);
   const movingPositions=captureMovingPositions($('.battlefield'));
-  patchLiveHTML($('#mission-detail'),`${labToolbar(b)}<div class="battle-header preparation-header"><div><div class="eyebrow">DEFENSE PREPARATION</div><h2>${esc(b.name)}</h2><p>Choose a defense, then click a blue tile. Choose a character, then click a gold deployment tile. Placed defenses can be removed for a full refund until battle begins.</p></div><div class="prep-budget"><b>${prep.remaining}</b><span>of ${prep.budget} points left</span><small>${prep.base_budget} base${bonus.length?` · ${bonus.join(' · ')}`:''}</small></div></div><div class="battle-layout"><div class="battle-viewport" id="battle-viewport"><div class="battlefield preparing terrain-style-custom-painted theme-${b.theme||'wilds'}" style="--battle-w:${b.width};--battle-h:${b.height};--battle-scale-width:${battleZoom*100}%;--battle-scale-min:${Math.round(b.width*72*battleZoom)}px">${cells}${zoneOverlay(b.zones,esc)}${elevations}${decorations}${terrain}${units}</div></div><aside class="battle-sidebar prep-sidebar"><div class="battle-camera"><b>Map view</b><button data-battle-fit title="Fit the entire map without stretching">Fit map</button><button data-battle-zoom="out">−</button><button data-battle-zoom="reset">${battleFit?'50% view':Math.round(battleZoom*100)+'%'}</button><button data-battle-zoom="in">+</button></div><section><h3>Field defenses</h3><div class="prep-options">${options}</div></section><section><h3>Deploy party</h3><div class="prep-units">${deployButtons}</div></section><button id="start-defense" class="primary big">Start Defense</button><div class="prep-legend"><span><i class="prep-swatch"></i>Defense zone</span><span><i class="deploy-swatch"></i>Deployment zone</span></div><div class="battle-log">${(b.log||[]).slice().reverse().map(line=>`<p>${esc(line)}</p>`).join('')}</div></aside></div>`);
+  patchLiveHTML($('#mission-detail'),`${labToolbar(b)}<div class="battle-header preparation-header"><div><div class="eyebrow">DEFENSE PREPARATION</div><h2>${esc(b.name)}</h2><p>Choose a defense, then click a blue tile. Choose a character, then click a gold deployment tile. Placed defenses can be removed for a full refund until battle begins.</p></div><div class="prep-budget"><b>${prep.remaining}</b><span>of ${prep.budget} points left</span><small>${prep.base_budget} base${bonus.length?` · ${bonus.join(' · ')}`:''}</small></div></div><div class="battle-layout"><div class="battle-viewport" id="battle-viewport"><div class="battlefield preparing terrain-style-custom-painted theme-${b.theme||'wilds'}" style="--battle-w:${b.width};--battle-h:${b.height};--battle-scale-width:${battleZoom*100}%;--battle-scale-min:${Math.round(b.width*72*battleZoom)}px">${cells}${zoneOverlay(b.zones,esc)}${elevations}${decorations}${terrain}${units}${placedExtras}</div></div><aside class="battle-sidebar prep-sidebar"><div class="battle-camera"><b>Map view</b><button data-battle-fit title="Fit the entire map without stretching">Fit map</button><button data-battle-zoom="out">−</button><button data-battle-zoom="reset">${battleFit?'50% view':Math.round(battleZoom*100)+'%'}</button><button data-battle-zoom="in">+</button></div><section><h3>Field defenses</h3>${rotate}<div class="prep-options">${options}</div></section><section><h3>Deploy party</h3><div class="prep-units">${deployButtons}</div></section><button id="start-defense" class="primary big">Start Defense</button><div class="prep-legend"><span><i class="prep-swatch"></i>Defense zone</span><span><i class="deploy-swatch"></i>Deployment zone</span></div><div class="battle-log">${(b.log||[]).slice().reverse().map(line=>`<p>${esc(line)}</p>`).join('')}</div></aside></div>`);
   $$('[data-prep-defense]').forEach(button=>button.onclick=()=>{selectedPreparation={mode:'defense',id:button.dataset.prepDefense};renderBattlePreparation(b)});
   $$('[data-prep-unit]').forEach(button=>button.onclick=()=>{selectedPreparation={mode:'deploy',id:button.dataset.prepUnit};renderBattlePreparation(b)});
-  $$('[data-battle-unit]').forEach(token=>{const unit=b.units[token.dataset.battleUnit];if(unit?.team==='player'&&!unit.defense_objective)token.onclick=e=>{e.stopPropagation();selectedPreparation={mode:'deploy',id:unit.id};renderBattlePreparation(b)}});
-  $$('[data-battle-cell]').forEach(cell=>cell.onclick=()=>{if(combatRequestPending)return;const [x,y]=cell.dataset.battleCell.split(',').map(Number),key=`${x},${y}`;if(selectedPreparation.mode==='defense'&&selectedPreparation.id&&prepZone.has(key))sendCombat({action:'place_defense',placement_id:selectedPreparation.id,x,y});else if(selectedPreparation.mode==='deploy'&&selectedPreparation.id&&deploymentZone.has(key)){const optimistic=structuredClone(b),unit=optimistic.units[selectedPreparation.id];if(unit){unit.x=x;unit.y=y;renderBattlePreparation(optimistic)}sendCombat({action:'deploy_unit',target_id:selectedPreparation.id,x,y})}});
+  $$('[data-battle-unit]').forEach(token=>{const unit=b.units[token.dataset.battleUnit];if(unit?.team==='player'&&!unit.defense_objective&&!unit.temporary)token.onclick=e=>{e.stopPropagation();selectedPreparation={mode:'deploy',id:unit.id};renderBattlePreparation(b)}});
+  $$('[data-battle-cell]').forEach(cell=>cell.onclick=()=>{if(combatRequestPending)return;const [x,y]=cell.dataset.battleCell.split(',').map(Number),key=`${x},${y}`;if(selectedPreparation.mode==='defense'&&selectedPreparation.id&&prepZone.has(key))sendCombat({action:'place_defense',placement_id:selectedPreparation.id,x,y,vertical:!!selectedPreparation.vertical});else if(selectedPreparation.mode==='deploy'&&selectedPreparation.id&&deploymentZone.has(key)){const optimistic=structuredClone(b),unit=optimistic.units[selectedPreparation.id];if(unit){unit.x=x;unit.y=y;renderBattlePreparation(optimistic)}sendCombat({action:'deploy_unit',target_id:selectedPreparation.id,x,y})}});
   $$('[data-prep-remove]').forEach(button=>button.onclick=e=>{e.stopPropagation();sendCombat({action:'remove_defense',target_id:button.dataset.prepRemove})});
   $('#start-defense').onclick=()=>sendCombat({action:'start_battle'});
+  const rotateButton=$('#prep-rotate');if(rotateButton)rotateButton.onclick=()=>{selectedPreparation.vertical=!selectedPreparation.vertical;renderBattlePreparation(b)};
+  const preparationField=$('.battlefield');
+  if(preparationField){
+    const clear=()=>preparationField.querySelectorAll('[data-battle-cell]').forEach(cell=>{cell.style.boxShadow='';cell.style.cursor=''});
+    preparationField.onpointermove=event=>{
+      clear();if(selectedPreparation.mode!=='defense'||!selectedOption)return;
+      const rect=preparationField.getBoundingClientRect(),x=Math.floor((event.clientX-rect.left)/rect.width*b.width),y=Math.floor((event.clientY-rect.top)/rect.height*b.height);
+      const preview=preparationPreview(b,selectedOption,x,y,!!selectedPreparation.vertical);
+      for(const p of preview.area){const cell=preparationField.querySelector(`[data-battle-cell="${p.x},${p.y}"]`);if(cell)cell.style.boxShadow='inset 0 0 0 2px #d8a64b';}
+      for(const p of preview.cells){const cell=preparationField.querySelector(`[data-battle-cell="${p.x},${p.y}"]`);if(cell){cell.style.boxShadow='inset 0 0 0 3px '+(preview.valid?'#6acf93':'#ed6e72');if(!preview.valid)cell.style.cursor='url(/assets/combat-controls-v2/unavailable_cursor.png) 16 16, crosshair';}}
+    };
+    preparationField.onpointerleave=clear;
+  }
+
   $$('[data-hotbar-skill]').forEach(button=>button.onclick=()=>{
     if(button.getAttribute('aria-disabled')==='true')return;
     selectedGearSkills.set(`${b.seed}:${b.current_unit_id}`,button.dataset.hotbarSkill);
@@ -985,6 +1079,7 @@ function renderBattlePreparation(b){
   bindBattleSkillOrder(b);
   bindLabToolbar();
   combatEffects.mount($('.battlefield'));
+  lightingLab.mount($('.battlefield'),b,developerToolsEnabled()&&!!activeBattleLabSessionId);
   $$('[data-battle-zoom]').forEach(button=>button.onclick=()=>{changeBattleZoom(b,button.dataset.battleZoom);renderBattlePreparation(b)});
   const fitButton=$('[data-battle-fit]');if(fitButton)fitButton.onclick=()=>{battleFit=true;renderBattlePreparation(b)};updateBattleCamera(b);
   requestAnimationFrame(()=>animateBattleMovement(previousBattle,b,140,movingPositions));
@@ -1010,7 +1105,7 @@ function warmWeaponArt(battle){
   for(const path of paths)if(!warmedWeaponArt.has(path)){const image=new Image();warmedWeaponArt.set(path,image);image.src=path;image.decode?.().catch(()=>{});}
 }
 function renderBattle(b){
-  if(b){warmWeaponArt(b);warmMageBattle(b)}
+  if(b){warmWeaponArt(b);warmMageBattle(b);warmBattleVocals(b)}
   if(activeBattleView?.current_unit_id!==b.current_unit_id){selectedCombatAction='move';combatSkillPage=0}
   if(b.status==='preparing'){renderBattlePreparation(b);return}
   const previousBattle=activeBattleView;
@@ -1127,6 +1222,7 @@ function renderBattle(b){
   mountRoguePlacement({view:b,mode:selectedCombatAction,field:$('.battlefield'),host:$('.battle-action-preview'),send:sendCombat,cancel:()=>{selectedCombatAction='move';renderBattle(b)},escape:esc,refreshPreview:()=>renderBattle(b),blocked:()=>combatRequestPending||combatPlaybackBlocked()});
   bindLabToolbar();
   combatEffects.mount($('.battlefield'));
+  lightingLab.mount($('.battlefield'),b,developerToolsEnabled()&&!!activeBattleLabSessionId);
   $$('[data-battle-zoom]').forEach(button=>button.onclick=()=>{changeBattleZoom(b,button.dataset.battleZoom);renderBattle(b)});
   const fitButton=$('[data-battle-fit]');if(fitButton)fitButton.onclick=()=>{battleFit=true;updateBattleCamera(b);centerBattleMap($('#battle-viewport'))};updateBattleCamera(b);
   const viewport=$('#battle-viewport');
@@ -1237,6 +1333,7 @@ document.addEventListener('keydown',event=>{
   if($('.floating-battle.hud-editing'))return;
   if(combatPlaybackBlocked())return;
   const key=event.code==='Space'?'space':event.key.toLowerCase();
+  if(activeBattleView.status==='preparing'){if(key==='r'&&$('#prep-rotate')){event.preventDefault();$('#prep-rotate').click()}return;}
   if(/^[0-9]$/.test(key)){const skill=$(`[data-hotbar-key="${key}"]`);if(skill&&!skill.disabled){event.preventDefault();skill.click()}return}
   if(key==='s'){const skill=$('[data-hotbar-skill][aria-disabled="false"]:not(:disabled)');if(skill){event.preventDefault();skill.click()}return}
   if((key==='c'||key==='escape')&&selectedCombatAction==='skill'){event.preventDefault();cancelCombatTargeting();return}

@@ -1,0 +1,27 @@
+.battlefield .battle-token.boar-prop{width:96%;height:96%;align-self:center;justify-self:center;background:none!important;border:0!important;border-radius:0;box-shadow:none!important;overflow:visible;z-index:22}
+.battle-token.boar-prop:before,.battle-token.boar-prop:after{display:none!important}
+/* Use the existing attack reticle around the animal's wider footprint; the
+   rider keeps its smaller portrait marker so the two targets stay distinct. */
+.battlefield:not(.support-targeting) .battle-token.boar-prop.valid-target:not(.dead)::after{display:block!important;inset:-23.6%!important;opacity:.72}
+.boar-body{position:absolute;inset:-12.5%;display:block;pointer-events:none;transform:rotate(var(--mount-angle,0deg));transition:transform 140ms ease-out}
+.boar-shadow{position:absolute;inset:0;display:block;pointer-events:none}
+.boar-prop.dead .boar-body img{transform:rotate(-90deg)}
+.battle-token.boar-prop .boar-body img{position:absolute;left:0!important;top:0!important;width:100%!important;height:100%!important;object-fit:contain!important;border-radius:0!important;clip-path:none!important;filter:none!important}
+.battlefield .battle-token.mounted-rider{width:73.5%;height:73.5%;align-self:center;justify-self:center;z-index:25;overflow:visible}
+.battlefield .battle-token.mounted-rider.valid-target:after{inset:0!important}
+.battle-token.mounted-rider>i{font-size:11px}
+.battle-token.boar-prop>i{left:0;right:auto;bottom:0;background:#473323;border:1px solid #b19765;font-size:11px;z-index:27}
+.battle-token.boar-prop .map-statuses{transform:translateY(10px)}
+.battlefield .battle-token.boar-prop.dead,.battlefield .battle-token.boar-prop.dead.body-under-unit{width:96%;height:96%;align-self:center;justify-self:center;transform:none;filter:none;opacity:.75}
+.battle-token.boar-prop.valid-target .boar-body{filter:drop-shadow(0 0 4px #eac26b)}
+/* Generic motion raises both tokens to the same layer; keep the saddle pair ordered. */
+.battlefield .battle-token.boar-prop{z-index:22!important}
+.battlefield .battle-token.mounted-rider{z-index:25!important}
+.battlefield .battle-token.boar-prop:hover{z-index:24!important}
+.battlefield .battle-token.mounted-rider:hover{z-index:31!important}
+.battlefield .battle-token.boar-prop:is(.is-walking,.is-attacking,.is-hit){z-index:48!important}
+.battlefield .battle-token.mounted-rider:is(.is-walking,.is-attacking,.is-hit){z-index:49!important}
+.battlefield .battle-token.boar-prop.dead,
+.battlefield .battle-token.boar-prop.dead:hover,
+.battlefield .battle-token.boar-prop.dead:is(.is-walking,.is-attacking,.is-hit){z-index:3!important}
+@media(prefers-reduced-motion:reduce){.boar-body{transition:none}}

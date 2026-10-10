@@ -39,6 +39,8 @@ export function skillCategory(skill){
 }
 export const FIGHTER_ICON_ART={'job:fighter:cover':'chain-snare','job:fighter:pull':'earthbreaker','job:fighter:rally':'hold-together'};
 export function skillIcon(skill){
+  if(skill.mount_kind)return `/assets/boar-mount-v1/${skill.self_only?'dismount_icon':'mount_icon'}.png`;
+  if(['tripline','shakedown','parting_cut','ankle_bite','goliath_shot','tag_team','cornered_fury','heel_cut'].includes(skill.id?.split(':').at(-1))&&skill.id.startsWith('npc:bandit:'))return `/assets/enemy-specialties-v1/${skill.id.split(':').at(-1)}.png`;
   if(skill.id==='npc:bandit:road_bola')return '/assets/captor-v1/bola.png';
   if(/^job:captor:(subduing_blow|bola|hook_and_drag|abduct|restraining_hold|blitz|restraint|clean_capture)$/.test(skill.id))return `/assets/captor-v1/${skill.id.split(':').at(-1)}.png`;
   if(skill.engineer_kind)return `/assets/engineer-v2/${skill.engineer_kind}.png`;

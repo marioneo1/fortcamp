@@ -26,4 +26,11 @@ Audition pages: /assets/sfx/preview-melee-families-v1.html and /assets/sfx/previ
 
 ## Validation and limits
 
+October 9: Parting Cut uses a continuous 185ms approach/contact and 360ms backward
+skid, with physical dust/scuff instead of cyan footprints. The slash/skid sound
+starts at contact; ordinary footsteps do not duplicate it. Counterattacks or
+intervening displacement use ordered separate poses rather than combining across
+the reaction. Damage/retreat legality unchanged. Eleven backend and 27 focused
+frontend checks plus build pass; visual listening/player review remains pending.
+
 79 related backend tests, 244 frontend tests and frontend production build pass. Isolated real-renderer browser playback exercises all six families, successful/failed nets, 74 weapon choices and feedback timing. Screenshots: staging-ui/melee-families-v1/*-browser.png. No live saves or production touched. Browser fixture uses temporary combat data; backend persistence tests separately cover isolation. Existing bundle size warning remains. Ranged weapon redesign and individual dagger combos are deferred.

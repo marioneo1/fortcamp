@@ -119,11 +119,13 @@ def new_game(character: dict[str, Any]) -> dict[str, Any]:
 
 
 def public_content() -> dict[str, Any]:
+    from .combat_stats import HP_BASE, ATTACK_BASE, RANK_PERCENT
     from .job_loadouts import public_catalog
     from .inventory import sale_price
     from .starter_equipment import STARTING_ROLES
     return {
         "job_loadouts": public_catalog(),
+        "combat_stat_rules": {"hp_base":HP_BASE,"attack_base":ATTACK_BASE,"rank_percent":RANK_PERCENT},
         "starting_roles": STARTING_ROLES,
         "economy": public_economy({}),
         "personalities": {key:{"name":value[0],"description":value[1]} for key,value in PERSONALITIES.items()},
@@ -464,13 +466,16 @@ def effective_stat(state: dict, char: dict, stat: str) -> int:
 
 def effective_attribute(state: dict, char: dict, attribute: str) -> int:
     # Characters saved before physical attributes were added receive a neutral baseline.
-    total = int(char.get("attributes", {}).get(attribute, 5))
+    from .combat_stats import allocated_attribute
+    total = allocated_attribute(char, attribute)
+    if attribute in char.get('_battle_attribute_base', {}):
+        total += int(char['attributes'][attribute]) - char['_battle_attribute_base'][attribute]
     for item in equipped_item_defs(state, char):
         total += int(item.get("attribute_bonuses", {}).get(attribute, 0))
     for track, definition in PERK_TRACKS.items():
         if definition.get("attribute_bonus") == attribute:
             total += 1 if perk_rank(char, track) >= 1 else 0
-    return total + modifiers(state,char,ITEMS,'attributes').get(attribute,0)
+    return max(1, total + modifiers(state,char,ITEMS,'attributes').get(attribute,0))
 
 
 def equipped_weapon_def(state: dict, char: dict) -> dict | None:
@@ -718,8 +723,9 @@ def _award_item(state: dict, item_id: str, awarded: dict) -> None:
         awarded["items"].append(item_id)
 
 
-def _make_generic(archetype_id: str, rng: random.Random) -> dict:
+def _make_generic(archetype_id: str, rng: random.Random, used_names=()) -> dict:
     archetype = GENERIC_ARCHETYPES[archetype_id]
+    # Retain legacy draws so expanded naming does not reroll stats/portraits/rewards.
     name = f"{rng.choice(GENERIC_FIRST_NAMES)} {rng.choice(GENERIC_LAST_NAMES)}"
     stats = deepcopy(archetype["stats"])
     attributes = deepcopy(archetype.get("attributes", {}))
@@ -728,10 +734,14 @@ def _make_generic(archetype_id: str, rng: random.Random) -> dict:
     stats[varied] = max(1, min(10, stats[varied] + rng.choice([-1, 1])))
     gender = rng.choice(["male", "female"])
     portrait = choose_pool_portrait(portrait_pool_key("Human", gender, archetype_id), rng)
+    from .character_names import generate_name, name_rng
+    name = generate_name("Human", gender, name_rng(rng), used_names=used_names)
+    from .general_perks import generated_traits
+    traits=generated_traits(archetype['traits'],repr(rng.getstate()),archetype_id)
     return {
         "id": uid("char"), "source_id": f"generic:{archetype_id}:{uuid.uuid4().hex[:6]}",
         "source_kind": "generic", "is_player": False, "name": name,
-        "race": "Human", "gender": gender, "series": "Original", "traits": list(archetype["traits"]),
+        "race": "Human", "gender": gender, "series": "Original", "traits": traits,
         "stats": stats, "attributes": attributes, "specialty": archetype["specialty"],
         **portrait, "portrait_source": "pool" if portrait["portrait"] else "none", "portrait_locked": bool(portrait["portrait"]), "archetype_id": archetype_id,
         "equipment": {slot: None for slot in EQUIPMENT_SLOTS}, "assignment": None,
@@ -739,12 +749,13 @@ def _make_generic(archetype_id: str, rng: random.Random) -> dict:
     }
 
 
-def _make_procedural(profile_id: str, rng: random.Random) -> dict:
+def _make_procedural(profile_id: str, rng: random.Random, used_names=()) -> dict:
     profile = RECRUIT_PROFILES[profile_id]
     archetype_id = rng.choice(profile.get("archetypes") or list(GENERIC_ARCHETYPES))
     archetype = GENERIC_ARCHETYPES[archetype_id]
     first_names = profile.get("first_names") or GENERIC_FIRST_NAMES
     last_names = profile.get("last_names") or GENERIC_LAST_NAMES
+    # Retain legacy draws; choose the actual expanded name after gender/portrait.
     name = f"{rng.choice(first_names)} {rng.choice(last_names)}"
     stats = deepcopy(archetype["stats"])
     attributes = deepcopy(archetype.get("attributes", {}))
@@ -758,6 +769,10 @@ def _make_procedural(profile_id: str, rng: random.Random) -> dict:
     gender = rng.choice(generated_genders(profile.get("race", "Human"), profile))
     special = profile.get("portrait_tier") == "special"
     portrait = choose_pool_portrait(portrait_pool_key(profile.get("race", "Human"), gender, archetype_id, special), rng)
+    from .character_names import generate_name, name_rng
+    name = generate_name(profile.get("race", "Human"), gender, name_rng(rng), leader=special, used_names=used_names)
+    from .general_perks import generated_traits
+    traits=generated_traits(traits,repr(rng.getstate()),archetype_id)
     return {
         "id": uid("char"), "source_id": f"generated:{profile_id}:{uuid.uuid4().hex[:6]}",
         "source_kind": "generic", "generation_profile": profile_id, "is_player": False,
@@ -909,13 +924,13 @@ def _award_reward_block(state: dict, block: dict, awarded: dict, rng: random.Ran
 
     generic_id = block.get("generic_recruit")
     if generic_id in GENERIC_ARCHETYPES:
-        recruit = _make_generic(generic_id, rng)
+        recruit = _make_generic(generic_id, rng, [c['name'] for c in state['characters']])
         state["characters"].append(recruit)
         awarded["recruits"].append({"name": recruit["name"], "kind": "generic", "race": recruit["race"], "profile": f"archetype:{generic_id}"})
 
     profile_id = _weighted_profile(block.get("procedural_recruit"), rng)
     if profile_id:
-        recruit = _make_procedural(profile_id, rng)
+        recruit = _make_procedural(profile_id, rng, [c['name'] for c in state['characters']])
         state["characters"].append(recruit)
         awarded["recruits"].append({"name": recruit["name"], "kind": "generic", "race": recruit["race"], "profile": profile_id})
 
@@ -942,7 +957,8 @@ def _award_reward_block(state: dict, block: dict, awarded: dict, rng: random.Ran
             target.setdefault("perks", {})[track] = level
             awarded["perks"].append({"character": target["name"], "track": track, "level": level})
     standalone = block.get("standalone_perk")
-    if target and standalone and standalone not in target.setdefault("traits", []):
+    from .general_perks import compatible
+    if target and standalone and compatible(target.setdefault("traits", []),str(standalone)):
         target["traits"].append(str(standalone))
         awarded["perks"].append({"character": target["name"], "standalone": str(standalone)})
     transform = block.get("transform")
@@ -950,7 +966,7 @@ def _award_reward_block(state: dict, block: dict, awarded: dict, rng: random.Ran
         old_race = target.get("race", "Unknown")
         target["race"] = str(transform["race"])[:32]
         for standalone in transform.get("standalone_perks", []):
-            if standalone not in target.setdefault("traits", []):
+            if compatible(target.setdefault("traits", []),standalone):
                 target["traits"].append(standalone)
         if target.get("portrait_source") in {"pool", "none"}:
             replacement = choose_pool_portrait(
@@ -1126,7 +1142,7 @@ def _award_scaled_rewards(
         profile_id = _weighted_event_profile(recruit_table, rank, rng) if recruit_roll <= recruit_chance else None
         recruit_summary = None
         if profile_id:
-            recruit = _make_procedural(profile_id, rng)
+            recruit = _make_procedural(profile_id, rng, [c['name'] for c in state['characters']])
             state["characters"].append(recruit)
             recruit_summary = {"name": recruit["name"], "kind": "event" if event else "survivor", "race": recruit["race"], "profile": profile_id}
             awarded["recruits"].append(recruit_summary)
@@ -1153,17 +1169,21 @@ def _award_scaled_rewards(
         })
 
 
-def _incapacitate_character(state: dict, party: list[dict], rng: random.Random, now: int) -> dict | None:
+RECOVERY_SECONDS = {'E':60, 'D':300, 'C':600, 'B':1800, 'A':3600, 'S':7200}
+
+
+def _incapacitate_character(state: dict, party: list[dict], rng: random.Random, now: int, rank='E') -> dict | None:
     if not party:
         return None
     injured = rng.choice(party)
     building_types_present = {building.get("type") for building in state.get("buildings", [])}
     if "infirmary" in building_types_present:
-        location, duration = "Infirmary", 30 * 60
+        location = "Infirmary"
     elif "tent" in building_types_present:
-        location, duration = "Tent", 2 * 60 * 60
+        location = "Tent"
     else:
-        location, duration = "Field rest", 4 * 60 * 60
+        location = "Field rest"
+    duration = RECOVERY_SECONDS[rank]
     for building in state.get("buildings", []):
         if injured["id"] in building.get("assigned", []):
             building["assigned"].remove(injured["id"])
@@ -1350,17 +1370,18 @@ def resolve_mission(state: dict, mission: dict, party_ids: list[str], analysis: 
         scale = RANK_REWARD_SCALING[mission.get("rank", "E")]
         _add_gold(state, awarded, rng.randint(0, max(1, scale["gold"][0] // 5)))
 
+    if awarded['gold']>0:
+        from .recruit_perks import has as has_background
+        bonus_gold=sum(has_background(member,'enterprising') for member in party)
+        if bonus_gold:
+            _add_gold(state,awarded,bonus_gold)
+            awarded['perk_gold']=bonus_gold
     set_party_status(state, party_ids, "idle")
     resolved_at = int(time.time())
     if outcome == "critical_failure":
         for c in party:
             c["morale"] = max(0, int(c.get("morale", 70)) - 10)
-        injury = _incapacitate_character(state, party, rng, resolved_at)
-        # A solo beginner must not lose the entire playable roster for hours.
-        if injury and mission.get('rank') == 'E' and sum(not c.get('temporary_mercenary') for c in state.get('characters',[])) == 1:
-            injured = find_char(state, injury['character_id'])
-            injured['recovers_at'] = injury['recovers_at'] = resolved_at + 120
-            injured['recovery_location'] = injury['location'] = 'Beginner field rest'
+        injury = _incapacitate_character(state, party, rng, resolved_at, mission.get('rank','E'))
         if injury:
             if not analysis.get("battle"):
                 injured=find_char(state,injury["character_id"]);ensure_character(injured)

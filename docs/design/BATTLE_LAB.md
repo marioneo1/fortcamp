@@ -1,5 +1,24 @@
 # Battle Lab — implemented development tool
 
+October 9: Open Developer Tools to reach Battle Lab, Portrait Lab, Wall Kit Lab
+and Lighting Lab from one dev-only launcher. Lighting Lab previews existing maps;
+see [day/night tester](DAY_NIGHT_LIGHTING_PROPOSAL.md).
+
+Radiant encounter selection follows the selected approach's actual encounter,
+not just its mission title. Eligible maps offer Natural chance, No encounter, or
+Force Foraging Bear. Currently Goblin Pickpockets, Old Well (`ruined_well`) and
+Supply Watch support the 3% bear event. Forced arrival uses the normal same-map
+bear, existing skirmish placement, acknowledgement popup and neutral-to-both-sides
+behavior. A forced event can still fail placement if no legal arrival tile exists;
+it never places a bear inside a wall or unit. Unsupported maps explain that no
+event is authored and reject forced requests server-side. Restart Same Test
+retains this selection. Natural live-mission chances and real player saves are
+unchanged; lab outcomes never award bear loot to the roster.
+
+Validation: four radiant-specific backend checks (catalogue eligibility, forcing
+all three maps, disabling encounters, unsupported-map rejection), existing radiant
+regression checks and browser forced-event request/popup check.
+
 October 6 Mage: choose a Mage Job tester and practice **16 or 20** to unlock the full eight-skill pool, then select any five actives/passives. For elemental testing try Typhoon / Chain Lightning / Flash Freeze / Singularity / Fireball. For Meteor try Fireball / Flash Freeze / Singularity / Meteor / Debuffer. Replace a slot with Enchant Weapon to test chosen Fire/Frost/Lightning on a martial helper. Mage starter practice 0 equips Chain Lightning, Fireball and Typhoon. These are temporary owner-scoped tests; existing roster saves are untouched. See [Mage rules](MAGE_REWORK_REVIEW.md) for friendly Typhoon, channel costs and freeze timing.
 
 ## October 5: Monk combo testing
@@ -94,6 +113,14 @@ For authored locations, **Map layout** lists every saved plan with a verified ge
 Test sessions live only in backend memory, are scoped to both server and player, expire after one hour of inactivity and disappear on server restart. At most four are retained per player and 64 overall. They create no mission records and never resolve real rewards, recruitment, prisoners, injuries, supplies or world outcomes. Auto battle remains available for previewing encounter behavior but pays nothing. The lab is a battle/map tester, not a full dialogue-chain or loot simulator.
 
 ## Verification
+
+October 9 lighting consolidation: start any test normally, then use **Lighting**
+in the test-map toolbar for Day/Dusk/Night/Dawn, time scrubber, accelerated cycle,
+original comparison, campfire glow and shadow toggles. This replaces the separate
+Lighting Lab entry in Developer Tools. Battle Lab retains mission variants,
+parties/loadouts, seeds, radiant encounter overrides, restart and save isolation.
+Closing lighting controls restores saved arrival lighting; opening a normal
+battle also resets preview overrides. Ordinary maps use lighting automatically.
 
 Nine backend tests cover all catalogued launch targets, authored setups, every listed layout seed, seeded repetition, save isolation, invalid selections, owner/server isolation, expiry/bounds and disabled/production permissions. Frontend build and 103 frontend tests pass. Browser checks cover mission filtering, approach outcomes, launch/restart/return, named workshop presets and their outgoing seeds, Custom/New seed behavior, defense preparation, enlarged wagon art and mobile layout.
 

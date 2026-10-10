@@ -7,6 +7,7 @@ from .combat_feedback import record as feedback
 KINDS={'cheap_shot','crippling_cut','exploit_weakness','shadowstep','caltrops','backflip','throwing_knife'}
 NEGATIVE={'rat_weakness','disarm','captor_held','captor_abducted','wet','blister','pestilence','bleed','hobbled','poison','burn','blind','slow','stun','sleep','freeze','bind','paralyze','fear','mute','armor_fracture','vulnerable','mark','open_guard','panic','pit_trapped','palm_exposure','charm','confuse','berserk','reckless_exposure'}
 UTILITY={'shadowstep','backflip','caltrops','throwing_knife'}
+NEGATIVE.update({'sword_exposed','heel_wound'})
 
 def active(u):return u.get('alive',True) and u.get('conscious',True) and not u.get('extracted') and not u.get('carried_by')
 def trap_expert(u):return any(p.get('id')=='job:rogue:trap_expert' for p in u.get('passives',[]))
@@ -96,21 +97,28 @@ def utility_command(battle,actor,skill,command):
     if not active(actor):return
     abilities.spend(actor,skill);freeze_walking(actor)
     if kind=='caltrops':
-        zone=c.spaces.place_zone(battle,actor,{'zone':'caltrops','turns':2},cells)
+        tripline=skill.get('npc_kind')=='tripline'
+        zone=c.spaces.place_zone(battle,actor,{'zone':'tripline' if tripline else 'caltrops','turns':3 if tripline else 2},cells)
         occupied={(cell['x'],cell['y']) for cell in cells}
-        for occupant in battle['units'].values():
+        for occupant in ([] if tripline else battle['units'].values()):
             if (occupant['x'],occupant['y']) in occupied:
                 occupant['zone_location']=[occupant['x'],occupant['y']]
                 c._trigger_zones(battle,occupant,'placement',zone['id'])
-        battle.setdefault('animation_events',[]).append({'type':'rogue_effect','effect':'caltrops','unit_id':actor['id'],'x':x,'y':y})
+        if not tripline:battle.setdefault('animation_events',[]).append({'type':'rogue_effect','effect':'caltrops','unit_id':actor['id'],'x':x,'y':y})
+        if tripline:
+            from .enemy_specialties import effect
+            effect(battle,actor,'tripline_set')
+            c._record_sound(battle,'specialty_tripline_set',offset=0)
     else:
         start={'x':actor['x'],'y':actor['y']};actor.update(x=x,y=y,moved=True,exit_ready=False)
         battle.setdefault('animation_events',[]).append({'type':'movement','unit_id':actor['id'],'points':[start,{'x':x,'y':y}], 'leap':kind=='backflip','teleport':kind=='shadowstep','rogue_motion':kind})
         c._apply_tile_entry(battle,actor)
         battle.setdefault('animation_events',[]).append({'type':'rogue_effect','effect':kind,'unit_id':actor['id'],'x':x,'y':y,'from':start})
-    actor['quick_actions_used']=actor.get('quick_actions_used',0)+1
+    actor['acted']=not skill.get('quick_action',True)
+    if skill.get('npc_kind')=='tripline':actor['acted']=True
+    actor['quick_actions_used']=actor.get('quick_actions_used',0)+(not actor['acted'])
     actor['physical_action']=True
-    battle['log'].append(f"{actor['name']} uses {skill['name']} as a Quick Action; the main action remains available.")
+    battle['log'].append(f"{actor['name']} lays Tripline." if skill.get('npc_kind')=='tripline' else f"{actor['name']} uses {skill['name']} as a Quick Action; the main action remains available.")
 
 def knife_skill(battle,actor,target,skill,knife_id):
     from . import combat as c

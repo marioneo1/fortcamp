@@ -4,6 +4,9 @@ from . import combat_conditions as conditions
 from .combat_feedback import record as feedback
 
 ZONES = {
+    'tripline': {'name':'Tripline','relation':'enemy','events':['entry'],
+                 'entry_per_cell':True,'trap':True,'statuses':['hobbled'],
+                 'description':'A three-cell tripline: the first enemy crossing gains Hobble; the whole line then snaps. Forced movement counts.'},
     'fire_wall':{'name':'Fire Wall','relation':'everyone','events':['entry'],'status':'burn','entry_per_cell':True,'description':'Each tile entry applies Burn and triggers it, plus half the Fire Companion INT as fire damage. Allies are affected.'},
     'scorched': {'name':'Scorched ground','relation':'everyone','events':{'entry'},'status':'burn','entry_damage':0,'entry_per_cell':True,'description':'Each committed tile entry adds Burn and immediately triggers its current stack damage without consuming a stack. Re-entry counts; overlapping fire patches do not add damage. Burns everyone, including allies and the caster.'},
     'caltrops':{'name':'Caltrops','relation':'everyone','events':['entry','placement'],'entry_per_cell':True,'trap':True,'statuses':['bleed','hobbled'],'description':'Placement on an occupied tile and each tile entry attempt one Bleed and one Hobble stack for two target turns. Allies and push/pull count; Trap Expert avoids it. Overlapping strips do not multiply an entry.'},
@@ -51,7 +54,7 @@ def place_zone(battle, owner, effect, cells):
         raise ValueError('No legal ground for this zone')
     zones = battle.setdefault('zones', [])
     # Recasting one's own type replaces its area; other owners do not multiply ticks.
-    zones[:] = [z for z in zones if (z['owner_id'], z['kind']) != (owner['id'], effect['zone'])]
+    zones[:] = [z for z in zones if z.get('prepared_defense') or (z['owner_id'], z['kind']) != (owner['id'], effect['zone'])]
     serial = battle.get('zone_serial', 0)+1
     battle['zone_serial'] = serial
     zone = {'id': f'zone_{serial}', 'owner_id': owner['id'], 'team': owner['team'],
@@ -72,7 +75,7 @@ def expire_zones(battle, owner):
 def cleanup_zones(battle, active):
     if 'zones' in battle:
         battle['zones']=[z for z in battle['zones'] if z['owner_id'] in battle['units']
-                        and active(battle['units'][z['owner_id']])]
+                        and (active(battle['units'][z['owner_id']]) or z.get('persistent_defeat_trap') and battle.get('round',1)<z['expires_round'])]
 
 
 def trigger_zones(battle, unit, event, active, hostile, apply_status, damage, only_zone=None):
@@ -83,7 +86,7 @@ def trigger_zones(battle, unit, event, active, hostile, apply_status, damage, on
         if only_zone is not None and zone['id'] != only_zone:continue
         owner = battle['units'].get(zone['owner_id'])
         rule = ZONES[zone['kind']]
-        if not owner or not active(owner) or event not in rule['events']:
+        if not owner or not (active(owner) or zone.get('persistent_defeat_trap') and battle.get('round',1)<zone['expires_round']) or event not in rule['events']:
             continue
         if not any((p['x'], p['y']) == (unit['x'], unit['y']) for p in zone['cells']):
             continue
@@ -106,6 +109,11 @@ def trigger_zones(battle, unit, event, active, hostile, apply_status, damage, on
         triggered.add(trigger_key)
         hits[zone['kind']] = stamp
         for sid in rule.get('statuses',[]):apply_status(owner,unit,sid,True)
+        if zone['kind']=='tripline':
+            from .enemy_specialties import effect
+            battle['zones']=[z for z in battle.get('zones',[]) if z['id']!=zone['id']]
+            effect(battle,unit,'tripline',zone_id=zone['id'],zone_snapshot=deepcopy(zone))
+            battle.setdefault('animation_events',[]).append({'type':'sound','cues':[{'name':'specialty_tripline_snap','offset':0}]})
         if rule.get('status'):
             apply_status({**owner,'scorched_source':zone} if zone['kind']=='scorched' else owner, unit, rule['status'])
         if rule.get('damage'):
@@ -164,6 +172,6 @@ def presentation(battle):
         rule = ZONES[z['kind']]
         zones.append({**deepcopy(z), 'name': rule['name'], 'description': rule['description'],
                       'owner_name': owner['name'],
-                      'remaining': max(0, z['expires_at']-owner.get('ability_activation', 0)),
+                      'remaining': max(0,z['expires_round']-battle.get('round',1)) if z.get('persistent_defeat_trap') else max(0, z['expires_at']-owner.get('ability_activation', 0)),
                       **({'description':f"Restores {z['heal']} HP to allies at turn start; Burn prevents healing."} if 'heal' in z else {})})
     return zones

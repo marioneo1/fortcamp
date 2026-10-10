@@ -11,6 +11,10 @@ export function hotbarSkills(actor){
  return applySkillOrder(skills,actor?.combat_skill_order||actor?.skill_slot_order||[]);
 }
 export function hotbarPage(actor,page=0){const skills=hotbarSkills(actor),pages=Math.max(1,Math.ceil(skills.length/10)),index=Math.max(0,Math.min(pages-1,page));return {index,pages,skills:skills.slice(index*10,index*10+10)}}
+export function statHelpMarkup(text,escape){
+ const [description,...formula]=String(text).split('\n');
+ return `<p>${escape(description)}</p>${formula.length?`<div class="combat-stat-formula">${formula.map(line=>escape(line)).join('<br>')}</div>`:''}`;
+}
 export function hotbarMarkup(actor,page,selected,escape,arrange=false){
  const rows=arrange?{skills:hotbarSkills(actor),pages:1}:hotbarPage(actor,page);if(!rows.skills.length)return '';
  return `<section class="combat-hotbar" aria-label="Combat skills"><header><b>Skills</b><small>Drag to swap &middot; Passives trigger automatically &middot; 1-9 / 0</small>${!arrange?'<button data-battle-popup="skill-order" class="skill-order-button">Arrange</button>':''}${rows.pages>1?`<nav><button data-hotbar-page="${rows.index-1}" ${rows.index===0?'disabled':''} aria-label="Previous skills">&lsaquo;</button><span>${rows.index+1}/${rows.pages}</span><button data-hotbar-page="${rows.index+1}" ${rows.index===rows.pages-1?'disabled':''} aria-label="More skills">&rsaquo;</button></nav>`:''}</header><div class="hotbar-slots">${rows.skills.map((s,i)=>{
@@ -169,7 +173,7 @@ export function openUnitInspector(battle,id,escape,event){
    const stat=e.target.closest?.('.inspect-stat'),text=stat?.querySelector('.inspect-stat-help')?.textContent;
    if(!text){hideStat();return}
    let tip=document.getElementById('combat-stat-tooltip');if(!tip){tip=document.createElement('aside');tip.id='combat-stat-tooltip';tip.setAttribute('role','tooltip');document.body.append(tip)}
-   tip.textContent=text;const r=stat.getBoundingClientRect(),p=cursorCardPosition(r.right,r.bottom,tip.offsetWidth,tip.offsetHeight,window.innerWidth,window.innerHeight);tip.style.left=p.left+'px';tip.style.top=p.top+'px';
+   if(tip._text!==text){tip.innerHTML=statHelpMarkup(text,panel._escape);tip._text=text}const r=stat.getBoundingClientRect(),p=cursorCardPosition(r.right,r.bottom,tip.offsetWidth,tip.offsetHeight,window.innerWidth,window.innerHeight);tip.style.left=p.left+'px';tip.style.top=p.top+'px';
   };
   panel.onpointermove=showStat;panel.onfocusin=showStat;panel.onpointerleave=hideStat;panel.onfocusout=hideStat;
   panel.querySelector('.unit-window-body').onscroll=hideStat;

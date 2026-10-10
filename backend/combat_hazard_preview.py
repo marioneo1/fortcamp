@@ -5,16 +5,29 @@ from . import combat_conditions as conditions, combat_dots as dots, combat_space
 
 def forecast(battle, actor, path, active, damage_before_barrier, living):
     zones = [z for z in battle.get('zones', []) if z.get('kind') in spaces.ZONES and 'entry' in spaces.ZONES[z['kind']]['events']]
-    mines=[h for h in battle.get('engineer_hazards',[]) if h['kind']=='mine' and (h.get('team')==actor.get('team') or h.get('revealed'))]
+    wound=next((s for s in actor.get('statuses',[]) if s['id']=='heel_wound'),None)
+    mines=[h for h in battle.get('engineer_hazards',[]) if (h['kind']=='mine' or h.get('proximity_trigger')) and (h.get('team')==actor.get('team') or h.get('revealed'))]
     from .combat_rogue import trap_expert
     mine_cells=[] if trap_expert(actor) else [p for p in path if any(max(abs((p['x'] if isinstance(p,dict) else p[0])-h['x']),abs((p['y'] if isinstance(p,dict) else p[1])-h['y']))<=1 for h in mines)]
     mine_warning={'damage':0,'effects':{'engineer_disruption':{'stacks':1,'chance':100}},'cells':mine_cells[:1],'uncertain':False,'lethal':False} if mine_cells else None
+    if mine_warning:
+        point=mine_cells[0];x,y=(point['x'],point['y']) if isinstance(point,dict) else point
+        explosions=[h for h in mines if h.get('proximity_trigger') and max(abs(x-h['x']),abs(y-h['y']))<=1]
+        if explosions:
+            probe=deepcopy(actor)
+            amount=0
+            for h in explosions:
+                owner=battle['units'][h['owner_id']]
+                raw=damage_before_barrier(battle,{**owner,'attack':h['power'],'status_tick':True,'engineer_area':True,'damage_kind':'explosion'},probe)
+                dealt,_=conditions.absorb(probe,raw);amount+=dealt
+            mine_warning.update(damage=amount,lethal=amount>=actor['hp'])
+            mine_warning['effects']={'proximity_blast':{'stacks':1,'chance':100}}
     if mine_cells:
         path = path[:path.index(mine_cells[0])+1]
-    if not zones or not path:
+    if (not zones and not wound) or not path:
         return mine_warning
     route_cells = {(p['x'], p['y']) if isinstance(p, dict) else tuple(p) for p in path}
-    if not any((p['x'], p['y']) in route_cells for z in zones for p in z['cells']):
+    if not wound and not any((p['x'], p['y']) in route_cells for z in zones for p in z['cells']):
         return mine_warning
     probe = deepcopy(actor)
     preview_battle = {**battle, 'zones': zones, 'animation_events': [], 'log': []}
@@ -62,6 +75,17 @@ def forecast(battle, actor, path, active, damage_before_barrier, living):
             continue
         probe.update(x=x, y=y, zone_location=[x, y])
         before = (total, deepcopy(effects))
+        injury=next((s for s in probe.get('statuses',[]) if s['id']=='heel_wound'),None)
+        if injury:
+            origin=injury['origin'];distance=abs(x-origin['x'])+abs(y-origin['y'])
+            delta=max(0,distance-injury.get('distance_paid',0));injury['distance_paid']=max(distance,injury.get('distance_paid',0))
+            owner=battle['units'].get(injury.get('source_id'),actor)
+            for _ in range(delta):
+                if not active(probe):break
+                conditions.add_stack(probe,'bleed',1,owner)
+                status=next(s for s in probe['statuses'] if s['id']=='bleed')
+                effects.setdefault('bleed',{'stacks':0,'chance':100})['stacks']+=1
+                damage(owner,probe,dots.base_damage(probe,'bleed',dots.count(status)),'Heel Cut','bleed')
         spaces.trigger_zones(preview_battle, probe, 'entry', active,
                              lambda target, owner: target['id'] in {u['id'] for u in conditions.hostile_units(battle, owner, living(battle))},
                              apply, damage)
@@ -70,6 +94,7 @@ def forecast(battle, actor, path, active, damage_before_barrier, living):
         if not active(probe):
             break
     if mine_warning:
+        total+=mine_warning['damage']
         effects.update(mine_warning['effects']);cells+=mine_warning['cells']
     if not total and not effects:
         return None

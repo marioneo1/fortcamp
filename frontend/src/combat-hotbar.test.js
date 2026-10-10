@@ -1,7 +1,14 @@
 ﻿import test from 'node:test';
 import assert from 'node:assert/strict';
-import {hotbarPage,hotbarMarkup,unitInspectMarkup,cursorCardPosition,areaForecastMarkup} from './combat-hotbar.js';
+import {hotbarPage,hotbarMarkup,unitInspectMarkup,cursorCardPosition,areaForecastMarkup,statHelpMarkup} from './combat-hotbar.js';
 const esc=s=>String(s??'').replaceAll('<','&lt;');
+test('stat tooltip separates a short description from readable formulas and escapes content',()=>{
+ const html=statHelpMarkup('Attack before defenses.\nFormula: 2 + (STR 8 ÷ 2, rounded down) = 6\n<img src=x>',esc);
+ assert.match(html,/<p>Attack before defenses\.<\/p>/);
+ assert.match(html,/class="combat-stat-formula"/);
+ assert.match(html,/rounded down\) = 6<br>&lt;img/);
+ assert.doesNotMatch(html,/<img/);
+});
 test('innate Summon Orders uses a normal numbered tile and explains its free command cost',()=>{
  const skill={id:'innate:summoner:orders',name:'Summon Orders',source_kind:'innate',summoner_kind:'orders',free_action:true,description:'Costs no equipped skill slot.',availability:{available:true},range:0};
  const html=hotbarMarkup({skills:[skill]},0,null,esc);

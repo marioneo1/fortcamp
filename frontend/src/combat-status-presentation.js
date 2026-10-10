@@ -4,6 +4,8 @@ import {JOB_ICON_ART} from './ability-icon-manifest.js';
 import {impactTimeline} from './combat-impact.js';
 
 const META={
+ intimidated:['debuff','fighter:driving_strike',6],feigned_death:['buff','rogue:backflip',12],
+ sword_exposed:['debuff','npc:bandit:goliath_shot',8],heel_wound:['debuff','npc:bandit:heel_cut',8],tag_team_power:['buff','npc:bandit:tag_team',10],
  disarm:['debuff','captor:restraint',2],captor_held:['debuff','captor:restraining_hold',0],captor_holding:['buff','captor:restraining_hold',0],captor_blitz:['buff','captor:blitz',5],captor_abducted:['debuff','captor:abduct',4],
  summon_order:['other','summoner:bound_companion',5],summon_overload:['buff','summoner:overload',6],
  druid_rejuvenation:['buff','druid:rejuvenation',10],living_armor:['buff','druid:living_armor',10],
@@ -42,6 +44,7 @@ export function visibleStatuses(unit,{compact=false}={}){
   .sort((a,b)=>(META[a.id]?.[2]??30)-(META[b.id]?.[2]??30));
 }
 export function statusVisual(status){
+ if(status.id==='animal_mounted')return {kind:'buff',image:'/assets/boar-mount-v1/mount_icon.png',count:null};
  if(status.id.startsWith('engineer_')){const [kind,art]=META[status.id]||['other','engineer:sentry_turret'];return {kind,image:skillIcon({id:'job:'+art,engineer_kind:art.split(':')[1]}),count:status.turns??null}}
 
  if(status.id==='summon_order')return {kind:'other',image:skillIcon({id:'job:summoner:bound_companion'}),count:null};
@@ -52,7 +55,7 @@ export function statusVisual(status){
  const count=['burn','poison','bleed'].includes(status.id)?status.layers?.length??status.stacks??(status.id==='poison'?status.turns:1)??1:status.layers?status.layers.length:status.id==='barrier'?status.amount:
   ['rally_protection','rally_power','guard','vulnerable'].includes(status.id)?'1×':
   status.ticks??status.rounds??status.turns??status.duration;
- return {kind,image:(art?.startsWith('captor:')||art?.startsWith('druid:')||art?.startsWith('cleric:')||art?.startsWith('mage:')||art?.startsWith('monk:')||art?.startsWith('rogue:')||art?.startsWith('ranger:')||art?.startsWith('bard:'))?skillIcon({id:'job:'+art}):art?.startsWith('martial:')?`/assets/martial-jobs-v1/${art.slice(8)}.png`:art?JOB_ICON_ART['job:'+art]||null:null,count:count??null};
+ return {kind,image:art?.startsWith('npc:')?skillIcon({id:art}):(art?.startsWith('captor:')||art?.startsWith('druid:')||art?.startsWith('cleric:')||art?.startsWith('mage:')||art?.startsWith('monk:')||art?.startsWith('rogue:')||art?.startsWith('ranger:')||art?.startsWith('bard:'))?skillIcon({id:'job:'+art}):art?.startsWith('martial:')?`/assets/martial-jobs-v1/${art.slice(8)}.png`:art?JOB_ICON_ART['job:'+art]||null:null,count:count??null};
 }
 function details(status,definitions){return statusDetails(status,{guard:guardDefinition,...definitions})}
 export function statusCardNotes(s,definitions={}){
@@ -78,10 +81,18 @@ export function statusBadge(status,definitions,escape,{unitId='',compact=false}=
  const d=details(status,definitions),v=statusVisual(status);
  return `<span class="status-badge status-${v.kind} ${status.id==='passive_readiness'?'passive-readiness':''} ${status.id==='passive_readiness'&&!status.ready?'passive-cooling':''}" data-unit-status="${escape(status.id)}" data-status-owner="${escape(status.source_id||'')}" data-status-unit="${escape(unitId)}" tabindex="0" role="img" aria-label="${escape([d.name,d.description,...d.details].join('. '))}">${v.image?`<img src="${v.image}" alt="" draggable="false">`:'<span class="status-fallback" aria-hidden="true">&diams;</span>'}${v.count!==null?`<span class="status-count" aria-hidden="true">${escape(v.count)}</span>`:''}${compact?'':`<span class="status-short-name" aria-hidden="true">${escape(d.name.replace('Hold Together: ',''))}</span>`}</span>`;
 }
-export function mapStatusMarkup(unit,definitions,escape){
+export function mapStatusMarkup(unit,definitions,escape,units={}){
+ if(unit.boar_mount&&unit.rider_id)return '';
  // Permanent machinery properties stay inspectable without covering the gun/seat.
- const statuses=visibleStatuses(unit,{compact:true}).filter(s=>!unit.engineer_machine||!['engineer_machine','innate_resistance'].includes(s.id));if(!statuses.length)return '';
- return `<span class="status-row readable-statuses">${statuses.map(s=>statusBadge(s,definitions,escape,{unitId:unit.id,compact:true})).join('')}</span>`;
+ const statuses=visibleStatuses(unit,{compact:true}).filter(s=>!unit.engineer_machine||!['engineer_machine','innate_resistance'].includes(s.id));
+ const rows=statuses.map(s=>({status:s,unitId:unit.id}));
+ const animal=units[unit.animal_mount_id];
+ if(animal){
+  const key=s=>JSON.stringify([s.id,s.source_id,s.turns,s.stacks,s.amount,s.ready]);
+  const seen=new Set(statuses.map(key));
+  for(const s of visibleStatuses(animal,{compact:true}))if(!seen.has(key(s))){rows.push({status:s,unitId:animal.id});seen.add(key(s))}
+ }
+ return rows.length?`<span class="status-row readable-statuses">${rows.map(({status,unitId})=>statusBadge(status,definitions,escape,{unitId,compact:true})).join('')}</span>`:'';
 }
 export function statusTrayMarkup(unit,definitions,escape){
  const statuses=visibleStatuses(unit);

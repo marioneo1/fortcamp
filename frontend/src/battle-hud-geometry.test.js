@@ -1,6 +1,15 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {snapHud,hudPosition} from './battle-hud-geometry.js';
+import {snapHud,hudPosition,hudScale,resizeHudScale} from './battle-hud-geometry.js';
+
+test('panel resizing preserves defaults and proportions while fitting the viewport',()=>{
+ const panel={width:1200,height:300},window={width:1440,height:900};
+ assert.equal(hudScale(undefined,panel,window),1);
+ assert.equal(resizeHudScale(1,-240,-60,panel,window),.8);
+ assert.equal(resizeHudScale(1,-2400,-600,panel,window),.5);
+ assert.ok(hudScale(1,panel,{width:600,height:400})*panel.width<=592);
+ assert.ok(hudScale(1,{width:300,height:500},{width:600,height:200})*500<=192);
+});
 
 test('HUD groups snap to viewport centers and neighboring edges',()=>{
  const bounds={width:1000,height:700};

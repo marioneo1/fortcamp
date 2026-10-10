@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import {doorControlsMarkup,bindDoorControls,doorCommand} from './battle-door-controls.js';
 const escape=s=>String(s).replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;');
 const battle={width:8,height:8,door_controls:[
- {x:3,y:2.5,gate_id:'door',operation:'Open',label:'Open Door',help:'Uses your action.',command:{action:'interact',target_id:'door'}}]};
+ {x:3,y:2.5,gate_id:'door',operation:'Open',label:'Open Door',help:'Free; once per activation.',command:{action:'interact',target_id:'door'}}]};
 test('one control is rendered at the doorway with an accessible label',()=>{
  const html=doorControlsMarkup(battle,escape);
  assert.equal((html.match(/data-door-control=/g)||[]).length,1);
